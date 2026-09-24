@@ -221,41 +221,50 @@ struct ResonanceSection: View {
 private struct ChordCanvas: View {
     let graph: ResonanceGraph
     var body: some View {
-        Canvas { ctx, size in
-            let center = CGPoint(x: size.width / 2, y: size.height / 2)
-            let radius = min(size.width, size.height) / 2 - 34
-            let total = Double(graph.nodes.reduce(0) { $0 + $1.nLines })
-            guard total > 0 else { return }
-            // arcs: angle share ∝ preserved lines; small gaps between
-            var angles: [String: (mid: Double, start: Double, end: Double)] = [:]
-            var cursor = -Double.pi / 2
-            let gap = 0.02
-            for n in graph.nodes {
-                let span = (Double(n.nLines) / total) * (2 * .pi - gap * Double(graph.nodes.count))
-                angles[n.author] = (cursor + span / 2, cursor, cursor + span)
-                var arc = Path()
-                arc.addArc(center: center, radius: radius, startAngle: .radians(cursor),
-                           endAngle: .radians(cursor + span), clockwise: false)
-                ctx.stroke(arc, with: .color(Brand.primary), lineWidth: 8)
-                let labelPt = CGPoint(x: center.x + cos(cursor + span / 2) * (radius + 18),
-                                      y: center.y + sin(cursor + span / 2) * (radius + 18))
-                ctx.draw(Text(InsightsScreen.shortAuthor(n.author)).font(.system(size: 8))
-                    .foregroundStyle(.secondary), at: labelPt)
-                cursor += span + gap
-            }
-            // ribbons for the strongest edges (top 24 by lift)
-            let maxLift = graph.edges.first?.lift ?? 1
-            for e in graph.edges.prefix(24) {
-                guard let a = angles[e.source], let b = angles[e.target] else { continue }
-                let pa = CGPoint(x: center.x + cos(a.mid) * (radius - 6), y: center.y + sin(a.mid) * (radius - 6))
-                let pb = CGPoint(x: center.x + cos(b.mid) * (radius - 6), y: center.y + sin(b.mid) * (radius - 6))
-                var ribbon = Path()
-                ribbon.move(to: pa)
-                ribbon.addQuadCurve(to: pb, control: center)
-                ctx.stroke(ribbon, with: .color(Brand.gold.opacity(0.15 + 0.5 * e.lift / max(maxLift, 0.01))),
-                           lineWidth: 1 + CGFloat(e.lift / max(maxLift, 0.01)) * 2.5)
-            }
+        Canvas { ctx, size in draw(&ctx, size: size) }
+    }
+
+    /// Drawn outside the `Canvas` closure, with explicit CGFloat/Double types: as one closure the
+    /// Release (optimised) type-check exceeded the compiler's time limit on Xcode 26.3.
+    private func draw(_ ctx: inout GraphicsContext, size: CGSize) {
+        let center = CGPoint(x: size.width / 2, y: size.height / 2)
+        let radius: CGFloat = min(size.width, size.height) / 2 - 34
+        let total = Double(graph.nodes.reduce(0) { $0 + $1.nLines })
+        guard total > 0 else { return }
+        // arcs: angle share ∝ preserved lines; small gaps between
+        var angles: [String: (mid: Double, start: Double, end: Double)] = [:]
+        var cursor: Double = -Double.pi / 2
+        let gap: Double = 0.02
+        let sweep: Double = 2 * Double.pi - gap * Double(graph.nodes.count)
+        for n in graph.nodes {
+            let span: Double = (Double(n.nLines) / total) * sweep
+            let mid: Double = cursor + span / 2
+            angles[n.author] = (mid, cursor, cursor + span)
+            var arc = Path()
+            arc.addArc(center: center, radius: radius, startAngle: .radians(cursor),
+                       endAngle: .radians(cursor + span), clockwise: false)
+            ctx.stroke(arc, with: .color(Brand.primary), lineWidth: 8)
+            ctx.draw(Text(InsightsScreen.shortAuthor(n.author)).font(.system(size: 8))
+                .foregroundStyle(.secondary), at: point(center, radius + 18, mid))
+            cursor += span + gap
         }
+        // ribbons for the strongest edges (top 24 by lift)
+        let maxLift: Double = max(graph.edges.first?.lift ?? 1, 0.01)
+        for e in graph.edges.prefix(24) {
+            guard let a = angles[e.source], let b = angles[e.target] else { continue }
+            var ribbon = Path()
+            ribbon.move(to: point(center, radius - 6, a.mid))
+            ribbon.addQuadCurve(to: point(center, radius - 6, b.mid), control: center)
+            let strength: Double = e.lift / maxLift
+            ctx.stroke(ribbon, with: .color(Brand.gold.opacity(0.15 + 0.5 * strength)),
+                       lineWidth: 1 + CGFloat(strength) * 2.5)
+        }
+    }
+
+    /// The point at `distance` from `center` along `angle` (radians).
+    private func point(_ center: CGPoint, _ distance: CGFloat, _ angle: Double) -> CGPoint {
+        CGPoint(x: center.x + CGFloat(cos(angle)) * distance,
+                y: center.y + CGFloat(sin(angle)) * distance)
     }
 }
 
