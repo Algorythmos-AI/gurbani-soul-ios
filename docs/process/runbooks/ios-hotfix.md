@@ -11,7 +11,7 @@ iOS has no rollback. The levers, mildest first:
 
 ## Procedure
 1. Reproduce and write the failing test first. Scripture text is never edited to "fix" anything —
-   see the prime directive in the platform's [`docs/engineering/invariants.md`](https://github.com/Algorythmos-AI/sggs-knowledge-base/blob/main/docs/engineering/invariants.md).
+   see the prime directive in the platform's [`docs/engineering/invariants.md`](https://github.com/Algorythmos-AI/sggs-platform/blob/main/docs/engineering/invariants.md).
 2. Branch `hotfix/<slug>` **from this app's release tag** (not from a later `main`, which may already
    hold unreleased work): `git worktree add <scratch>/wt-hotfix -b hotfix/<slug> vX.Y.Z`
 3. One number, both surfaces: the platform releases `X.Y.(Z+1)` too (never a one-sided hotfix — see

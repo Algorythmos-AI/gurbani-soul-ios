@@ -37,7 +37,7 @@ LOCK = ROOT / "vendor.lock.json"
 # What each source contributes. Globs are expanded against the source tree at sync time.
 SOURCES = {
     "platform": {
-        "repository": "Algorythmos-AI/sggs-knowledge-base",
+        "repository": "Algorythmos-AI/sggs-platform",
         "paths": ["contract/_meta.json", "contract/golden_*.ndjson", "frontend/public/contributors.json"],
         "version_from": ("webapp/serve.py", r"APP_VERSION\s*=\s*'([^']+)'"),
     },

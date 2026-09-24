@@ -26,12 +26,12 @@ file that proves it. Audit and plan: 2026-09-20.
 | # | Gate | Where |
 |---|---|---|
 | H1 | Scholar review of the Nitnem non-SGGS text → `REVIEWED: true`, and `NitnemReview.extraTextReviewed = true` in the **same commit** | `ios/Resources/NITNEM-REVIEW.md`, `docs/nitnem/review-pack/` |
-| H2 | G3 — Granthi / scholar acceptance of the ੴ icon treatment and the default saroop rendering | platform [`docs/brand/gurbani-soul-brand-book.md`](https://github.com/Algorythmos-AI/sggs-knowledge-base/blob/main/docs/brand/gurbani-soul-brand-book.md) |
+| H2 | G3 — Granthi / scholar acceptance of the ੴ icon treatment and the default saroop rendering | platform [`docs/brand/gurbani-soul-brand-book.md`](https://github.com/Algorythmos-AI/sggs-platform/blob/main/docs/brand/gurbani-soul-brand-book.md) |
 | H3 | G4 — legal / trade-dress clearance; the source edition's publisher noted; the ShabadOS 4.8.7 licence text recorded | brand book; `NOTICE.md` |
 | H4 | Charter S (scripture fidelity) signed **on the RC build number** | `docs/ios/testflight-test-plan.md` |
 | H5 | Hardware pass on the RC (below) | `ios/App/Tests/UI/A11Y_CHECKLIST.md` |
 | H6 | App Store Connect forms (below) | `docs/ios/app-store-listing.md` |
-| H7 | A monitored support address exists and is the one in the listing | platform [support-inbox](https://github.com/Algorythmos-AI/sggs-knowledge-base/blob/main/docs/process/runbooks/support-inbox.md) |
+| H7 | A monitored support address exists and is the one in the listing | platform [support-inbox](https://github.com/Algorythmos-AI/sggs-platform/blob/main/docs/process/runbooks/support-inbox.md) |
 | H8 | Rulesets applied so the iOS `parity` + `app` checks are required | `scripts/gh/apply_rulesets.sh` |
 | H9 | Submit for review; after approval, **Release** manually with 7-day phased release | App Store Connect |
 
