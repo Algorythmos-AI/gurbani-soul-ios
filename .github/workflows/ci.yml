@@ -1,0 +1,29 @@
+name: ci
+# Gates that need no Mac: the pinned inputs are exactly what their owners publish, the version
+# invariants hold, and the iOS source/listing/archive gates pass. Runs on every PR (required).
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version-file: ".python-version"
+      - name: Vendored files == vendor.lock.json == their sources at the pinned commits
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/vendor_sync.py check --remote
+      - name: sggs-data publishes the pinned database
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/data/fetch_dataset.py --check-pin
+      - name: Version invariants (MARKETING_VERSION == vendored platform release)
+        run: python3 scripts/release/check_versions.py
+      - name: iOS gates (source, listing, archive tooling)
+        run: python3 -m unittest discover -s ios/tests -v

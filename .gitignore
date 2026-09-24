@@ -74,3 +74,7 @@ ios/AppStore/screenshots/
 
 # Verified dataset objects fetched from sggs-data (scripts/data/fetch_dataset.py)
 .dataset-cache/
+
+# Scripture database fetched from sggs-data by pin (make dataset) and its verified cache
+/db/
+.dataset-cache/

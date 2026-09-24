@@ -1,0 +1,32 @@
+{
+  "sources": {
+    "data": {
+      "commit": "bc5b0f0c2614fa8a800f32983825acd0f08b025a",
+      "files": {
+        "pipeline/build_ios_db.py": "b793cc73815601c50ced6287446967a4936cf0216a1572ce4ffff509e2f0f80a"
+      },
+      "ref": "bc5b0f0c2614fa8a800f32983825acd0f08b025a",
+      "repository": "Algorythmos-AI/sggs-data",
+      "version": "1.0.0"
+    },
+    "platform": {
+      "commit": "c3c10ff59a6346601398d1949d6f2d0ce04415ba",
+      "files": {
+        "contract/_meta.json": "de5b21a9ef83bddf7f659fed357ad1a03007f3b1add827252c3574e3f8b7978d",
+        "contract/golden_analytics.ndjson": "70624246ac9f8b54719c5bf50be2235182d15a25f406b308b816b4f78a18c043",
+        "contract/golden_banis.ndjson": "2aec62ccbd402e0324b8474256a12c858467a75f9a509f7908fa27a8506ea584",
+        "contract/golden_difflib.ndjson": "2abfeef0181ab2cae25c9c671336502a76245255c672d81f1bf73aa5d6bcaf56",
+        "contract/golden_pahar.ndjson": "c1aa55c13ccfe90852265a095441fdc0253dc7ada56175919a4111fdf258c1ff",
+        "contract/golden_reader.ndjson": "d5d113a3af6000b689677df583cf15cef2e3d0596ceba7bed21bb6195ae8cffd",
+        "contract/golden_roman_norm.ndjson": "31a715867d9cb2fa4be62467d163fec038efd79d99d9a101410160fd1e48689a",
+        "contract/golden_search.ndjson": "f48a3027cc60fc1c0ff5806915f992a5b663107b7ea4c9279864a7e6f36c1055",
+        "contract/golden_timing.ndjson": "6f9de023a40374e19b0ad146c8c21e6b3ec3b28f6201eb8f54c2d50dff487216",
+        "contract/golden_verify.ndjson": "9383e014e3f50f224f6aff67955120b3a33d951034f9ca41343da98e854ef79d",
+        "frontend/public/contributors.json": "0e6316d025f65a5b9c15f2a0c68a184935b388da0590fdba410bbd5532e5cf4e"
+      },
+      "ref": "v1.3.7",
+      "repository": "Algorythmos-AI/sggs-knowledge-base",
+      "version": "1.3.7"
+    }
+  }
+}
