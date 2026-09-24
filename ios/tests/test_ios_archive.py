@@ -281,5 +281,20 @@ class AppStoreTagProvenance(unittest.TestCase):
         self.assertIn('"platform_commit": cand.get("platform_commit")', ledger)
 
 
+class RequiredChecksAsCode(unittest.TestCase):
+    """The archive waits for the required checks listed in .github/rulesets/main.json; a missing
+    or incomplete file must fail here, not at upload time."""
+
+    def test_upload_gate_can_read_the_required_checks(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("wait_for_checks", ROOT / "scripts/ci/wait_for_checks.py")
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        required = mod.required_contexts()
+        for ctx in ("gates", "parity", "app", "secrets"):
+            with self.subTest(context=ctx):
+                self.assertIn(ctx, required)
+
+
 if __name__ == "__main__":
     unittest.main()
