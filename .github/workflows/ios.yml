@@ -19,7 +19,7 @@ jobs:
   parity:
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/fetch-dataset
       - uses: ./.github/actions/select-xcode   # build + test with the SDK that ships (was the image default, Xcode 16.4)
       - name: Build the bundled (personal-profile) iOS DB from the source (deterministic)
@@ -54,7 +54,7 @@ jobs:
   app:
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/fetch-dataset
       - uses: ./.github/actions/select-xcode   # build + test with the SDK that ships (was the image default, Xcode 16.4)
       - name: Build the bundled (personal-profile) iOS DB
