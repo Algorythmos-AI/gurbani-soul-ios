@@ -97,7 +97,7 @@ jobs:
       # result bundles so a failure is actually diagnosable (screenshots, per-test logs).
       - name: Upload test result bundles
         if: failure()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ios-test-results
           path: |
