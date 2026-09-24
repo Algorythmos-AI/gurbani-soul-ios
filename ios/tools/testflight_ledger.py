@@ -130,6 +130,11 @@ def cmd_record(args):
         "version": version,
         "build": build,
         "source_commit": cand.get("source_commit"),
+        # The platform release whose contract this binary was built against (web+API serve it),
+        # and the sggs-data commit its database came from. Absent on rows from the monorepo era,
+        # where source_commit was itself the platform commit.
+        "platform_commit": cand.get("platform_commit"),
+        "dataset_commit": cand.get("dataset_commit"),
         "profile": cand.get("profile"),
         # "appstore" only when the archive passed the App Store gate (scholar-reviewed Nitnem text).
         # Older rows have no channel: they are TestFlight builds and must never be submitted.

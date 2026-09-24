@@ -15,7 +15,7 @@
 #   5. Exports for App Store Connect; with SGGS_UPLOAD=1 the export *is* the upload.
 #   6. Proves what was built: the Info.plist version/build and the manifest INSIDE the .app.
 #
-# Usage (macOS with Xcode ≥ 16, XcodeGen, python3, git-lfs; run from anywhere):
+# Usage (macOS with Xcode ≥ 16, XcodeGen, python3; `make dataset` first; run from anywhere):
 #   SGGS_TEAM_ID=ABCDE12345 SGGS_BUILD_NUMBER=4 ios/tools/testflight_archive.sh
 #   SGGS_TEAM_ID=… SGGS_BUILD_NUMBER=5 SGGS_UPLOAD=1 ios/tools/testflight_archive.sh
 #
@@ -101,7 +101,7 @@ LOCK="$BUILD_DIR/.archive.lock"
 say "SGGS candidate — version $VERSION build $BUILD · channel $CHANNEL · profile $PROFILE · team $TEAM_ID"
 
 say "0/6 preflight"
-head -c 16 db/sggs.sqlite | grep -q "SQLite format 3" || fail "db/sggs.sqlite is an LFS pointer — run: git lfs pull"
+head -c 16 db/sggs.sqlite | grep -q "SQLite format 3" || fail "db/sggs.sqlite is missing or not a database — run: make dataset"
 DIRTY="$(git status --porcelain -- ios/App/Sources ios/App/Shared ios/App/Widgets ios/App/project.yml ios/App/Resources ios/Packages pipeline)"
 if [ -n "$DIRTY" ]; then
   # What is uploaded must be reproducible from a commit: an upload from a dirty tree is refused.
@@ -114,20 +114,22 @@ XCODE_VERSION="$(xcodebuild -version | awk 'NR==1{print $2}')"
   || fail "Xcode $XCODE_VERSION is too old — App Store Connect requires Xcode $MIN_XCODE_MAJOR+ (select it with xcode-select)"
 echo "  Xcode $XCODE_VERSION"
 if [ "$UPLOAD" = 1 ]; then
-  # The commit must be on the trunk or the production branch — never a local-only or feature SHA.
-  git fetch -q origin integration main 2>/dev/null || echo "  (could not fetch origin; using local remote-tracking refs)"
-  if ! git merge-base --is-ancestor HEAD origin/integration 2>/dev/null && ! git merge-base --is-ancestor HEAD origin/main 2>/dev/null; then
-    fail "HEAD $(git rev-parse --short HEAD) is not on origin/integration or origin/main — merge it first, then build from that commit"
-  fi
-  # One-number policy: an App Store binary is the released commit — HEAD must be on main and carry the
-  # exact tag v$VERSION, so the ledger's source_commit is always what web+API serve. TestFlight
-  # rehearsals from integration set SGGS_ALLOW_UNTAGGED=1 to skip this (they are not App Store builds).
+  # The commit must be on the trunk — never a local-only or feature SHA.
+  git fetch -q origin main 2>/dev/null || echo "  (could not fetch origin; using local remote-tracking refs)"
+  git merge-base --is-ancestor HEAD origin/main 2>/dev/null \
+    || fail "HEAD $(git rev-parse --short HEAD) is not on origin/main — merge it first, then build from that commit"
+  # One-number policy: an App Store binary is this app's release tag v$VERSION, built against the
+  # platform release v$VERSION (the vendored contract's ref), so the ledger links the binary to the
+  # exact commit web+API serve (platform_commit). TestFlight rehearsals set SGGS_ALLOW_UNTAGGED=1.
   if [ "$CHANNEL" = appstore ] && [ "${SGGS_ALLOW_UNTAGGED:-0}" != 1 ]; then
     git merge-base --is-ancestor HEAD origin/main 2>/dev/null \
       || fail "channel=appstore upload must build from origin/main — HEAD $(git rev-parse --short HEAD) is not on main (or set SGGS_ALLOW_UNTAGGED=1 for a TestFlight rehearsal)"
     EXACT_TAG="$(git describe --exact-match --tags HEAD 2>/dev/null || true)"
     [ "$EXACT_TAG" = "v$VERSION" ] \
-      || fail "channel=appstore upload must build from the release tag v$VERSION — HEAD is tagged '${EXACT_TAG:-<none>}'. Tag the release first (sggs-release), then build from it (or SGGS_ALLOW_UNTAGGED=1 to rehearse)."
+      || fail "channel=appstore upload must build from the release tag v$VERSION — HEAD is tagged '${EXACT_TAG:-<none>}'. Tag the release first, then build from it (or SGGS_ALLOW_UNTAGGED=1 to rehearse)."
+    PLATFORM_REF=$(python3 -c "import json;print(json.load(open('vendor.lock.json'))['sources']['platform']['ref'])")
+    [ "$PLATFORM_REF" = "v$VERSION" ] \
+      || fail "channel=appstore upload must be built against the platform release v$VERSION — the contract is vendored from '$PLATFORM_REF' (make vendor-sync-platform REF=v$VERSION)"
   fi
   if [ "${SGGS_SKIP_CI_CHECK:-0}" = 1 ]; then
     echo "  WARNING: SGGS_SKIP_CI_CHECK=1 — not waiting for green CI on this commit"
@@ -277,6 +279,8 @@ cat > "$BUILD_DIR/candidate-$VERSION-$BUILD.json" <<JSON
   "en_bundled": "$EN",
   "db_sha256": "$SHIPPED_SHA",
   "source_commit": "$(git rev-parse HEAD)",
+  "platform_commit": "$(python3 -c "import json;print(json.load(open('vendor.lock.json'))['sources']['platform']['commit'])")",
+  "dataset_commit": "$(python3 -c "import json;print(json.load(open('dataset.lock.json'))['commit'])")",
   "xcode": "$XCODE_VERSION",
   "sdk": "$DT_SDK",
   "app_mb": $APP_MB,

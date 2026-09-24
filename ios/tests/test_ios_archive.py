@@ -121,7 +121,7 @@ exit 0
 
 @unittest.skipUnless(shutil.which("bash") and (ROOT / "db" / "sggs.sqlite").is_file()
                      and (ROOT / "db" / "sggs.sqlite").read_bytes()[:15] == b"SQLite format 3",
-                     "needs bash and the real db/sggs.sqlite (git lfs pull)")
+                     "needs bash and the real db/sggs.sqlite (make dataset)")
 class ArchiveLeavesNoTrace(unittest.TestCase):
     XCODE = "26.5"
 
@@ -250,14 +250,15 @@ class UploadProvenance(unittest.TestCase):
     def test_upload_gates_are_hard_failures(self):
         code = SCRIPT.read_text()
         self.assertIn('[ "$UPLOAD" = 1 ] && fail "uncommitted changes in shipping sources', code)
-        self.assertIn("git merge-base --is-ancestor HEAD origin/integration", code)
+        self.assertIn("git merge-base --is-ancestor HEAD origin/main", code)
         self.assertIn("scripts/ci/wait_for_checks.py", code)
         self.assertIn("--extra parity app", code)
 
 
 class AppStoreTagProvenance(unittest.TestCase):
     """One-number policy: a channel=appstore upload must build from the release tag on main,
-    so the ledger's source_commit is always the commit web+API serve. Rehearsals opt out."""
+    against the platform release of the same number, and record that platform commit so the
+    ledger links the binary to what web+API serve. Rehearsals opt out."""
 
     def test_appstore_upload_requires_the_release_tag(self):
         code = SCRIPT.read_text()
@@ -266,6 +267,18 @@ class AppStoreTagProvenance(unittest.TestCase):
         self.assertIn("SGGS_ALLOW_UNTAGGED", code)
         # Guarded by the appstore channel, not applied to TestFlight builds.
         self.assertIn('if [ "$CHANNEL" = appstore ] && [ "${SGGS_ALLOW_UNTAGGED:-0}" != 1 ]; then', code)
+
+    def test_appstore_upload_requires_the_platform_release_contract(self):
+        code = SCRIPT.read_text()
+        self.assertIn("['sources']['platform']['ref']", code)
+        self.assertIn('[ "$PLATFORM_REF" = "v$VERSION" ]', code)
+
+    def test_candidate_records_platform_and_dataset_commits(self):
+        code = SCRIPT.read_text()
+        self.assertIn('"platform_commit":', code)
+        self.assertIn('"dataset_commit":', code)
+        ledger = (ROOT / "ios/tools/testflight_ledger.py").read_text()
+        self.assertIn('"platform_commit": cand.get("platform_commit")', ledger)
 
 
 if __name__ == "__main__":

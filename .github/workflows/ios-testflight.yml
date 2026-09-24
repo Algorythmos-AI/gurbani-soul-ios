@@ -6,7 +6,7 @@ name: iOS TestFlight upload
 # the translation-licence release gate, version/build proof inside the archived .app.
 #
 # One-time setup (repo → Settings → Environments → `testflight`, deployment branches:
-# integration + main + release tags; secrets, never echoed):
+# main + release tags; secrets, never echoed):
 #   APPLE_TEAM_ID        Apple Developer Team ID
 #   ASC_KEY_ID           App Store Connect API key ID     (Users and Access → Integrations → App Store Connect API)
 #   ASC_ISSUER_ID        App Store Connect API issuer ID
@@ -62,7 +62,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          fetch-depth: 0   # the archive script proves HEAD is on origin/integration or origin/main
+          fetch-depth: 0   # the archive script proves HEAD is on origin/main
       - uses: ./.github/actions/fetch-dataset
       - name: Install XcodeGen
         run: brew install xcodegen
