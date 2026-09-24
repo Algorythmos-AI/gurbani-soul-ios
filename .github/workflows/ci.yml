@@ -17,11 +17,11 @@ jobs:
           python-version-file: ".python-version"
       - name: Vendored files == vendor.lock.json == their sources at the pinned commits
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.SGGS_READ_TOKEN || github.token }}
         run: python3 scripts/vendor_sync.py check --remote
       - name: sggs-data publishes the pinned database
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.SGGS_READ_TOKEN || github.token }}
         run: python3 scripts/data/fetch_dataset.py --check-pin
       - name: Version invariants (MARKETING_VERSION == vendored platform release)
         run: python3 scripts/release/check_versions.py

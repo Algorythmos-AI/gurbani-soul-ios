@@ -64,6 +64,7 @@ jobs:
         with:
           fetch-depth: 0   # the archive script proves HEAD is on origin/main
       - uses: ./.github/actions/fetch-dataset
+        with: { token: "${{ secrets.SGGS_READ_TOKEN || github.token }}" }
       - name: Install XcodeGen
         run: brew install xcodegen
       - name: Select Xcode
