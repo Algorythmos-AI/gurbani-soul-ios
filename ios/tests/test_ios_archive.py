@@ -244,6 +244,18 @@ class GithubRepoDefault(unittest.TestCase):
                       "testflight_archive.sh must default GITHUB_REPOSITORY from the remote for local runs")
 
 
+class DsymUuids(unittest.TestCase):
+    """Static: the candidate's dsym_uuids come from Xcode's dwarfdump. A bare `dwarfdump` can
+    resolve to Homebrew LLVM's, which rejects --uuid and recorded its error text for 1.3.8 (1)."""
+
+    def test_dsym_uuids_use_xcrun_dwarfdump(self):
+        code = SCRIPT.read_text()
+        self.assertIn("-exec xcrun dwarfdump --uuid {}", code)
+        self.assertNotRegex(code, r"(?<!xcrun )dwarfdump --uuid")
+        self.assertIn('$1 == "UUID:"', code)              # only real UUID lines, never an error string
+        self.assertIn('|| DSYM_UUIDS=""', code)
+
+
 class UploadProvenance(unittest.TestCase):
     """Static: an upload must refuse a dirty tree, an off-trunk commit and a red commit."""
 

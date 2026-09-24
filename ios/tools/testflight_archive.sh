@@ -266,7 +266,11 @@ DT_SDK=$(/usr/libexec/PlistBuddy -c 'Print DTSDKName' "$APP/Info.plist")
 SDK_MAJOR=$(printf '%s' "$DT_SDK" | sed -E 's/^[a-z]+([0-9]+).*/\1/')
 [ "$SDK_MAJOR" -ge "$MIN_XCODE_MAJOR" ] 2>/dev/null || fail "archived app was built with SDK $DT_SDK — App Store Connect requires the iOS $MIN_XCODE_MAJOR SDK or later"
 # dSYM UUIDs: what a MetricKit / Organizer crash report must match to be symbolicated later.
-DSYM_UUIDS=$(find "$ARCHIVE/dSYMs" -name '*.dSYM' -maxdepth 1 -exec dwarfdump --uuid {} \; 2>/dev/null | awk '{print $2":"$NF}' | paste -sd, -)
+# Xcode's dwarfdump via xcrun — a Homebrew LLVM dwarfdump earlier on PATH rejects --uuid. Each line
+# is "UUID: <uuid> (<arch>) <path>"; keep uuid:<binary name>. Diagnostics only: empty on failure.
+DSYM_UUIDS=$(find "$ARCHIVE/dSYMs" -maxdepth 1 -name '*.dSYM' -exec xcrun dwarfdump --uuid {} \; 2>/dev/null \
+  | awk '$1 == "UUID:" { p = $0; sub(/^UUID: [^ ]+ \([^)]*\) /, "", p); n = split(p, a, "/"); print $2 ":" a[n] }' \
+  | paste -sd, -) || DSYM_UUIDS=""
 APP_MB=$(du -sm "$APP" | cut -f1)
 echo "  built with Xcode build $DT_XCODE · SDK $DT_SDK · .app ${APP_MB} MB"
 
