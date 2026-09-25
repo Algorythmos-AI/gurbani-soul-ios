@@ -1134,6 +1134,37 @@ final class SGGSUITests: XCTestCase {
     /// dir — pull with `xcrun simctl get_app_container` or read the test attachments.
     /// Set SGGS_SHOT_TAG in the runner env to prefix filenames (disambiguates light/dark runs
     /// when harvesting with `find` — identical names across runs/containers mix otherwise).
+    /// Pre-pass for the hardware accessibility check (runbook H5): Apple's automated audit on each
+    /// main tab, recorded — never failing — to <SGGS_SHOT_DIR>/a11y-audit.txt. Report-only and skipped
+    /// unless TEST_RUNNER_SGGS_SHOT_DIR is set; the human VoiceOver pass (A11Y_CHECKLIST.md) still decides.
+    func testAccessibilityAuditReport() throws {
+        let env = ProcessInfo.processInfo.environment
+        guard let dir = env["SGGS_SHOT_DIR"] else { throw XCTSkip("report-only: set TEST_RUNNER_SGGS_SHOT_DIR") }
+        let app = launchApp(selectSearch: false)
+        final class Collector: @unchecked Sendable {   // the audit handler is @Sendable; guard the log
+            private let lock = NSLock(); private var items: [String] = []
+            func add(_ s: String) { lock.lock(); items.append(s); lock.unlock() }
+            var all: [String] { lock.lock(); defer { lock.unlock() }; return items }
+        }
+        let log = Collector()
+        for (tabName, nav) in [("Nitnem", "Nitnem"), ("Reader", ""), ("Search", "Search"), ("Explore", "Explore"), ("More", "More")] {
+            if nav.isEmpty {
+                tab(app, tabName).tap()
+                _ = app.buttons["Hukam"].firstMatch.waitForExistence(timeout: 12)
+            } else {
+                openTab(app, tabName, expectingNavBar: nav)
+            }
+            let screen = tabName
+            try app.performAccessibilityAudit { @Sendable issue in
+                let el = issue.element.map { "\($0.elementType.rawValue) '\($0.label.prefix(40))'" } ?? "-"
+                log.add("\(screen)\t\(issue.auditType.rawValue)\t\(issue.compactDescription)\t\(el)")
+                return true   // record, never fail
+            }
+        }
+        let text = (["tab\tauditType\tissue\telement"] + log.all).joined(separator: "\n") + "\n"
+        try text.write(toFile: "\(dir)/a11y-audit.txt", atomically: true, encoding: .utf8)
+    }
+
     /// Ang 1400 with the traditional saroop on (the default) and off (`-sggs_saroop NO`, the verbatim
     /// characters), for the scholar's sensitivity review (brand gate G3 / submission gate H2). Runs only
     /// when TEST_RUNNER_SGGS_SHOT_DIR is set, so CI time is unchanged. The scripture shown is the app's
