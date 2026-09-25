@@ -12,9 +12,19 @@ final class SGGSUITests: XCTestCase {
     /// (resume-last-Ang, transliteration toggle) — never the accent, whose persistence is under test.
     /// The app opens on the Nitnem tab; `selectSearch` (the default) then moves to Search so
     /// the search-driven tests start where they always did.
-    private func launchApp(selectSearch: Bool = true) -> XCUIApplication {
+    private func launchApp(selectSearch: Bool = true, arguments: [String] = [],
+                           forwardCaptureEnv: Bool = false) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchEnvironment["SGGS_UITEST"] = "1"
+        app.launchArguments += arguments
+        if forwardCaptureEnv {
+            // Capture runs only: the runner's TEST_RUNNER_SGGS_CLOCK_* pins the Raag Clock (Debug
+            // hooks; never present in Release) so the dial agrees with the 9:41 status bar.
+            let env = ProcessInfo.processInfo.environment
+            for key in ["SGGS_CLOCK_NOW", "SGGS_CLOCK_MODE", "SGGS_CLOCK_NO_COORDS"] {
+                if let v = env[key] { app.launchEnvironment[key] = v }
+            }
+        }
         app.launch()
         if selectSearch { openTab(app, "Search", expectingNavBar: "Search") }
         return app
@@ -1124,12 +1134,35 @@ final class SGGSUITests: XCTestCase {
     /// dir — pull with `xcrun simctl get_app_container` or read the test attachments.
     /// Set SGGS_SHOT_TAG in the runner env to prefix filenames (disambiguates light/dark runs
     /// when harvesting with `find` — identical names across runs/containers mix otherwise).
+    /// Ang 1400 with the traditional saroop on (the default) and off (`-sggs_saroop NO`, the verbatim
+    /// characters), for the scholar's sensitivity review (brand gate G3 / submission gate H2). Runs only
+    /// when TEST_RUNNER_SGGS_SHOT_DIR is set, so CI time is unchanged. The scripture shown is the app's
+    /// own rendering of the verbatim corpus; nothing is typed or edited.
+    func testCaptureSaroopReview() throws {
+        let env = ProcessInfo.processInfo.environment
+        guard let dir = env["SGGS_SHOT_DIR"] else { throw XCTSkip("capture-only: set TEST_RUNNER_SGGS_SHOT_DIR") }
+        for (name, args) in [("ang1400_saroop_on", [String]()), ("ang1400_saroop_off", ["-sggs_saroop", "NO"])] {
+            let app = launchApp(selectSearch: false, arguments: args)
+            let readerTab = tab(app, "Reader")
+            XCTAssertTrue(readerTab.waitForExistence(timeout: 20), "Reader tab missing")
+            readerTab.tap()
+            let jump = app.buttons["jumpToAng"].firstMatch
+            XCTAssertTrue(jump.waitForExistence(timeout: 15), "jump control missing")
+            jump.tap()
+            enterAng(app, "1400")
+            app.buttons["goToAng"].tap()
+            assertOnAng(app, 1400, "(saroop review)")
+            try? app.screenshot().pngRepresentation.write(to: URL(fileURLWithPath: "\(dir)/\(name).png"))
+            app.terminate()
+        }
+    }
+
     func testCaptureScreens() {
         // Simulator processes share the host filesystem: TEST_RUNNER_SGGS_SHOT_DIR points the
         // captures at a host directory (default: the runner's tmp).
         let dir = ProcessInfo.processInfo.environment["SGGS_SHOT_DIR"] ?? NSTemporaryDirectory()
         let tag = ProcessInfo.processInfo.environment["SGGS_SHOT_TAG"].map { "\($0)_" } ?? ""
-        let app = launchApp()
+        let app = launchApp(forwardCaptureEnv: true)
         // SGGS_SHOT_LANDSCAPE=1 rotates the running app before capturing (iPad regular-width
         // landscape gate); the orientation is applied to the foreground app, so after launch.
         if ProcessInfo.processInfo.environment["SGGS_SHOT_LANDSCAPE"] == "1" {

@@ -1,0 +1,55 @@
+{
+  "_doc": "One caption per App Store screenshot, in listing order. English only — never Gurmukhi (the scripture on each shot is the app's own rendering, never retyped). Every caption restates a claim already in docs/ios/app-store-listing.md; ios/tests/test_store_shots.py checks the limits and forbidden claims.",
+  "iphone-6.9": [
+    {
+      "shot": "reader",
+      "caption": "Every verse verbatim, cited by Ang"
+    },
+    {
+      "shot": "after_search",
+      "caption": "Search by word, sound or first letters"
+    },
+    {
+      "shot": "hukam",
+      "caption": "Draw a complete Hukam, any time"
+    },
+    {
+      "shot": "clock",
+      "caption": "The raags of this watch of the day"
+    },
+    {
+      "shot": "nitnem_home",
+      "caption": "Your daily Nitnem, your place kept"
+    },
+    {
+      "shot": "themes",
+      "caption": "Explore themes across the Granth"
+    },
+    {
+      "shot": "lineage",
+      "caption": "The contributors and their centuries"
+    }
+  ],
+  "ipad-13": [
+    {
+      "shot": "reader",
+      "caption": "Every verse verbatim, cited by Ang"
+    },
+    {
+      "shot": "after_search",
+      "caption": "Search by word, sound or first letters"
+    },
+    {
+      "shot": "hukam",
+      "caption": "Draw a complete Hukam, any time"
+    },
+    {
+      "shot": "clock",
+      "caption": "The raags of this watch of the day"
+    },
+    {
+      "shot": "nitnem_home",
+      "caption": "Your daily Nitnem, your place kept"
+    }
+  ]
+}
