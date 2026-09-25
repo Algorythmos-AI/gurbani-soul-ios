@@ -20,7 +20,7 @@ dataset-check: ## sggs-data@commit publishes the pinned database
 vendor-check: ## vendored platform/data files == vendor.lock.json (add REMOTE=1 to also compare with their sources)
 	python3 scripts/vendor_sync.py check $(if $(REMOTE),--remote,)
 
-vendor-sync-platform: ## re-vendor the golden contract + contributors from a platform ref: make vendor-sync-platform REF=v1.3.8
+vendor-sync-platform: ## re-vendor the golden contract, contributors + brand tokens from a platform ref: make vendor-sync-platform REF=v1.3.8
 	@test -n "$(REF)" || { echo "usage: make vendor-sync-platform REF=vX.Y.Z"; exit 2; }
 	python3 scripts/vendor_sync.py sync platform $(REF)
 

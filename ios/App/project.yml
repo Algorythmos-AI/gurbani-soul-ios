@@ -107,7 +107,12 @@ targets:
   SGGSTests:
     type: bundle.unit-test
     platform: iOS
-    sources: [Tests/Unit]
+    sources:
+      - path: Tests/Unit
+      # The platform's brand tokens (vendored, vendor.lock.json) — BrandTokensParityTests pins
+      # DesignTokens.swift to them. Test bundle only; the app never ships this file.
+      - path: ../../docs/brand/tokens.json
+        buildPhase: resources
     dependencies:
       - target: SGGS
       - package: GurbaniSearchKit

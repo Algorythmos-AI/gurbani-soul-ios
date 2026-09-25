@@ -22,6 +22,7 @@
         "contract/golden_search.ndjson": "f48a3027cc60fc1c0ff5806915f992a5b663107b7ea4c9279864a7e6f36c1055",
         "contract/golden_timing.ndjson": "6f9de023a40374e19b0ad146c8c21e6b3ec3b28f6201eb8f54c2d50dff487216",
         "contract/golden_verify.ndjson": "9383e014e3f50f224f6aff67955120b3a33d951034f9ca41343da98e854ef79d",
+        "docs/brand/tokens.json": "f0025c4b88c6384a2f0246dcc23ee7265dfd822f9116c281e6973535906c68c4",
         "frontend/public/contributors.json": "0e6316d025f65a5b9c15f2a0c68a184935b388da0590fdba410bbd5532e5cf4e"
       },
       "ref": "v1.3.10",

@@ -13,7 +13,7 @@ certified manifest.
 |---|---|---|
 | Scripture database | [`sggs-data`](https://github.com/Algorythmos-AI/sggs-data) | `dataset.lock.json` pins a commit + sha256; `make dataset` installs it, verified |
 | iOS database builder (`pipeline/build_ios_db.py`) | `sggs-data` | vendored, pinned in `vendor.lock.json` |
-| Golden contract (`contract/`), contributors roster | the platform (web + API) | vendored, pinned in `vendor.lock.json` |
+| Golden contract (`contract/`), contributors roster, brand tokens (`docs/brand/tokens.json`) | the platform (web + API) | vendored, pinned in `vendor.lock.json` |
 
 The Swift search/verify/reader core is held byte-for-byte to the platform's API behaviour by the
 golden contract (`make parity`). The app's `MARKETING_VERSION` always equals the platform release
