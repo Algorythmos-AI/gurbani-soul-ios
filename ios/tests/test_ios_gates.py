@@ -12,6 +12,7 @@ move from "known-open" to "enforcing", never silently back.
 import json
 import plistlib
 import re
+import sys
 import unittest
 from pathlib import Path
 
@@ -251,15 +252,9 @@ class ReleaseAttestationGate(unittest.TestCase):
                          "are recorded but NITNEM-REVIEW.md is not signed")
 
 
-def _section(text, heading_prefix):
-    """Body of the first `## <heading_prefix>…` section, up to the next `## `."""
-    m = re.search(rf"(?ms)^## {re.escape(heading_prefix)}[^\n]*\n(.*?)(?=^## |\Z)", text)
-    return m.group(1) if m else ""
-
-
-def _blockquote(body):
-    lines = [ln[1:].strip() for ln in body.splitlines() if ln.startswith(">")]
-    return "\n".join(lines).strip()
+# One parser for the listing doc, shared with the paste sheet / verifier (ios/tools/asc_listing.py).
+sys.path.insert(0, str(IOS / "tools"))
+from listing_doc import blockquote as _blockquote, listing_url as _doc_listing_url, section as _section  # noqa: E402
 
 
 class ListingLint(unittest.TestCase):
@@ -369,10 +364,9 @@ class InAppLinksMatchTheListing(unittest.TestCase):
         return m.group(1)
 
     def _listing_url(self, label):
-        text = LISTING.read_text(encoding="utf-8")
-        m = re.search(rf'(?m)^\| {re.escape(label)} \| `([^`]+)`', text)
-        self.assertIsNotNone(m, f"listing row {label!r} not found")
-        return m.group(1)
+        url = _doc_listing_url(LISTING.read_text(encoding="utf-8"), label)
+        self.assertIsNotNone(url, f"listing row {label!r} not found")
+        return url
 
     def test_privacy_url_matches(self):
         self.assertEqual(self._app_link("privacy"), self._listing_url("Privacy Policy URL"))
