@@ -33,6 +33,29 @@ How they were made (2026-09-18, `integration` after PRs #33/#34):
 Not yet captured: iPad Reader in landscape.
 Retake after any visual change before the release candidate (the listing doc asks for RC shots).
 
+## How the set is made (scripted, reproducible)
+
+```bash
+make dataset && make ios-db-repair                       # the pinned DB + the personal pair the project builds with
+bash ios/AppStore/capture_store_shots.sh ../store-shots  # RC app sources, public DB, fresh simulators
+uv run --with pillow python3 ios/AppStore/compose_store_shots.py --captures ../store-shots
+```
+
+- `capture_store_shots.sh` builds the app at HEAD (its sources must equal the release tag), swaps the
+  **public** DB into the *built* `.app` (never `ios/Resources`), and runs `testCaptureScreens` on a fresh
+  iPhone 17 Pro Max and iPad Pro 13" (M5) simulator: light mode, 9:41 status bar, the Raag Clock pinned
+  (`SGGS_CLOCK_NOW=581`, Debug-only), portrait on both (an XCUITest screenshot after rotating to landscape
+  comes back rotated and not filling the frame). It also captures Ang 1400 with the
+  traditional saroop on and off for the scholar's sensitivity review (`testCaptureSaroopReview`). The
+  simulators are deleted afterwards.
+- `compose_store_shots.py` frames each capture on warm paper with one English caption from
+  `captions.json` (Source Serif 4, a bordered Soul Gold rule, ink text ≥ 4.5:1), at Apple's exact sizes
+  (6.9": 1320 × 2868; 13": 2064 × 2752 or landscape 2752 × 2064), RGB without alpha. The app's pixels
+  are only scaled; no Gurmukhi is ever typeset. Masters go to `screenshots/` (git-ignored), thumbnails
+  to `contact-sheet/` (committed).
+- `ios/tests/test_store_shots.py` keeps the captions short, English, true to the listing, and naming
+  only screens the capture test produces.
+
 ## Retake before submission (required — the 2026-09-18 set is not submittable)
 
 The current set predates Nitnem (the subtitle's headline feature), the widgets shot shows other apps
@@ -46,11 +69,11 @@ binary (2.3.3), so retake **all three sets** from the release candidate:
       XCUITest runner icon); status bar overridden to 9:41, full battery, full signal.
 - [ ] Clock pinned with `SIMCTL_CHILD_SGGS_CLOCK_NOW=581` (Debug hook — never present in Release).
 - [ ] Shots, in listing order: Reader Ang 1 · Search (Roman query) · Hukam · Raag Clock · **Nitnem**
-      · **three widgets** · Themes or Lineage · iPad Reader **landscape**.
+      · **three widgets** (optional) · Themes or Lineage · iPad Reader (portrait).
 - [ ] Nothing reads "beta", "TestFlight", "Under scholarly review" or shows a debug surface.
 - [ ] Light mode throughout, or dark throughout — not mixed within a set.
 - [ ] Record below: date, RC commit, build number, Xcode version.
 
 | Retaken on | RC commit | Build | Xcode |
 |---|---|---|---|
-| _pending_ | | | |
+| 2026-09-26 | `e7a0d8a` (tag v1.3.10; captured from `702ce91`, whose app sources are identical to the tag) | 1.3.10 (1) | 26.5 (iOS 26.5 simulators) |
