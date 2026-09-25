@@ -28,9 +28,17 @@ both directions.
   SGGS lines, never cited as an Ang, and it carries no English translation. It ships in a public
   build only after the scholar review recorded in `ios/Resources/NITNEM-REVIEW.md`
   (`REVIEWED: true`).
-- **Licence.** The ShabadOS repository publishes its code under the MIT licence and states that
-  the contents of its `data` folder are free of known copyright restrictions. The Ardaas wording
-  follows the SGPC Sikh Rehat Maryada.
+- **Licence (release 4.8.7, the pinned input).** At tag `4.8.7` the ShabadOS README ("Gurbani and
+  Panthic Compositions") states that the texts in its `data` folder, its `build` output and its
+  releases — the SQLite this app's Nitnem layer is built from — are "free of known copyright
+  restrictions" and identifies them as being in the **public domain**
+  ([Public Domain Mark 1.0](https://creativecommons.org/publicdomain/mark/1.0/)), on the condition
+  that "derogatory treatments (including adding to, deleting from, altering of, or adapting) the
+  words in a way that distorts or mutilates the original work" are not made. This app renders
+  those words verbatim and never edits them. The repository's *code* (not used here) was licensed
+  separately at that tag (its README names GPL v3 and its `LICENSE.md` holds CC BY-SA 4.0; the
+  project moved to MIT on 2025-01-14). Checked against `github.com/shabados/database` at tag
+  `4.8.7` on 2026-09-26. The Ardaas wording follows the SGPC Sikh Rehat Maryada.
 - Required in-app attribution: "Bani ordering and Sri Dasam Granth / Ardaas text via the ShabadOS
   open database. Sri Guru Granth Sahib Ji text is this project's own verified corpus."
 

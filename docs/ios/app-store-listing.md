@@ -260,6 +260,8 @@ Color Alone · Sufficient Contrast (backed by `ThemeContrastTests` + `scripts/br
 ## Version release
 
 - Release option: **Manually release this version** (so the web release and the announcement
-  align), with **7-day phased release** on. A phased release can be paused if a problem appears;
+  align). **7-day phased release** is on for every **update**; Apple offers it only for updates, so
+  the first version reaches everyone at once. A phased release can be paused if a problem appears;
   there is no binary rollback on iOS — the fix is a new build (`docs/process/runbooks/`).
-- "What's New" for 1.x: reuse the CHANGELOG section for the tag, trimmed to user-facing lines.
+- "What's New" is not shown for the first version (App Store Connect has no field for it). From the
+  first update on: reuse the CHANGELOG section for the tag, trimmed to user-facing lines.

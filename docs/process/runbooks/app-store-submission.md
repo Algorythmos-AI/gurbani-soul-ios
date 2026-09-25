@@ -33,7 +33,7 @@ file that proves it. Audit and plan: 2026-09-20.
 | H6 | App Store Connect forms (below) | `docs/ios/app-store-listing.md` |
 | H7 | A monitored support address exists and is the one in the listing | platform [support-inbox](https://github.com/Algorythmos-AI/sggs-platform/blob/main/docs/process/runbooks/support-inbox.md) |
 | H8 | Rulesets applied so the iOS `parity` + `app` checks are required | `scripts/gh/apply_rulesets.sh` |
-| H9 | Submit for review; after approval, **Release** manually with 7-day phased release | App Store Connect |
+| H9 | Submit for review; after approval, **Release** manually (7-day phased release applies from the first *update*) | App Store Connect |
 
 ### H5 — hardware pass (signed RC build, real devices)
 - [ ] Oldest supported iPhone on iOS 17.x: **first** launch after install — note the seconds spent on "Verifying scripture integrity…" (budget: under 5 s; the app stays responsive throughout).
@@ -72,9 +72,11 @@ file that proves it. Audit and plan: 2026-09-20.
 - [ ] Screenshots retaken from the RC (`ios/AppStore/README.md` checklist). Mandatory display sizes
       today: **iPhone 6.9"** and — because the app supports iPad — **iPad 13"**; 6.5" iPhone is
       optional. **Confirm the live requirement in the upload UI on the day** (Apple changes it).
-- [ ] Version release: **manual**, phased release **on**.
+- [ ] Version release: **manual**. Phased release: **on for every update**; Apple offers it only for
+      updates, so a first version goes to everyone at once when you press Release.
 - [ ] After approval the version sits at **"Pending Developer Release"** — it is NOT live. Open the
-      version page and press **Release** to start the 7-day phased rollout; record the timestamp.
+      version page and press **Release** (for an update this starts the 7-day phased rollout);
+      record the timestamp.
 
 ## 3. Re-check on submission day
 Apple changes these without notice — read <https://developer.apple.com/news/upcoming-requirements/>:
@@ -90,7 +92,10 @@ rejection is fixed in App Store Connect and in `docs/ios/app-store-listing.md` *
 ship → release → `CHANNEL=appstore` loop with the next build number.
 
 ## 5. After release — halt criteria (decided in advance)
-Pause the phased release (App Store Connect → the version → Pause Phased Release) if any of:
+For an **update**, pause the phased release (App Store Connect → the version → Pause Phased Release)
+if any of the criteria below holds. A **first version** has no phased release: its levers are the
+timing of the manual Release (hold it while anything is in doubt) and, once live, a fixed build with
+an expedited review ([ios-hotfix](ios-hotfix.md) step 2). The criteria:
 - an integrity-gate false positive in the field ("Scripture integrity check failed" on a clean install);
 - a wrong-text report **confirmed against the printed Bir** by a person;
 - a crash or hang reported by more than one user on the same screen, or an Organizer crash rate
