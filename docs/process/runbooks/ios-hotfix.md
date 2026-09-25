@@ -3,7 +3,8 @@
 iOS has no rollback. The levers, mildest first:
 
 1. **Pause the phased release** — stops new automatic updates; users who already updated keep the
-   build. A pause has a time limit (check the current one in App Store Connect).
+   build. A pause has a time limit (check the current one in App Store Connect). Updates only: a
+   first version has no phased release, so for it this lever does not exist — go to step 2.
 2. **Ship a fixed build** (below), optionally asking for an **expedited review** through
    App Store Connect → Contact Us → App Review. Use it rarely and say plainly what is broken;
    a scripture-fidelity defect is a legitimate reason.

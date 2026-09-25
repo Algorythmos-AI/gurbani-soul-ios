@@ -1165,6 +1165,14 @@ final class SGGSUITests: XCTestCase {
         }
         _ = app.staticTexts.element(boundBy: 0).waitForExistence(timeout: 8)
         shot("reader")
+        // The Hukam sheet over the Reader (App Store set): the app's own draw of a complete unit.
+        app.buttons["Hukam"].firstMatch.tap()
+        if app.buttons["Done"].firstMatch.waitForExistence(timeout: 12) {
+            _ = app.staticTexts.element(boundBy: 2).waitForExistence(timeout: 8)
+            shot("hukam")
+            app.buttons["Done"].firstMatch.tap()
+            _ = app.buttons["Hukam"].firstMatch.waitForExistence(timeout: 8)
+        }
         openClock(app)
         _ = app.staticTexts["What raag is it now?"].waitForExistence(timeout: 12)
         shot("clock")
