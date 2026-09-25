@@ -20,6 +20,7 @@ file that proves it. Audit and plan: 2026-09-20.
 | M5 | The ledger row is committed | `ios/testflight-builds.json` has the build with `channel: appstore`, `sdk: iphoneos26.x`; PR merged |
 | M6 | This version may be submitted | `make appstore-preflight` exits 0 |
 | M7 | Listing text is within limits and true | listing lint (part of M3); paste from `docs/ios/app-store-listing.md` only |
+| M8 | App Store Connect holds exactly the listing doc | `make asc-diff` prints `RESULT: NO DRIFT` (GET only; run after pasting and again on submission day) |
 
 ## 2. Owner gates (only a person can close these — record name + date in the build log)
 
@@ -48,6 +49,11 @@ file that proves it. Audit and plan: 2026-09-20.
 - [ ] Storage almost full: the app launches and reads; saving a verse fails gracefully.
 
 ### H6 — App Store Connect
+Paste from `make asc-sheet` (every field in console order, exactly as the reviewed listing doc says,
+markdown stripped). When done, `make asc-diff` (with the API key env from CLAUDE.local / the
+TestFlight command) reads the console — GET only, it never writes — and must print
+`RESULT: NO DRIFT`. It does not see App Privacy, DSA, Mac/Vision Pro, agreements or the age-rating
+answers; tick those by hand.
 - [ ] Name available; subtitle, promo text, keywords, description pasted from the listing doc.
 - [ ] Support / Marketing / Privacy URLs = the **"Submit this"** column (they must resolve today).
 - [ ] App Privacy: **Data Not Collected**.
@@ -79,6 +85,7 @@ file that proves it. Audit and plan: 2026-09-20.
       record the timestamp.
 
 ## 3. Re-check on submission day
+`make asc-diff` again (someone may have edited the console since), then:
 Apple changes these without notice — read <https://developer.apple.com/news/upcoming-requirements/>:
 minimum Xcode/SDK (and raise `MIN_XCODE_MAJOR` in `ios/tools/testflight_archive.sh` +
 `MIN_SDK_MAJOR` in `ios/tools/appstore_preflight.py` together), the age-rating questions, whether

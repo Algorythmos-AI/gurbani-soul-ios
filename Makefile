@@ -63,5 +63,11 @@ testflight: ## archive + gate + export/upload (macOS): make testflight TEAM_ID=â
 		echo "version $(MARKETING_VERSION) â€” next build: $$(python3 ios/tools/testflight_ledger.py next $(MARKETING_VERSION))"; exit 1; }
 	SGGS_TEAM_ID=$(TEAM_ID) SGGS_BUILD_NUMBER=$(BUILD) SGGS_DB_PROFILE=$(or $(PROFILE),public) SGGS_RELEASE_CHANNEL=$(or $(CHANNEL),testflight) SGGS_UPLOAD=$(or $(UPLOAD),0) bash ios/tools/testflight_archive.sh
 
+asc-sheet: ## print the App Store listing paste sheet from docs/ios/app-store-listing.md (offline)
+	python3 ios/tools/asc_listing.py sheet
+
+asc-diff: ## read App Store Connect (GET only) and report drift from the listing doc; needs SGGS_ASC_KEY_PATH/_ID/_ISSUER_ID
+	uv run -q --with 'pyjwt[crypto]' python3 ios/tools/asc_listing.py diff
+
 appstore-preflight: ## may this version be SUBMITTED? newest ledger build must be channel=appstore, review signed, versions + listing clean
 	python3 ios/tools/appstore_preflight.py $(MARKETING_VERSION)
