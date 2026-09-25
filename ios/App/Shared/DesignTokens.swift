@@ -64,7 +64,8 @@ extension Color {
 /// surfaces), `accentFill` for PROMINENT fills (buttons, selected pills, hero — bordered by
 /// `accent`), `accentText` for accent-colored TEXT on surfaces (≥4.5:1), `onAccent` for
 /// labels ON `accentFill` (≥4.5:1 vs the fill), and a two-stop hero gradient.
-/// Values for `soul` mirror docs/brand/tokens.json (see docs/brand/gurbani-soul-brand-book.md).
+/// Values for `soul` equal the platform's docs/brand/tokens.json, the palette's source of truth
+/// (brand book §11), leg for leg — pinned by BrandTokensParityTests. A colour change starts there.
 /// Stored in @AppStorage("sggs_accent") by raw value; injected via \.palette.
 enum AccentPalette: String, CaseIterable, Sendable, Identifiable {
     case soul, saffron, gold, indigo, teal
@@ -180,7 +181,8 @@ extension EnvironmentValues {
 
 /// Surfaces, status colors, hairlines: shared by every accent. Light legs alias system
 /// colors where a List owns the background (native feel, zero light-mode churn); dark
-/// legs are the designed warm-ink ramp.
+/// legs are the designed warm-ink ramp. canvas, card, paper, paperWarm and the status colors
+/// equal docs/brand/tokens.json in all four legs (BrandTokensParityTests).
 enum Ink {
     // MARK: surfaces
     /// Ground behind PLAIN (non-grouped) lists and full-bleed screens: the native

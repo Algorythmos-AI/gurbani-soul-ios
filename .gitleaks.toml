@@ -1,11 +1,12 @@
 title = "SGGS Knowledge Base — gitleaks config"
 
-# Build on gitleaks' default ruleset, then allowlist vendored third-party code.
+# Build on gitleaks' default ruleset, then allowlist vendored third-party code and the vendor lock's hashes.
 [extend]
 useDefault = true
 
 [allowlist]
-description = "Vendored, public-domain SQLite amalgamation (not project code; the generic-api-key rule mis-flags SQLite's hex constants and long identifiers)."
+description = "Vendored, public-domain SQLite amalgamation (not project code; the generic-api-key rule mis-flags SQLite's hex constants and long identifiers), and vendor.lock.json (written only by scripts/vendor_sync.py: repository names, refs, commit SHAs and file sha256s; a key such as docs/brand/tokens.json next to a 64-hex sha256 reads to generic-api-key as a token)."
 paths = [
   '''ios/Packages/GurbaniSearchKit/Sources/CSQLite/.*''',
+  '''(^|/)vendor\.lock\.json$''',
 ]

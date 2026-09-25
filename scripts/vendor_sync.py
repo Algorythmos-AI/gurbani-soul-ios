@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Vendored files from the platform and data repositories, pinned by commit and sha256.
 
-The app is built and tested against inputs other repositories own: the golden contract and
-the contributors roster (platform) and the iOS database builder (sggs-data). They are
-committed here at the same paths they have upstream, so the app, its tests and its tooling
-read them unchanged — and vendor.lock.json records where each came from and its sha256.
+The app is built and tested against inputs other repositories own: the golden contract, the
+contributors roster and the brand tokens (platform) and the iOS database builder (sggs-data).
+They are committed here at the same paths they have upstream, so the app, its tests and its
+tooling read them unchanged — and vendor.lock.json records where each came from and its sha256.
 
     python3 scripts/vendor_sync.py check            # every vendored file == its lock hash (CI)
     python3 scripts/vendor_sync.py check --remote   # ... and == the file at source@commit
@@ -38,7 +38,8 @@ LOCK = ROOT / "vendor.lock.json"
 SOURCES = {
     "platform": {
         "repository": "Algorythmos-AI/sggs-platform",
-        "paths": ["contract/_meta.json", "contract/golden_*.ndjson", "frontend/public/contributors.json"],
+        "paths": ["contract/_meta.json", "contract/golden_*.ndjson", "docs/brand/tokens.json",
+                  "frontend/public/contributors.json"],
         "version_from": ("webapp/serve.py", r"APP_VERSION\s*=\s*'([^']+)'"),
     },
     "data": {
