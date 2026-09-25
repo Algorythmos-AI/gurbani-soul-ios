@@ -7,6 +7,9 @@ Every line the app shows is the verbatim Gurmukhi of the Granth, cited by Ang. T
 own copy of the scripture database and refuses to open one whose checksum does not match the
 certified manifest.
 
+The engineering wiki publishes this repository's docs at
+[docs.gurbanisoul.com/ios](https://docs.gurbanisoul.com/ios/), pinned at a commit; edit them here.
+
 ## How it fits together
 
 | Input | Owner | How it arrives |
