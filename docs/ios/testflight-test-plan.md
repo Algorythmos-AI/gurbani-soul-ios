@@ -212,3 +212,18 @@ The ledger is the source of record and the pre-flight gate: `testflight_ledger.p
 rejects a reused build number or a marketing-version downgrade **before** an archive runs, so Apple's
 "CFBundleVersion already used" rejection can't cost you a 20-minute upload. Commit the ledger with the
 release. Charter-S sign-off stays a human step in [§6](#6-exit-criteria).
+
+### Sign-off record — 1.3.10 (1), the first App Store submission
+
+The owner gates of the `app-store-submission` runbook (§2), each against build **1.3.10 (1)**
+(platform `b5c6a0d`, iOS `e7a0d8a`, public DB profile). Charter S names the signer as signed.
+
+| Gate | Who | Date | Result |
+|---|---|---|---|
+| H2 (brand G3): icon, ੴ, launch screen, default saroop | recorded by the owner | 2026-09-26 | Accepted, no change requested |
+| H3 (brand G4): trade-dress / trademark | Sameer Kalaliya, Director | 2026-09-26 | Closed on a documented self-search (private record); attorney clearance after launch |
+| H4 Charter S | Kanwaljit Singh | 2026-09-26 | 8/8 pass on iPhone 15 Pro Max; deviations: none; Hukam Angs 2, 200, 244, 444, 773, 33, 78, 77 |
+| H5 hardware pass | the owner | 2026-09-26 | 10/10 pass. Not recorded: the first-launch seconds and the scroll-position answer; the first launch was not timed on an iOS 17 device |
+| H6 App Store Connect | `asc_listing.py diff` | 2026-09-26 | NO DRIFT; App Privacy "Data Not Collected" published; Free, 174 of 175 territories (China mainland excluded); Mac and Apple Vision Pro off; age rating 4+ |
+| Accessibility labels | the owner | 2026-09-26 | iPhone: VoiceOver, Dark Interface, Reduced Motion (a draft until the first release; publish it then). Sufficient Contrast and Larger Text wait for issue #23 |
+| H9 submitted | the owner | 2026-09-26 03:49 UTC | Waiting for Review; manual release |
