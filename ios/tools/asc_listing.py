@@ -119,6 +119,8 @@ def cmd_sheet(_args) -> int:
     print(f"App Store listing — paste sheet for {version} (source: docs/ios/app-store-listing.md)\n")
     for label, value in rows.items():
         value = DISPLAY.get(label, {}).get(value, value)
+        if label == "Version · Build" and value is not None:
+            value = f"{version} ({value})"          # as the console lists it
         lim = listing_doc.LIMITS.get(limits.get(label, ""))
         n = len(value) if isinstance(value, str) else None
         meta = f"  [{n}/{lim}]" if lim else ""
