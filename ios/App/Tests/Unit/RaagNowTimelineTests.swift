@@ -191,6 +191,52 @@ final class RaagNowTimelineTests: XCTestCase {
         XCTAssertEqual(snap.paharRaags[4], ["maajh"])
     }
 
+    func testSnapshotWithoutSolarCoords() throws {
+        let json = """
+        {"generatedAt":0,"hukamGurmukhi":"x","hukamTranslit":"","hukamAng":1,"hukamCompId":2,"paharRaags":{"4":["maajh"]},"clockMode":"solar","solarLat":31.63,"solarLon":74.87}
+        """.data(using: .utf8)!
+        let snap = try JSONDecoder().decode(WidgetSnapshot.self, from: json)
+        let cleared = try XCTUnwrap(snap.withoutSolarCoords())
+        XCTAssertNil(cleared.solarLat)
+        XCTAssertNil(cleared.solarLon)
+        XCTAssertEqual(cleared.clockMode, "solar", "only the location goes; the reader's mode stays")
+        XCTAssertEqual(cleared.hukamCompId, 2)
+        XCTAssertNil(cleared.withoutSolarCoords(), "nothing to clear → nothing to write")
+    }
+
+    /// "Forget location" clears every place the widget could still read a location from: the
+    /// App-Group suite, the pre-migration `.standard` key, and the snapshot. Restores the device.
+    func testForgetSolarCoordsLeavesNoLocationAnywhere() throws {
+        let key = SharedDefaults.solarCoordsKey
+        let suiteBefore = SharedDefaults.suite.string(forKey: key)
+        let standardBefore = UserDefaults.standard.string(forKey: key)
+        let snapshotURL = try XCTUnwrap(WidgetStore.url())
+        let snapshotBefore = try? Data(contentsOf: snapshotURL)
+        defer {
+            if let suiteBefore { SharedDefaults.suite.set(suiteBefore, forKey: key) } else { SharedDefaults.suite.removeObject(forKey: key) }
+            if let standardBefore { UserDefaults.standard.set(standardBefore, forKey: key) } else { UserDefaults.standard.removeObject(forKey: key) }
+            if let snapshotBefore { try? snapshotBefore.write(to: snapshotURL) } else { try? FileManager.default.removeItem(at: snapshotURL) }
+        }
+        let json = """
+        {"generatedAt":0,"hukamGurmukhi":"x","hukamTranslit":"","hukamAng":1,"hukamCompId":2,"paharRaags":{},"clockMode":"solar","solarLat":31.63,"solarLon":74.87}
+        """.data(using: .utf8)!
+        WidgetStore.save(try JSONDecoder().decode(WidgetSnapshot.self, from: json))
+        SharedDefaults.storeSolarCoords(lat: 31.63, lon: 74.87)
+        UserDefaults.standard.set("31.63,74.87", forKey: key)
+
+        SharedDefaults.forgetSolarCoords()
+
+        XCTAssertNil(SharedDefaults.solarCoords())
+        XCTAssertNil(UserDefaults.standard.string(forKey: key), "or the migration would bring it back")
+        SharedDefaults.migrateFromStandard()
+        XCTAssertNil(SharedDefaults.solarCoords(), "the next launch's migration restores nothing")
+        let snap = try XCTUnwrap(WidgetStore.load())
+        XCTAssertNil(snap.solarLat)
+        let config = RaagClockConfig.current(snapshot: snap)
+        XCTAssertNil(config.lat, "the widget has no location to fall back to")
+        XCTAssertNil(config.lon)
+    }
+
     /// Restores whatever the device held, so the test never changes a reader's stored location.
     func testSharedDefaultsCoordsRoundTrip() {
         let before = SharedDefaults.suite.string(forKey: SharedDefaults.solarCoordsKey)

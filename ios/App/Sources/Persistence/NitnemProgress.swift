@@ -151,6 +151,22 @@ final class NitnemProgressStore {
         onChange?()
     }
 
+    /// True when there is anything to clear (a position or a completed day for any bani).
+    var hasHistory: Bool { !file.banis.isEmpty }
+
+    /// "Clear reading history": every bani's position and completed days, from this device.
+    /// Not undoable — the Journey screen asks first. A newer-schema file is read-only and is
+    /// left untouched (returns false). Fires `onChange` so the Nitnem widget and the
+    /// reminders see the cleared state at once.
+    @discardableResult
+    func clearHistory() -> Bool {
+        guard !isReadOnly else { return false }
+        file = NitnemProgressFile()
+        save()
+        onChange?()
+        return true
+    }
+
     /// "Start again": forget the position, keep the completed-day history.
     func resetPosition(_ id: String) {
         guard var p = file.banis[id] else { return }

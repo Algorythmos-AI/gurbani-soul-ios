@@ -24,6 +24,12 @@ enum SpotlightIndex {
             withIdentifiers: [identifier(lineId: lineId, compId: compId)])
     }
 
+    /// Every saved-verse entry: for when the saved store is recreated empty (the ladder's last
+    /// step), or system search would keep offering verses that are no longer saved.
+    static func removeAll() {
+        CSSearchableIndex.default().deleteSearchableItems(withDomainIdentifiers: [domain])
+    }
+
     /// The saved verse's own line id (so the composition opens scrolled to it).
     static func lineId(fromIdentifier id: String) -> Int? {
         guard id.hasPrefix("saved-"), let range = id.range(of: "-comp-") else { return nil }

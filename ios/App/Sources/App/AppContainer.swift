@@ -72,6 +72,7 @@ final class AppContainer {
         self.modelContainer = opened.container
         self.savedStoreDegraded = opened.degraded
         self.savedStoreDestroyed = opened.destroyed
+        if opened.destroyed { SpotlightIndex.removeAll() }   // the store is empty now; so is its index
         // count consecutive persistent-open failures; a clean open resets the ladder
         defaults.set(opened.degraded && !opened.destroyed ? prior + 1 : 0, forKey: Self.savedStoreFailKey)
         // Gentle reminders: a fake scheduler under UI test, the real notification center otherwise.

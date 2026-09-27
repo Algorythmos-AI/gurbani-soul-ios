@@ -212,14 +212,15 @@ Store the source PNGs under `ios/AppStore/screenshots/<device>/` (add the direct
 >
 > Location: optional, used only by the Raag Clock's solar mode to compute local sunrise and
 > sunset on the device; the value is rounded to about 1 km, never stored beyond that and never
-> transmitted. The app works fully with location denied (manual entry is offered). To see it:
+> transmitted, and "Forget location" on the Raag Clock removes it. The app works fully with location denied (manual entry is offered). To see it:
 > Explore → Raag Clock. Solar is the default; with no stored location it shows the fixed clock and offers
 > a "Use my location" button — the permission prompt appears only when that button is tapped.
 >
 > Widgets: three Home Screen widgets (Hukam verse, Raag now, Nitnem) read a small snapshot the app
-> writes to its App Group (`group.org.sggs`). It stays on the device and is never transmitted; the only
-> personal values in it are today's Nitnem progress and, if the reader enabled solar mode, their location
-> rounded to about 1 km. Open the app once before adding them.
+> writes to its App Group (`group.org.sggs`); the Nitnem widget also reads the app's Nitnem progress
+> file there (which banis were read today). Both stay on the device and are never transmitted; the only
+> personal values are that progress and, if the reader enabled solar mode, their location rounded to
+> about 1 km. Open the app once before adding them.
 >
 > URL scheme `sggs://` and App Intents ("Today's Hukam", "What raag is it now", "Read a bani",
 > "Search Gurbani" as Siri phrases; "Open Ang" as a Shortcuts action) open screens inside the app only.

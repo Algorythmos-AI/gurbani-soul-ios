@@ -40,6 +40,13 @@ final class SGGSUITests: XCTestCase {
         return element.exists && element.label.hasPrefix(prefix)
     }
 
+    /// A screenshot into SGGS_SHOT_DIR when a capture run sets it (TEST_RUNNER_SGGS_SHOT_DIR); a
+    /// no-op in CI, so a test can document the surface it proves without writing anywhere.
+    private func captureIfRequested(_ app: XCUIApplication, _ name: String) {
+        guard let dir = ProcessInfo.processInfo.environment["SGGS_SHOT_DIR"] else { return }
+        try? app.screenshot().pngRepresentation.write(to: URL(fileURLWithPath: "\(dir)/\(name).png"))
+    }
+
     /// The Raag Clock lives under Explore: open the hub, then its card.
     private func openClock(_ app: XCUIApplication) {
         openTab(app, "Explore", expectingNavBar: "Explore")
@@ -354,6 +361,41 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Begin today"].waitForExistence(timeout: 6)
                       || app.staticTexts.matching(NSPredicate(format: "label ENDSWITH %@", "together")).firstMatch.exists,
                       "journey header missing")
+    }
+
+    /// Reading history is the reader's to clear: mark a composition read, then clear it from the
+    /// journey after confirming; the control goes once there is nothing left to clear.
+    func testJourneyClearsReadingHistory() {
+        let app = launchApp(selectSearch: false)   // SGGS_UITEST starts with no progress
+        openIndex(app)
+        let row = app.buttons["composition_lavan"].firstMatch
+        for _ in 0..<6 where !(row.exists && row.isHittable) { app.swipeUp() }
+        XCTAssertTrue(row.waitForExistence(timeout: 10), "Lavan missing from More compositions")
+        row.tap()
+        XCTAssertTrue(app.navigationBars["Lavan"].waitForExistence(timeout: 15))
+        app.buttons["End"].firstMatch.tap()
+        let markRead = app.buttons["baniMarkComplete"].firstMatch
+        for _ in 0..<8 where !(markRead.exists && markRead.isHittable) { app.swipeUp() }
+        XCTAssertTrue(markRead.waitForExistence(timeout: 10), "end-of-bani action missing")
+        markRead.tap()
+
+        openTab(app, "Nitnem", expectingNavBar: "Nitnem")
+        let card = app.buttons["nitnemJourney"].firstMatch
+        for _ in 0..<4 where !(card.exists && card.isHittable) { app.swipeUp() }
+        XCTAssertTrue(card.waitForExistence(timeout: 12), "journey card missing")
+        card.tap()
+        XCTAssertTrue(app.navigationBars["Reading journey"].waitForExistence(timeout: 10))
+
+        let clear = app.buttons["clearReadingHistory"].firstMatch
+        for _ in 0..<4 where !(clear.exists && clear.isHittable) { app.swipeUp() }
+        XCTAssertTrue(clear.waitForExistence(timeout: 8), "a reader with history can clear it")
+        captureIfRequested(app, "journey_clear_history")
+        clear.tap()
+        let confirm = app.buttons["Clear history"].firstMatch
+        XCTAssertTrue(confirm.waitForExistence(timeout: 6), "clearing asks first")
+        captureIfRequested(app, "journey_clear_confirm")
+        confirm.tap()
+        XCTAssertTrue(clear.waitForNonExistence(timeout: 6), "nothing left to clear")
     }
 
     /// Contents jumps to a pauri, and the position bar's stanza caption follows.
@@ -861,6 +903,36 @@ final class SGGSUITests: XCTestCase {
         openClock(app)
         XCTAssertTrue(app.buttons["useMyLocation"].waitForExistence(timeout: 20), "one-tap location card missing")
         XCTAssertTrue(app.buttons["enterLocationManually"].exists)
+        XCTAssertTrue(app.staticTexts["4th pahar of day  ·  3–6 PM"].waitForExistence(timeout: 8),
+                      "with no location the fixed windows are shown")
+    }
+
+    /// A stored location is the reader's to remove: enter one by hand, forget it, and the clock is
+    /// back to its no-location state (the one-tap card and the fixed windows).
+    func testForgetLocationReturnsToTheLocationCard() {
+        let app = XCUIApplication()
+        app.launchEnvironment["SGGS_CLOCK_NOW"] = "1000"
+        app.launchEnvironment["SGGS_CLOCK_MODE"] = "solar"
+        app.launchEnvironment["SGGS_UITEST"] = "1"
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        openClock(app)
+        let forget = app.buttons["forgetLocation"].firstMatch
+        if forget.waitForExistence(timeout: 6) { forget.tap() }   // a location this simulator already stored
+        let manual = app.buttons["enterLocationManually"].firstMatch
+        XCTAssertTrue(manual.waitForExistence(timeout: 20), "no-location card missing")
+        manual.tap()
+        let fields = app.textFields
+        XCTAssertTrue(fields.element(boundBy: 0).waitForExistence(timeout: 8), "manual location sheet missing")
+        fields.element(boundBy: 0).tap(); fields.element(boundBy: 0).typeText("31.63")
+        fields.element(boundBy: 1).tap(); fields.element(boundBy: 1).typeText("74.87")
+        app.buttons["Use these coordinates"].firstMatch.tap()
+
+        XCTAssertTrue(forget.waitForExistence(timeout: 10), "a stored location offers Forget location")
+        captureIfRequested(app, "clock_forget_location")
+        forget.tap()
+        XCTAssertTrue(app.buttons["useMyLocation"].waitForExistence(timeout: 10), "forgetting returns the one-tap card")
+        XCTAssertFalse(forget.exists, "nothing left to forget")
         XCTAssertTrue(app.staticTexts["4th pahar of day  ·  3–6 PM"].waitForExistence(timeout: 8),
                       "with no location the fixed windows are shown")
     }
