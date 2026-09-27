@@ -10,6 +10,7 @@ struct NitnemJourneyScreen: View {
 
     @State private var monthAnchor = NitnemClock.now()
     @State private var practices: [String: Set<BaniCategory>] = [:]
+    @State private var confirmClear = false
 
     private let calendar = Calendar.current
 
@@ -21,6 +22,11 @@ struct NitnemJourneyScreen: View {
                 Text("A record for your own reflection. It stays on this device.")
                     .font(.caption).foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                if container.nitnem.hasHistory && !container.nitnem.isReadOnly {
+                    Button("Clear reading history", role: .destructive) { confirmClear = true }
+                        .font(.subheadline)
+                        .accessibilityIdentifier("clearReadingHistory")
+                }
             }
             .padding(Theme.Space.l)
             .frame(maxWidth: 640).frame(maxWidth: .infinity)
@@ -29,6 +35,14 @@ struct NitnemJourneyScreen: View {
         .navigationTitle("Reading journey")
         .navigationBarTitleDisplayMode(.inline)
         .task { await loadPractices() }
+        .confirmationDialog("Clear reading history?", isPresented: $confirmClear, titleVisibility: .visible) {
+            Button("Clear history", role: .destructive) {
+                container.nitnem.clearHistory()
+                Task { await loadPractices() }
+            }
+        } message: {
+            Text("This removes the days you have read and where you stopped in each bani, from this device. It cannot be undone.")
+        }
     }
 
     private func loadPractices() async {

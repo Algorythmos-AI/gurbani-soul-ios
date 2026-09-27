@@ -263,6 +263,13 @@ struct ClockScreen: View {
                 Text("Sunrise and sunset coincide at this location today — showing the fixed clock.")
                     .font(.caption2).foregroundStyle(.secondary)
             }
+            if coords != nil {
+                // The stored location is the reader's to remove, not only to overwrite.
+                Button("Forget location", role: .destructive) { location?.forget() }
+                    .font(.caption).buttonStyle(.borderless)
+                    .accessibilityHint("Removes the stored location from this device. Solar mode shows the fixed clock until you add one again.")
+                    .accessibilityIdentifier("forgetLocation")
+            }
         }
         .sheet(isPresented: $showManualLocation) {
             ManualLocationSheet { lat, lon in location?.setManually(lat: lat, lon: lon) }

@@ -103,6 +103,37 @@ final class NitnemProgressTests: XCTestCase {
         XCTAssertTrue(NitnemProgressStore(url: url).file.banis.isEmpty, "an unknown schema is treated as empty")
     }
 
+    func testClearHistoryRemovesPositionsAndDaysAndNotifies() {
+        let url = tempURL()
+        let store = NitnemProgressStore(url: url)
+        XCTAssertFalse(store.hasHistory)
+        store.setPosition("sukhmani", seq: 900)
+        store.markComplete("japji")
+        XCTAssertTrue(store.hasHistory)
+        var notified = 0
+        store.onChange = { notified += 1 }
+        XCTAssertTrue(store.clearHistory())
+        XCTAssertEqual(notified, 1, "the Nitnem widget and the reminders hear about it")
+        XCTAssertFalse(store.hasHistory)
+        XCTAssertFalse(store.isCompleted("japji"))
+        XCTAssertNil(store.progress(for: "sukhmani"))
+        XCTAssertTrue(NitnemProgressStore(url: url).file.banis.isEmpty, "cleared on disk, not only in memory")
+    }
+
+    func testClearHistoryLeavesANewerSchemaFileAlone() throws {
+        let url = tempURL()
+        let writer = NitnemProgressStore(url: url)
+        writer.markComplete("japji")
+        var json = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+        json["schemaVersion"] = 99
+        try JSONSerialization.data(withJSONObject: json).write(to: url)
+        let before = try Data(contentsOf: url)
+        let store = NitnemProgressStore(url: url)
+        XCTAssertTrue(store.isReadOnly)
+        XCTAssertFalse(store.clearHistory(), "a file from a newer app is never rewritten")
+        XCTAssertEqual(try Data(contentsOf: url), before)
+    }
+
     func testStreakCountsConsecutiveDays() {
         let store = NitnemProgressStore(url: tempURL())
         let cal = Calendar.current

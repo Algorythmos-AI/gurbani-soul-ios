@@ -40,6 +40,17 @@ struct NitnemWidgetData: Codable, Sendable {
     var sets: [String: [Bani]]
 }
 
+extension WidgetSnapshot {
+    /// This snapshot with its solar coordinates removed, or nil when it holds none (nothing to write).
+    func withoutSolarCoords() -> WidgetSnapshot? {
+        guard solarLat != nil || solarLon != nil else { return nil }
+        var s = self
+        s.solarLat = nil
+        s.solarLon = nil
+        return s
+    }
+}
+
 /// The App-Group `UserDefaults` suite shared by the app and its widgets — where the clock
 /// mode and the rounded solar coordinates live so both surfaces agree. Falls back to
 /// `.standard` when the group is unavailable (unsigned simulator builds), so nothing crashes.
@@ -81,6 +92,16 @@ enum SharedDefaults {
         let r = { (x: Double) in (x * 100).rounded() / 100 }   // 2 dp ≈ 1 km — enough for sunrise
         suite.set("\(r(lat)),\(r(lon))", forKey: solarCoordsKey)
     }
+
+    /// "Forget location": removes the coordinates from the App-Group suite, from the
+    /// pre-migration `.standard` key (else `migrateFromStandard` would restore it at the next
+    /// launch) and from the widget snapshot, which the Raag-now widget falls back to. Solar mode
+    /// then shows the fixed clock and offers the location card, exactly as before a first fix.
+    static func forgetSolarCoords() {
+        suite.removeObject(forKey: solarCoordsKey)
+        UserDefaults.standard.removeObject(forKey: solarCoordsKey)
+        WidgetStore.clearSolarCoords()
+    }
 }
 
 enum WidgetStore {
@@ -101,6 +122,12 @@ enum WidgetStore {
     static func load() -> WidgetSnapshot? {
         guard let url = url(), let data = try? Data(contentsOf: url) else { return nil }
         return try? JSONDecoder().decode(WidgetSnapshot.self, from: data)
+    }
+
+    /// Drops the solar coordinates from the stored snapshot; a no-op when it has none.
+    static func clearSolarCoords() {
+        guard let snapshot = load(), let cleared = snapshot.withoutSolarCoords() else { return }
+        save(cleared)
     }
 
     static func save(_ snapshot: WidgetSnapshot) {

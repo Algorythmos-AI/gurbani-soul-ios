@@ -33,6 +33,14 @@ final class SolarLocation: NSObject, CLLocationManagerDelegate {
         coords = Self.stored()
     }
 
+    /// "Forget location" (explicit user action): the stored coordinates go from this device
+    /// and from the widgets' snapshot; Solar mode falls back to the fixed clock until a new fix.
+    func forget() {
+        SharedDefaults.forgetSolarCoords()
+        coords = nil
+        denied = false
+    }
+
     /// Explicit user action only — never called automatically.
     func requestOnce() {
         requesting = true
