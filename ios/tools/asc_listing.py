@@ -85,11 +85,13 @@ def expected(version: str) -> dict:
         "Version · Version string": version,
         "Version · Promotional text": f["promo"],
         "Version · Description": f["description"],
+        "Version · What's New": f["whats_new"],
         "Version · Keywords": f["keywords"],
         "Version · Support URL": f["support_url"],
         "Version · Marketing URL": f["marketing_url"],
         "Version · Copyright": f["copyright"],
         "Version · Release": "MANUAL",
+        "Version · Phased release": True,
         "Version · Build": expected_build(version),
         "App Review · Sign-in required": False,
         "App Review · Contact email": f["review_email"],
@@ -106,6 +108,7 @@ DISPLAY = {
     "App Information · Content rights": {"USES_THIRD_PARTY_CONTENT":
                                          "Yes — it contains third-party content, and I have the necessary rights"},
     "Version · Release": {"MANUAL": "Manually release this version"},
+    "Version · Phased release": {True: "On (release the update over 7 days using phased release)"},
     "App Review · Sign-in required": {False: "No (untick \"Sign-in required\")"},
 }
 
@@ -114,7 +117,8 @@ def cmd_sheet(_args) -> int:
     rows = expected(version)
     limits = {"App Information · Name": "name", "App Information · Subtitle": "subtitle",
               "Version · Promotional text": "promo", "Version · Description": "description",
-              "Version · Keywords": "keywords", "App Review · Notes": "review_notes"}
+              "Version · Keywords": "keywords", "App Review · Notes": "review_notes",
+              "Version · What's New": "whats_new"}
     over = []
     print(f"App Store listing — paste sheet for {version} (source: docs/ios/app-store-listing.md)\n")
     for label, value in rows.items():
@@ -217,6 +221,8 @@ def fetch_state(client: Client, bundle: str, version: str) -> dict:
     review = _one(client, f"/v1/appStoreVersions/{ver['id']}/appStoreReviewDetail") or {}
     ra = review.get("attributes", {})
     build = _one(client, f"/v1/appStoreVersions/{ver['id']}/build")
+    # Present (in any state) once "phased release" is switched on for the version; absent otherwise.
+    phased = _one(client, f"/v1/appStoreVersions/{ver['id']}/appStoreVersionPhasedRelease")
     build_label = None
     if build:
         full = client.get(f"/v1/builds/{build['id']}?include=preReleaseVersion")
@@ -226,11 +232,13 @@ def fetch_state(client: Client, bundle: str, version: str) -> dict:
         "Version · Version string": va.get("versionString"),
         "Version · Promotional text": la.get("promotionalText"),
         "Version · Description": la.get("description"),
+        "Version · What's New": la.get("whatsNew"),
         "Version · Keywords": la.get("keywords"),
         "Version · Support URL": la.get("supportUrl"),
         "Version · Marketing URL": la.get("marketingUrl"),
         "Version · Copyright": va.get("copyright"),
         "Version · Release": va.get("releaseType"),
+        "Version · Phased release": bool(phased),
         "Version · Build": build_label,
         "App Review · Sign-in required": ra.get("demoAccountRequired") if review else None,
         "App Review · Contact email": ra.get("contactEmail"),
@@ -267,6 +275,8 @@ def compare(want: dict, have: dict, version: str) -> list[tuple[str, str, str]]:
             rows.append((label, "MISSING", "empty in App Store Connect"))
         elif _norm(h) == _norm(w):
             rows.append((label, "OK", ""))
+        elif not (isinstance(w, str) and isinstance(h, str)):
+            rows.append((label, "DRIFT", f"doc {w!r} vs ASC {h!r}"))
         else:
             a, b = _norm(w) or "", _norm(h) or ""
             i = next((k for k in range(min(len(a), len(b))) if a[k] != b[k]), min(len(a), len(b)))

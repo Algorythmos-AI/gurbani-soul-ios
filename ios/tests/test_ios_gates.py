@@ -269,9 +269,10 @@ class ListingLint(unittest.TestCase):
         cls.keywords = re.search(r"`([^`]+)`", _section(text, "Keywords")).group(1)
         cls.promo = _blockquote(_section(text, "Promotional text"))
         cls.description = _blockquote(_section(text, "Description"))
+        cls.whats_new = _blockquote(_section(text, "What's New"))
 
     def test_fields_parsed(self):
-        for field in (self.name, self.subtitle, self.keywords, self.promo, self.description):
+        for field in (self.name, self.subtitle, self.keywords, self.promo, self.description, self.whats_new):
             self.assertTrue(field)
 
     def test_name_and_subtitle_limits(self):
@@ -297,7 +298,8 @@ class ListingLint(unittest.TestCase):
     def test_no_claims_the_app_does_not_deliver(self):
         # Guideline 2.3: metadata must describe the shipped app. The app has no audio/kirtan, is
         # not a beta, runs no AI model, and store text must not mention other platforms.
-        pasted = "\n".join([self.name, self.subtitle, self.keywords, self.promo, self.description])
+        pasted = "\n".join([self.name, self.subtitle, self.keywords, self.promo, self.description,
+                            self.whats_new])
         hits = re.findall(r"(?i)\baudio\b|\bkirtan\b|\bbeta\b|\btestflight\b|\bandroid\b|\bAI helps\b|\bAI[- ]powered\b",
                           pasted)
         self.assertEqual(hits, [])
