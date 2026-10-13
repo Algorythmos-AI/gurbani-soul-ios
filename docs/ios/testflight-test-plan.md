@@ -227,3 +227,18 @@ The owner gates of the `app-store-submission` runbook (§2), each against build 
 | H6 App Store Connect | `asc_listing.py diff` | 2026-09-26 | NO DRIFT; App Privacy "Data Not Collected" published; Free, 174 of 175 territories (China mainland excluded); Mac and Apple Vision Pro off; age rating 4+ |
 | Accessibility labels | the owner | 2026-09-26 | iPhone: VoiceOver, Dark Interface, Reduced Motion (a draft until the first release; publish it then). Sufficient Contrast and Larger Text wait for issue #23 |
 | H9 submitted | the owner | 2026-09-26 03:49 UTC | Waiting for Review; manual release |
+
+### Sign-off record — 1.4.0 (1), the first update
+
+The owner gates of the `app-store-submission` runbook (§2), each against build **1.4.0 (1)**
+(platform `2c41123`, iOS `d058add` at tag `v1.4.0`, public DB profile; archived on the hosted
+runner with Xcode 26.3, SDK iphoneos26.2, uploaded 2026-10-13). A row stays *open* until its gate
+is signed; the brand gates H2 and H3 were closed for 1.3.10 and nothing they cover changed.
+
+| Gate | Who | Date | Result |
+|---|---|---|---|
+| H4 Charter S | | | open |
+| H5 hardware pass (targeted): update over a store-installed 1.3.10 keeps saved verses and Nitnem progress; Forget location; Clear reading history; Spotlight after clearing; widgets; Airplane Mode; first-launch seconds | | | open |
+| H6 App Store Connect, with What's New and phased release | `asc_listing.py diff` | | open |
+| H9 submitted | | | open |
+
