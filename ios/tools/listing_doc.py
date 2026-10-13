@@ -14,7 +14,7 @@ LISTING = ROOT / "docs" / "ios" / "app-store-listing.md"
 
 # App Store Connect's limits (characters). The lint enforces them; the sheet prints them.
 LIMITS = {"name": 30, "subtitle": 30, "promo": 170, "description": 4000, "keywords": 100,
-          "review_notes": 4000}
+          "review_notes": 4000, "whats_new": 4000}
 
 
 def section(text: str, heading_prefix: str) -> str:
@@ -82,6 +82,7 @@ def load(path: Path = LISTING) -> dict:
         "keywords": re.search(r"`([^`]+)`", section(text, "Keywords")).group(1),
         "promo": plain(blockquote(section(text, "Promotional text"))),
         "description": plain(blockquote(section(text, "Description"))),
+        "whats_new": plain(blockquote(section(text, "What's New"))),
         "support_url": listing_url(text, "Support URL"),
         "marketing_url": listing_url(text, "Marketing URL"),
         "privacy_url": listing_url(text, "Privacy Policy URL"),

@@ -62,7 +62,8 @@ answers; tick those by hand.
       the binary's `MARKETING_VERSION`** (a new app record defaults to 1.0; the build is not
       selectable until the version string matches). **Submit the build whose version equals the live
       site** (`/api/meta.version` on `gurbanisoul.com`) — one number everywhere. Confirm with
-      `python3 scripts/release/check_release_complete.py X.Y.Z` before selecting. Any earlier
+      `python3 scripts/release/check_release_complete.py X.Y.Z` in the **sggs-platform** repository
+      (the script lives there) before selecting. Any earlier
       superseded upload (e.g. a prior patch) is left unsubmitted; Apple expires it. Select the
       processed build once it leaves "Processing".
 - [ ] **App Information**: Primary category Reference, Secondary Education; Content Rights.
@@ -78,8 +79,12 @@ answers; tick those by hand.
 - [ ] Screenshots retaken from the RC (`ios/AppStore/README.md` checklist). Mandatory display sizes
       today: **iPhone 6.9"** and — because the app supports iPad — **iPad 13"**; 6.5" iPhone is
       optional. **Confirm the live requirement in the upload UI on the day** (Apple changes it).
+- [ ] **An update**: App Store Connect will not create version X.Y.Z while the previous version is
+      still "Pending Developer Release" — release (or cancel) that one first. Paste **What's New**
+      from the sheet; the field exists from the first update on.
 - [ ] Version release: **manual**. Phased release: **on for every update**; Apple offers it only for
-      updates, so a first version goes to everyone at once when you press Release.
+      updates, so a first version goes to everyone at once when you press Release. `make asc-diff`
+      reads both back (`Version · What's New`, `Version · Phased release`).
 - [ ] After approval the version sits at **"Pending Developer Release"** — it is NOT live. Open the
       version page and press **Release** (for an update this starts the 7-day phased rollout);
       record the timestamp.
@@ -95,8 +100,10 @@ accessibility labels have become mandatory.
 Read the cited guideline, reply in Resolution Center with the specific evidence (the review notes
 already explain offline use, location, notifications and the Live Activity). A metadata-only
 rejection is fixed in App Store Connect and in `docs/ios/app-store-listing.md` **in the same sitting**
-— the doc and the listing must never diverge. A binary rejection goes through the normal
-ship → release → `CHANNEL=appstore` loop with the next build number.
+— the doc and the listing must never diverge. A binary rejection that needs **no source change**
+(signing, a processing fault) is rebuilt from the same tag with the next build number. One that
+needs a source change cannot reuse the version: the tag `vX.Y.Z` is immutable and an App Store build
+must be at it, so the fix ships as `X.Y.(Z+1)` on the platform and here (`ios-hotfix.md`).
 
 ## 5. After release — halt criteria (decided in advance)
 For an **update**, pause the phased release (App Store Connect → the version → Pause Phased Release)

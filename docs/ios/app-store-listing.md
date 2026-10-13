@@ -104,6 +104,18 @@ are banis it does contain. `ios/tests/test_ios_gates.py` lints this section.)
   verbatim from Sri Guru Granth Sahib Ji and cited by its Ang — nothing is paraphrased,
   normalised, or AI-generated."
 
+## What's New
+
+For version 1.4.0, the first update. Rewritten for every version; limit 4000 characters.
+
+> You can now remove what the app keeps on your device.
+>
+> • Forget location: when the Raag Clock uses your location for sunrise and sunset, a "Forget location" button deletes the saved location from the app and its widgets.
+> • Clear reading history: the Reading journey screen can clear your Nitnem reading history.
+> • Home Screen search stays in step: when your saved verses are reset, they are removed from search as well.
+>
+> The text of Sri Guru Granth Sahib Ji is unchanged.
+
 ## URLs
 
 The product domain **`gurbanisoul.com`** is **live** and canonical (apex serves 200; `www` and the
@@ -265,4 +277,6 @@ Color Alone · Sufficient Contrast (backed by `ThemeContrastTests` + `scripts/br
   the first version reaches everyone at once. A phased release can be paused if a problem appears;
   there is no binary rollback on iOS — the fix is a new build (`docs/process/runbooks/`).
 - "What's New" is not shown for the first version (App Store Connect has no field for it). From the
-  first update on: reuse the CHANGELOG section for the tag, trimmed to user-facing lines.
+  first update on it is the **What's New** section above: what changed for the reader, in plain
+  words, and nothing the build does not do. `make asc-diff` compares it, and reads back whether
+  phased release is switched on.

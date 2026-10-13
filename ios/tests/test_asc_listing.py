@@ -35,7 +35,7 @@ class ListingDocParse(unittest.TestCase):
         self.assertTrue(self.f["copyright"].startswith("© "))
 
     def test_pasted_text_carries_no_markdown(self):
-        for k in ("promo", "description", "review_notes"):
+        for k in ("promo", "description", "review_notes", "whats_new"):
             self.assertNotIn("**", self.f[k], k)
             self.assertNotIn("`", self.f[k], k)
 
@@ -63,7 +63,7 @@ class Fake:
                     "privacyPolicyUrl": v["App Privacy · Privacy Policy URL"]}
         ver_loc = {"locale": "en-GB", "description": v["Version · Description"], "keywords": v["Version · Keywords"],
                    "promotionalText": v["Version · Promotional text"], "supportUrl": v["Version · Support URL"],
-                   "marketingUrl": v["Version · Marketing URL"]}
+                   "marketingUrl": v["Version · Marketing URL"], "whatsNew": v["Version · What's New"]}
         info_loc.update(override.get("info_loc", {}))
         ver_loc.update(override.get("ver_loc", {}))
         self.paths = {
@@ -84,6 +84,8 @@ class Fake:
                 {"data": {"attributes": {"demoAccountRequired": False, "contactEmail": v["App Review · Contact email"],
                                          "contactFirstName": "A", "contactLastName": "B", "contactPhone": "+61 0",
                                          "notes": v["App Review · Notes"]}}},
+            "/v1/appStoreVersions/V1/appStoreVersionPhasedRelease":
+                {"data": override.get("phased", {"id": "P1", "attributes": {"phasedReleaseState": "INACTIVE"}})},
             "/v1/appStoreVersions/V1/build": {"data": {"id": "B1", "attributes": {"version": str(v["Version · Build"])}}},
             "/v1/builds/B1?include=preReleaseVersion":
                 {"data": {}, "included": [{"type": "preReleaseVersions",
@@ -120,6 +122,18 @@ class Verifier(unittest.TestCase):
     def test_empty_field_is_missing(self):
         statuses = self.run_diff(Fake(self.want(), info_loc={"subtitle": None}))
         self.assertEqual(statuses["App Information · Subtitle"], "MISSING")
+
+    def test_edited_whats_new_is_drift_and_an_empty_one_is_missing(self):
+        statuses = self.run_diff(Fake(self.want(), ver_loc={"whatsNew": "Bug fixes."}))
+        self.assertEqual(statuses["Version · What's New"], "DRIFT")
+        statuses = self.run_diff(Fake(self.want(), ver_loc={"whatsNew": None}))
+        self.assertEqual(statuses["Version · What's New"], "MISSING")
+
+    def test_phased_release_switched_off_is_drift(self):
+        # An update is released over seven days (runbook app-store-submission, H6); the console's
+        # switch is read back, never assumed.
+        statuses = self.run_diff(Fake(self.want(), phased=None))
+        self.assertEqual(statuses["Version · Phased release"], "DRIFT")
 
     def test_diff_command_exit_code_follows_the_result(self):
         with mock.patch.object(asc_listing, "marketing_version", return_value=self.VERSION), \
