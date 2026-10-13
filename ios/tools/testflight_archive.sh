@@ -101,6 +101,14 @@ LOCK="$BUILD_DIR/.archive.lock"
 say "SGGS candidate — version $VERSION build $BUILD · channel $CHANNEL · profile $PROFILE · team $TEAM_ID"
 
 say "0/6 preflight"
+# An archive, its export and the staged databases need several GB; running out mid-archive leaves
+# a half-written build directory and, on a shared Mac, breaks other work. A hosted runner is
+# sized for the job and is not checked.
+if [ -z "${GITHUB_ACTIONS:-}" ]; then
+  FREE_GB=$(df -g "$ROOT" | awk 'NR==2{print $4}')
+  [ "${FREE_GB:-0}" -ge "${SGGS_MIN_FREE_GB:-8}" ] 2>/dev/null \
+    || fail "only ${FREE_GB:-?} GB free on this volume — the archive needs ${SGGS_MIN_FREE_GB:-8} GB (free space, or run the iOS TestFlight upload workflow)"
+fi
 head -c 16 db/sggs.sqlite | grep -q "SQLite format 3" || fail "db/sggs.sqlite is missing or not a database — run: make dataset"
 DIRTY="$(git status --porcelain -- ios/App/Sources ios/App/Shared ios/App/Widgets ios/App/project.yml ios/App/Resources ios/Packages pipeline)"
 if [ -n "$DIRTY" ]; then

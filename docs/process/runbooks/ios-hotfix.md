@@ -19,12 +19,14 @@ iOS has no rollback. The levers, mildest first:
    its release runbook). Once that tag exists, `make vendor-sync-platform REF=vX.Y.(Z+1)` and set
    `MARKETING_VERSION` to `X.Y.(Z+1)`. Build numbers restart at the ledger's `next` for the new version.
 4. PR `hotfix/<slug>` → `main` (squash). CI must be green: `gates`, `parity`, `app`.
-5. From a worktree at that `main` commit:
+5. Tag the app release `vX.Y.(Z+1)` on that `main` commit once its CI is green (the tag cannot be
+   moved afterwards). Then, from the tag — a worktree, or the `iOS TestFlight upload` workflow run
+   at the tag:
    `make testflight TEAM_ID=… BUILD=N CHANNEL=appstore UPLOAD=1`
-   The script refuses a dirty tree, an off-trunk commit and red CI, exactly as for a normal release.
+   The script refuses a dirty tree, an off-trunk or untagged commit and red CI, exactly as for a
+   normal release.
 6. Commit the ledger row via PR. `make appstore-preflight` must pass. Re-sign Charter S on the new
    build number; re-run only the hardware checks the fix could affect, and say which.
 7. Submit. After approval, release and resume (or restart) the phased rollout.
-8. Tag the app release `vX.Y.(Z+1)` on that `main` commit (the archive already required it).
-9. Write the incident note: what users saw, how it got past the gates, which gate now catches it.
+8. Write the incident note: what users saw, how it got past the gates, which gate now catches it.
    A hotfix without a new test or gate is not finished.

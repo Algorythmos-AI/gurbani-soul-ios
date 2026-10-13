@@ -77,3 +77,4 @@ binary (2.3.3), so retake **all three sets** from the release candidate:
 | Retaken on | RC commit | Build | Xcode |
 |---|---|---|---|
 | 2026-09-26 | `e7a0d8a` (tag v1.3.10; captured from `702ce91`, whose app sources are identical to the tag) | 1.3.10 (1) | 26.5 (iOS 26.5 simulators) |
+| not retaken | tag v1.4.0 | 1.4.0 (1) | — the 1.3.10 set is kept: no captured screen changed (the clock shot runs without coordinates, so "Forget location" is not drawn; the Reading journey screen is not captured) |
