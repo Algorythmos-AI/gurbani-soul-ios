@@ -10,6 +10,9 @@
 //        icon-1024-dark.png    dark:    warm-ink field, brand-gold mark
 //        icon-1024-tinted.png  tinted:  white mark on black (the system applies the tint)
 //   2. the layered Icon Composer document AppIcon.icon (icon.json + SVG layers) for iOS 26+
+//   3. the launch-screen logo (LaunchLogo.imageset, next to the app icon set): the mark and the
+//      pothi without the field or the rings — warm ink on paper, brand gold on warm ink in dark —
+//      so the launch screen opens on the same mark as the icon that was tapped
 //
 // Brand values MUST match docs/brand/tokens.json (surfaces.paper dark = ink, soul.accentFill = gold).
 // Never a gold mark on red, and no red anywhere (docs: brand book §2, §5).
@@ -209,6 +212,29 @@ writeFlat(Leg(name: "icon-1024", top: FIELD_TOP, bottom: FIELD_BOTTOM, ink: INK,
 writeFlat(Leg(name: "icon-1024-dark", top: NIGHT_TOP, bottom: NIGHT_BOTTOM, ink: GOLD, ring: GOLD, ringAlpha: 0.16, lift: 0.05))
 writeFlat(Leg(name: "icon-1024-tinted", top: 0x000000, bottom: 0x000000, ink: 0xFFFFFF, ring: 0xFFFFFF, ringAlpha: 0.14, lift: 0))
 
+// MARK: Launch-screen logo — the mark and the pothi only, on a transparent canvas
+
+let LAUNCH_POINTS: CGFloat = 200     // the imageset's 1x size; iOS centres it on the launch screen
+let LAUNCH_SPAN: CGFloat = 880       // icon units across the logo; the artwork fills ~93% of its width
+let launchDir = setDir.deletingLastPathComponent().appendingPathComponent("LaunchLogo.imageset")
+
+func writeLaunch(_ name: String, colour: UInt32, outline pothi: CGPath) {
+    let art = mark.boundingBoxOfPath.union(pothi.boundingBoxOfPath)
+    for scale in [1, 2, 3] {
+        let px = Int(LAUNCH_POINTS) * scale, k = CGFloat(px) / LAUNCH_SPAN
+        let ctx = CGContext(data: nil, width: px, height: px, bitsPerComponent: 8, bytesPerRow: 0, space: sRGB,
+                            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+        ctx.translateBy(x: CGFloat(px) / 2, y: CGFloat(px) / 2)
+        ctx.scaleBy(x: k, y: k)
+        ctx.translateBy(x: -art.midX, y: -art.midY)
+        ctx.setFillColor(rgb(colour))
+        ctx.addPath(pothi); ctx.addPath(mark); ctx.fillPath()
+        let png = NSBitmapImageRep(cgImage: ctx.makeImage()!).representation(using: .png, properties: [:])!
+        let url = launchDir.appendingPathComponent("\(name)_\(px).png")
+        try! png.write(to: url); print("wrote \(url.path)")
+    }
+}
+
 // MARK: Layered icon (Icon Composer) — SVG is y-down, so every point is flipped
 
 func f(_ v: CGFloat) -> String { String(format: "%.2f", v) }
@@ -249,6 +275,8 @@ for (r, _) in rings {
         .copy(strokingWithWidth: RING_LINE, lineCap: .butt, lineJoin: .miter, miterLimit: 10)
     ringOutline.addPath(ring.intersection(horizon))
 }
+writeLaunch("launch_logo", colour: INK, outline: pothiOutline)
+writeLaunch("launch_logo_dark", colour: GOLD, outline: pothiOutline)
 writeText(svg("<path fill=\"#000\" d=\"\(svgData(pothiOutline.normalized()))\"/>"), assetsDir.appendingPathComponent("pothi.svg"))
 writeText(svg("<path fill=\"#fff\" d=\"\(svgData(ringOutline))\"/>"), assetsDir.appendingPathComponent("naad.svg"))
 
