@@ -29,11 +29,18 @@ struct RootView: View {
                 .padding(32)
             } else if container.integrity == nil {
                 // Still verifying — do NOT present scripture before the integrity check passes.
-                VStack(spacing: 14) {
-                    Text("ੴ").font(Brand.gurmukhi(64)).foregroundStyle(Brand.primary)
-                    ProgressView()
-                    Text("Verifying scripture integrity…").font(.caption).foregroundStyle(.secondary)
+                // The launch screen's own logo and background, at the same size and the same
+                // screen-centred position, so the launch screen hands over without a jump.
+                ZStack {
+                    Color("LaunchBackground")
+                    Image("LaunchLogo").accessibilityLabel("Gurbani Soul")
+                    VStack(spacing: 10) {
+                        ProgressView()
+                        Text("Verifying scripture integrity…").font(.caption).foregroundStyle(.secondary)
+                    }
+                    .offset(y: 150)
                 }
+                .ignoresSafeArea()
             } else if let report = container.integrity, !report.ok {
                 IntegrityFailView(report: report, onRetry: {
                     Task { await container.retryIntegrity() }
