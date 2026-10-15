@@ -1,7 +1,7 @@
 # Gurbani Soul (iOS) — developer entrypoints. `make help` lists targets.
 MARKETING_VERSION = $(shell python3 -c "import re;print(re.search(r'MARKETING_VERSION:\s*\"([^\"]+)\"',open('ios/App/project.yml').read()).group(1))")
 
-.PHONY: help doctor dataset dataset-check vendor-check vendor-sync-platform vendor-sync-data check-versions test-ios-gates gates ios-db ios-db-check ios-db-repair parity project app-icon testflight-next testflight appstore-preflight
+.PHONY: help doctor dataset dataset-check vendor-check vendor-sync-platform vendor-sync-data check-versions test-ios-gates gates ios-db ios-db-check ios-db-repair parity project testflight-next testflight appstore-preflight
 help: ## list targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-22s\033[0m %s\n",$$1,$$2}'
 
@@ -53,9 +53,6 @@ parity: ## Swift kit parity against the golden contract on the vendored SQLite
 
 project: ## generate ios/App/SGGS.xcodeproj from project.yml
 	xcodegen generate --spec ios/App/project.yml --project ios/App
-
-app-icon: ## regenerate the app icon (flat legs + layered AppIcon.icon) from Sant Lipi; deterministic (macOS)
-	swift ios/tools/make_app_icon.swift ios/App/Resources/SantLipi.ttf ios/App/Resources/Assets.xcassets/AppIcon.appiconset ios/App/Resources/AppIcon.icon
 
 testflight-next: ## the next TestFlight build number for the current marketing version
 	@echo "version $(MARKETING_VERSION) — next build: $$(python3 ios/tools/testflight_ledger.py next $(MARKETING_VERSION))"
