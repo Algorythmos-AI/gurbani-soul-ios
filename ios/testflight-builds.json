@@ -246,6 +246,20 @@
       "sdk": "iphoneos26.2",
       "uploaded_at": "2026-10-13T14:49:54Z",
       "note": null
+    },
+    {
+      "version": "1.4.1",
+      "build": 1,
+      "source_commit": "73b28ecddaa094565af760b88bf40ef0ce4da6c4",
+      "platform_commit": "6b7e2cc6221217686b9f56a5125162b13757f72b",
+      "dataset_commit": "bc5b0f0c2614fa8a800f32983825acd0f08b025a",
+      "profile": "public",
+      "channel": "appstore",
+      "db_sha256": "b10809c4997b2a75f4c20e39b309f6c4c50bcb6ab26906880c8b8b4d24c7335f",
+      "xcode": "27.0",
+      "sdk": "iphoneos27.0",
+      "uploaded_at": "2026-10-16T00:48:14Z",
+      "note": null
     }
   ]
 }
