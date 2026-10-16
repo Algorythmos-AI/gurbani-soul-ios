@@ -15,7 +15,10 @@ struct JourneyDay: Equatable, Identifiable {
     let inMonth: Bool                  // false for the leading/trailing days of adjacent months
     let isToday: Bool
     var id: String { dayKey + (inMonth ? "" : "·pad") }
-    var dayNumber: Int { Calendar.current.component(.day, from: date) }
+    /// The day of the month as the grid's own calendar named it (`dayKey` is that calendar's
+    /// plain Y-M-D). Reading `date` with `Calendar.current` instead would number a cell built in
+    /// another time zone as the neighbouring day — the grid and its numbers must agree.
+    var dayNumber: Int { Int(dayKey.suffix(2)) ?? 0 }
 }
 
 enum NitnemJourney {

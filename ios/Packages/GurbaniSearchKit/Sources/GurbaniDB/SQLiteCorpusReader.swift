@@ -95,7 +95,7 @@ extension SQLiteCandidateSource: CorpusReader, AnalyticsSource {
     public func fetchAng(_ n: Int) throws -> AngPage {
         let ang = max(1, min(1430, n))
         let rs = attachEn(try readerRows("SELECT \(Self.readerCols) FROM lines WHERE ang = ? ORDER BY id") {
-            sqlite3_bind_int($0, 1, Int32(ang))
+            sqlite3_bind_int($0, 1, Int32(clamping: ang))
         })
         var continuedFrom: Int? = nil
         var continuedFromLineId: Int? = nil
@@ -104,7 +104,7 @@ extension SQLiteCandidateSource: CorpusReader, AnalyticsSource {
             // min(ang) is the composition's start Ang; min(id) is its FIRST line (headings/verses
             // are id-ordered), i.e. the shabad's opening line on that start Ang.
             if sqlite3_prepare_v2(handle, "SELECT min(ang), min(id) FROM lines WHERE comp_id = ?", -1, &stmt, nil) == SQLITE_OK {
-                sqlite3_bind_int(stmt, 1, Int32(first.compId))
+                sqlite3_bind_int(stmt, 1, Int32(clamping: first.compId))
                 if try stepRow(stmt), sqlite3_column_type(stmt, 0) != SQLITE_NULL {
                     let m = Int(sqlite3_column_int64(stmt, 0))
                     if m < ang {
@@ -130,7 +130,7 @@ extension SQLiteCandidateSource: CorpusReader, AnalyticsSource {
 
     public func fetchShabad(compId: Int) throws -> Shabad {
         let rs = attachEn(try readerRows("SELECT \(Self.readerCols) FROM lines WHERE comp_id = ? ORDER BY id") {
-            sqlite3_bind_int($0, 1, Int32(compId))
+            sqlite3_bind_int($0, 1, Int32(clamping: compId))
         })
         return Shabad(compId: compId, lines: rs)
     }
@@ -149,7 +149,7 @@ extension SQLiteCandidateSource: CorpusReader, AnalyticsSource {
     public func hukamUnit(seed: Int) throws -> HukamUnit {
         let SAL: Set<String> = ["ਸਲੋਕ", "ਸਲੋਕੁ"]; let PAU = "ਪਉੜੀ"
         let win = try readerRows("SELECT \(Self.readerCols) FROM lines WHERE comp_id BETWEEN ? AND ? ORDER BY id") {
-            sqlite3_bind_int($0, 1, Int32(seed - 15)); sqlite3_bind_int($0, 2, Int32(seed + 15))
+            sqlite3_bind_int($0, 1, Int32(clamping: seed - 15)); sqlite3_bind_int($0, 2, Int32(clamping: seed + 15))
         }
         // group by comp_id preserving first-appearance order
         var comps: [Int: [ReaderLine]] = [:]; var order: [Int] = []
@@ -293,7 +293,7 @@ extension SQLiteCandidateSource: CorpusReader, AnalyticsSource {
             throw DBError.prepare(String(cString: sqlite3_errmsg(handle)))
         }
         defer { sqlite3_finalize(stmt) }
-        sqlite3_bind_double(stmt, 1, mp); sqlite3_bind_int(stmt, 2, Int32(lim))
+        sqlite3_bind_double(stmt, 1, mp); sqlite3_bind_int(stmt, 2, Int32(clamping: lim))
         var out: [ThemeEdge] = []
         while try stepRow(stmt) {
             out.append(ThemeEdge(source: col(stmt, 0) ?? "", target: col(stmt, 1) ?? "",

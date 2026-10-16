@@ -188,11 +188,17 @@ final class NitnemProgressStore {
             .first?.appendingPathComponent(filename)
     }
 
-    /// -> (file, isReadOnly). A newer-schema file loads read-only; corrupt/missing → empty.
+    /// -> (file, isReadOnly). A newer-schema file loads read-only; a missing file is empty.
+    /// A file that exists but cannot be READ (locked before first unlock, an I/O error) opens
+    /// read-only for the session, so the next write cannot overwrite it; one that reads but cannot
+    /// be DECODED is moved aside (kept, never deleted) before starting fresh.
     static func load(from url: URL?) -> (NitnemProgressFile, Bool) {
-        guard let url, let data = try? Data(contentsOf: url),
-              let f = try? JSONDecoder().decode(NitnemProgressFile.self, from: data) else {
-            return (NitnemProgressFile(), false)
+        guard let url, FileManager.default.fileExists(atPath: url.path) else { return (NitnemProgressFile(), false) }
+        guard let data = try? Data(contentsOf: url) else { return (NitnemProgressFile(), true) }
+        guard let f = try? JSONDecoder().decode(NitnemProgressFile.self, from: data) else {
+            // a newer app's file this build cannot decode is not corrupt: leave it, read-only
+            if NitnemFiles.version(of: data, key: "schemaVersion") ?? 0 > schemaVersion { return (NitnemProgressFile(), true) }
+            return (NitnemProgressFile(), !NitnemFiles.moveAside(url))
         }
         if f.schemaVersion > schemaVersion { return (f, true) }   // never overwrite a newer file
         return (f, false)
@@ -208,5 +214,24 @@ final class NitnemProgressStore {
     static func wipe() {
         guard let url = defaultURL() else { return }
         try? FileManager.default.removeItem(at: url)
+    }
+}
+
+/// Shared file hygiene for the Nitnem progress and plan files.
+enum NitnemFiles {
+    /// Keep an undecodable file beside the fresh one (`<name>.unreadable-<unix time>-<id>`)
+    /// instead of letting the next write overwrite a reader's history. Returns false when the move
+    /// failed — the caller then opens read-only, so the original can never be overwritten.
+    @discardableResult
+    static func moveAside(_ url: URL) -> Bool {
+        let aside = url.deletingLastPathComponent().appendingPathComponent(
+            "\(url.lastPathComponent).unreadable-\(Int(Date().timeIntervalSince1970))-\(UUID().uuidString.prefix(8))")
+        return (try? FileManager.default.moveItem(at: url, to: aside)) != nil
+    }
+
+    /// The format version a file declares, read on its own (nil if it has none or isn't JSON), so
+    /// a newer file that this build cannot decode is recognised as newer, not as corrupt.
+    static func version(of data: Data, key: String) -> Int? {
+        (try? JSONSerialization.jsonObject(with: data)) .flatMap { ($0 as? [String: Any])?[key] as? Int }
     }
 }

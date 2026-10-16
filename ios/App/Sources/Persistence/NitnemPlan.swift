@@ -42,10 +42,14 @@ final class NitnemPlanStore {
             .first?.appendingPathComponent(filename)
     }
 
+    /// Same rules as the progress file: missing → empty; unreadable → read-only for the session;
+    /// undecodable → moved aside (kept) before starting fresh; newer version → read-only.
     static func load(from url: URL?) -> (NitnemPlanFile, Bool) {
-        guard let url, let data = try? Data(contentsOf: url),
-              let f = try? JSONDecoder().decode(NitnemPlanFile.self, from: data) else {
-            return (NitnemPlanFile(), false)
+        guard let url, FileManager.default.fileExists(atPath: url.path) else { return (NitnemPlanFile(), false) }
+        guard let data = try? Data(contentsOf: url) else { return (NitnemPlanFile(), true) }
+        guard let f = try? JSONDecoder().decode(NitnemPlanFile.self, from: data) else {
+            if NitnemFiles.version(of: data, key: "version") ?? 0 > version { return (NitnemPlanFile(), true) }
+            return (NitnemPlanFile(), !NitnemFiles.moveAside(url))
         }
         if f.version > version { return (f, true) }   // never overwrite a newer file
         return (f, false)

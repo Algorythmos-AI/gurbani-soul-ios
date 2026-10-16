@@ -10,6 +10,8 @@ struct WidgetSnapshot: Codable, Sendable {
     var hukamTranslit: String
     var hukamAng: Int
     var hukamCompId: Int
+    /// The shown verse's line id, so a tap lands on it. Optional: older snapshots decode.
+    var hukamLineId: Int? = nil
     /// Fixed-clock primary raag claims: pahar (1–8) → roman raag names, from /api/timing/clock.
     /// Precomputed so the widget needs zero SQLite/location/solar logic.
     var paharRaags: [Int: [String]]
@@ -27,6 +29,11 @@ struct WidgetSnapshot: Codable, Sendable {
     /// lengths. Progress (completion, position) is read live from `nitnem-progress.json`.
     /// Optional so an older snapshot still decodes.
     var nitnem: NitnemWidgetData? = nil
+
+    /// Where a tap on the Hukam widget goes: the composition that holds the shown verse, landed on it.
+    var hukamURL: URL? {
+        URL(string: "sggs://shabad/\(hukamCompId)" + (hukamLineId.map { "?line=\($0)" } ?? ""))
+    }
 }
 
 /// The Nitnem facts a widget needs from the registry (titles, minutes, line counts). Progress

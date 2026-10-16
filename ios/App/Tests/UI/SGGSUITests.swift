@@ -166,6 +166,22 @@ final class SGGSUITests: XCTestCase {
         hittable(app, button: "continuesOnPill", timeout: 1) ?? hittable(app, button: "endNextAng", timeout: 1)
     }
 
+    /// One page swipe. The simulator occasionally drops a synthesized swipe outright (CI run
+    /// 38955222155: the page never moved, title and pager both stayed on the old Ang, no heal).
+    /// Only that case — still settled on the old page — is retried once, and the retry is logged;
+    /// a page that moved anywhere else, or a skeleton, still fails in `assertOnAng`.
+    private func swipePage(_ app: XCUIApplication, from: Int, to: Int, left: Bool) {
+        swipeOnce(app, left: left)
+        if app.navigationBars["Ang \(to)"].waitForExistence(timeout: 4) { return }
+        guard app.navigationBars["Ang \(from)"].exists, app.otherElements["angPager-\(from)-h0"].exists else { return }
+        XCTContext.runActivity(named: "swipe from Ang \(from) was not delivered; retrying once") { _ in }
+        swipeOnce(app, left: left)
+    }
+
+    private func swipeOnce(_ app: XCUIApplication, left: Bool) {
+        if left { readerScroll(app).swipeLeft() } else { readerScroll(app).swipeRight() }
+    }
+
     /// THE new regression guard for the reported bug: after a jump, swiping several pages must render
     /// verses on EVERY page — not a permanent skeleton (TestFlight 1.3.0 (4), Angs 352 / 918 / 1106).
     /// `assertOnAng` now requires the content view, so a blank page fails here.
@@ -175,11 +191,11 @@ final class SGGSUITests: XCTestCase {
             goReader(app, at: start)
             assertOnAng(app, start)
             for i in 1...8 {                       // swipe forward past the old 3-4 page eviction cliff
-                readerScroll(app).swipeLeft()
+                swipePage(app, from: start + i - 1, to: start + i, left: true)
                 assertOnAng(app, start + i, "forward swipe #\(i) from \(start)")
             }
             for i in stride(from: 7, through: 0, by: -1) {
-                readerScroll(app).swipeRight()
+                swipePage(app, from: start + i + 1, to: start + i, left: false)
                 assertOnAng(app, start + i, "back swipe to \(start + i)")
             }
         }
@@ -228,10 +244,29 @@ final class SGGSUITests: XCTestCase {
         let mool = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "ੴ ਸਤਿ ਨਾਮੁ ਕਰਤਾ ਪੁਰਖੁ")).firstMatch
         XCTAssertTrue(mool.waitForExistence(timeout: 12), "Mool Mantar (verbatim) missing at the top of Japji")
         XCTAssertTrue(app.staticTexts["baniPosition"].firstMatch.waitForExistence(timeout: 8), "position bar missing")
-        // jump to the end and mark it read
-        app.buttons["End"].firstMatch.tap()
+        // go to the end and mark it read. Japji steps pauri by pauri, so the bar's forward control
+        // reads "Next pauri", not "End" — use its stable identifier and step until the end appears.
+        let forward = app.buttons["baniForward"].firstMatch
+        XCTAssertTrue(forward.waitForExistence(timeout: 8), "position bar forward control missing")
         let mark = app.buttons["baniMarkComplete"].firstMatch
-        XCTAssertTrue(mark.waitForExistence(timeout: 12), "Mark as read missing at the end")
+        var steps = 0
+        var scrolledDown = false
+        while !(mark.exists && mark.isHittable) && steps < 80 {
+            if !forward.exists {
+                // The bar hides only when the reader scrolls down. After a Next tap it must stay put
+                // (CI run 38955222155: an earlier tap's landing timer let the jump hide it).
+                XCTAssertTrue(scrolledDown, "the position bar hid after a Next tap (step \(steps))")
+                if !scrolledDown { break }
+                app.swipeDown(velocity: .slow)     // a small upward read brings it back, by design
+                scrolledDown = false
+            } else if forward.isEnabled {
+                forward.tap(); scrolledDown = false
+            } else {
+                app.swipeUp(); scrolledDown = true
+            }
+            steps += 1
+        }
+        XCTAssertTrue(mark.waitForExistence(timeout: 12), "Mark as read missing at the end (\(steps) steps)")
         mark.tap()
         let next = app.buttons["nitnemNext"].firstMatch
         XCTAssertTrue(next.waitForExistence(timeout: 8), "Next bani action missing after completion")
@@ -293,15 +328,25 @@ final class SGGSUITests: XCTestCase {
     func testPrivacyPolicyReachableFromMore() {
         let app = launchApp(selectSearch: false)
         openTab(app, "More", expectingNavBar: "More")
+        // More is a lazy List longer than the screen: rows below the fold do not exist until scrolled to
         let link = app.buttons["privacyPolicyLink"].firstMatch
+        var swipes = 0
+        while !link.waitForExistence(timeout: 2) && swipes < 8 { app.swipeUp(); swipes += 1 }
         XCTAssertTrue(link.waitForExistence(timeout: 12), "Privacy Policy link missing in More")
         XCTAssertTrue(app.buttons["supportLink"].firstMatch.exists, "Support link missing in More")
         link.tap()
         XCTAssertTrue(app.navigationBars["Privacy Policy"].waitForExistence(timeout: 8), "Privacy Policy screen did not open")
-        XCTAssertTrue(app.descendants(matching: .any)
-            .matching(NSPredicate(format: "label CONTAINS[c] %@", "Data Not Collected")).firstMatch.exists,
-            "Privacy Policy screen does not state the Data Not Collected stance")
-        XCTAssertTrue(app.links["privacyWebLink"].firstMatch.exists, "online policy link missing")
+        // the policy is a lazy List too: its "Data Not Collected" paragraph is below the fold
+        let stance = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label CONTAINS[c] %@", "Data Not Collected")).firstMatch
+        var down = 0
+        while !stance.waitForExistence(timeout: 2) && down < 8 { app.swipeUp(); down += 1 }
+        XCTAssertTrue(stance.exists, "Privacy Policy screen does not state the Data Not Collected stance")
+        // a SwiftUI Link's element type varies by iOS version: match the identifier on any type
+        let web = app.descendants(matching: .any).matching(identifier: "privacyWebLink").firstMatch
+        var more = 0
+        while !web.waitForExistence(timeout: 2) && more < 4 { app.swipeUp(); more += 1 }
+        XCTAssertTrue(web.exists, "online policy link missing")
     }
 
     /// Rehras variant is a setting: switching to Taksal persists and retitles the row.

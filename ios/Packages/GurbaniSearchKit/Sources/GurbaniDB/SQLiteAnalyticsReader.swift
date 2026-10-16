@@ -80,7 +80,7 @@ extension SQLiteCandidateSource {
         guard sqlite3_prepare_v2(handle,
             "SELECT name, n_lines, first_ang FROM authors WHERE n_lines >= ? ORDER BY n_lines DESC",
             -1, &ns, nil) == SQLITE_OK else { return ResonanceGraph(nodes: [], edges: []) }
-        sqlite3_bind_int(ns, 1, Int32(max(1, minLines)))
+        sqlite3_bind_int(ns, 1, Int32(clamping: max(1, minLines)))
         while stepRow(ns, failed: &failed) {
             nodes.append(.init(author: aText(ns, 0) ?? "", nLines: aInt(ns, 1) ?? 0, firstAng: aInt(ns, 2) ?? 0))
         }
@@ -99,7 +99,7 @@ extension SQLiteCandidateSource {
         }
         defer { sqlite3_finalize(es) }
         sqlite3_bind_double(es, 1, minLift)
-        sqlite3_bind_int(es, 2, Int32(max(1, minEdges)))
+        sqlite3_bind_int(es, 2, Int32(clamping: max(1, minEdges)))
         for (i, n) in names.enumerated() {
             sqlite3_bind_text(es, Int32(3 + i), n, -1, Self.transientDtor)
             sqlite3_bind_text(es, Int32(3 + names.count + i), n, -1, Self.transientDtor)
@@ -149,7 +149,7 @@ extension SQLiteCandidateSource {
             "SELECT cl.concept, COUNT(*) c FROM concept_lines cl JOIN lines l ON l.id=cl.line_id "
             + "WHERE l.raag=? GROUP BY cl.concept ORDER BY c DESC LIMIT ?", -1, &cs, nil) == SQLITE_OK {
             sqlite3_bind_text(cs, 1, raag, -1, Self.transientDtor)
-            sqlite3_bind_int(cs, 2, Int32(top))
+            sqlite3_bind_int(cs, 2, Int32(clamping: top))
             while stepRow(cs, failed: &failed) { concepts.append(aText(cs, 0) ?? "") }
         }
         sqlite3_finalize(cs)
@@ -226,7 +226,7 @@ extension SQLiteCandidateSource {
         if sqlite3_prepare_v2(handle,
             "SELECT seq, kind, author, n_lines, pauri_no, first_line_id, ang, theme "
             + "FROM vaar_units WHERE vaar_id=? ORDER BY seq", -1, &stmt, nil) == SQLITE_OK {
-            sqlite3_bind_int(stmt, 1, Int32(id))
+            sqlite3_bind_int(stmt, 1, Int32(clamping: id))
             while stepRow(stmt, failed: &failed) {
                 units.append(VaarUnit(
                     seq: aInt(stmt, 0) ?? 0, kind: aText(stmt, 1) ?? "", author: aText(stmt, 2),

@@ -38,6 +38,9 @@ struct PagerSync {
 
     let bounds: ClosedRange<Int>
     private(set) var gestureActive = false
+    /// A finger swipe began and its end has not been reported yet. Unlike `gestureActive` (which
+    /// stays set while a lifted swipe is still decelerating), only this means a callback is missing.
+    private(set) var awaitingGestureEnd = false
     private(set) var pending: Int?
     private var lastShowAt: TimeInterval = -1
 
@@ -57,12 +60,13 @@ struct PagerSync {
         return [.show(d, transition(from: v, to: d, reduceMotion: reduceMotion, inWindow: inWindow, now: now))]
     }
 
-    mutating func gestureBegan() { gestureActive = true }
+    mutating func gestureBegan() { gestureActive = true; awaitingGestureEnd = true }
 
     /// A finger swipe finished. `visible` is the page it settled on.
     mutating func gestureEnded(completed: Bool, visible: Int?, scrollBusy: Bool,
                                reduceMotion: Bool, inWindow: Bool, now: TimeInterval) -> [Effect] {
         gestureActive = scrollBusy      // a second swipe may already be decelerating
+        awaitingGestureEnd = false
         if let p = pending {            // I5: an external request arrived mid-swipe; it wins
             if scrollBusy { return [.armWatchdog] }
             pending = nil
@@ -75,15 +79,22 @@ struct PagerSync {
         return []
     }
 
-    /// A parked request timed out — a delegate callback was probably lost. Re-check and heal.
+    /// A parked request's re-check. Two cases reach here, and only one is a heal:
+    /// - the finger lifted (`gestureEnded` ran) but the page was still decelerating when the
+    ///   request came: the scroll has now settled and the request is simply applied — the
+    ///   designed path, not a fault (`gestureActive` stays set through that deceleration);
+    /// - the gesture never reported its end (`awaitingGestureEnd`): a UIKit callback was lost.
+    ///   That is a self-heal, and it is logged so a desync can never pass silently.
     mutating func watchdog(desired: Int, visible: Int?, scrollBusy: Bool) -> [Effect] {
         guard pending != nil else { return [] }
         if scrollBusy { return [.armWatchdog] }
+        let lostCallback = awaitingGestureEnd
         gestureActive = false
+        awaitingGestureEnd = false
         pending = nil
         let d = clamp(desired)
         if d == visible { return [] }
-        return [.log("watchdog-heal"), .show(d, .none)]
+        return (lostCallback ? [.log("watchdog-heal")] : []) + [.show(d, .none)]
     }
 
     private mutating func transition(from v: Int, to d: Int, reduceMotion: Bool,

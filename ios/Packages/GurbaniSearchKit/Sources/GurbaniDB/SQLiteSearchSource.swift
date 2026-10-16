@@ -59,7 +59,7 @@ extension SQLiteCandidateSource: SearchSource {
         }
         defer { sqlite3_finalize(stmt) }
         sqlite3_bind_text(stmt, 1, match, -1, Self.transientDtor)
-        sqlite3_bind_int(stmt, 2, Int32(limit))
+        sqlite3_bind_int(stmt, 2, Int32(clamping: limit))
         var out: [VariantRow] = []
         while try stepRow(stmt) {
             let line = mapLine(stmt)
@@ -83,8 +83,8 @@ extension SQLiteCandidateSource: SearchSource {
         guard sqlite3_prepare_v2(handle, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
         defer { sqlite3_finalize(stmt) }
         sqlite3_bind_text(stmt, 1, match, -1, Self.transientDtor)
-        sqlite3_bind_int(stmt, 2, Int32(limit))
-        sqlite3_bind_int(stmt, 3, Int32(offset))
+        sqlite3_bind_int(stmt, 2, Int32(clamping: limit))
+        sqlite3_bind_int(stmt, 3, Int32(clamping: offset))
         var out: [SearchLine] = []
         while try stepRow(stmt) {
             let en = sqlite3_column_type(stmt, 10) == SQLITE_NULL
@@ -118,7 +118,7 @@ extension SQLiteCandidateSource: SearchSource {
         }
         defer { sqlite3_finalize(stmt) }
         sqlite3_bind_text(stmt, 1, match, -1, Self.transientDtor)
-        sqlite3_bind_int(stmt, 2, Int32(limit))
+        sqlite3_bind_int(stmt, 2, Int32(clamping: limit))
         var out: [ShabadCand] = []
         while try stepRow(stmt) {
             out.append(ShabadCand(compId: Int(sqlite3_column_int64(stmt, 0)),
@@ -137,7 +137,7 @@ extension SQLiteCandidateSource: SearchSource {
             throw DBError.prepare(String(cString: sqlite3_errmsg(handle)))
         }
         defer { sqlite3_finalize(stmt) }
-        for (i, cid) in compIds.enumerated() { sqlite3_bind_int(stmt, Int32(i + 1), Int32(cid)) }
+        for (i, cid) in compIds.enumerated() { sqlite3_bind_int(stmt, Int32(i + 1), Int32(clamping: cid)) }
         var out: [Int: [String]] = [:]
         while try stepRow(stmt) {
             let cid = Int(sqlite3_column_int64(stmt, 0))
@@ -154,7 +154,7 @@ extension SQLiteCandidateSource: SearchSource {
             throw DBError.prepare(String(cString: sqlite3_errmsg(handle)))
         }
         defer { sqlite3_finalize(stmt) }
-        sqlite3_bind_int(stmt, 1, Int32(compId))
+        sqlite3_bind_int(stmt, 1, Int32(clamping: compId))
         var out: [VariantRow] = []
         while try stepRow(stmt) {
             let line = mapLine(stmt)
@@ -231,7 +231,7 @@ extension SQLiteCandidateSource: SearchSource {
         }
         defer { sqlite3_finalize(stmt) }
         for (i, s) in text { sqlite3_bind_text(stmt, i, s, -1, Self.transientDtor) }
-        for (i, n) in ints { sqlite3_bind_int(stmt, i, Int32(n)) }
+        for (i, n) in ints { sqlite3_bind_int(stmt, i, Int32(clamping: n)) }
         var out: [SearchLine] = []
         while try stepRow(stmt) { out.append(mapLine(stmt)) }
         return out

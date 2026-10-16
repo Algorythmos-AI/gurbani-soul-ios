@@ -180,7 +180,7 @@ extension SQLiteCandidateSource {
             return ShabadForms(available: false, compId: compId)
         }
         defer { sqlite3_finalize(stmt) }
-        sqlite3_bind_int(stmt, 1, Int32(compId))
+        sqlite3_bind_int(stmt, 1, Int32(clamping: compId))
         guard stepRow(stmt, failed: &failed) else {
             return ShabadForms(available: true, compId: compId, mapped: false)
         }

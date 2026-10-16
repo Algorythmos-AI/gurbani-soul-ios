@@ -33,6 +33,7 @@ struct AngPageView: View {
     /// the ScrollView's first layout becomes its initial offset — no timing games).
     @State private var landingId: Int?
     @State private var landingInProgress = false
+    @State private var landingGeneration = 0          // only the latest landing's timer ends it
 
     private var isCurrent: Bool { container.router.readerAng == ang }
 
@@ -282,8 +283,12 @@ struct AngPageView: View {
         guard isCurrent, let id = container.router.pendingReaderLineId else { return }
         guard page?.lines.contains(where: { $0.id == id }) == true else { return }
         container.router.pendingReaderLineId = nil
+        landingGeneration &+= 1
+        let landing = landingGeneration
         landingInProgress = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { landingInProgress = false }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            if landing == landingGeneration { landingInProgress = false }
+        }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
             landingId = nil
             DispatchQueue.main.async { MotionGate.run(Motion.gentle) { landingId = id } }

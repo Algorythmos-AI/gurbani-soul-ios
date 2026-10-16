@@ -97,10 +97,67 @@ final class NitnemProgressTests: XCTestCase {
         try Data("{not json".utf8).write(to: url)
         let store = NitnemProgressStore(url: url)
         XCTAssertTrue(store.file.banis.isEmpty)
+        // the undecodable file is kept beside the fresh one, never overwritten
+        let kept = try FileManager.default.contentsOfDirectory(atPath: url.deletingLastPathComponent().path)
+            .filter { $0.hasPrefix(url.lastPathComponent + ".unreadable-") }
+        XCTAssertEqual(kept.count, 1)
         store.setPosition("japji", seq: 3)                 // and it recovers by writing a fresh file
         XCTAssertEqual(NitnemProgressStore(url: url).progress(for: "japji")?.lastSeq, 3)
         try Data(#"{"schemaVersion": 99, "banis": {}}"#.utf8).write(to: url)
         XCTAssertTrue(NitnemProgressStore(url: url).file.banis.isEmpty, "an unknown schema is treated as empty")
+    }
+
+    private func asideCount(for url: URL) throws -> Int {
+        try FileManager.default.contentsOfDirectory(atPath: url.deletingLastPathComponent().path)
+            .filter { $0.hasPrefix(url.lastPathComponent + ".unreadable-") }.count
+    }
+
+    /// A truncated file (an interrupted write by an older build) is kept, not overwritten.
+    func testTruncatedFileIsKeptAside() throws {
+        let url = tempURL()
+        let good = NitnemProgressStore(url: url); good.setPosition("japji", seq: 7)
+        let full = try Data(contentsOf: url)
+        try full.prefix(full.count / 2).write(to: url)
+        let store = NitnemProgressStore(url: url)
+        XCTAssertFalse(store.isReadOnly)
+        XCTAssertEqual(try asideCount(for: url), 1)
+    }
+
+    /// A file that exists but cannot be read (locked before first unlock, an I/O error) opens
+    /// read-only: a write in that session must not replace it with defaults.
+    func testUnreadableFileIsNeverOverwritten() throws {
+        let url = tempURL()
+        NitnemProgressStore(url: url).setPosition("japji", seq: 9)
+        let before = try Data(contentsOf: url)
+        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: url.path)
+        defer { try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: url.path) }
+        let store = NitnemProgressStore(url: url)
+        XCTAssertTrue(store.isReadOnly)
+        store.setPosition("sukhmani", seq: 1)
+        store.markComplete("japji")
+        try FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: url.path)
+        XCTAssertEqual(try Data(contentsOf: url), before)
+        XCTAssertEqual(try asideCount(for: url), 0)
+    }
+
+    /// A newer app's file this build cannot decode is newer, not corrupt: read-only, kept in place.
+    func testNewerUndecodableFileIsLeftInPlace() throws {
+        let url = tempURL()
+        let newer = Data(#"{"schemaVersion": 99, "banis": ["a different shape"]}"#.utf8)
+        try newer.write(to: url)
+        let store = NitnemProgressStore(url: url)
+        XCTAssertTrue(store.isReadOnly)
+        store.setPosition("japji", seq: 3)
+        XCTAssertEqual(try Data(contentsOf: url), newer)
+        XCTAssertEqual(try asideCount(for: url), 0)
+    }
+
+    /// Two undecodable files recovered in the same second keep separate copies.
+    func testRecoveriesInTheSameSecondNeverCollide() throws {
+        let url = tempURL()
+        try Data("{one".utf8).write(to: url); _ = NitnemProgressStore(url: url)
+        try Data("{two".utf8).write(to: url); _ = NitnemProgressStore(url: url)
+        XCTAssertEqual(try asideCount(for: url), 2)
     }
 
     func testClearHistoryRemovesPositionsAndDaysAndNotifies() {

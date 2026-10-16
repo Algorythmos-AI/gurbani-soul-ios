@@ -1,4 +1,5 @@
 import XCTest
+import GurbaniDB
 @testable import SGGS
 
 /// Regression tests for the Phase-1 correctness hardening (premium overhaul, 2026-07):
@@ -236,5 +237,73 @@ final class HardeningTests: XCTestCase {
         }
         XCTAssertFalse(r.navigatedToAngExplicitly)
         XCTAssertEqual(r.readerAng, 1)
+    }
+
+    // MARK: hostile links and the Hukam widget
+
+    /// A crafted link must never crash the app: an id past SQLite's 32-bit bind used to trap in
+    /// `Int32(_:)` (`sggs://shabad/3000000000` from any web page or QR code). Out of range = ignored.
+    @MainActor
+    func testOutOfRangeShabadLinkIsIgnored() {
+        let c = AppContainer(); c.sheetHostDidAppear(); let r = Router()
+        for bad in ["sggs://shabad/3000000000", "sggs://shabad/99999999999999", "sggs://shabad/-1", "sggs://shabad/0",
+                    "sggs://shabad/abc", "sggs://shabad/12?line=99999999999999999999"] {
+            r.handle(URL(string: bad)!, container: c)
+            if bad.hasPrefix("sggs://shabad/12") { continue }   // a valid id with a junk line: opens, line ignored
+            XCTAssertNil(c.presentation, "\(bad) must be ignored")
+        }
+        guard case .shabad(let comp, let line)? = c.presentation else { return XCTFail("valid id not presented") }
+        XCTAssertEqual(comp, 12); XCTAssertNil(line)
+    }
+
+    /// The database layer clamps instead of trapping: an impossible composition id reads as an
+    /// empty composition, never a crash.
+    func testImpossibleCompositionIdReadsEmptyNotACrash() throws {
+        guard let path = Bundle.main.url(forResource: "sggs-ios", withExtension: "sqlite")?.path
+        else { throw XCTSkip("bundled DB not found in host app") }
+        let db = try SQLiteCandidateSource(path: path)
+        for id in [Int(Int32.max) + 1, Int.max, Int.min] {
+            XCTAssertTrue(try db.fetchShabad(compId: id).lines.isEmpty, "comp \(id)")
+            XCTAssertTrue(try db.compLines(compId: id).isEmpty, "comp \(id)")
+        }
+    }
+
+    /// The Hukam widget shows the unit's first verse, which can sit in an earlier composition than
+    /// the seed (a Vaar's saloks before the pauri). A tap must open the composition holding that
+    /// verse and land on it.
+    func testHukamWidgetOpensTheVerseItShows() {
+        var snap = WidgetSnapshot(generatedAt: .now, hukamGurmukhi: "x", hukamTranslit: "", hukamAng: 141,
+                                  hukamCompId: 399, paharRaags: [:])
+        XCTAssertEqual(snap.hukamURL?.absoluteString, "sggs://shabad/399")      // an older snapshot: no line id
+        snap.hukamLineId = 5871
+        XCTAssertEqual(snap.hukamURL?.absoluteString, "sggs://shabad/399?line=5871")
+        let old = #"{"generatedAt":0,"hukamGurmukhi":"x","hukamTranslit":"","hukamAng":1,"hukamCompId":2,"paharRaags":{}}"#
+        XCTAssertNil(try JSONDecoder().decode(WidgetSnapshot.self, from: Data(old.utf8)).hukamLineId)
+    }
+
+    /// Unexpected components never open something unrelated: extra path segments are ignored,
+    /// trailing junk makes the id invalid.
+    @MainActor
+    func testShabadLinkComponentsAreStrict() {
+        for (link, expected) in [("sggs://shabad/12/34", 12), ("sggs://shabad/12abc", nil), ("sggs://shabad/1.5", nil),
+                                 ("sggs://shabad/%31%32", 12), ("sggs://shabad/ 12", nil)] as [(String, Int?)] {
+            let c = AppContainer(); c.sheetHostDidAppear()
+            guard let url = URL(string: link) else { XCTAssertNil(expected, link); continue }
+            Router().handle(url, container: c)
+            if case .shabad(let comp, _)? = c.presentation { XCTAssertEqual(comp, expected, link) }
+            else { XCTAssertNil(expected, link) }
+        }
+    }
+
+    /// An id that is valid in range but names no composition (a gap id, or past the last) reads as
+    /// empty — the sheet's "not found" — never as a neighbouring composition.
+    func testNonexistentCompositionIdsReadEmpty() throws {
+        guard let path = Bundle.main.url(forResource: "sggs-ios", withExtension: "sqlite")?.path
+        else { throw XCTSkip("bundled DB not found in host app") }
+        let db = try SQLiteCandidateSource(path: path)
+        for id in [1, 999_999_999, Int(Int32.max), -5] {
+            XCTAssertTrue(try db.fetchShabad(compId: id).lines.isEmpty, "comp \(id)")
+        }
+        XCTAssertFalse(try db.fetchShabad(compId: 2).lines.isEmpty, "control: Japji opens")
     }
 }

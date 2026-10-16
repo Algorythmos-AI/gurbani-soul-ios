@@ -24,11 +24,14 @@ struct SavedScreen: View {
                         .listRowBackground(Ink.base)
                     }
                     .onDelete { idx in
-                        for i in idx {
-                            SpotlightIndex.remove(lineId: saved[i].lineId, compId: saved[i].compId)
-                            modelContext.delete(saved[i])
-                        }
-                        do { try modelContext.save() } catch { modelContext.rollback() }
+                        let removed = idx.map { (saved[$0].lineId, saved[$0].compId) }
+                        for i in idx { modelContext.delete(saved[i]) }
+                        do {
+                            try modelContext.save()
+                            // only once the delete is kept: a failed save restores the row, and
+                            // its search entry must still be there with it
+                            for (lineId, compId) in removed { SpotlightIndex.remove(lineId: lineId, compId: compId) }
+                        } catch { modelContext.rollback() }
                     }
                 }
                 .listStyle(.plain)

@@ -27,6 +27,21 @@ final class NitnemJourneyTests: XCTestCase {
         XCTAssertEqual(grid.filter { $0.inMonth }.count, 30, "September has 30 days")
     }
 
+    /// Every cell is numbered by the calendar that built the grid, whatever the device's own
+    /// time zone: a grid built for UTC+14 used to read its cells with `Calendar.current` and
+    /// number them as the day before on most devices (CI's UTC simulator failed the test above).
+    func testDayNumbersFollowTheGridsCalendarNotTheDevices() {
+        var c = Calendar(identifier: .gregorian)
+        c.timeZone = TimeZone(identifier: "Pacific/Kiritimati")!   // UTC+14: far from any CI or device zone
+        c.firstWeekday = 1
+        let grid = NitnemJourney.month(date(2026, 9, 15, c), completed: { _ in [] },
+                                       today: date(2026, 9, 15, c), calendar: c)
+        for cell in grid {
+            XCTAssertEqual(cell.dayNumber, c.component(.day, from: cell.date), cell.dayKey)
+        }
+        XCTAssertTrue(grid.contains { $0.dayNumber == 15 && $0.inMonth && $0.isToday })
+    }
+
     func testMondayFirstWeekday() {
         let c = cal(firstWeekday: 2)   // Monday
         let grid = NitnemJourney.month(date(2026, 9, 15, c), completed: { _ in [] },

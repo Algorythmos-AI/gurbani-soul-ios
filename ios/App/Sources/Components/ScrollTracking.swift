@@ -43,7 +43,8 @@ struct AmbientChrome {
     var contentHeight: CGFloat = 0
     var viewportHeight: CGFloat = 0
     /// True during a programmatic landing scroll (must never count as "reading down").
-    var landingInProgress = false
+    private(set) var landingInProgress = false
+    private var landingGeneration = 0
     /// True while hands-free auto-scroll runs (the programmatic pace must not toggle chrome).
     var autoScrolling = false
 
@@ -60,4 +61,18 @@ struct AmbientChrome {
     }
 
     mutating func reset() { downRun = 0; upRun = 0 }
+
+    /// Start a programmatic landing; hand the token to `endLanding` when it should be over. Only the
+    /// latest landing's token ends it, so a reader tapping "Next pauri" twice in a second is never
+    /// left with the first tap's timer switching the guard off mid-scroll (the bar then hid under
+    /// their finger — CI run 38955222155).
+    mutating func beginLanding() -> Int {
+        landingGeneration &+= 1
+        landingInProgress = true
+        return landingGeneration
+    }
+
+    mutating func endLanding(_ token: Int) {
+        if token == landingGeneration { landingInProgress = false }
+    }
 }
