@@ -109,3 +109,35 @@ network code (Airplane Mode safe by construction); Ang bounds, Jump validation a
 3. E-8 to E-12 (release pipeline), then bump to 1.4.3 with the platform.
 4. Run §8 D1–D12 on a device and sign Charter S on the candidate.
 5. Close G3 (icon v2, launch screen, yakash saroop).
+
+## 7. Adversarial review of this PR (2026-10-17)
+
+The fixes above were reviewed again, assuming they were wrong. What that found and changed:
+
+| ID | Sev | Finding in the first version of this PR | Fix | Test |
+|---|---|---|---|---|
+| R-1 | P1 | With pipefail on, a failing unit step **skipped the UI tests**, so one run still hid part of the picture | UI tests run whenever the build succeeded; the job still fails | CI run on `5a791fc` |
+| R-2 | P1 | The failing-tests step only reported; a missing or unreadable bundle passed silently | It is a second gate: no bundle, an unreadable bundle, or a reported failure fails the job | run locally against failing, passing, missing and corrupt bundles: exit 1 / 0 / 1 / 1 |
+| R-3 | P1 | Store move-aside: two recoveries in one second collided, and the fallback **deleted** the store | unique folder per recovery; if any move fails nothing is replaced (in-memory session) | `testRepeatedRecoveriesNeverCollide`, `testAStoreThatCannotBeMovedIsNeverDestroyed`, `testRepeatedFailedLaunchesKeepTheOriginalBytes` |
+| R-4 | P2 | -wal/-shm moved after the main file: an interruption could leave a stale WAL beside a new store | -wal, -shm first, main last, into one folder | `testWalAndShmMoveWithTheStore` |
+| R-5 | P2 | A newer Nitnem file this build cannot decode was treated as corrupt and moved aside | its declared version is probed first: newer → read-only, left in place | `testNewerUndecodableFileIsLeftInPlace` |
+| R-6 | P2 | A failed read of the saved store reconciled Spotlight to **empty** | only a successful read of a persistent store may replace the index (`SpotlightIndex.launchAction`) | `SpotlightAndClipboardTests` |
+
+Other adversarial checks, all passing on the device: truncated and unreadable Nitnem files
+(`testTruncatedFileIsKeptAside`, `testUnreadableFileIsNeverOverwritten`), same-second Nitnem
+recoveries, malformed shabad links (`testShabadLinkComponentsAreStrict`), nonexistent composition
+ids read empty, never a neighbour (`testNonexistentCompositionIdsReadEmpty`), verbatim scripture
+through the pasteboard scalar for scalar for the Charter S Angs and all 234 subjoined-ya lines.
+The 268-pair fixture is grounded independently: ShabadOS has 268 subjoined-ya marks on the same 78
+Angs (on 233 lines; one line is split differently).
+
+### The six historical failures
+
+| # | Test | Cause | Resolution | Latest result |
+|---|---|---|---|---|
+| 1 | `SaroopTests/testEveryCorpusLineRoundTripsExactly` (unit) | test compared Gurmukhi as `String` (grapheme clusters) | scalar comparison, exact counts | PASS device; PASS CI (`ffcfa75`) |
+| 2 | `NitnemJourneyTests/testMonthGridHonoursFirstWeekday` (unit) | **app**: `JourneyDay.dayNumber` read the day with `Calendar.current`, not the grid's calendar (UTC CI numbered Sydney's 15th as 14) | day number from the grid's own key; UTC+14 regression test | PASS device; PASS CI (`ffcfa75`) |
+| 3 | `testNitnemOpensJapjiAndCompletes` (UI) | test: Japji steps by pauri, the control is "Next pauri", not "End" | stable `baniForward` id; test steps to the end | PASS device |
+| 4 | `testPrivacyPolicyReachableFromMore` (UI) | test: lazy Lists longer than the screen | test scrolls; link matched by identifier | PASS device |
+| 5 | `testRehrasVariantPersists` (UI) | **app**: Rehras variant ignored for an uncustomised Nitnem set | variant applied to the default set | PASS device |
+| 6 | `testSwipeRunAfterJumpRendersContent` (UI) | **app (diagnostics)**: a jump parked during deceleration was logged as a lost-callback self-heal | heal only when a gesture end never arrived | PASS device |
