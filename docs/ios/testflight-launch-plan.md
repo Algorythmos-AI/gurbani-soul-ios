@@ -121,11 +121,12 @@ scholar sign-off recorded.
    and to submit feedback through TestFlight's screenshot feedback, which lands in
    App Store Connect → TestFlight → Feedback with device and OS attached.
 4. **Scholar review is a gate, not a nicety.** Two items in the readiness report are pending it:
-   the app icon (brand-book concept A: gold ੴ in Sant Lipi on warm ink — see
-   `docs/brand/gurbani-soul-brand-book.md` §5, gate G3) and the default-ON saroop rendering (Sant Lipi's inline addha-yayya
-   is a legitimate but different typographic tradition from the printed Bir). Record the outcome
-   in the build log; if the default changes, it is one line in `ios/App/Sources/Components/Saroop.swift`
-   and the web `saroop.ts`, plus a CHANGELOG entry.
+   app icon v2 with its launch screen (a ੴ above an open pothi — see
+   `docs/brand/gurbani-soul-brand-book.md` §5, gate G3) and the default-ON saroop rendering, which since
+   PR #36 draws the doubled subjoined ya as the yakash under the letter, as the printed Bir does.
+   Record the outcome in the build log; if the default changes, it is the `@AppStorage("sggs_saroop")`
+   default in `GurmukhiText.swift` and `SettingsScreen.swift` and `let ON` in the web `saroop.ts`,
+   plus a CHANGELOG entry.
 5. Watch App Store Connect → TestFlight → Crashes and the About → Integrity diagnostics count
    testers report. The exit standard is zero crashes attributable to the app across the matrix.
 

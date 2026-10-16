@@ -59,11 +59,11 @@ report it** via the `scripture-fidelity` issue template.
 1. Ang 1: Mool Mantar begins `ੴ ਸਤਿ ਨਾਮੁ ਕਰਤਾ ਪੁਰਖੁ ਨਿਰਭਉ ਨਿਰਵੈਰੁ` and Japji follows without a gap.
 2. Ang 712: the composition sheet opens with the printed heading `ਟੋਡੀ ਮਹਲਾ ੫ ਘਰੁ ੨ ਚਉਪਦੇ` above `ੴ ਸਤਿਗੁਰ ਪ੍ਰਸਾਦਿ ॥`.
 3. Ang 1256: the repeated refrain appears twice — this is correct and must not be reported as a duplicate.
-4. Ang 1400: `ਜਲ੍ਯ੍ਯਨ` / `ਧਰ੍ਯ੍ਯਉ` render with a single tucked addha-yayya when the saroop toggle is on, and verbatim doubled when off; **Copy** always yields the verbatim text (paste into Notes to check).
+4. Ang 1400: the stored words `ਜਲ੍ਯ੍ਯਨ` / `ਧਰ੍ਯ੍ਯਉ` show **one ya tucked under the letter, as the printed Bir prints it** (ਜਲੵਨ, ਧਰੵਉ — the yakash U+0A75, since PR #36) when the saroop toggle is on (the default), and the verbatim doubled characters when it is off; **Copy** always yields the verbatim text whatever the toggle shows (paste into Notes to check: it must read the stored doubled form, U+0A1C U+0A32 U+0A4D U+0A2F U+0A4D U+0A2F U+0A28). *Until 1.4.2 this check expected an inline addha-yayya beside the letter; the new form goes to the scholar (G3) with icon v2.*
 5. Ang 1430 (Raagmala): last lines present; Next is disabled at the end; Previous from Ang 1 is disabled.
-6. Pick 5 random Angs (use the Hukam button 5 times) and read one full verse each against the source. Record the Angs.
+6. Pick 5 random Angs (use the Hukam button 5 times) and read one full verse each against the source. Record each Ang **and the verse's first words** in the sign-off.
 7. Dandas `॥`, numerals `॥੧॥`, and `ਰਹਾਉ` markers are present and positioned as printed.
-Expected: zero deviations. Sign: name, build, device, date in the build log.
+Expected: zero deviations. Sign in the build log: name, build (version + number), device model, iOS version, date, the result of each of the 7 checks (report "7/7", not "8/8"), and the five Hukam Angs with first words.
 
 ### R — Reader
 1. Jump to Ang via the field (1, 1430, 0, 1431, "abc") → 0/1431/"abc" rejected, others land.
@@ -135,7 +135,7 @@ Run `ios/App/Tests/UI/A11Y_CHECKLIST.md` end to end with VoiceOver, then:
 1. AX5 text in Search, Reader, sheet, Clock list; nothing unreachable.
 2. Reduce Motion: page turn and landing are instant; force layouts settle without animation.
 3. Bold Text and Increase Contrast: accent contrast OK on all five accents — Soul Gold (the default), Saffron, Gold, Indigo, Teal — in light and dark. In light mode every Soul Gold fill (primary button, selected pill, Explore hero, accent swatch) shows its darker border, and no text, icon or link is set in the pale brand gold.
-4. Brand: a fresh install opens in Soul Gold; navigation titles and the Explore/About headings render in Source Serif 4 (a serif), everything else in the system face; Gurmukhi is always ink-coloured Sant Lipi. Dark mode shows warm ink on every screen — no pure black. The Home Screen icon is a gold ੴ on warm ink with no red anywhere.
+4. Brand: a fresh install opens in Soul Gold; navigation titles and the Explore/About headings render in Source Serif 4 (a serif), everything else in the system face; Gurmukhi is always ink-coloured Sant Lipi. Dark mode shows warm ink on every screen — no pure black. The Home Screen icon is icon v2 — a bold ੴ above an open pothi, warm ink on gold (gold on warm ink in dark mode) — with no red anywhere; the launch screen shows the same ੴ and pothi.
 5. Keyboard focus and Full Keyboard Access on iPad.
 
 ### P — Performance and resilience
@@ -242,3 +242,24 @@ runner with Xcode 26.3, SDK iphoneos26.2, uploaded 2026-10-13). The brand gates 
 | Accessibility labels | on the owner's instruction, through the App Store Connect API | 2026-10-13 | The iPhone labels held as a draft since 1.3.10 are published: VoiceOver, Dark Interface, Reduced Motion. Sufficient Contrast and Larger Text still wait for issue #23 |
 | H9 submitted | on the owner's instruction, through the App Store Connect API | 2026-10-14 00:11 UTC | Waiting for Review; manual release, 7-day phased release. 1.3.10 was released on 2026-10-13 21:16 UTC |
 
+
+## 8. Physical-device regression checklist (production-readiness audit, 2026-10-17)
+
+Run on a physical iPhone for every candidate build. A row is **PASS** only when it was executed on
+the device and the evidence column says what was seen; source inspection or a simulator run never
+counts here. Record once per run: device model · iOS version · app version · build · tester · date.
+
+| ID | Check | Steps | Expected | Result | Evidence / notes |
+|---|---|---|---|---|---|
+| D1 | Charter S 1–7 | §3 Charter S | zero deviations against a printed Bir or the ShabadOS second source | | |
+| D2 | Copy fidelity | Ang 1400, saroop **on**: Copy verse `ਗੋਬਿੰਦ ਵਾਲੁ … ਜਲ੍ਯ੍ਯਨ …`; paste into Notes; repeat with saroop **off** | both pastes are the stored doubled form `ਜਲ੍ਯ੍ਯਨ`, never `ਜਲੵਨ`, and carry the Ang citation | | |
+| D3 | Gurmukhi rendering | Angs 1, 1354, 1359, 1400 in light and dark, AX3 text | Sant Lipi everywhere; ਸਤੵਿੰ (Ang 1354) shows the sihari before the letter and the ya under it; no dotted circles | | |
+| D4 | Update from the store build | Charter U from the App Store build to the candidate | saved verses, accent, toggles, resume Ang and Nitnem progress intact; full re-hash once, then cached | | |
+| D5 | Forget location | Clock → Solar → set a location → Forget location; check the Raag widget | clock back to fixed hours; the widget shows no location | | Forget is only offered in Solar mode (known, P3) |
+| D6 | Clear reading history | Nitnem → journey → Clear reading history: cancel once, then confirm | cancel changes nothing; confirm clears completed days and positions only — saved verses, settings, plan and reminders stay | | |
+| D7 | Spotlight | save 2 verses → search Home Screen by Gurmukhi and transliteration → unsave one → relaunch the app → search again | the unsaved verse is gone after relaunch; the kept one opens centred and highlighted | | |
+| D8 | Widgets | Hukam, Raag Watch and Nitnem widgets; open a Hukam in the app; tap the Hukam widget | the widget shows Sant Lipi; a tap opens the composition holding the shown verse, landed on it | | |
+| D9 | Airplane Mode | enable Airplane Mode; force quit; launch; read, search, save a verse, open Nitnem progress | everything works; nothing asks for a network | | |
+| D10 | First-launch performance | fresh install on the oldest supported device; time launch to Reader | under 5 s on "Verifying scripture integrity…"; second launch faster | | |
+| D11 | Force quit and relaunch | read Ang 700, force quit, relaunch; then force quit during "Verifying…" and relaunch | resumes Ang 700; an interrupted verify re-runs fully, no integrity failure | | |
+| D12 | Hostile link | Safari: `sggs://shabad/3000000000`, then `sggs://shabad/-1` | the app opens and stays on its current screen; no crash | | fixed in PR #37 |
