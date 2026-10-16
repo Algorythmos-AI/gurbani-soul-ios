@@ -97,6 +97,10 @@ final class NitnemProgressTests: XCTestCase {
         try Data("{not json".utf8).write(to: url)
         let store = NitnemProgressStore(url: url)
         XCTAssertTrue(store.file.banis.isEmpty)
+        // the undecodable file is kept beside the fresh one, never overwritten
+        let kept = try FileManager.default.contentsOfDirectory(atPath: url.deletingLastPathComponent().path)
+            .filter { $0.hasPrefix(url.lastPathComponent + ".unreadable-") }
+        XCTAssertEqual(kept.count, 1)
         store.setPosition("japji", seq: 3)                 // and it recovers by writing a fresh file
         XCTAssertEqual(NitnemProgressStore(url: url).progress(for: "japji")?.lastSeq, 3)
         try Data(#"{"schemaVersion": 99, "banis": {}}"#.utf8).write(to: url)

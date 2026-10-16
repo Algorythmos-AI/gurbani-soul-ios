@@ -188,10 +188,15 @@ final class NitnemProgressStore {
             .first?.appendingPathComponent(filename)
     }
 
-    /// -> (file, isReadOnly). A newer-schema file loads read-only; corrupt/missing → empty.
+    /// -> (file, isReadOnly). A newer-schema file loads read-only; a missing file is empty.
+    /// A file that exists but cannot be READ (locked before first unlock, an I/O error) opens
+    /// read-only for the session, so the next write cannot overwrite it; one that reads but cannot
+    /// be DECODED is moved aside (kept, never deleted) before starting fresh.
     static func load(from url: URL?) -> (NitnemProgressFile, Bool) {
-        guard let url, let data = try? Data(contentsOf: url),
-              let f = try? JSONDecoder().decode(NitnemProgressFile.self, from: data) else {
+        guard let url, FileManager.default.fileExists(atPath: url.path) else { return (NitnemProgressFile(), false) }
+        guard let data = try? Data(contentsOf: url) else { return (NitnemProgressFile(), true) }
+        guard let f = try? JSONDecoder().decode(NitnemProgressFile.self, from: data) else {
+            NitnemFiles.moveAside(url)
             return (NitnemProgressFile(), false)
         }
         if f.schemaVersion > schemaVersion { return (f, true) }   // never overwrite a newer file
@@ -208,5 +213,16 @@ final class NitnemProgressStore {
     static func wipe() {
         guard let url = defaultURL() else { return }
         try? FileManager.default.removeItem(at: url)
+    }
+}
+
+/// Shared file hygiene for the Nitnem progress and plan files.
+enum NitnemFiles {
+    /// Keep an undecodable file beside the fresh one (`<name>.unreadable-<unix time>`) instead of
+    /// letting the next write overwrite a reader's history.
+    static func moveAside(_ url: URL) {
+        let aside = url.deletingLastPathComponent()
+            .appendingPathComponent("\(url.lastPathComponent).unreadable-\(Int(Date().timeIntervalSince1970))")
+        try? FileManager.default.moveItem(at: url, to: aside)
     }
 }

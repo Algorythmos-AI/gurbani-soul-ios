@@ -15,6 +15,13 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Every run step is `bash -eo pipefail`: the test steps pipe xcodebuild through `tail`, and without
+# pipefail the pipe's exit status was tail's (0) — failing tests left the required `app` check
+# green on every main run from at least 2026-09-24 to 2026-10-16 (1–2 unit + 4 UI failures hidden).
+defaults:
+  run:
+    shell: bash
+
 jobs:
   parity:
     runs-on: macos-15
@@ -95,10 +102,24 @@ jobs:
             -destination "id=$SIM_UDID" -only-testing:SGGSUITests \
             -test-timeouts-enabled YES -resultBundlePath "$RUNNER_TEMP/uitests.xcresult" \
             CODE_SIGNING_ALLOWED=NO | tail -80
-      # A UI-test failure otherwise shows only the last 80 log lines and no artifact — upload the
-      # result bundles so a failure is actually diagnosable (screenshots, per-test logs).
+      # The log above keeps only its last lines; name every failing test from the result bundles.
+      - name: Failing tests (from the result bundles)
+        if: always()
+        run: |
+          for b in unit uitests; do
+            f="$RUNNER_TEMP/$b.xcresult"; [ -d "$f" ] || continue
+            xcrun xcresulttool get test-results summary --path "$f" --compact > "$RUNNER_TEMP/$b.json" || continue
+            python3 - "$RUNNER_TEMP/$b.json" "$b" <<'PY'
+          import json, sys
+          s = json.load(open(sys.argv[1]))
+          print(f"{sys.argv[2]}: {s.get('result')} — passed {s.get('passedTests')}, failed {s.get('failedTests')}, skipped {s.get('skippedTests')}")
+          for f in s.get('testFailures', []):
+              print(f"::error title={sys.argv[2]} test failed::{f.get('testIdentifierString') or f.get('testName')}: {(f.get('failureText') or '').splitlines()[0][:300]}")
+          PY
+          done
+      # Upload the result bundles so a failure is diagnosable (screenshots, per-test logs).
       - name: Upload test result bundles
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: ios-test-results

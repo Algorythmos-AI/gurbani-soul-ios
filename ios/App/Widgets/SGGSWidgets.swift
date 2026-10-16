@@ -141,7 +141,7 @@ struct HukamView: View {
         // all fit (the verse ellipsises, the citation is pushed off the edge). The shabad it
         // opens scales without limit. HukamWidgetRenderTests proves the citation up to AX2.
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
-        .widgetURL(URL(string: entry.snapshot.map { "sggs://shabad/\($0.hukamCompId)" } ?? "sggs://ang/1"))
+        .widgetURL(entry.snapshot?.hukamURL ?? URL(string: "sggs://ang/1"))
     }
 
     private func punjabi(_ s: String) -> AttributedString {

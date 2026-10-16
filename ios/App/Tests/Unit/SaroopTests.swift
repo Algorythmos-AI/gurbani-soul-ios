@@ -40,19 +40,33 @@ final class SaroopTests: XCTestCase {
             ?? Bundle(for: Self.self).url(forResource: "sggs-ios", withExtension: "sqlite")?.path
         else { throw XCTSkip("bundled DB not found in host app") }
         let db = try SQLiteCandidateSource(path: path)
-        var pairs = 0, lines = 0
+        // Compare Unicode SCALARS, never String: a Swift String compares and searches by grapheme
+        // cluster, and the virama-ya pair lives inside its letter's cluster, so `contains` and
+        // `components(separatedBy:)` would never see it (this test once passed vacuously that way).
+        let pair = Array(Saroop.verbatimPair.unicodeScalars)
+        func count(_ needle: [Unicode.Scalar], in hay: [Unicode.Scalar]) -> Int {
+            guard hay.count >= needle.count else { return 0 }
+            return (0...(hay.count - needle.count)).filter { Array(hay[$0..<($0 + needle.count)]) == needle }.count
+        }
+        var pairs = 0, lines = 0, drawn = 0
         for n in 1...1430 {
             for line in try db.fetchAng(n).lines {
-                let g = line.gurmukhi
+                let g = Array(line.gurmukhi.unicodeScalars)
                 lines += 1
-                XCTAssertFalse(g.unicodeScalars.contains(Saroop.yakash), "Ang \(n) stores a yakash")
-                pairs += g.components(separatedBy: Saroop.verbatimPair).count - 1
-                let shown = Saroop.toTraditional(g)
-                XCTAssertFalse(shown.contains("\u{0A4D}\u{0A2F}"), "Ang \(n): a subjoined yayya that is not one doubled pair")
-                XCTAssertEqual(Saroop.toVerbatim(shown), g, "Ang \(n): display form does not map back")
+                XCTAssertFalse(g.contains(Saroop.yakash), "Ang \(n) stores a yakash")
+                let p = count(pair, in: g)
+                pairs += p
+                let shown = Array(Saroop.toTraditional(line.gurmukhi).unicodeScalars)
+                XCTAssertEqual(count([Unicode.Scalar(0x0A4D)!, Unicode.Scalar(0x0A2F)!], in: shown), 0,
+                               "Ang \(n): a subjoined yayya that is not one doubled pair")
+                XCTAssertEqual(shown.filter { $0 == Saroop.yakash }.count, p, "Ang \(n): one yakash per stored pair")
+                if p > 0 { drawn += 1 }
+                XCTAssertEqual(Array(Saroop.toVerbatim(String(String.UnicodeScalarView(shown))).unicodeScalars), g,
+                               "Ang \(n): display form does not map back byte for byte")
             }
         }
-        XCTAssertGreaterThan(lines, 60_000)
-        XCTAssertGreaterThan(pairs, 0)
+        XCTAssertEqual(pairs, 268, "the corpus's doubled subjoined yayya (268 words, 78 Angs)")
+        XCTAssertEqual(drawn, 234, "lines the saroop draws differently")
+        XCTAssertEqual(lines, 60_658)
     }
 }

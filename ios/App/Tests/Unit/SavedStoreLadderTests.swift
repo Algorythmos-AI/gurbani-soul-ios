@@ -50,9 +50,16 @@ final class SavedStoreLadderTests: XCTestCase {
     @MainActor
     func testSecondConsecutiveFailureRecreates() throws {
         let url = try garbageStore()
+        let before = try Data(contentsOf: url)
         let r = AppContainer.openSavedStore(url: url, priorFailures: 1)
         XCTAssertNotNil(r.container)
         XCTAssertTrue(r.degraded); XCTAssertTrue(r.destroyed)
+        // the unusable file is moved aside with every byte, never deleted
+        let dir = url.deletingLastPathComponent()
+        let aside = try FileManager.default.contentsOfDirectory(atPath: dir.path)
+            .filter { $0.hasPrefix("saved.store.unusable-") && !$0.hasSuffix("-shm") && !$0.hasSuffix("-wal") }
+        XCTAssertEqual(aside.count, 1, "the old store must be kept beside the new one")
+        XCTAssertEqual(try Data(contentsOf: dir.appendingPathComponent(aside[0])), before)
         // the recreated store is a real persistent one: it opens cleanly next time
         let again = AppContainer.openSavedStore(url: url, priorFailures: 0)
         XCTAssertFalse(again.degraded)

@@ -161,9 +161,12 @@ struct LineRow: View {
         do {
             try modelContext.save()
             Haptics.success()
-            // saved verses surface in system search (verbatim + Ang; removed on delete)
-            SpotlightIndex.index(lineId: lineId, compId: compId, gurmukhi: gurmukhi,
-                                 translit: translit, ang: ang)
+            // saved verses surface in system search (verbatim + Ang; removed on delete) — but not
+            // a session-only save, which is gone at relaunch and would leave a dead search result
+            if !container.savedStoreDegraded {
+                SpotlightIndex.index(lineId: lineId, compId: compId, gurmukhi: gurmukhi,
+                                     translit: translit, ang: ang)
+            }
         }
         catch { modelContext.rollback() }     // keep the context clean on failure
     }

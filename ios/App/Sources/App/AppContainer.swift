@@ -73,6 +73,10 @@ final class AppContainer {
         self.savedStoreDegraded = opened.degraded
         self.savedStoreDestroyed = opened.destroyed
         if opened.destroyed { SpotlightIndex.removeAll() }   // the store is empty now; so is its index
+        else if !opened.degraded, let store = opened.container {
+            // system search = the saved store, every launch (cheap: bookmarks are few)
+            SpotlightIndex.reconcile(with: (try? store.mainContext.fetch(FetchDescriptor<SavedLine>())) ?? [])
+        }
         // count consecutive persistent-open failures; a clean open resets the ladder
         defaults.set(opened.degraded && !opened.destroyed ? prior + 1 : 0, forKey: Self.savedStoreFailKey)
         // Gentle reminders: a fake scheduler under UI test, the real notification center otherwise.
@@ -154,10 +158,18 @@ final class AppContainer {
         if priorFailures >= 1 {
             // second consecutive failure: the store file is unusable, not merely busy.
             // Bookmarks are user annotations (never scripture) — a clean store beats a
-            // permanently dead feature.
-            let path = config().url
+            // permanently dead feature. The old files are MOVED aside, never deleted: a cause
+            // that was not corruption (a full disk, a locked file) must not cost the reader's
+            // saved verses, and support can still recover them.
+            let path = config().url.path
+            let stamp = Int(Date().timeIntervalSince1970)
             for suffix in ["", "-shm", "-wal"] {
-                try? FileManager.default.removeItem(at: URL(fileURLWithPath: path.path + suffix))
+                let fm = FileManager.default
+                guard fm.fileExists(atPath: path + suffix) else { continue }
+                let aside = URL(fileURLWithPath: path + ".unusable-\(stamp)" + suffix)
+                if (try? fm.moveItem(at: URL(fileURLWithPath: path + suffix), to: aside)) == nil {
+                    try? fm.removeItem(at: URL(fileURLWithPath: path + suffix))   // cannot move: as before
+                }
             }
             if let recreated = open(config()) {
                 return SavedStoreOpen(container: recreated, degraded: true, destroyed: true)
@@ -294,7 +306,10 @@ final class AppContainer {
             hukamGurmukhi: firstVerse.gurmukhi,     // verbatim — copied, never edited
             hukamTranslit: firstVerse.translit,
             hukamAng: firstVerse.ang,
-            hukamCompId: hukam.compId,
+            // The unit can open before its seed (a Vaar's saloks precede the pauri): cite the
+            // composition and line of the verse actually shown, so a tap opens what was read.
+            hukamCompId: firstVerse.compId,
+            hukamLineId: firstVerse.id,
             paharRaags: paharRaags,
             paharRaagsGurmukhi: paharRaagsGurmukhi,
             clockMode: SharedDefaults.clockMode,

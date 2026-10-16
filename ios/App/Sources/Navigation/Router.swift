@@ -153,7 +153,9 @@ final class Router {
                 explorePath = NavigationPath([Route.themes, Route.theme(value)])
             }
         case "shabad":
-            if let c = Int(value), c > 0 { container.present(.shabad(compId: c, focusLineId: line)) }
+            if let c = Int(value), (1...Int(Int32.max)).contains(c) {
+                container.present(.shabad(compId: c, focusLineId: line))
+            }
         case "hukam":
             container.present(.hukam)
         case "search":

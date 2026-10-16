@@ -50,7 +50,7 @@ public final class SQLiteCandidateSource: CandidateSource, @unchecked Sendable {
         }
         defer { sqlite3_finalize(stmt) }
         sqlite3_bind_text(stmt, 1, match, -1, Self.transientDtor)
-        sqlite3_bind_int(stmt, 2, Int32(limit))
+        sqlite3_bind_int(stmt, 2, Int32(clamping: limit))
         var out: [Int] = []
         while try stepRow(stmt) { out.append(Int(sqlite3_column_int64(stmt, 0))) }
         return out
