@@ -127,10 +127,10 @@ struct BaniReaderScreen: View {
         outline = BaniOutline.sections(for: loaded)
         // resume by seq when the registry is unchanged, else by verbatim anchor, else the top
         if let resume = container.nitnem.resumeSeq(for: loaded.summary.id, lines: loaded.lines) {
-            chrome.landingInProgress = true
+            let landing = chrome.beginLanding()
             positionId = resume
             highlightedId = resume
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { chrome.landingInProgress = false }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { chrome.endLanding(landing) }
             Task { @MainActor in
                 try? await Task.sleep(for: .seconds(FocusLanding.highlightSeconds))
                 if highlightedId == resume { highlightedId = nil }
@@ -647,8 +647,8 @@ struct BaniReaderScreen: View {
         guard let seq else { return }
         autoScroll.pause()
         Haptics.tap()
-        chrome.landingInProgress = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { chrome.landingInProgress = false }
+        let landing = chrome.beginLanding()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { chrome.endLanding(landing) }
         showChrome()
         positionId = nil
         DispatchQueue.main.async { MotionGate.run(Motion.gentle) { positionId = seq } }

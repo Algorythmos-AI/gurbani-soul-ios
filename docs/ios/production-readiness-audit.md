@@ -141,3 +141,13 @@ Angs (on 233 lines; one line is split differently).
 | 4 | `testPrivacyPolicyReachableFromMore` (UI) | test: lazy Lists longer than the screen | test scrolls; link matched by identifier | PASS device |
 | 5 | `testRehrasVariantPersists` (UI) | **app**: Rehras variant ignored for an uncustomised Nitnem set | variant applied to the default set | PASS device |
 | 6 | `testSwipeRunAfterJumpRendersContent` (UI) | **app (diagnostics)**: a jump parked during deceleration was logged as a lost-callback self-heal | heal only when a gesture end never arrived | PASS device |
+
+### Flakes on a rerun of the same code (CI run 38955222155)
+
+`5a791fc` passed the whole suite in CI (unit 236/236, UI 53 passed, 2 skipped). The docs-only commit
+after it failed two UI tests. Both were investigated from the result bundle and its screen recording:
+
+| Test | Evidence | Cause | Fix | Result |
+|---|---|---|---|---|
+| `testNitnemOpensJapjiAndCompletes` | 5th "Next pauri" tap: hit point {-1,-1}, `baniForward` then absent | **app**: each jump armed a 1 s timer that cleared the landing guard; an earlier tap's timer cleared it while a later jump was still scrolling, so the bar hid under the reader's finger | `AmbientChrome.beginLanding()/endLanding(_:)`: only the latest landing ends the guard (also in `AngPageView`); the UI test now fails outright if the bar hides after a tap | `AmbientChromeTests` (3) PASS device; UI PASS device |
+| `testSwipeRunAfterJumpRendersContent` | recording: the 4th swipe never moved the page; title and pager both on Ang 1103, no heal, verses rendered | test: the simulator dropped the synthesized swipe | a swipe that left the page settled on the old Ang is retried once and logged; any other outcome still fails | PASS device |
