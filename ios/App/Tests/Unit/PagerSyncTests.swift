@@ -139,6 +139,23 @@ final class PagerSyncTests: XCTestCase {
         XCTAssertNil(s.pending)
     }
 
+    /// A jump that arrives while the page is still decelerating after the finger lifted is parked,
+    /// then applied once the scroll settles. Nothing was lost, so it is not a heal (it used to be
+    /// logged as one, which failed testSwipeRunAfterJumpRendersContent on every run and hid
+    /// whether a real lost callback had happened).
+    func testJumpDuringDecelerationIsAppliedWithoutAHeal() {
+        var s = sync()
+        s.gestureBegan()
+        // the finger lifts while the page is still moving: gestureEnded arrives, scroll busy
+        XCTAssertEqual(s.gestureEnded(completed: true, visible: 355, scrollBusy: true,
+                                      reduceMotion: false, inWindow: true, now: 99), [.settle(355)])
+        XCTAssertTrue(s.gestureActive, "still decelerating")
+        XCTAssertFalse(s.awaitingGestureEnd, "but nothing is missing")
+        XCTAssertEqual(request(&s, 915, visible: 355, scrollBusy: true), [.armWatchdog])
+        XCTAssertEqual(s.watchdog(desired: 915, visible: 355, scrollBusy: false), [.show(915, PagerSync.Transition.none)])
+        XCTAssertNil(s.pending)
+    }
+
     func testWatchdogReArmsWhileScrollBusy() {
         var s = sync()
         s.gestureBegan()

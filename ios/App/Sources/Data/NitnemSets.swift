@@ -10,10 +10,6 @@ enum NitnemSets {
     /// registry defaults added in a later app version are appended (idempotent).
     static func resolved(category: BaniCategory, plan: [NitnemSetEntry],
                          registry: [BaniSummary], rehrasVariant: String) -> [BaniSummary] {
-        let defaults = registry.filter { $0.category == category && $0.isDefault }
-            .sorted { $0.orderNo < $1.orderNo }
-        guard !plan.isEmpty else { return defaults }
-
         func summary(forKey key: String) -> BaniSummary? {
             let matches = registry.filter { $0.key == key }
             if key == "rehras" {
@@ -22,6 +18,13 @@ enum NitnemSets {
             }
             return matches.first { $0.isDefault } ?? matches.first
         }
+        // The registry's default rows, with the reader's Rehras variant swapped in: the variant is a
+        // setting of its own and must apply to an uncustomised set too (it used to apply only once
+        // the reader had customised the set, so a Taksal reader saw the SGPC title and length).
+        let defaults = registry.filter { $0.category == category && $0.isDefault }
+            .sorted { $0.orderNo < $1.orderNo }
+            .map { summary(forKey: $0.key) ?? $0 }
+        guard !plan.isEmpty else { return defaults }
 
         var result: [BaniSummary] = []
         var seen = Set<String>()

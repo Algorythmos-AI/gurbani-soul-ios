@@ -66,6 +66,16 @@ final class NitnemSetsTests: XCTestCase {
         XCTAssertEqual(taksal.first?.variant, "taksal")
     }
 
+    /// The variant applies to the DEFAULT set too, not only to a customised one (a Taksal reader
+    /// who never customised saw the SGPC row; testRehrasVariantPersists caught it in CI).
+    func testRehrasVariantHonouredWithoutACustomisedSet() {
+        let sgpc = NitnemSets.resolved(category: .nitnemEvening, plan: [], registry: registry, rehrasVariant: "sgpc")
+        XCTAssertEqual(sgpc.first { $0.key == "rehras" }?.variant, "sgpc")
+        let taksal = NitnemSets.resolved(category: .nitnemEvening, plan: [], registry: registry, rehrasVariant: "taksal")
+        XCTAssertEqual(taksal.first { $0.key == "rehras" }?.variant, "taksal")
+        XCTAssertEqual(taksal.filter { $0.key == "rehras" }.count, 1, "one Rehras row, never both variants")
+    }
+
     func testAddableExcludesPresent() {
         let plan = [NitnemSetEntry(key: "japji"), NitnemSetEntry(key: "jaap"), NitnemSetEntry(key: "tav_prasad_savaiye")]
         let add = NitnemSets.addable(to: .nitnemMorning, plan: plan, registry: registry, rehrasVariant: "sgpc")

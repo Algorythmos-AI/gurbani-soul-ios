@@ -228,10 +228,17 @@ final class SGGSUITests: XCTestCase {
         let mool = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "ੴ ਸਤਿ ਨਾਮੁ ਕਰਤਾ ਪੁਰਖੁ")).firstMatch
         XCTAssertTrue(mool.waitForExistence(timeout: 12), "Mool Mantar (verbatim) missing at the top of Japji")
         XCTAssertTrue(app.staticTexts["baniPosition"].firstMatch.waitForExistence(timeout: 8), "position bar missing")
-        // jump to the end and mark it read
-        app.buttons["End"].firstMatch.tap()
+        // go to the end and mark it read. Japji steps pauri by pauri, so the bar's forward control
+        // reads "Next pauri", not "End" — use its stable identifier and step until the end appears.
+        let forward = app.buttons["baniForward"].firstMatch
+        XCTAssertTrue(forward.waitForExistence(timeout: 8), "position bar forward control missing")
         let mark = app.buttons["baniMarkComplete"].firstMatch
-        XCTAssertTrue(mark.waitForExistence(timeout: 12), "Mark as read missing at the end")
+        var steps = 0
+        while !(mark.exists && mark.isHittable) && steps < 80 {
+            if forward.isEnabled { forward.tap() } else { app.swipeUp() }
+            steps += 1
+        }
+        XCTAssertTrue(mark.waitForExistence(timeout: 12), "Mark as read missing at the end (\(steps) steps)")
         mark.tap()
         let next = app.buttons["nitnemNext"].firstMatch
         XCTAssertTrue(next.waitForExistence(timeout: 8), "Next bani action missing after completion")
@@ -293,15 +300,25 @@ final class SGGSUITests: XCTestCase {
     func testPrivacyPolicyReachableFromMore() {
         let app = launchApp(selectSearch: false)
         openTab(app, "More", expectingNavBar: "More")
+        // More is a lazy List longer than the screen: rows below the fold do not exist until scrolled to
         let link = app.buttons["privacyPolicyLink"].firstMatch
+        var swipes = 0
+        while !link.waitForExistence(timeout: 2) && swipes < 8 { app.swipeUp(); swipes += 1 }
         XCTAssertTrue(link.waitForExistence(timeout: 12), "Privacy Policy link missing in More")
         XCTAssertTrue(app.buttons["supportLink"].firstMatch.exists, "Support link missing in More")
         link.tap()
         XCTAssertTrue(app.navigationBars["Privacy Policy"].waitForExistence(timeout: 8), "Privacy Policy screen did not open")
-        XCTAssertTrue(app.descendants(matching: .any)
-            .matching(NSPredicate(format: "label CONTAINS[c] %@", "Data Not Collected")).firstMatch.exists,
-            "Privacy Policy screen does not state the Data Not Collected stance")
-        XCTAssertTrue(app.links["privacyWebLink"].firstMatch.exists, "online policy link missing")
+        // the policy is a lazy List too: its "Data Not Collected" paragraph is below the fold
+        let stance = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label CONTAINS[c] %@", "Data Not Collected")).firstMatch
+        var down = 0
+        while !stance.waitForExistence(timeout: 2) && down < 8 { app.swipeUp(); down += 1 }
+        XCTAssertTrue(stance.exists, "Privacy Policy screen does not state the Data Not Collected stance")
+        // a SwiftUI Link's element type varies by iOS version: match the identifier on any type
+        let web = app.descendants(matching: .any).matching(identifier: "privacyWebLink").firstMatch
+        var more = 0
+        while !web.waitForExistence(timeout: 2) && more < 4 { app.swipeUp(); more += 1 }
+        XCTAssertTrue(web.exists, "online policy link missing")
     }
 
     /// Rehras variant is a setting: switching to Taksal persists and retitles the row.

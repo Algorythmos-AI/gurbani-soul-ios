@@ -545,6 +545,7 @@ struct BaniReaderScreen: View {
                 .disabled(byStep ? !BaniPager.canStep(from: seq, in: steps, direction: -1)
                                  : (groups > 1 ? group <= 1 : seq <= 1))
                 .accessibilityLabel(byStep ? "Previous \(stepName)" : (groups > 1 ? "Previous part" : "Top"))
+                .accessibilityIdentifier("baniBack")
             Spacer()
             VStack(spacing: 1) {
                 Text(!byStep && groups > 1 ? "Part \(group) of \(groups)"
@@ -568,6 +569,7 @@ struct BaniReaderScreen: View {
                 .disabled(byStep ? !BaniPager.canStep(from: seq, in: steps, direction: 1)
                                  : (groups > 1 && group >= groups))
                 .accessibilityLabel(byStep ? "Next \(stepName)" : (groups > 1 ? "Next part" : "End"))
+                .accessibilityIdentifier("baniForward")
         }
         .font(.body.weight(.medium))
         .padding(.horizontal, Theme.Space.m)
