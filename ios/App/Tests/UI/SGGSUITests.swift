@@ -364,6 +364,7 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(app.buttons["bani_rehras"].firstMatch.label.contains("Taksal"), "row should show the Taksal variant")
         app.terminate()
         let again = XCUIApplication()
+        again.launchEnvironment["SGGS_UITEST_RELAUNCH"] = "1"   // keep this test's state
         again.launch()
         XCTAssertTrue(again.navigationBars["Nitnem"].waitForExistence(timeout: 20))
         XCTAssertTrue(again.buttons["bani_rehras"].firstMatch.waitForExistence(timeout: 12))
@@ -1216,7 +1217,9 @@ final class SGGSUITests: XCTestCase {
         app.buttons["goToAng"].tap()
         XCTAssertTrue(app.navigationBars["Ang 1430"].waitForExistence(timeout: 12))
         app.terminate()
-        let plain = XCUIApplication(); plain.launch()          // no SGGS_UITEST: resume is live
+        let plain = XCUIApplication()                            // no SGGS_UITEST: resume is live
+        plain.launchEnvironment["SGGS_UITEST_RELAUNCH"] = "1"    // (and the real-data vault stays sealed)
+        plain.launch()
         tab(plain, "Reader").tap()
         XCTAssertTrue(plain.navigationBars["Ang 1430"].waitForExistence(timeout: 15), "control: resume must work")
         plain.terminate()

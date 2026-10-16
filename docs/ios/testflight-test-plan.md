@@ -245,7 +245,11 @@ runner with Xcode 26.3, SDK iphoneos26.2, uploaded 2026-10-13). The brand gates 
 
 ## 8. Physical-device regression checklist (production-readiness audit, 2026-10-17)
 
-Run on a physical iPhone for every candidate build. A row is **PASS** only when it was executed on
+Run on a physical iPhone for every candidate build. D2, D3, D6, D11 and D12 are automated by
+`DeviceChecklistTests` (run with `TEST_RUNNER_SGGS_DEVICE_CHECKLIST=1`; evidence is attached to the
+result bundle); the other rows are manual. A device's own data is sealed before any UI test wipes
+it and restored on its next ordinary launch (`UITestVault`, Debug only). Latest run:
+`device-checklist-2026-10-17.md`. A row is **PASS** only when it was executed on
 the device and the evidence column says what was seen; source inspection or a simulator run never
 counts here. Record once per run: device model · iOS version · app version · build · tester · date.
 

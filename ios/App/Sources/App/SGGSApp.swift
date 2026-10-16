@@ -12,8 +12,15 @@ struct SGGSApp: App {
         // XCUITest launches set SGGS_UITEST=1: clear per-launch residue that would otherwise
         // leak between tests (resume-last-Ang, the transliteration toggle). Never the accent —
         // its persistence across a relaunch is itself under test. Debug builds only.
-        if ProcessInfo.processInfo.environment["SGGS_UITEST"] == "1" {
-            for key in ["sggs_last_ang", "sggs_translit", "sggs_rehras_variant", "sggs_reader_tone", "sggs_reader_leading", "sggs_gurmukhi_size", "sggs_focus_mode"] {
+        // UITestVault keeps a developer's real data out of the tests' reach: sealed before the
+        // first wipe, restored on the next ordinary launch. A seal that fails wipes nothing.
+        let env = ProcessInfo.processInfo.environment
+        if env["SGGS_UITEST_RELAUNCH"] == "1" {
+            // a test's own relaunch: keep the state the test built
+        } else if env["SGGS_UITEST"] != "1" {
+            UITestVault.restoreIfSealed()
+        } else if UITestVault.sealIfNeeded() {
+            for key in ["sggs_last_ang", "sggs_translit", "sggs_rehras_variant", "sggs_reader_tone", "sggs_reader_leading", "sggs_gurmukhi_size", "sggs_focus_mode", "sggs_saroop"] {
                 UserDefaults.standard.removeObject(forKey: key)
             }
             NitnemProgressStore.wipe()
