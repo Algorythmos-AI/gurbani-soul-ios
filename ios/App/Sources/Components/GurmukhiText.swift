@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Renders verbatim Gurmukhi in Sant Lipi, applying the display-only saroop transform when enabled.
-/// VoiceOver reads the VERBATIM string (never the VS-marked display form), tagged Punjabi.
+/// VoiceOver reads the VERBATIM string (never the saroop display form), tagged Punjabi.
 struct GurmukhiText: View {
     let verbatim: String
     /// Design size at the default base (24). The user's Gurmukhi-size preference scales it
