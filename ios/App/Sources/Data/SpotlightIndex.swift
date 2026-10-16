@@ -23,6 +23,17 @@ enum SpotlightIndex {
                                 domainIdentifier: domain, attributeSet: attrs)
     }
 
+    enum LaunchAction { case reconcile([SavedLine]), leaveAlone }
+
+    /// What launch may do to system search. Only a persistent store that was READ successfully may
+    /// replace the index (an empty but readable store correctly clears it). A degraded (in-memory)
+    /// store or a failed read leaves the index untouched: entries that cannot be rebuilt are never
+    /// removed on a guess.
+    static func launchAction(degraded: Bool, saved: Result<[SavedLine], Error>) -> LaunchAction {
+        guard !degraded, case .success(let rows) = saved else { return .leaveAlone }
+        return .reconcile(rows)
+    }
+
     /// Make system search exactly the saved store: every entry is dropped, then every saved verse
     /// re-indexed. Run once per launch with a persistent store, so entries left by a session-only
     /// save, a restore from backup (which brings the store back but not the index) or older builds

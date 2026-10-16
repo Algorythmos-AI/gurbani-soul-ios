@@ -196,8 +196,9 @@ final class NitnemProgressStore {
         guard let url, FileManager.default.fileExists(atPath: url.path) else { return (NitnemProgressFile(), false) }
         guard let data = try? Data(contentsOf: url) else { return (NitnemProgressFile(), true) }
         guard let f = try? JSONDecoder().decode(NitnemProgressFile.self, from: data) else {
-            NitnemFiles.moveAside(url)
-            return (NitnemProgressFile(), false)
+            // a newer app's file this build cannot decode is not corrupt: leave it, read-only
+            if NitnemFiles.version(of: data, key: "schemaVersion") ?? 0 > schemaVersion { return (NitnemProgressFile(), true) }
+            return (NitnemProgressFile(), !NitnemFiles.moveAside(url))
         }
         if f.schemaVersion > schemaVersion { return (f, true) }   // never overwrite a newer file
         return (f, false)
@@ -218,11 +219,19 @@ final class NitnemProgressStore {
 
 /// Shared file hygiene for the Nitnem progress and plan files.
 enum NitnemFiles {
-    /// Keep an undecodable file beside the fresh one (`<name>.unreadable-<unix time>`) instead of
-    /// letting the next write overwrite a reader's history.
-    static func moveAside(_ url: URL) {
-        let aside = url.deletingLastPathComponent()
-            .appendingPathComponent("\(url.lastPathComponent).unreadable-\(Int(Date().timeIntervalSince1970))")
-        try? FileManager.default.moveItem(at: url, to: aside)
+    /// Keep an undecodable file beside the fresh one (`<name>.unreadable-<unix time>-<id>`)
+    /// instead of letting the next write overwrite a reader's history. Returns false when the move
+    /// failed — the caller then opens read-only, so the original can never be overwritten.
+    @discardableResult
+    static func moveAside(_ url: URL) -> Bool {
+        let aside = url.deletingLastPathComponent().appendingPathComponent(
+            "\(url.lastPathComponent).unreadable-\(Int(Date().timeIntervalSince1970))-\(UUID().uuidString.prefix(8))")
+        return (try? FileManager.default.moveItem(at: url, to: aside)) != nil
+    }
+
+    /// The format version a file declares, read on its own (nil if it has none or isn't JSON), so
+    /// a newer file that this build cannot decode is recognised as newer, not as corrupt.
+    static func version(of data: Data, key: String) -> Int? {
+        (try? JSONSerialization.jsonObject(with: data)) .flatMap { ($0 as? [String: Any])?[key] as? Int }
     }
 }

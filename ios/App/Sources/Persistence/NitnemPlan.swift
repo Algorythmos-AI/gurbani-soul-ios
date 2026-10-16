@@ -48,8 +48,8 @@ final class NitnemPlanStore {
         guard let url, FileManager.default.fileExists(atPath: url.path) else { return (NitnemPlanFile(), false) }
         guard let data = try? Data(contentsOf: url) else { return (NitnemPlanFile(), true) }
         guard let f = try? JSONDecoder().decode(NitnemPlanFile.self, from: data) else {
-            NitnemFiles.moveAside(url)
-            return (NitnemPlanFile(), false)
+            if NitnemFiles.version(of: data, key: "version") ?? 0 > version { return (NitnemPlanFile(), true) }
+            return (NitnemPlanFile(), !NitnemFiles.moveAside(url))
         }
         if f.version > version { return (f, true) }   // never overwrite a newer file
         return (f, false)

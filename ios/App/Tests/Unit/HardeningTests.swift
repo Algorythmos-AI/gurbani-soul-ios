@@ -280,4 +280,30 @@ final class HardeningTests: XCTestCase {
         let old = #"{"generatedAt":0,"hukamGurmukhi":"x","hukamTranslit":"","hukamAng":1,"hukamCompId":2,"paharRaags":{}}"#
         XCTAssertNil(try JSONDecoder().decode(WidgetSnapshot.self, from: Data(old.utf8)).hukamLineId)
     }
+
+    /// Unexpected components never open something unrelated: extra path segments are ignored,
+    /// trailing junk makes the id invalid.
+    @MainActor
+    func testShabadLinkComponentsAreStrict() {
+        for (link, expected) in [("sggs://shabad/12/34", 12), ("sggs://shabad/12abc", nil), ("sggs://shabad/1.5", nil),
+                                 ("sggs://shabad/%31%32", 12), ("sggs://shabad/ 12", nil)] as [(String, Int?)] {
+            let c = AppContainer(); c.sheetHostDidAppear()
+            guard let url = URL(string: link) else { XCTAssertNil(expected, link); continue }
+            Router().handle(url, container: c)
+            if case .shabad(let comp, _)? = c.presentation { XCTAssertEqual(comp, expected, link) }
+            else { XCTAssertNil(expected, link) }
+        }
+    }
+
+    /// An id that is valid in range but names no composition (a gap id, or past the last) reads as
+    /// empty — the sheet's "not found" — never as a neighbouring composition.
+    func testNonexistentCompositionIdsReadEmpty() throws {
+        guard let path = Bundle.main.url(forResource: "sggs-ios", withExtension: "sqlite")?.path
+        else { throw XCTSkip("bundled DB not found in host app") }
+        let db = try SQLiteCandidateSource(path: path)
+        for id in [1, 999_999_999, Int(Int32.max), -5] {
+            XCTAssertTrue(try db.fetchShabad(compId: id).lines.isEmpty, "comp \(id)")
+        }
+        XCTAssertFalse(try db.fetchShabad(compId: 2).lines.isEmpty, "control: Japji opens")
+    }
 }

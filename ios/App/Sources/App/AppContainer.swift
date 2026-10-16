@@ -73,9 +73,12 @@ final class AppContainer {
         self.savedStoreDegraded = opened.degraded
         self.savedStoreDestroyed = opened.destroyed
         if opened.destroyed { SpotlightIndex.removeAll() }   // the store is empty now; so is its index
-        else if !opened.degraded, let store = opened.container {
-            // system search = the saved store, every launch (cheap: bookmarks are few)
-            SpotlightIndex.reconcile(with: (try? store.mainContext.fetch(FetchDescriptor<SavedLine>())) ?? [])
+        else if let store = opened.container {
+            switch SpotlightIndex.launchAction(degraded: opened.degraded,
+                                               saved: Result { try store.mainContext.fetch(FetchDescriptor<SavedLine>()) }) {
+            case .reconcile(let saved): SpotlightIndex.reconcile(with: saved)   // system search = the saved store
+            case .leaveAlone: break     // degraded or unreadable: never clear entries we cannot rebuild
+            }
         }
         // count consecutive persistent-open failures; a clean open resets the ladder
         defaults.set(opened.degraded && !opened.destroyed ? prior + 1 : 0, forKey: Self.savedStoreFailKey)
@@ -155,22 +158,11 @@ final class AppContainer {
         if let persistent = open(config()) {
             return SavedStoreOpen(container: persistent, degraded: false, destroyed: false)
         }
-        if priorFailures >= 1 {
+        if priorFailures >= 1, moveAside(storeAt: config().url) {
             // second consecutive failure: the store file is unusable, not merely busy.
             // Bookmarks are user annotations (never scripture) — a clean store beats a
-            // permanently dead feature. The old files are MOVED aside, never deleted: a cause
-            // that was not corruption (a full disk, a locked file) must not cost the reader's
-            // saved verses, and support can still recover them.
-            let path = config().url.path
-            let stamp = Int(Date().timeIntervalSince1970)
-            for suffix in ["", "-shm", "-wal"] {
-                let fm = FileManager.default
-                guard fm.fileExists(atPath: path + suffix) else { continue }
-                let aside = URL(fileURLWithPath: path + ".unusable-\(stamp)" + suffix)
-                if (try? fm.moveItem(at: URL(fileURLWithPath: path + suffix), to: aside)) == nil {
-                    try? fm.removeItem(at: URL(fileURLWithPath: path + suffix))   // cannot move: as before
-                }
-            }
+            // permanently dead feature. The old files were MOVED aside first (see moveAside), so
+            // a cause that was not corruption costs nothing: support can still recover them.
             if let recreated = open(config()) {
                 return SavedStoreOpen(container: recreated, degraded: true, destroyed: true)
             }
@@ -179,6 +171,27 @@ final class AppContainer {
             return SavedStoreOpen(container: memory, degraded: true, destroyed: false)
         }
         return SavedStoreOpen(container: nil, degraded: true, destroyed: false)
+    }
+
+    /// Move an unusable SQLite store (and its -wal/-shm) into a new, uniquely named folder beside
+    /// it. Returns true only when every file that existed has been moved — then, and only then, a
+    /// fresh store may be created at the path. Nothing is ever deleted: if any move fails, the
+    /// files stay where they are and the caller keeps the session in memory.
+    /// Order matters: -wal and -shm first, the main file last, so an interruption never leaves a
+    /// stale WAL beside a newly created store (a half-done move just fails to open again and is
+    /// retried on the next launch).
+    static func moveAside(storeAt url: URL) -> Bool {
+        let fm = FileManager.default
+        let files = ["-wal", "-shm", ""].map { URL(fileURLWithPath: url.path + $0) }.filter { fm.fileExists(atPath: $0.path) }
+        guard !files.isEmpty else { return true }
+        let folder = url.deletingLastPathComponent()
+            .appendingPathComponent("\(url.lastPathComponent).unusable-\(Int(Date().timeIntervalSince1970))-\(UUID().uuidString.prefix(8))")
+        guard (try? fm.createDirectory(at: folder, withIntermediateDirectories: false)) != nil else { return false }
+        for f in files {
+            guard (try? fm.moveItem(at: f, to: folder.appendingPathComponent(f.lastPathComponent))) != nil else { return false }
+        }
+        Logger(subsystem: "org.sggs", category: "SavedStore").error("unusable bookmarks store moved aside to \(folder.lastPathComponent, privacy: .public)")
+        return true
     }
 
     /// Present a modal through the single root sheet. If a sheet is already up (e.g. opening a shabad
