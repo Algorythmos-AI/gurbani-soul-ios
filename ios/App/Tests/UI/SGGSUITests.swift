@@ -2,6 +2,18 @@ import XCTest
 
 final class SGGSUITests: XCTestCase {
     override func setUp() { continueAfterFailure = false }
+    /// End of the class: one ordinary launch hands the device's real data back (UITestVault), so
+    /// a finished run never leaves it in the vault.
+    override class func tearDown() {
+        MainActor.assumeIsolated {
+            let app = XCUIApplication()
+            app.launch()
+            _ = app.wait(for: .runningForeground, timeout: 30)
+            app.terminate()
+        }
+        super.tearDown()
+    }
+
     /// Every test ends with the app terminated so no keyboard/sheet/tab state leaks into the next.
     override func tearDown() {
         // TEST_RUNNER_SGGS_KEEP_APP=1 leaves the app running after a test (manual screenshots)
@@ -198,6 +210,34 @@ final class SGGSUITests: XCTestCase {
                 swipePage(app, from: start + i + 1, to: start + i, left: false)
                 assertOnAng(app, start + i, "back swipe to \(start + i)")
             }
+        }
+    }
+
+    /// The bottom page row never wraps a destination Ang across two lines (2026-10-17 device run:
+    /// "135 / 3" at AX3). At the default size the numbers show; at AX3 the row steps down to fit,
+    /// and the three controls stay one line high, apart, and tappable.
+    func testPageBarStaysOnOneLineAtLargeText() {
+        for (size, numbers) in [("UICTContentSizeCategoryL", true), ("UICTContentSizeCategoryAccessibilityXL", false),
+                                ("UICTContentSizeCategoryAccessibilityXXXL", false)] {
+            let app = launchApp(selectSearch: false, arguments: ["-UIPreferredContentSizeCategoryName", size])
+            goReader(app, at: 1354)
+            let prev = app.buttons["prevAng"].firstMatch, next = app.buttons["nextAng"].firstMatch
+            let hukam = app.buttons["Hukam"].firstMatch
+            XCTAssertTrue(prev.waitForExistence(timeout: 12) && prev.isHittable, "\(size): previous not tappable")
+            XCTAssertTrue(next.isHittable && hukam.isHittable, "\(size): next/Hukam not tappable")
+            for (name, b) in [("previous", prev), ("next", next)] {
+                XCTAssertLessThanOrEqual(b.frame.height, hukam.frame.height * 1.3,
+                                         "\(size): the \(name) control wrapped onto a second line")
+                XCTAssertGreaterThanOrEqual(b.frame.width, 44, "\(size): \(name) tap target too small")
+            }
+            XCTAssertFalse(prev.frame.intersects(hukam.frame) || hukam.frame.intersects(next.frame), "\(size): controls overlap")
+            XCTAssertEqual(prev.value as? String, "Ang 1353"); XCTAssertEqual(next.value as? String, "Ang 1355")
+            if numbers {
+                XCTAssertTrue(prev.staticTexts["1353"].exists && next.staticTexts["1355"].exists,
+                              "\(size): the destination Angs show at the default size")
+            }
+            captureIfRequested(app, "page_bar_\(size)")
+            app.terminate()
         }
     }
 

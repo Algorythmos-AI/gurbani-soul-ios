@@ -14,18 +14,35 @@ final class DeviceChecklistTests: XCTestCase {
 
     override func tearDown() { XCUIApplication().terminate() }
 
+    /// End of the class: one ordinary launch hands the device's real data back (UITestVault).
+    override class func tearDown() {
+        if ProcessInfo.processInfo.environment["SGGS_DEVICE_CHECKLIST"] == "1" {
+            MainActor.assumeIsolated {
+                let app = XCUIApplication()
+                app.launch()
+                _ = app.wait(for: .runningForeground, timeout: 30)
+                app.terminate()
+            }
+        }
+        super.tearDown()
+    }
+
     // MARK: helpers
 
-    private func launch(relaunch: Bool = false, arguments: [String] = []) -> XCUIApplication {
+    private func launch(relaunch: Bool = false, arguments: [String] = [],
+                        environment: [String: String] = [:]) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchEnvironment[relaunch ? "SGGS_UITEST_RELAUNCH" : "SGGS_UITEST"] = "1"
+        for (k, v) in environment { app.launchEnvironment[k] = v }
         app.launchArguments += arguments
         app.launch()
         return app
     }
 
     private func evidence(_ app: XCUIApplication, _ name: String) {
-        let a = XCTAttachment(screenshot: app.screenshot())
+        let shot = app.screenshot()
+        XCTAssertFalse(shot.pngRepresentation.isEmpty, "evidence for \(name) is missing")
+        let a = XCTAttachment(screenshot: shot)
         a.name = name
         a.lifetime = .keepAlways
         add(a)
@@ -223,33 +240,48 @@ final class DeviceChecklistTests: XCTestCase {
 
     // MARK: D10 + D11 — launch time, resume, an interrupted verify
 
-    func testD10D11LaunchResumeAndInterruptedVerify() {
+    /// D10: a cold launch (the integrity cache cleared, so the whole database is re-hashed, as
+    /// after an install or an update) reaches the app in under 5 s, and a warm relaunch is faster.
+    /// Measured on this device only; the oldest supported device is a separate, manual run.
+    func testD10ColdAndWarmLaunchTimes() {
+        let coldStart = Date()
+        var app = launch(environment: ["SGGS_UITEST_COLD_VERIFY": "1"])
+        XCTAssertTrue(app.navigationBars["Nitnem"].waitForExistence(timeout: 30), "cold launch never reached the app")
+        let cold = Date().timeIntervalSince(coldStart)
+        evidence(app, "D10 after a cold launch")
+        app.terminate()
+        let warmStart = Date()
+        app = launch(relaunch: true)
+        XCTAssertTrue(app.navigationBars["Nitnem"].waitForExistence(timeout: 30), "warm launch never reached the app")
+        let warm = Date().timeIntervalSince(warmStart)
+        note("D10 timings", String(format: "cold (full verify) to Nitnem: %.2f s\nwarm to Nitnem: %.2f s", cold, warm))
+        XCTAssertLessThan(cold, 5, "a cold launch must finish verifying in under 5 s")
+        XCTAssertLessThanOrEqual(warm, cold, "the second launch must not be slower")
+    }
+
+    /// D11: resume after a force quit, and a force quit DURING the integrity verify.
+    func testD11ResumeAndAnInterruptedVerify() {
         var app = launch()
         openAng(app, 700)
         evidence(app, "D11 reading Ang 700")
         app.terminate()
-
-        var timings: [String] = []
-        let start = Date()
         app = launch(relaunch: true)
-        XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 30) || app.buttons["Reader"].waitForExistence(timeout: 1))
-        timings.append(String(format: "relaunch to tabs: %.2f s", Date().timeIntervalSince(start)))
         tab(app, "Reader", nav: "Ang 700")
         evidence(app, "D11 resumed on Ang 700")
+        app.terminate()
 
-        // force quit during "Verifying scripture integrity…", then relaunch
+        // a cold verify takes long enough to be interrupted; it must be on screen when killed,
+        // or this run proves nothing about an interrupted verify
+        app = launch(environment: ["SGGS_UITEST_COLD_VERIFY": "1"])
+        let verifying = app.staticTexts["Verifying scripture integrity…"]
+        let caught = verifying.exists
+        evidence(app, "D11 at the force quit")
         app.terminate()
-        app = launch(relaunch: true)
-        Thread.sleep(forTimeInterval: 0.3)
-        evidence(app, "D11 killed during launch")
-        app.terminate()
-        let again = Date()
-        app = launch(relaunch: true)
+        XCTAssertTrue(caught, "the force quit did not land during the verify; the row is not proven")
+        app = launch(relaunch: true)                 // the cache was never written: a full verify again
         XCTAssertTrue(app.navigationBars["Nitnem"].waitForExistence(timeout: 30), "an interrupted verify must re-run and pass")
-        timings.append(String(format: "relaunch after an interrupted verify, to Nitnem: %.2f s", Date().timeIntervalSince(again)))
         XCTAssertFalse(app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] %@", "integrity check failed")).firstMatch.exists)
-        evidence(app, "D11 after interrupted verify")
-        note("D10 timings (this device, not the oldest supported)", timings.joined(separator: "\n"))
+        evidence(app, "D11 after the interrupted verify")
     }
 
     // MARK: D12 — hostile links

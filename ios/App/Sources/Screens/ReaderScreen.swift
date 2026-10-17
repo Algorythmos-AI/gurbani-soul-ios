@@ -228,41 +228,13 @@ struct ReaderScreen: View {
                         .accessibilityHint("Jump to another Ang")
 
                         // Chevrons show their destination Ang; the whole side is a ≥44 pt target.
-                        HStack {
-                            Button { Haptics.tap(); router.openAng(prev) } label: {
-                                HStack(spacing: Theme.Space.xs) {
-                                    Image(systemName: "chevron.left")
-                                    if prev >= 1 { Text(String(prev)).monospacedDigit() }
-                                }
-                                .frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
-                            }
-                            .disabled(router.readerAng <= 1)
-                            .accessibilityLabel("Previous Ang")
-                            .accessibilityValue(prev >= 1 ? "Ang \(prev)" : "")
-                            .accessibilityIdentifier("prevAng")
-                            Spacer()
-                            Button { Haptics.tap(); container.present(.hukam) } label: {
-                                // Keep the word where it fits; at large Dynamic Type sizes fall back to
-                                // the glyph alone so the chevrons + their numbers never truncate.
-                                ViewThatFits(in: .horizontal) {
-                                    Label("Hukam", systemImage: "sparkles").lineLimit(1)
-                                    Image(systemName: "sparkles")
-                                }
-                                .frame(minHeight: 44)
-                            }
-                            .accessibilityLabel("Hukam")
-                            Spacer()
-                            Button { Haptics.tap(); router.openAng(next) } label: {
-                                HStack(spacing: Theme.Space.xs) {
-                                    if next <= 1430 { Text(String(next)).monospacedDigit() }
-                                    Image(systemName: "chevron.right")
-                                }
-                                .frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
-                            }
-                            .disabled(router.readerAng >= 1430)
-                            .accessibilityLabel("Next Ang")
-                            .accessibilityValue(next <= 1430 ? "Ang \(next)" : "")
-                            .accessibilityIdentifier("nextAng")
+                        // At large Dynamic Type the row steps down instead of wrapping a number
+                        // across two lines: the Hukam word gives way to its glyph first, then the
+                        // numbers go (VoiceOver still says "Previous Ang, Ang N").
+                        ViewThatFits(in: .horizontal) {
+                            pageRow(prev: prev, next: next, numbers: true, hukamWord: true)
+                            pageRow(prev: prev, next: next, numbers: true, hukamWord: false)
+                            pageRow(prev: prev, next: next, numbers: false, hukamWord: false)
                         }
                         .font(.body.weight(.medium))
                         .padding(.horizontal, Theme.Space.m)
@@ -365,6 +337,46 @@ extension ReaderScreen {
             MotionGate.run(Motion.gentle) { chromeHidden = true }
         } else if chromeHidden, upRun >= 8 || offset <= 0 {
             showChrome()
+        }
+    }
+
+    /// One layout of the bottom page row. Text never wraps: `ViewThatFits` picks the first layout
+    /// whose ideal width fits, so a destination Ang is shown whole or not at all.
+    fileprivate func pageRow(prev: Int, next: Int, numbers: Bool, hukamWord: Bool) -> some View {
+        let ang = container.router.readerAng
+        return HStack {
+            Button { Haptics.tap(); container.router.openAng(prev) } label: {
+                HStack(spacing: Theme.Space.xs) {
+                    Image(systemName: "chevron.left")
+                    if numbers, prev >= 1 { Text(String(prev)).monospacedDigit().lineLimit(1).fixedSize() }
+                }
+                .frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
+            }
+            .disabled(ang <= 1)
+            .accessibilityLabel("Previous Ang")
+            .accessibilityValue(prev >= 1 ? "Ang \(prev)" : "")
+            .accessibilityIdentifier("prevAng")
+            Spacer(minLength: Theme.Space.s)
+            Button { Haptics.tap(); container.present(.hukam) } label: {
+                Group {
+                    if hukamWord { Label("Hukam", systemImage: "sparkles").lineLimit(1).fixedSize() }
+                    else { Image(systemName: "sparkles") }
+                }
+                .frame(minWidth: 44, minHeight: 44)
+            }
+            .accessibilityLabel("Hukam")
+            Spacer(minLength: Theme.Space.s)
+            Button { Haptics.tap(); container.router.openAng(next) } label: {
+                HStack(spacing: Theme.Space.xs) {
+                    if numbers, next <= 1430 { Text(String(next)).monospacedDigit().lineLimit(1).fixedSize() }
+                    Image(systemName: "chevron.right")
+                }
+                .frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
+            }
+            .disabled(ang >= 1430)
+            .accessibilityLabel("Next Ang")
+            .accessibilityValue(next <= 1430 ? "Ang \(next)" : "")
+            .accessibilityIdentifier("nextAng")
         }
     }
 
