@@ -52,14 +52,12 @@ enum Brand {
         let baseSize: CGFloat
         switch style {
         case .largeTitle: relativeTo = .largeTitle; baseSize = 34
-        case .title1: relativeTo = .largeTitle; baseSize = 34
         case .title2: relativeTo = .title; baseSize = 28
         case .title3: relativeTo = .title2; baseSize = 22
         case .headline: relativeTo = .headline; baseSize = 17
         case .subheadline: relativeTo = .subheadline; baseSize = 15
         case .callout: relativeTo = .callout; baseSize = 16
         case .footnote: relativeTo = .footnote; baseSize = 13
-        case .caption1: relativeTo = .caption; baseSize = 12
         case .caption2: relativeTo = .caption2; baseSize = 11
         default: relativeTo = .body; baseSize = 17
         }
