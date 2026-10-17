@@ -8,6 +8,7 @@ struct NitnemScreen: View {
     @Environment(AppContainer.self) private var container
     @Environment(\.palette) private var palette
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @AppStorage(NitnemPrefs.rehrasVariantKey) private var rehrasVariant = NitnemPrefs.rehrasDefault
     @State private var list: BaniList?
     @State private var failed = false
@@ -119,17 +120,17 @@ struct NitnemScreen: View {
             VStack(alignment: .leading, spacing: Theme.Space.xs) {
                 SectionEyebrow(text: date.formatted(.dateTime.weekday(.wide).day().month(.wide)))
                 Text(band.title).font(Brand.heading(.title2))
-                Text(band.caption).font(.subheadline).foregroundStyle(.secondary)
+                Text(band.caption).font(.subheadline).foregroundStyle(Ink.muted)
             }
             DayArc(model: arc).padding(.vertical, Theme.Space.xs)
-            if !focus.isEmpty {
+            if !focus.isEmpty && !dynamicTypeSize.isAccessibilitySize {
                 HStack(alignment: .top, spacing: Theme.Space.m) {
                     ForEach(focus) { b in
                         let done = container.nitnem.isCompleted(b.id, on: date)
                         let frac = container.nitnem.fraction(for: b.id, total: b.nLines, on: date)
                         VStack(spacing: Theme.Space.xs) {
                             ProgressRing(fraction: frac, done: done).frame(width: 44, height: 44)
-                            Text(shortTitle(b)).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                            Text(shortTitle(b)).font(.caption2).foregroundStyle(Ink.muted).lineLimit(1)
                         }
                         .accessibilityElement(children: .ignore)
                         .accessibilityLabel("\(b.titleEn), \(done ? "complete today" : "\(Int(frac * 100)) percent")")

@@ -203,6 +203,10 @@ enum Ink {
     /// The Reader's warm paper tone (a hue-shifted light leg that still clears every accent
     /// contrast pair; dark legs equal `paper`). Selected by the reader's "Warm" setting.
     static let paperWarm = Color(light: 0xFDF6E3, dark: 0x171412, lightHC: 0xFFFFFF, darkHC: 0x0E0C0A)
+    /// Small secondary copy on the Reader's paper. Unlike system `.secondary`, this
+    /// adaptive token is held to WCAG AA (≥4.5:1) in every appearance/contrast leg.
+    static let muted = Color(light: 0x62584D, dark: 0xC6BDB2,
+                             lightHC: 0x4B4339, darkHC: 0xD5CCC2)
     /// Hairline borders (replaces shadows in dark, where shadows die on ink).
     static let hairline = Color(UIColor { traits in
         let hc = traits.accessibilityContrast == .high

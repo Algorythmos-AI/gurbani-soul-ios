@@ -222,6 +222,8 @@ struct ReaderScreen: View {
                                     }
                                 }.frame(height: 2)
                             }
+                            .frame(minHeight: 44)
+                            .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("readerProgress")
@@ -285,7 +287,6 @@ struct ReaderScreen: View {
                         .frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .dynamicTypeSize(...DynamicTypeSize.accessibility1)   // never crowds the side buttons
                     .accessibilityLabel("Ang \(String(router.readerAng))")
                     .accessibilityHint("Type an Ang number to go to")
                     .accessibilityIdentifier("angTitle")

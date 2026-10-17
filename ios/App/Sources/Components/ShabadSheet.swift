@@ -10,6 +10,7 @@ struct ShabadSheet: View {
     let presentation: CompositionPresentation
     @Environment(AppContainer.self) private var container
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var state: LoadState<[ReaderLine]> = .loading
     @State private var title = "Loading…"
     @State private var openAng: Int?
@@ -68,9 +69,16 @@ struct ShabadSheet: View {
                                 container.router.openAng(ang, lineId: targetLine?.id)
                                 dismiss()
                             } label: {
-                                Label("Open Ang \(String(ang)) in Reader", systemImage: "book")
-                                    .font(.body.weight(.medium))
-                                    .frame(maxWidth: .infinity, minHeight: 44)
+                                Label(
+                                    dynamicTypeSize.isAccessibilitySize
+                                        ? "Open Ang \(String(ang))"
+                                        : "Open Ang \(String(ang)) in Reader",
+                                    systemImage: "book"
+                                )
+                                .font(.body.weight(.medium))
+                                .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .frame(maxWidth: .infinity, minHeight: 44)
                             }
                             .buttonStyle(.plain)
                             .padding(.horizontal, Theme.Space.m)

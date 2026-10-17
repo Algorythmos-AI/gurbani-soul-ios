@@ -7,6 +7,7 @@ import SwiftUI
 struct ExploreScreen: View {
     @Environment(AppContainer.self) private var container
     @Environment(\.palette) private var palette
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     private struct Entry: Identifiable {
         let route: Route
@@ -60,8 +61,10 @@ struct ExploreScreen: View {
                     .background(palette.heroGradient, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
                     .accessibilityElement(children: .combine)
 
-                    LazyVGrid(columns: [GridItem(.flexible(), spacing: Theme.Space.m), GridItem(.flexible())],
-                              spacing: Theme.Space.m) {
+                    let columns = dynamicTypeSize.isAccessibilitySize
+                        ? [GridItem(.flexible())]
+                        : [GridItem(.flexible(), spacing: Theme.Space.m), GridItem(.flexible())]
+                    LazyVGrid(columns: columns, spacing: Theme.Space.m) {
                         ForEach(entries) { e in
                             NavigationLink(value: e.route) {
                                 Card {
@@ -71,7 +74,7 @@ struct ExploreScreen: View {
                                             .foregroundStyle(palette.accent)
                                         Text(e.title).font(.headline).foregroundStyle(.primary)
                                         Text(e.caption)
-                                            .font(.caption).foregroundStyle(.secondary)
+                                            .font(.caption).foregroundStyle(Ink.muted)
                                             .multilineTextAlignment(.leading)
                                             .frame(maxWidth: .infinity, alignment: .leading)
                                     }
