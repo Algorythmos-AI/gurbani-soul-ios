@@ -36,6 +36,9 @@ final class SGGSUITests: XCTestCase {
             for key in ["SGGS_CLOCK_NOW", "SGGS_CLOCK_MODE", "SGGS_CLOCK_NO_COORDS"] {
                 if let v = env[key] { app.launchEnvironment[key] = v }
             }
+            // the app's own Appearance wins over the device's: pin it for the capture (argument
+            // domain only, never stored)
+            if let look = env["SGGS_SHOT_APPEARANCE"] { app.launchArguments += ["-sggs_appearance", look] }
         }
         app.launch()
         if selectSearch { openTab(app, "Search", expectingNavBar: "Search") }
@@ -389,6 +392,17 @@ final class SGGSUITests: XCTestCase {
         var more = 0
         while !web.waitForExistence(timeout: 2) && more < 4 { app.swipeUp(); more += 1 }
         XCTAssertTrue(web.exists, "online policy link missing")
+    }
+
+    /// More offers "Rate Gurbani Soul" (the App Store's write-a-review sheet) and "Share Gurbani Soul".
+    func testRateAndShareAreOfferedInMore() {
+        let app = launchApp(selectSearch: false)
+        openTab(app, "More", expectingNavBar: "More")
+        let rate = app.descendants(matching: .any).matching(identifier: "rateAppLink").firstMatch
+        for _ in 0..<6 where !(rate.exists && rate.isHittable) { app.swipeUp() }
+        XCTAssertTrue(rate.waitForExistence(timeout: 8), "Rate Gurbani Soul missing in More")
+        XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "shareAppLink").firstMatch.exists,
+                      "Share Gurbani Soul missing in More")
     }
 
     /// Rehras variant is a setting: switching to Taksal persists and retitles the row.
@@ -1363,7 +1377,11 @@ final class SGGSUITests: XCTestCase {
             _ = app.navigationBars["Search"].waitForExistence(timeout: 8)
         }
         func shot(_ name: String) {
-            try? app.screenshot().pngRepresentation.write(to: URL(fileURLWithPath: "\(dir)/\(tag)\(name).png"))
+            let png = app.screenshot()
+            try? png.pngRepresentation.write(to: URL(fileURLWithPath: "\(dir)/\(tag)\(name).png"))
+            // on a device the runner's files stay on the phone: the result bundle carries them too
+            let a = XCTAttachment(screenshot: png)
+            a.name = "shot \(tag)\(name)"; a.lifetime = .keepAlways; add(a)
         }
         let field = focusSearch(app)
         field.typeText("naam")

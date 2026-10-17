@@ -1,0 +1,15 @@
+{
+  "_doc": "The Night set (compose_store_shots_v2.py), in listing order. English only, never Gurmukhi (the scripture on each frame is the app's own rendering). Each headline and sub restates a claim in docs/ios/app-store-listing.md; ios/tests/test_store_shots.py lints them. `shot` is <appearance>_<name> from testCaptureScreens (SGGS_SHOT_TAG).",
+  "iphone-6.9": [
+    {"shot": "light_reader", "hero": true,
+     "headline": "Sri Guru Granth Sahib Ji, verbatim",
+     "sub": "All 1,430 Angs · cited by Ang · fully offline"},
+    {"shot": "dark_hukam", "headline": "Draw a complete Hukam, any time"},
+    {"shot": "light_after_search", "headline": "Search by word, sound or first letters"},
+    {"shot": "dark_nitnem_home", "headline": "Your daily Nitnem, your place kept"},
+    {"shot": "light_clock", "headline": "The raags of this watch of the day"},
+    {"shot": "dark_bani_reader", "headline": "Read each bani, pauri by pauri"},
+    {"shot": "light_themes", "headline": "Explore themes across the Granth"},
+    {"shot": "dark_lineage", "headline": "The contributors and their centuries"}
+  ]
+}

@@ -151,6 +151,9 @@ final class NitnemProgressStore {
         onChange?()
     }
 
+    /// How many different Nitnem days any bani was marked read on (the review prompt's threshold).
+    var distinctReadingDays: Int { Set(file.banis.values.flatMap(\.completedDays)).count }
+
     /// True when there is anything to clear (a position or a completed day for any bani).
     var hasHistory: Bool { !file.banis.isEmpty }
 

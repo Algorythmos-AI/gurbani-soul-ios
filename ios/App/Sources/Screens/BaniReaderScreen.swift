@@ -1,3 +1,4 @@
+import StoreKit
 import SwiftUI
 import GurbaniSearchKit
 
@@ -35,6 +36,7 @@ struct BaniReaderScreen: View {
     @AccessibilityFocusState private var voFocus: Int?
     @State private var chrome = AmbientChrome()
     @State private var chromeHidden = false
+    @Environment(\.requestReview) private var requestReview
     @State private var saveTask: Task<Void, Never>?
     @State private var completedNow = false
     @StateObject private var live = ReadingActivityController()
@@ -183,6 +185,25 @@ struct BaniReaderScreen: View {
         Haptics.success()
         MotionGate.run(Motion.gentle) { completedNow = true }
         live.end(done: true)
+        askForReviewIfDue()
+    }
+
+    /// A rating is asked for only here, after a bani is read (see `ReviewPrompt`), and a beat
+    /// after the completion settles so the prompt never covers the moment itself.
+    private func askForReviewIfDue() {
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["SGGS_UITEST"] == "1"
+            || ProcessInfo.processInfo.environment["SGGS_UITEST_RELAUNCH"] == "1" { return }
+        #endif
+        let version = ReviewPrompt.currentVersion
+        guard ReviewPrompt.shouldAsk(readingDays: container.nitnem.distinctReadingDays,
+                                     lastPromptedVersion: UserDefaults.standard.string(forKey: ReviewPrompt.lastVersionKey),
+                                     currentVersion: version) else { return }
+        UserDefaults.standard.set(version, forKey: ReviewPrompt.lastVersionKey)
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(1.5))
+            requestReview()
+        }
     }
 
     private func showContents() {

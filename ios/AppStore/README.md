@@ -78,3 +78,15 @@ binary (2.3.3), so retake **all three sets** from the release candidate:
 |---|---|---|---|
 | 2026-09-26 | `e7a0d8a` (tag v1.3.10; captured from `702ce91`, whose app sources are identical to the tag) | 1.3.10 (1) | 26.5 (iOS 26.5 simulators) |
 | not retaken | tag v1.4.0 | 1.4.0 (1) | — the 1.3.10 set is kept: no captured screen changed (the clock shot runs without coordinates, so "Forget location" is not drawn; the Reading journey screen is not captured) |
+
+## The Night set (since 1.4.3)
+
+`compose_store_shots_v2.py` frames the iPhone set on warm ink with a large device and one serif
+headline (`captions_v2.json`, linted by `ios/tests/test_store_shots.py`). The captures come from
+`testCaptureScreens` run twice on a physical iPhone 17 Pro Max (6.9", 1320 × 2868) with the
+**public** DB built into the app (`TEST_RUNNER_SGGS_SHOT_APPEARANCE=light|dark`,
+`TEST_RUNNER_SGGS_SHOT_TAG=light|dark`, clock pinned with `TEST_RUNNER_SGGS_CLOCK_NOW=581`); each
+shot is attached to the result bundle. A device capture carries the real status bar, so the
+composer repaints it as 9:41 with full signal and battery and an empty Dynamic Island.
+The iPad 13" set is still the 1.4.0 frame (no iPad or simulator on the release Mac); re-frame it
+in this style when one is available.
