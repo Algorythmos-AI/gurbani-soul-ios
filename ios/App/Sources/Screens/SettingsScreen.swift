@@ -10,7 +10,6 @@ struct MoreScreen: View {
     @AppStorage(AccentPalette.storageKey) private var accentChoice = AccentPalette.brandDefault.rawValue
     @AppStorage(NitnemPrefs.rehrasVariantKey) private var rehrasVariant = NitnemPrefs.rehrasDefault
     @AppStorage(ReadingActivityController.enabledKey) private var liveActivity = false
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         NavigationStack {
