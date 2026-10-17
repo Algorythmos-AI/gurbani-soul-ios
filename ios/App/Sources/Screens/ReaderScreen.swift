@@ -250,6 +250,9 @@ struct ReaderScreen: View {
                     .allowsHitTesting(!chromeHidden)
                     .accessibilityHidden(chromeHidden)   // leaves the a11y tree when faded out
                     .appAnimation(Motion.gentle, value: chromeHidden)
+                    // a container, so Previous / Hukam / Next / progress keep their own ids
+                    // (without it this id replaced theirs: every control reported "readerPageBar")
+                    .accessibilityElement(children: .contain)
                     .accessibilityIdentifier("readerPageBar")
                 }
             }
@@ -354,7 +357,7 @@ extension ReaderScreen {
             }
             .disabled(ang <= 1)
             .accessibilityLabel("Previous Ang")
-            .accessibilityValue(prev >= 1 ? "Ang \(prev)" : "")
+            .accessibilityValue(prev >= 1 ? "Ang \(String(prev))" : "")   // "Ang 1353", as shown
             .accessibilityIdentifier("prevAng")
             Spacer(minLength: Theme.Space.s)
             Button { Haptics.tap(); container.present(.hukam) } label: {
@@ -375,7 +378,7 @@ extension ReaderScreen {
             }
             .disabled(ang >= 1430)
             .accessibilityLabel("Next Ang")
-            .accessibilityValue(next <= 1430 ? "Ang \(next)" : "")
+            .accessibilityValue(next <= 1430 ? "Ang \(String(next))" : "")
             .accessibilityIdentifier("nextAng")
         }
     }

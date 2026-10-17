@@ -9,7 +9,7 @@ set -euo pipefail
 APP="${1:?usage: $0 path/to/SGGS.app}"
 [ -f "$APP/Info.plist" ] || { echo "FAIL: $APP is not an app bundle"; exit 1; }
 found=0
-for marker in uitest-vault SGGS_UITEST SGGS_UITEST_RELAUNCH SGGS_UITEST_COLD_VERIFY UITestVault; do
+for marker in uitest-vault SGGS_UITEST SGGS_UITEST_RELAUNCH SGGS_UITEST_COLD_VERIFY SGGS_UITEST_HOLD_VERIFY UITestVault; do
   # the scripture database is excluded: it is data, never code, and large
   hits=$(find "$APP" -type f ! -name '*.sqlite' -print0 | xargs -0 env LC_ALL=C grep -a -l -- "$marker" 2>/dev/null || true)
   if [ -n "$hits" ]; then

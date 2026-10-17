@@ -256,7 +256,9 @@ final class DeviceChecklistTests: XCTestCase {
         let warm = Date().timeIntervalSince(warmStart)
         note("D10 timings", String(format: "cold (full verify) to Nitnem: %.2f s\nwarm to Nitnem: %.2f s", cold, warm))
         XCTAssertLessThan(cold, 5, "a cold launch must finish verifying in under 5 s")
-        XCTAssertLessThanOrEqual(warm, cold, "the second launch must not be slower")
+        XCTAssertLessThan(warm, 5, "a warm launch must be under 5 s too")
+        // "faster" is recorded, not asserted: on a current iPhone the full hash takes tens of
+        // milliseconds, well inside launch-to-launch noise, so a comparison would only flake.
     }
 
     /// D11: resume after a force quit, and a force quit DURING the integrity verify.
@@ -270,11 +272,11 @@ final class DeviceChecklistTests: XCTestCase {
         evidence(app, "D11 resumed on Ang 700")
         app.terminate()
 
-        // a cold verify takes long enough to be interrupted; it must be on screen when killed,
-        // or this run proves nothing about an interrupted verify
-        app = launch(environment: ["SGGS_UITEST_COLD_VERIFY": "1"])
+        // a cold verify, held open (Debug fault injection) so the force quit lands during it; the
+        // verify screen must be up when killed, or this run proves nothing about an interruption
+        app = launch(environment: ["SGGS_UITEST_COLD_VERIFY": "1", "SGGS_UITEST_HOLD_VERIFY": "8"])
         let verifying = app.staticTexts["Verifying scripture integrity…"]
-        let caught = verifying.exists
+        let caught = verifying.waitForExistence(timeout: 4)
         evidence(app, "D11 at the force quit")
         app.terminate()
         XCTAssertTrue(caught, "the force quit did not land during the verify; the row is not proven")

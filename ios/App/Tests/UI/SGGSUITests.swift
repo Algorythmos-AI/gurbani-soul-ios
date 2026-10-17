@@ -237,6 +237,8 @@ final class SGGSUITests: XCTestCase {
                               "\(size): the destination Angs show at the default size")
             }
             captureIfRequested(app, "page_bar_\(size)")
+            let shot = XCTAttachment(screenshot: app.screenshot())
+            shot.name = "page bar \(size)"; shot.lifetime = .keepAlways; add(shot)
             app.terminate()
         }
     }
