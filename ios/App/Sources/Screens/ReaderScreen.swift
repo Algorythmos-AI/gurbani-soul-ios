@@ -248,12 +248,14 @@ struct ReaderScreen: View {
                     .opacity(chromeHidden ? 0 : 1)
                     .offset(y: chromeHidden ? 40 : 0)
                     .allowsHitTesting(!chromeHidden)
-                    .accessibilityHidden(chromeHidden)   // leaves the a11y tree when faded out
                     .appAnimation(Motion.gentle, value: chromeHidden)
                     // a container, so Previous / Hukam / Next / progress keep their own ids
                     // (without it this id replaced theirs: every control reported "readerPageBar")
                     .accessibilityElement(children: .contain)
                     .accessibilityIdentifier("readerPageBar")
+                    // after the container, so the whole bar (and every control in it) leaves the
+                    // a11y tree when faded out — VoiceOver never lands on an invisible control
+                    .accessibilityHidden(chromeHidden)
                 }
             }
             .toolbar {
