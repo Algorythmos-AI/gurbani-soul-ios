@@ -245,14 +245,20 @@ runner with Xcode 26.3, SDK iphoneos26.2, uploaded 2026-10-13). The brand gates 
 
 ## 8. Physical-device regression checklist (production-readiness audit, 2026-10-17)
 
-Run on a physical iPhone for every candidate build. A row is **PASS** only when it was executed on
+Run on a physical iPhone for every candidate build. D2, D3, D6, D10 (this device),
+D11 and D12 are automated by `DeviceChecklistTests` (run with
+`TEST_RUNNER_SGGS_DEVICE_CHECKLIST=1`; evidence is attached to the result bundle), and
+`python3 ios/tools/device_checklist_report.py <run>.xcresult` passes only when every one of them
+ran on a physical device, passed and attached its evidence; the other rows are manual. A device's own data is sealed before any UI test wipes
+it and restored on its next ordinary launch (`UITestVault`, Debug only). Latest run:
+`device-checklist-2026-10-17.md`. A row is **PASS** only when it was executed on
 the device and the evidence column says what was seen; source inspection or a simulator run never
 counts here. Record once per run: device model · iOS version · app version · build · tester · date.
 
 | ID | Check | Steps | Expected | Result | Evidence / notes |
 |---|---|---|---|---|---|
 | D1 | Charter S 1–7 | §3 Charter S | zero deviations against a printed Bir or the ShabadOS second source | | |
-| D2 | Copy fidelity | Ang 1400, saroop **on**: Copy verse `ਗੋਬਿੰਦ ਵਾਲੁ … ਜਲ੍ਯ੍ਯਨ …`; paste into Notes; repeat with saroop **off** | both pastes are the stored doubled form `ਜਲ੍ਯ੍ਯਨ`, never `ਜਲੵਨ`, and carry the Ang citation | | |
+| D2 | Copy fidelity | Ang 1400, saroop **on**: Copy verse `ਗੋਬਿੰਦ ਵਾਲੁ … ਜਲ੍ਯ੍ਯਨ …`; paste into Notes; repeat with saroop **off** | both pastes are the stored doubled form `ਜਲ੍ਯ੍ਯਨ`, never `ਜਲੵਨ`. Copy gives the verse alone; **Share** adds the "Sri Guru Granth Sahib Ji · Ang N" citation (`A11Y_CHECKLIST.md` item 11) | | |
 | D3 | Gurmukhi rendering | Angs 1, 1354, 1359, 1400 in light and dark, AX3 text | Sant Lipi everywhere; ਸਤੵਿੰ (Ang 1354) shows the sihari before the letter and the ya under it; no dotted circles | | |
 | D4 | Update from the store build | Charter U from the App Store build to the candidate | saved verses, accent, toggles, resume Ang and Nitnem progress intact; full re-hash once, then cached | | |
 | D5 | Forget location | Clock → Solar → set a location → Forget location; check the Raag widget | clock back to fixed hours; the widget shows no location | | Forget is only offered in Solar mode (known, P3) |

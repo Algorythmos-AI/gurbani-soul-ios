@@ -104,6 +104,13 @@ enum LaunchIntegrity {
         if cached {
             sha = expected ?? ""                    // full verify already proved this exact file
         } else {
+            #if DEBUG
+            // Fault injection for the device checklist (D11): hold a cold verify open so a force
+            // quit can land during it. Debug only; check_no_test_hooks.sh keeps it out of releases.
+            if let hold = ProcessInfo.processInfo.environment["SGGS_UITEST_HOLD_VERIFY"].flatMap(Double.init) {
+                try? await Task.sleep(for: .seconds(min(hold, 15)))
+            }
+            #endif
             // Hash the ~100 MB DB OFF the main thread (this is awaited from a @MainActor caller).
             sha = await Task.detached(priority: .userInitiated) { sha256(ofFileAt: path) ?? "" }.value
         }

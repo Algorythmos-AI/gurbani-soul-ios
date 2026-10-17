@@ -268,6 +268,8 @@ SHIPPED_PROFILE=$(python3 -c "import json;print(json.load(open('$APP/sggs-ios.ma
 [ "$SHIPPED_PROFILE" = "$PROFILE" ] || fail "profile inside the .app is $SHIPPED_PROFILE, expected $PROFILE"
 ACTUAL_SHA=$(shasum -a 256 "$APP/sggs-ios.sqlite" | cut -d' ' -f1)
 [ "$ACTUAL_SHA" = "$SHIPPED_SHA" ] || fail "DB inside the .app does not hash to its manifest"
+# Debug-only UI-test hooks (the data vault, SGGS_UITEST) must not be in what ships.
+bash ios/tools/check_no_test_hooks.sh "$APP" || fail "UI-test hooks found in the archived app"
 # The SDK the binary was actually built with (what App Store Connect validates), not what we hoped.
 DT_XCODE=$(/usr/libexec/PlistBuddy -c 'Print DTXcode' "$APP/Info.plist")
 DT_SDK=$(/usr/libexec/PlistBuddy -c 'Print DTSDKName' "$APP/Info.plist")
