@@ -124,6 +124,9 @@ scholar sign-off recorded.
    app icon v2 with its launch screen (a ੴ above an open pothi — see
    `docs/brand/gurbani-soul-brand-book.md` §5, gate G3) and the default-ON saroop rendering, which since
    PR #36 draws the doubled subjoined ya as the yakash under the letter, as the printed Bir does.
+   **2026-10-17: the owner accepted G3 for the saroop display for release 1.4.3** (recorded in the
+   platform CHANGELOG); the scholar review continues and any change ships in the next release.
+   Icon v2 stays parked on `feat/icon-v2-pending-g3`.
    Record the outcome in the build log; if the default changes, it is the `@AppStorage("sggs_saroop")`
    default in `GurmukhiText.swift` and `SettingsScreen.swift` and `let ON` in the web `saroop.ts`,
    plus a CHANGELOG entry.

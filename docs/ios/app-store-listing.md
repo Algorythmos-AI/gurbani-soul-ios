@@ -48,7 +48,7 @@ are banis it does contain. `ios/tests/test_ios_gates.py` lints this section.)
 
 ## Promotional text (170) — trust first (editable any time; NOT indexed for search)
 
-> Every verse verbatim from Sri Guru Granth Sahib Ji, cited by Ang — never AI-generated. Search by word, sound or first letters. Hukam, Nitnem, reminders. Fully offline.
+> Every verse verbatim from Sri Guru Granth Sahib Ji, cited by Ang — never AI-generated. Search by word, sound or first letters. Hukam, Nitnem, Raag Clock. Fully offline.
 
 ## Description (4,000)
 
@@ -58,6 +58,7 @@ are banis it does contain. `ios/tests/test_ios_gates.py` lints this section.)
 > • The full Granth, verbatim, in a beautiful Gurmukhi typeface (Sant Lipi).
 > • Turn pages, jump to any Ang, resume where you left off.
 > • Every composition opens with its printed heading, and every verse is cited by Ang.
+> • The traditional saroop draws the subjoined ya under the letter, as the printed Bir does. One tap shows the stored characters; Copy and search always use them.
 >
 > SEARCH
 > • Type Gurmukhi, or type how it sounds in Roman letters.
@@ -65,7 +66,7 @@ are banis it does contain. `ios/tests/test_ios_gates.py` lints this section.)
 > • Explore by theme across the whole Granth.
 >
 > NITNEM
-> • The daily banis by time of day, with your place kept in each one and a quiet record of the days you read.
+> • The daily banis by time of day, read pauri by pauri, with your place kept in each one and a quiet record of the days you read.
 > • Build your own Nitnem set, and choose the Rehras Sahib reading you follow.
 > • Optional reminders at times you choose — scheduled on your device, never from a server.
 > • An optional Live Activity shows your reading progress on the Lock Screen. It never shows a verse.
@@ -106,13 +107,14 @@ are banis it does contain. `ios/tests/test_ios_gates.py` lints this section.)
 
 ## What's New
 
-For version 1.4.0, the first update. Rewritten for every version; limit 4000 characters.
+For version 1.4.3. Rewritten for every version; limit 4000 characters.
 
-> You can now remove what the app keeps on your device.
+> The subjoined ya now looks as it does in the printed Bir.
 >
-> • Forget location: when the Raag Clock uses your location for sunrise and sunset, a "Forget location" button deletes the saved location from the app and its widgets.
-> • Clear reading history: the Reading journey screen can clear your Nitnem reading history.
-> • Home Screen search stays in step: when your saved verses are reset, they are removed from search as well.
+> • Words such as ਜਲੵਨ (Ang 1400) show the ya tucked under the letter, as the Bir prints it. The traditional saroop is a display choice: one tap in More shows the stored characters, and Copy and search always use them.
+> • Larger text: the Reader's page bar stays on one line at the largest text sizes, and VoiceOver reads each Ang number clearly.
+> • Rate and share Gurbani Soul from More.
+> • Steadier everyday use: your Rehras choice now applies to the standard Nitnem set, the reading journey shows the right day in every time zone, and saved verses, Home Screen search and Nitnem progress are better protected.
 >
 > The text of Sri Guru Granth Sahib Ji is unchanged.
 

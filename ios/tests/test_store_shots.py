@@ -52,5 +52,51 @@ class StoreShotCaptions(unittest.TestCase):
                 self.assertIn(shot, produced, f"{name}: testCaptureScreens has no shot({shot!r})")
 
 
+V2 = json.loads((ROOT / "ios" / "AppStore" / "captions_v2.json").read_text(encoding="utf-8"))
+V2_SETS = {k: v for k, v in V2.items() if not k.startswith("_")}
+
+
+class NightSetCaptions(unittest.TestCase):
+    """captions_v2.json (compose_store_shots_v2.py): the same rules, for headline and sub line."""
+
+    def lines(self):
+        for name, entries in V2_SETS.items():
+            for e in entries:
+                yield name, e, e["headline"], 42
+                if "sub" in e:
+                    yield name, e, e["sub"], 60
+
+    def test_short_english_never_gurmukhi(self):
+        for name, e, text, limit in self.lines():
+            self.assertLessEqual(len(text), limit, f"{name}/{e['shot']}: {text!r} too long")
+            self.assertIsNone(re.search(r"[\u0A00-\u0A7F]", text), "no Gurmukhi typeset over screenshots")
+
+    def test_claim_nothing_the_app_does_not_do(self):
+        forbidden = r"(?i)\baudio\b|\bkirtan\b|\bbeta\b|\btestflight\b|\bandroid\b|\bAI\b|\bfree\b|\bbest\b|#1"
+        for _, _, text, _ in self.lines():
+            self.assertIsNone(re.search(forbidden, text), text)
+
+    def test_every_word_is_in_the_listing(self):
+        stop = {"every", "your", "the", "and", "their", "by", "or", "of", "this", "any", "a", "across",
+                "draw", "kept", "each", "all", "ji"}
+        for _, _, text, _ in self.lines():
+            words = [w for w in re.findall(r"[a-z]+", text.lower()) if w not in stop]
+            self.assertEqual([w for w in words if w not in LISTING], [], text)
+
+    def test_one_hero_first(self):
+        for name, entries in V2_SETS.items():
+            self.assertTrue(entries[0].get("hero"), f"{name}: the first frame is the hero")
+            self.assertEqual(sum(bool(e.get("hero")) for e in entries), 1)
+            self.assertTrue(3 <= len(entries) <= 10)
+
+    def test_every_shot_is_produced_by_the_capture_test(self):
+        produced = set(re.findall(r'shot\("([a-z0-9_]+)"\)', UI_TESTS))
+        for name, entries in V2_SETS.items():
+            for e in entries:
+                look, _, shot = e["shot"].partition("_")
+                self.assertIn(look, {"light", "dark"}, e["shot"])
+                self.assertIn(shot, produced, f"{name}: testCaptureScreens has no shot({shot!r})")
+
+
 if __name__ == "__main__":
     unittest.main()

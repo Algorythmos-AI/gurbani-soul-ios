@@ -138,6 +138,19 @@ struct MoreScreen: View {
                     NavigationLink { AboutScreen() } label: { Label("About & credits", systemImage: "info.circle") }
                 }
                 .inkRow()
+                Section {
+                    Link(destination: AppLinks.writeReview) { Label("Rate Gurbani Soul", systemImage: "star") }
+                        .accessibilityHint("Opens the App Store to write a review")
+                        .accessibilityIdentifier("rateAppLink")
+                    ShareLink(item: AppLinks.appStore,
+                              message: Text("Gurbani Soul — Sri Guru Granth Sahib Ji, verbatim and cited by Ang.")) {
+                        Label("Share Gurbani Soul", systemImage: "square.and.arrow.up")
+                    }
+                    .accessibilityIdentifier("shareAppLink")
+                } footer: {
+                    Text("A review helps others find Gurbani Soul.")
+                }
+                .inkRow()
             }
             .inkGroupedList()
             .navigationTitle("More")

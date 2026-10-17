@@ -7,6 +7,9 @@ import SwiftUI
 enum AppLinks {
     static let privacy = URL(string: "https://gurbanisoul.com/privacy")!
     static let support = URL(string: "https://gurbanisoul.com/support")!
+    /// The App Store page (Apple ID 6812982384) and its write-a-review sheet.
+    static let appStore = URL(string: "https://apps.apple.com/app/id6812982384")!
+    static let writeReview = URL(string: "https://apps.apple.com/app/id6812982384?action=write-review")!
 }
 
 /// The in-app Privacy Policy (Guideline 5.1.1(i): reachable inside the app). Deliberately static
