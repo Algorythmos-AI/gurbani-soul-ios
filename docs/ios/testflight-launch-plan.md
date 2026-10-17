@@ -126,7 +126,8 @@ scholar sign-off recorded.
    PR #36 draws the doubled subjoined ya as the yakash under the letter, as the printed Bir does.
    **2026-10-17: the owner accepted G3 for the saroop display for release 1.4.3** (recorded in the
    platform CHANGELOG); the scholar review continues and any change ships in the next release.
-   Icon v2 stays parked on `feat/icon-v2-pending-g3`.
+   **2026-10-18: the owner waived G3 for app icon v2 and its launch screen for release 1.4.4** (an owner
+   waiver, not a scholar pass); the scholar review continues and any change ships in a later release.
    Record the outcome in the build log; if the default changes, it is the `@AppStorage("sggs_saroop")`
    default in `GurmukhiText.swift` and `SettingsScreen.swift` and `let ON` in the web `saroop.ts`,
    plus a CHANGELOG entry.
