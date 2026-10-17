@@ -61,7 +61,7 @@ after review:
 - `ios/tools/check_no_test_hooks.sh` proves no hook is in a Release bundle (wired into the archive;
   negative control: the Debug bundle is flagged in `SGGS.debug.dylib`).
 
-`UITestVaultTests` (19 tests) cover: launch-mode classification, an exact round trip (boundary Ang
+`UITestVaultTests` (18 tests) cover: launch-mode classification, an exact round trip (boundary Ang
 1430, nested and binary settings), pending WAL rows, a stale WAL from a crashed test, empty
 original data, an unreadable source, an unwritable vault, an interrupted seal, repeated seals, a
 tampered vault, another format, an unverified vault, unknown items, a partial restore that
