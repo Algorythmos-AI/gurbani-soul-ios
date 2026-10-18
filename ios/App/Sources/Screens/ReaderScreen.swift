@@ -222,8 +222,6 @@ struct ReaderScreen: View {
                                     }
                                 }.frame(height: 2)
                             }
-                            .frame(minHeight: 44)
-                            .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("readerProgress")
