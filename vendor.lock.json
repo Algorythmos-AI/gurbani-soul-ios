@@ -10,7 +10,7 @@
       "version": "1.0.0"
     },
     "platform": {
-      "commit": "cbcc5fe9fc5fa027adae4ed83f997aba5bc2f109",
+      "commit": "7c29ae41a1a8ff566981429df0f72152bb052c0e",
       "files": {
         "contract/_meta.json": "d8149b366523353945f54e56010ac94629af295ebe650a2a4d48ef85e14bce82",
         "contract/golden_analytics.ndjson": "70624246ac9f8b54719c5bf50be2235182d15a25f406b308b816b4f78a18c043",
@@ -25,9 +25,9 @@
         "docs/brand/tokens.json": "762c1347c7b491e243e07807de58ab305b57fefdeabd3f5c4c00b36a50f8607b",
         "frontend/public/contributors.json": "0e6316d025f65a5b9c15f2a0c68a184935b388da0590fdba410bbd5532e5cf4e"
       },
-      "ref": "cbcc5fe",
+      "ref": "v1.4.5",
       "repository": "Algorythmos-AI/sggs-platform",
-      "version": "1.4.4"
+      "version": "1.4.5"
     }
   }
 }
