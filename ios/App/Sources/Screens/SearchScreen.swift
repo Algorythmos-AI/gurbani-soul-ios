@@ -57,6 +57,7 @@ final class SearchModel {
 
 struct SearchScreen: View {
     @Environment(AppContainer.self) private var container
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var model: SearchModel?
 
     var body: some View {
@@ -95,17 +96,33 @@ struct SearchScreen: View {
         if let model {
             let modes = SearchModel.modes(hasEnglish: container.corpus?.capabilities.hasEnglish == true)
             VStack(spacing: 0) {
-                // web-style mode pills (7 modes don't fit a segmented control)
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: Theme.Space.s) {
-                        ForEach(modes, id: \.id) { m in
-                            ModePill(title: m.label, isSelected: model.mode == m.id,
-                                     accessibilityID: "mode_\(m.id)") { model.mode = m.id }
+                // Compact horizontal pills at normal sizes, wrapping into a two-column grid
+                // at Accessibility sizes so labels such as "Gurmukhi" remain fully readable.
+                Group {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        LazyVGrid(columns: [GridItem(.flexible(), spacing: Theme.Space.s),
+                                            GridItem(.flexible(), spacing: Theme.Space.s)],
+                                  alignment: .leading, spacing: Theme.Space.s) {
+                            ForEach(modes, id: \.id) { m in
+                                ModePill(title: m.label, isSelected: model.mode == m.id,
+                                         accessibilityID: "mode_\(m.id)") { model.mode = m.id }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
+                        .padding(.horizontal)
+                    } else {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: Theme.Space.s) {
+                                ForEach(modes, id: \.id) { m in
+                                    ModePill(title: m.label, isSelected: model.mode == m.id,
+                                             accessibilityID: "mode_\(m.id)") { model.mode = m.id }
+                                }
+                            }
+                            .padding(.horizontal)
+                            .frame(maxWidth: VerseTypography.readingColumn + 2 * Theme.Space.l)
+                            .frame(maxWidth: .infinity)
                         }
                     }
-                    .padding(.horizontal)
-                    .frame(maxWidth: VerseTypography.readingColumn + 2 * Theme.Space.l)
-                    .frame(maxWidth: .infinity)
                 }
                 .padding(.bottom, Theme.Space.xs)
                 .accessibilityIdentifier("searchModePicker")

@@ -17,17 +17,19 @@ struct MoreScreen: View {
                 if container.corpus?.capabilities.hasBanis == true {
                     Section {
                         Picker("Rehras Sahib", selection: $rehrasVariant) {
-                            Text("SGPC (standard)").tag("sgpc")
-                            Text("Damdami Taksal").tag("taksal")
+                            Text("SGPC (standard)").fixedSize(horizontal: false, vertical: true).tag("sgpc")
+                            Text("Damdami Taksal").fixedSize(horizontal: false, vertical: true).tag("taksal")
                         }
                         .id(accentChoice)
                         .accessibilityIdentifier("rehrasVariantPicker")
                         NavigationLink { NitnemSetsScreen() } label: {
                             Label("My Nitnem", systemImage: "list.bullet.rectangle")
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                         .accessibilityIdentifier("nitnemSetsLink")
                         NavigationLink { NitnemRemindersScreen() } label: {
                             Label("Reminders", systemImage: "bell")
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                         .accessibilityIdentifier("nitnemRemindersLink")
                         Toggle(isOn: $liveActivity) {
@@ -79,15 +81,17 @@ struct MoreScreen: View {
                             .accessibilityValue("\(Int(gurmukhiSize)) point")
                     }
 
-                    Picker("Appearance", selection: $appearance) {
+                    Picker(selection: $appearance) {
                         Text("System").tag("system"); Text("Light").tag("light"); Text("Dark").tag("dark")
+                    } label: {
+                        Text("Appearance").foregroundStyle(Ink.muted)
                     }
                     // The menu label is UIKit-backed and caches its tint at creation — re-key
                     // just this control so an accent change repaints it (nav state untouched).
                     .id(accentChoice)
 
                     VStack(alignment: .leading, spacing: Theme.Space.s) {
-                        Text("Accent")
+                        Text("Accent").foregroundStyle(Ink.muted)
                         HStack(spacing: Theme.Space.m) {
                             ForEach(AccentPalette.allCases) { p in
                                 Button {

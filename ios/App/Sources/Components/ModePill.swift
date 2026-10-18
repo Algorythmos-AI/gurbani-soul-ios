@@ -16,13 +16,16 @@ struct ModePill: View {
     let action: () -> Void
 
     @Environment(\.palette) private var palette
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         Button(action: action) {
             HStack(spacing: 5) {
                 if let dot { Circle().fill(dot).frame(width: 7, height: 7) }
                 if let systemImage { Image(systemName: systemImage).font(.caption) }
-                Text(title).lineLimit(1)               // the row scrolls; a pill never wraps
+                Text(title)
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+                    .fixedSize(horizontal: false, vertical: dynamicTypeSize.isAccessibilitySize)
             }
             .font(.subheadline.weight(isSelected ? .semibold : .regular))
             .padding(.horizontal, Theme.Space.m)

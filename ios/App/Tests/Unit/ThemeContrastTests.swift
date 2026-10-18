@@ -107,6 +107,11 @@ final class ThemeContrastTests: XCTestCase {
         }
     }
 
+    func testMutedTextReadsOnWarmPaper() {
+        assertRatio(Ink.muted, on: Ink.paper, atLeast: 4.5, "Ink.muted on paper")
+        assertRatio(Ink.muted, on: Ink.paperWarm, atLeast: 4.5, "Ink.muted on paperWarm")
+    }
+
     // MARK: surfaces stay layered (dark ink ramp must remain distinguishable)
 
     func testDarkSurfaceRampIsOrderedAndWarm() {

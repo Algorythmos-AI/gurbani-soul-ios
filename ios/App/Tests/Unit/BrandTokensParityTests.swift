@@ -25,6 +25,7 @@ final class BrandTokensParityTests: XCTestCase {
             "surfaces.card": Ink.card,
             "surfaces.paper": Ink.paper,
             "surfaces.paperWarm": Ink.paperWarm,
+            "ink.muted": Ink.muted,
             "soul.accent": soul.accent,
             "soul.accentFill": soul.accentFill,
             "soul.accentText": soul.accentText,

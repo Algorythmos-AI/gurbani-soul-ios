@@ -40,13 +40,13 @@ struct LineRow: View {
         VStack(alignment: .leading, spacing: 5) {
             GurmukhiText(verbatim: gurmukhi, size: 22)
             if showTranslit && translitPref && !translit.isEmpty {
-                Text(translit).font(.subheadline).foregroundStyle(.secondary)
+                Text(translit).font(.subheadline).foregroundStyle(Ink.muted)
                     .padding(.top, 1)
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityHidden(true)            // a reading aid, not scripture
             }
             if englishPref, let en, !en.isEmpty {
-                Text(en).font(.callout).foregroundStyle(.secondary)
+                Text(en).font(.callout).foregroundStyle(Ink.muted)
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityLabel("English translation: \(en)")
             }

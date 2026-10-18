@@ -45,9 +45,27 @@ enum Brand {
         return UIFontMetrics(forTextStyle: style).scaledFont(for: UIFont(descriptor: descriptor, size: size))
     }
 
-    /// SwiftUI heading font. Call from `body` so a Dynamic Type change re-resolves it.
+    /// SwiftUI heading font. Use a relative text style so SwiftUI re-resolves the bundled
+    /// serif when Dynamic Type changes, including the Accessibility sizes.
     static func heading(_ style: UIFont.TextStyle = .headline, weight: CGFloat = 600) -> Font {
-        Font(headingUIFont(style, weight: weight))
+        let relativeTo: Font.TextStyle
+        let baseSize: CGFloat
+        switch style {
+        case .largeTitle: relativeTo = .largeTitle; baseSize = 34
+        case .title2: relativeTo = .title; baseSize = 28
+        case .title3: relativeTo = .title2; baseSize = 22
+        case .headline: relativeTo = .headline; baseSize = 17
+        case .subheadline: relativeTo = .subheadline; baseSize = 15
+        case .callout: relativeTo = .callout; baseSize = 16
+        case .footnote: relativeTo = .footnote; baseSize = 13
+        case .caption2: relativeTo = .caption2; baseSize = 11
+        default: relativeTo = .body; baseSize = 17
+        }
+        guard UIFont(name: headingFontName, size: baseSize) != nil else {
+            return .system(relativeTo, design: .serif).weight(weight >= 650 ? .bold : .semibold)
+        }
+        return .custom(headingFontName, size: baseSize, relativeTo: relativeTo)
+            .weight(weight >= 650 ? .bold : .semibold)
     }
 
     /// Navigation-bar titles in the heading serif. Sets only the title text attributes, so
