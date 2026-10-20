@@ -30,10 +30,11 @@ struct GurmukhiText: View {
             .accessibilityLabel(Text(punjabiLabel))
     }
 
-    /// The rendered string: saroop painter + no-break binding of the closing marker. Display
-    /// only — everything else in the app reads `verbatim`.
+    /// The rendered string: saroop painter + shaping repair + no-break binding of the closing
+    /// marker. Display only — everything else in the app reads `verbatim`.
     private var displayed: String {
-        VerseTypography.bindingClosingMarkers(saroop ? Saroop.toTraditional(verbatim) : verbatim)
+        VerseTypography.bindingClosingMarkers(
+            GlyphRepair.forDisplay(saroop ? Saroop.toTraditional(verbatim) : verbatim))
     }
 
     private var punjabiLabel: AttributedString {

@@ -36,7 +36,7 @@ struct ShabadSheet: View {
                                 // now open the composition (matches the printed saroop and
                                 // the Reader). Rendered as a centred heading, never a savable
                                 // verse row. Mirrors ReaderScreen.
-                                VerseHeading(verbatim: line.gurmukhi)
+                                VerseHeading(verbatim: line.gurmukhi, translit: line.translit)
                                     .padding(.vertical, 4)
                                     .id(line.id)
                                     .listRowSeparator(.hidden)

@@ -55,7 +55,10 @@ ORDER the home; nothing is hidden.
 ## Frozen XCUITest identifiers & strings (do not change without updating the suite)
 Tab / nav: `Nitnem`, each bani's `titleEn` (e.g. "Japji Sahib", "Jaap Sahib"), band title
 "Amrit Vela". Rows/actions: `bani_<key>`, `Hukam`, `nitnemContinue`, `nitnemDone`, `nitnemNext`,
-`baniBackToNitnem`, `baniOptions` (a Menu holding "Start again", "Contents", "Reading settings"),
+`baniBackToNitnem`, `baniOptions` (a Menu holding "Start again", "Contents", "Reading settings",
+"Sehaj focus", "Gutka layout"), `verseHeading` (a centred heading line, e.g. a Sri Dasam Granth
+chhand title), `gutkaRow` (two half-lines on one row, each a `gutkaHalf`) / `gutkaRowStacked`
+(the same pair one per row when it does not fit),
 `baniMarkComplete`, `baniPageBar`, `baniPosition` ("Part g of n" / "Line s of n"), `baniStanza`
 ("Pauri N of M" / "Ashtapadi N of M"), the step buttons "Previous/Next pauri|ashtapadi" (a bani
 with a trustworthy outline of more than one numbered section steps by that rhythm; Rehras and
@@ -65,7 +68,9 @@ the section header "MAJOR COMPOSITIONS". Reading settings: `gurmukhiSizeSlider`,
 `readerLeadingPicker`, `readerTonePicker`, `translitToggle`, `englishToggle`. The Jaap reader must
 contain the text "Sri Dasam Granth"; the Rehras row label must contain "Taksal" when that variant
 is chosen. Env hooks: `SGGS_CLOCK_NOW`, `SGGS_UITEST`. Wiped prefs: `sggs_rehras_variant`,
-`sggs_reader_tone`, `sggs_reader_leading`, `sggs_gurmukhi_size`, `sggs_focus_mode`, `sggs_translit`.
+`sggs_reader_tone`, `sggs_reader_leading`, `sggs_gurmukhi_size`, `sggs_focus_mode`, `sggs_translit`,
+`sggs_gutka_layout` (per-bani overrides of the gutka default, e.g. "anand=1,jaap=0"; the default
+is on for jaap, chaupai, savaiye, savaiye_deenan, shabad_hazare_p10 and aarti).
 
 ## Deep links & intents
 `sggs://nitnem`, `sggs://bani/<key>[?variant=]`, `sggs://composition/<key>[?variant=]`,

@@ -318,7 +318,8 @@ final class UITestVaultTests: XCTestCase {
     // MARK: the reset list
 
     func testEveryLeakableReadingSettingIsReset() {
-        for key in ["sggs_saroop", "sggs_appearance", "sggs_show_english", "sggs_live_activity", "sggs_last_ang"] {
+        for key in ["sggs_saroop", "sggs_appearance", "sggs_show_english", "sggs_live_activity", "sggs_last_ang",
+                    "sggs_gutka_layout"] {
             XCTAssertTrue(UITestVault.resetKeys.contains(key), key)
         }
         XCTAssertFalse(UITestVault.resetKeys.contains("sggs_accent"), "accent persistence is itself under test")

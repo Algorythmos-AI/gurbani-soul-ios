@@ -23,6 +23,8 @@ struct LineRow: View {
     /// no Save / Share-as-card / Explore-related (those are scripture-only), and never asserts
     /// on the missing line identity.
     var sourceLabel: String? = nil
+    /// Centre the line (the bani reader's gutka layout). Display only; actions are unchanged.
+    var centred = false
     var onTap: (() -> Void)? = nil
 
     @Environment(\.modelContext) private var modelContext
@@ -37,7 +39,7 @@ struct LineRow: View {
     private var isRahao: Bool { meta.hasPrefix("ਰਹਾਉ") }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: centred ? .center : .leading, spacing: 6) {
             GurmukhiText(verbatim: gurmukhi, size: 22)
             if showTranslit && translitPref && !translit.isEmpty {
                 // Transliteration: a reading aid set a step larger than before, with a little
@@ -56,7 +58,8 @@ struct LineRow: View {
                 Text(meta).font(.caption).foregroundStyle(.tertiary)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .multilineTextAlignment(centred ? .center : .leading)
+        .frame(maxWidth: .infinity, alignment: centred ? .center : .leading)
         .padding(.leading, isRahao ? Theme.Space.m : 0)
         .overlay(alignment: .leading) {
             if isRahao {

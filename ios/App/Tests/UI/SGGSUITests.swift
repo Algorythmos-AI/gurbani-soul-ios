@@ -527,6 +527,112 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(waitLabel(stanza, hasPrefix: "Pauri 5", timeout: 10), "stanza caption did not follow the jump")
     }
 
+    // MARK: Bani reader — gutka layout, chhand headings, the ਜਤ੍ਰ glyph (1.4.7)
+
+    /// Nitnem → Jaap Sahib (the row can sit below the fold on a small phone).
+    private func openJaap(_ app: XCUIApplication) {
+        XCTAssertTrue(app.navigationBars["Nitnem"].waitForExistence(timeout: 20))
+        let row = app.buttons["bani_jaap"].firstMatch
+        _ = row.waitForExistence(timeout: 12)
+        for _ in 0..<6 where !(row.exists && row.isHittable) { app.swipeUp() }
+        XCTAssertTrue(row.exists, "Jaap row missing from Nitnem")
+        row.tap()
+        XCTAssertTrue(app.navigationBars["Jaap Sahib"].waitForExistence(timeout: 12), "Jaap reader did not open")
+    }
+
+    private func attachShot(_ app: XCUIApplication, _ name: String) {
+        let a = XCTAttachment(screenshot: app.screenshot())
+        a.name = "shot \(name)"; a.lifetime = .keepAlways; add(a)
+    }
+
+    private func gutkaRows(_ app: XCUIApplication) -> XCUIElementQuery {
+        app.descendants(matching: .any).matching(identifier: "gutkaRow")
+    }
+
+    /// A Sri Dasam Granth chhand title (`extra_lines.is_header`) draws as a heading, not a verse.
+    func testJaapChhandTitleIsAHeading() {
+        let app = launchApp(selectSearch: false)
+        openJaap(app)
+        let chhand = app.descendants(matching: .any).matching(NSPredicate(
+            format: "identifier == %@ AND label BEGINSWITH %@", "verseHeading", "ਭੁਜੰਗ ਪ੍ਰਯਾਤ ਛੰਦ")).firstMatch
+        for _ in 0..<4 where !chhand.exists { app.swipeUp() }
+        XCTAssertTrue(chhand.waitForExistence(timeout: 10), "ਭੁਜੰਗ ਪ੍ਰਯਾਤ ਛੰਦ is not drawn as a heading")
+        let opening = app.descendants(matching: .any).matching(NSPredicate(
+            format: "identifier == %@ AND label BEGINSWITH %@", "verseHeading", "ਛਪੈ ਛੰਦ")).firstMatch
+        XCTAssertTrue(opening.exists || chhand.exists)
+        attachShot(app, "bani_jaap_heading")
+    }
+
+    /// Jaap's short lines sit two to a row: one row holds two separate half-lines, each its own
+    /// element (verbatim Copy / Share / VoiceOver per original line).
+    func testJaapGutkaRowHoldsTwoHalfLines() {
+        let app = launchApp(selectSearch: false)
+        openJaap(app)
+        let row = gutkaRows(app).firstMatch
+        // rows below the fold are not built yet (lazy) or not on screen: bring one into view
+        for _ in 0..<6 where !(row.exists && row.isHittable) { app.swipeUp() }
+        XCTAssertTrue(row.waitForExistence(timeout: 10), "no gutka row in Jaap Sahib")
+        let halves = row.descendants(matching: .any).matching(identifier: "gutkaHalf")
+        XCTAssertEqual(halves.count, 2, "a gutka row must hold exactly two half-lines")
+        XCTAssertTrue(halves.element(boundBy: 0).label.hasPrefix("ਨਮਸਤ੍ਵੰ ਅਕਾਲੇ"), halves.element(boundBy: 0).label)
+        XCTAssertTrue(halves.element(boundBy: 1).label.hasPrefix("ਨਮਸਤ੍ਵੰ ਕ੍ਰਿਪਾਲੇ"), halves.element(boundBy: 1).label)
+        attachShot(app, "bani_jaap_gutka")
+    }
+
+    /// The "Gutka layout" switch in the bani's reading options turns the pairs off and on again.
+    func testGutkaSwitchTogglesTheLayout() {
+        let app = launchApp(selectSearch: false)
+        openJaap(app)
+        let row = gutkaRows(app).firstMatch
+        // rows below the fold are not built yet (lazy) or not on screen: bring one into view
+        for _ in 0..<6 where !(row.exists && row.isHittable) { app.swipeUp() }
+        XCTAssertTrue(row.waitForExistence(timeout: 10), "gutka layout should be on by default for Jaap")
+        func toggleGutka() {
+            let item = app.buttons["Gutka layout"].firstMatch
+            let alt = app.switches["Gutka layout"].firstMatch
+            // the menu can miss a tap while the reader is still settling: open it again
+            for _ in 0..<3 where !(item.exists || alt.exists) {
+                app.buttons["baniOptions"].firstMatch.tap()
+                _ = item.waitForExistence(timeout: 4) || alt.waitForExistence(timeout: 1)
+            }
+            let control = item.exists ? item : alt
+            XCTAssertTrue(control.exists, "Gutka layout switch missing from reading options")
+            control.tap()
+        }
+        toggleGutka()
+        XCTAssertTrue(gutkaRows(app).firstMatch.waitForNonExistence(timeout: 8), "gutka rows did not turn off")
+        attachShot(app, "bani_jaap_gutka_off")
+        let single = app.descendants(matching: .any).matching(NSPredicate(
+            format: "label BEGINSWITH %@", "ਨਮਸਤ੍ਵੰ ਕ੍ਰਿਪਾਲੇ")).firstMatch
+        XCTAssertTrue(single.waitForExistence(timeout: 8), "the lines must still be there, one per row")
+        toggleGutka()
+        XCTAssertTrue(gutkaRows(app).firstMatch.waitForExistence(timeout: 8), "gutka rows did not come back")
+    }
+
+    /// Jaap pauris 79/80 hold the ਜਤ੍ਰ ਤਤ੍ਰ words the font used to draw on a dotted circle.
+    /// The repair is display-only; this attaches the screen for review (glyphs are pinned by
+    /// BaniGutkaTests).
+    func testCaptureJaapPauri79() {
+        let app = launchApp(selectSearch: false)
+        openJaap(app)
+        app.buttons["baniOptions"].firstMatch.tap()
+        let contents = app.buttons["Contents"].firstMatch
+        XCTAssertTrue(contents.waitForExistence(timeout: 8), "Jaap has no Contents")
+        contents.tap()
+        XCTAssertTrue(app.navigationBars["Contents"].waitForExistence(timeout: 8))
+        let list = app.collectionViews.firstMatch
+        let pauri = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Verse 79")).firstMatch
+        for _ in 0..<40 where !(pauri.exists && pauri.isHittable) {
+            if list.exists { list.swipeUp(velocity: .slow) } else { app.swipeUp(velocity: .slow) }
+        }
+        XCTAssertTrue(pauri.waitForExistence(timeout: 8), "Verse 79 row missing")
+        pauri.tap()
+        let line = app.descendants(matching: .any).matching(NSPredicate(
+            format: "label BEGINSWITH %@", "ਜਤ\u{0A71}\u{0A4D}ਰ ਤਤ\u{0A71}\u{0A4D}ਰ ਬਿਰਾਜਹੀ")).firstMatch
+        XCTAssertTrue(line.waitForExistence(timeout: 10), "pauri 79 line missing (VoiceOver must read the stored text)")
+        attachShot(app, "bani_jaap_p79")
+    }
+
     // MARK: Explore → Index → a composition's own reader
 
     /// Open the Index and push a major composition onto the EXPLORE stack: the reader appears on
@@ -1460,6 +1566,17 @@ final class SGGSUITests: XCTestCase {
         _ = app.staticTexts.element(boundBy: 2).waitForExistence(timeout: 8)
         shot("bani_reader")
         app.navigationBars.buttons.firstMatch.tap()   // back to Nitnem
+        // Jaap Sahib: chhand headings and the gutka layout (two half-lines to a row).
+        let jaap = app.buttons["bani_jaap"].firstMatch
+        if jaap.waitForExistence(timeout: 8) {
+            for _ in 0..<6 where !jaap.isHittable { app.swipeUp() }
+            jaap.tap()
+            _ = app.navigationBars["Jaap Sahib"].waitForExistence(timeout: 12)
+            _ = app.descendants(matching: .any).matching(identifier: "verseHeading").firstMatch
+                .waitForExistence(timeout: 8)
+            shot("bani_jaap")
+            app.navigationBars.buttons.firstMatch.tap()   // back to Nitnem
+        }
         openTab(app, "Explore", expectingNavBar: "Explore")
         _ = app.staticTexts["Explore the Granth"].waitForExistence(timeout: 8)
         shot("explore_hub")
