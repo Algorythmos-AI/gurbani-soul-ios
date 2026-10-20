@@ -93,7 +93,7 @@ struct ReaderOptionsPopover: View {
         .padding(Theme.Space.l)
         .frame(minWidth: 320, idealWidth: 340)
         .presentationCompactAdaptation(.popover)
-        .animation(.easeInOut(duration: 0.2), value: focusMode)
+        .appAnimation(value: focusMode)
     }
 
     private func optionToggle(_ title: String, detail: String, systemImage: String,

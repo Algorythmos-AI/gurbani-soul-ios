@@ -209,7 +209,7 @@ struct ReaderScreen: View {
             .safeAreaInset(edge: .bottom) {
                 if focusMode {
                     // Sehaj focus: no page bar, no tab bar — only the Gurmukhi. One quiet way back.
-                    Button { Haptics.tap(); withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) { focusMode = false } } label: {
+                    Button { Haptics.tap(); MotionGate.run { focusMode = false } } label: {
                         Label("Exit Sehaj", systemImage: "rectangle.expand.vertical")
                             .font(.footnote.weight(.semibold))
                             .padding(.horizontal, Theme.Space.m).frame(minHeight: 44)
