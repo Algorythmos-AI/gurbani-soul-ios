@@ -37,11 +37,13 @@ struct LineRow: View {
     private var isRahao: Bool { meta.hasPrefix("ਰਹਾਉ") }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
+        VStack(alignment: .leading, spacing: 6) {
             GurmukhiText(verbatim: gurmukhi, size: 22)
             if showTranslit && translitPref && !translit.isEmpty {
-                Text(translit).font(.subheadline).foregroundStyle(Ink.muted)
-                    .padding(.top, 1)
+                // Transliteration: a reading aid set a step larger than before, with a little
+                // tracking, so it can actually be read along with the Gurmukhi.
+                Text(translit).font(.callout).tracking(0.2).foregroundStyle(Ink.muted)
+                    .padding(.top, 2)
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityHidden(true)            // a reading aid, not scripture
             }
