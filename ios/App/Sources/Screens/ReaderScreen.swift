@@ -198,12 +198,30 @@ struct ReaderScreen: View {
                 UIAccessibility.post(notification: .pageScrolled, argument: "Ang \(n)")
             }
             .onChange(of: focusMode) { _, _ in showChrome() }
+            // Sehaj focus hides the tab bar (once, on the toggle — never from scroll offsets, which
+            // is what froze the app when the navigation bar was toggled; the nav bar stays).
+            .toolbar(focusMode ? .hidden : .automatic, for: .tabBar)
             .onChange(of: container.presentation?.id) { _, id in if id == nil { showChrome() } }
             // Page controls live in a bottom safe-area inset, NOT a `.bottomBar` toolbar: inside a
             // TabView on iOS 26 the bottom toolbar is drawn UNDER the floating glass tab bar, so
             // Previous / Hukam / Next were invisible (verified in the simulator; the July
             // baseline screenshots show the same). The inset is laid out above the tab bar.
             .safeAreaInset(edge: .bottom) {
+                if focusMode {
+                    // Sehaj focus: no page bar, no tab bar — only the Gurmukhi. One quiet way back.
+                    Button { Haptics.tap(); withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) { focusMode = false } } label: {
+                        Label("Exit Sehaj", systemImage: "rectangle.expand.vertical")
+                            .font(.footnote.weight(.semibold))
+                            .padding(.horizontal, Theme.Space.m).frame(minHeight: 44)
+                            .background(.ultraThinMaterial, in: Capsule())
+                            .overlay(Capsule().strokeBorder(Ink.hairline))
+                            .foregroundStyle(palette.accentText)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.bottom, Theme.Space.s)
+                    .accessibilityHint("Shows the page bar and tabs again")
+                    .accessibilityIdentifier("exitSehaj")
+                }
                 if !focusMode {
                     let prev = router.readerAng - 1
                     let next = router.readerAng + 1

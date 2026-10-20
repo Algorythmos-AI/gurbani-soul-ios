@@ -178,7 +178,9 @@ final class SGGSUITests: XCTestCase {
     /// The current page's forward control at the bottom: the "Continues on Ang N+1" hint pill when
     /// the shabad carries over, else the always-present end-of-page "Next · Ang N+1" card.
     private func forwardFooter(_ app: XCUIApplication) -> XCUIElement? {
-        hittable(app, button: "continuesOnPill", timeout: 1) ?? hittable(app, button: "endNextAng", timeout: 1)
+        // The in-page "Continues on" pill when the shabad carries over; otherwise the page bar's
+        // Next (the end-of-page buttons were removed in 1.4.7 — one set of page controls).
+        hittable(app, button: "continuesOnPill", timeout: 1) ?? hittable(app, button: "nextAng", timeout: 1)
     }
 
     /// One page swipe. The simulator occasionally drops a synthesized swipe outright (CI run
@@ -926,16 +928,33 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(app.textFields["angField"].waitForExistence(timeout: 8), "progress control did not open Jump")
     }
 
-    /// The never-stranded end-of-page footer turns the page from the bottom of the content.
-    func testEndOfPageFooterTurnsPage() {
+    /// One set of page controls: the end-of-page buttons are gone, and the page bar turns the page.
+    /// Sehaj focus hides the page bar and the tab bar, shows a single "Exit Sehaj", and exits cleanly.
+    func testSehajFocusHidesChromeAndExits() {
         let app = launchApp()
         tab(app, "Reader").tap(); XCTAssertTrue(app.buttons["Hukam"].waitForExistence(timeout: 12), "Reader did not open")
-        let scroll = app.scrollViews.firstMatch
-        let next = app.buttons["endNextAng"].firstMatch
-        for _ in 0..<8 where !(next.exists && next.isHittable) { scroll.swipeUp() }
-        XCTAssertTrue(next.waitForExistence(timeout: 8), "end-of-page next button missing")
-        next.tap()
-        XCTAssertTrue(app.navigationBars["Ang 2"].waitForExistence(timeout: 12), "end-of-page footer did not turn the page")
+        XCTAssertFalse(app.buttons["endNextAng"].exists, "end-of-page Next must be gone (single page control)")
+        app.buttons["readerOptions"].firstMatch.tap()
+        let sehaj = app.switches["sehajToggle"].firstMatch
+        XCTAssertTrue(sehaj.waitForExistence(timeout: 8), "Sehaj focus toggle missing")
+        flipSwitch(sehaj)
+        dismissPopover(app)
+        let exit = app.buttons["exitSehaj"].firstMatch
+        XCTAssertTrue(exit.waitForExistence(timeout: 8), "Exit Sehaj missing in focus mode")
+        XCTAssertFalse(app.buttons["Hukam"].isHittable, "page bar should be hidden in Sehaj focus")
+        exit.tap()
+        XCTAssertTrue(app.buttons["Hukam"].waitForExistence(timeout: 8), "page bar did not return after Exit Sehaj")
+        XCTAssertFalse(app.buttons["exitSehaj"].exists, "Exit Sehaj should disappear after exiting")
+    }
+
+    /// A SwiftUI Toggle with a custom label only flips when the switch itself is tapped.
+    private func flipSwitch(_ element: XCUIElement) {
+        element.coordinate(withNormalizedOffset: CGVector(dx: 0.94, dy: 0.5)).tap()
+    }
+
+    private func dismissPopover(_ app: XCUIApplication) {
+        // Tap outside the popover (top-left of the page content) to dismiss it.
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.08, dy: 0.5)).tap()
     }
 
     /// Reading options open a popover with the in-Reader text-size control (A− / A+).
@@ -1409,6 +1428,18 @@ final class SGGSUITests: XCTestCase {
         }
         _ = app.staticTexts.element(boundBy: 0).waitForExistence(timeout: 8)
         shot("reader")
+        // Reading options (text size, what the page shows, Sehaj focus) and Sehaj focus itself.
+        app.buttons["readerOptions"].firstMatch.tap()
+        if app.switches["sehajToggle"].firstMatch.waitForExistence(timeout: 8) {
+            shot("reader_options")
+            flipSwitch(app.switches["sehajToggle"].firstMatch)
+            dismissPopover(app)
+            if app.buttons["exitSehaj"].firstMatch.waitForExistence(timeout: 8) {
+                shot("reader_sehaj")
+                app.buttons["exitSehaj"].firstMatch.tap()
+                _ = app.buttons["Hukam"].firstMatch.waitForExistence(timeout: 8)
+            }
+        }
         // The Hukam sheet over the Reader (App Store set): the app's own draw of a complete unit.
         app.buttons["Hukam"].firstMatch.tap()
         if app.buttons["Done"].firstMatch.waitForExistence(timeout: 12) {

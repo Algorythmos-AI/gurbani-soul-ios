@@ -105,7 +105,7 @@ struct AngPageView: View {
             }
             .frame(height: 0)
             LazyVStack(alignment: .leading, spacing: 18) {
-                if let raag = page.raag {
+                if let raag = page.raag, !focusMode {
                     ViewThatFits(in: .horizontal) {
                         HStack(spacing: Theme.Space.s) { raagBanner(raag); timingChipView }
                         VStack(alignment: .leading, spacing: Theme.Space.xs) { raagBanner(raag); timingChipView }
@@ -134,6 +134,18 @@ struct AngPageView: View {
                         .frame(maxWidth: .infinity, alignment: .center)
                         .id(line.id)
                     } else {
+                        // A new shabad (a change of composition between two verses) gets a quiet
+                        // break, so each shabad reads as one unit rather than a run of lines.
+                        let opensShabad = index > 0 && page.lines[index - 1].compId != line.compId
+                            && !VerseTypography.rendersAsHeading(page.lines[index - 1].gurmukhi,
+                                                                 flaggedHeader: page.lines[index - 1].isHeader)
+                        if opensShabad {
+                            Image(systemName: "circle.fill").font(.system(size: 4))
+                                .foregroundStyle(Ink.hairline)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, Theme.Space.s)
+                                .accessibilityHidden(true)
+                        }
                         LineRow(gurmukhi: line.gurmukhi,
                                 translit: focusMode ? "" : line.translit,
                                 meta: line.isRahao ? "ਰਹਾਉ · refrain" : "",
@@ -141,7 +153,7 @@ struct AngPageView: View {
                                 lineId: line.id, ang: line.ang, compId: line.compId) {
                             container.present(.shabad(compId: line.compId, focusLineId: line.id))
                         }
-                        .padding(.vertical, focusMode ? Theme.Space.s : 0)
+                        .padding(.vertical, focusMode ? Theme.Space.m : 0)
                         .focusHighlight(highlightedId == line.id)
                         .accessibilityFocused($voFocus, equals: line.id)
                         .id(line.id)
@@ -161,9 +173,6 @@ struct AngPageView: View {
                     }
                 }
                 .frame(minHeight: 44)
-                // Never-stranded end-of-page navigation: turn the page from the bottom without
-                // scrolling back up to the pager gesture or the bottom bar.
-                endOfPageNav(page.ang)
             }
             .scrollTargetLayout()
             .padding()
@@ -183,38 +192,6 @@ struct AngPageView: View {
             },
             onContentHeight: { h in if isCurrent { onScroll(.nan, h, .nan) } }))
         .contentMargins(.bottom, Theme.Space.xl, for: .scrollContent)
-    }
-
-    // MARK: end-of-page navigation
-
-    @ViewBuilder private func endOfPageNav(_ ang: Int) -> some View {
-        HStack(spacing: Theme.Space.m) {
-            if ang > 1 {
-                endNavButton(to: ang - 1, systemImage: "chevron.left",
-                             title: "Ang \(String(ang - 1))", id: "endPrevAng", leading: true)
-            }
-            if ang < 1430 {
-                endNavButton(to: ang + 1, systemImage: "chevron.right",
-                             title: "Next · Ang \(String(ang + 1))", id: "endNextAng", leading: false)
-            }
-        }
-        .padding(.top, Theme.Space.m)
-    }
-
-    private func endNavButton(to target: Int, systemImage: String, title: String, id: String, leading: Bool) -> some View {
-        Button { Haptics.tap(); container.router.openAng(target) } label: {
-            HStack(spacing: Theme.Space.xs) {
-                if leading { Image(systemName: systemImage) }
-                Text(title).font(.subheadline.weight(.medium)).lineLimit(1)
-                if !leading { Image(systemName: systemImage) }
-            }
-            .frame(maxWidth: .infinity, minHeight: 52)
-            .background(Ink.card, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
-            .overlay(RoundedRectangle(cornerRadius: Theme.Radius.card).strokeBorder(Ink.hairline))
-            .foregroundStyle(palette.accentText)
-        }
-        .buttonStyle(.pressableCard)
-        .accessibilityIdentifier(id)
     }
 
     // MARK: raag banner + timing chip
