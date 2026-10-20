@@ -124,14 +124,8 @@ struct AngPageView: View {
                     if VerseTypography.rendersAsHeading(line.gurmukhi, flaggedHeader: line.isHeader) {
                         let opensRun = index > 0 && !VerseTypography.rendersAsHeading(
                             page.lines[index - 1].gurmukhi, flaggedHeader: page.lines[index - 1].isHeader)
-                        VStack(spacing: Theme.Space.m) {
-                            if opensRun {
-                                Rectangle().fill(Ink.hairline).frame(width: 56, height: 1)
-                                    .padding(.top, Theme.Space.s).accessibilityHidden(true)
-                            }
-                            VerseHeading(verbatim: line.gurmukhi)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .center)
+                        VerseHeading(verbatim: line.gurmukhi, translit: focusMode ? "" : line.translit,
+                                     rule: opensRun)
                         .id(line.id)
                     } else {
                         // A new shabad (a change of composition between two verses) gets a quiet

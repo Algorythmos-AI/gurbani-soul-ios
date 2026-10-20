@@ -26,8 +26,15 @@ struct BaniReaderScreen: View {
     @AppStorage("sggs_focus_mode") private var focusMode = false
     @AppStorage(ReaderPrefs.leadingKey) private var leading = ReaderPrefs.leadingDefault
     @AppStorage(ReaderPrefs.toneKey) private var toneRaw = ReaderTone.paper.rawValue
+    @AppStorage(GutkaPrefs.storageKey) private var gutkaStored = ""
+    @AppStorage("sggs_show_english") private var englishPref = true
+    @AppStorage("sggs_translit") private var translitPref = true
 
     @State private var bani: Bani?
+    /// Reading rows (gutka pairs or single lines), rebuilt on load and when the layout, Sehaj
+    /// focus or the English layer changes — never per scroll tick.
+    @State private var rows: [GutkaRows.Row] = []
+    @State private var lineIndex: [Int: Int] = [:]
     @State private var outline: [BaniSection] = []
     @State private var registry: [BaniSummary] = []
     @State private var failed = false
@@ -50,6 +57,11 @@ struct BaniReaderScreen: View {
     private var variant: String { variantOverride ?? NitnemPrefs.variant(for: key, rehras: rehrasVariant) }
     private var progressId: String { bani.map { $0.summary.id } ?? NitnemPrefs.progressId(key: key, variant: variant) }
     private var pace: AutoScrollPace { AutoScrollPace(rawValue: paceRaw) ?? .steady }
+    private var gutkaOn: Bool { GutkaPrefs.isOn(key, stored: gutkaStored) }
+    private var gutkaBinding: Binding<Bool> {
+        Binding(get: { gutkaOn },
+                set: { gutkaStored = GutkaPrefs.setting(key, on: $0, in: gutkaStored) })
+    }
     /// Auto-scroll is offered only with a real scroll view and away from assistive/Reduce-Motion
     /// contexts (moving content under a VoiceOver cursor or against Reduce Motion is hostile).
     private var showsAutoScroll: Bool {
@@ -64,7 +76,9 @@ struct BaniReaderScreen: View {
             .onDisappear { UIApplication.shared.isIdleTimerDisabled = false; flushSave(); autoScroll.stop(); liveStartTask?.cancel(); live.end(done: false) }
             .onChange(of: scenePhase) { _, phase in if phase != .active { flushSave(); autoScroll.pause() } }
             .onChange(of: positionId) { _, _ in scheduleSave(); live.update(fraction: liveFraction, sectionLabel: liveSection) }
-            .onChange(of: focusMode) { _, _ in autoScroll.pause(); showChrome() }
+            .onChange(of: focusMode) { _, _ in autoScroll.pause(); showChrome(); relayout() }
+            .onChange(of: gutkaStored) { _, _ in relayout() }
+            .onChange(of: englishPref) { _, _ in relayout() }
             .onChange(of: paceRaw) { _, _ in autoScroll.pace = pace }
             .onChange(of: gurmukhiSize) { _, _ in autoScroll.fontSize = gurmukhiSize }
             .onChange(of: container.presentation?.id) { _, id in if id != nil { autoScroll.pause() } }
@@ -109,6 +123,7 @@ struct BaniReaderScreen: View {
                     }
                     Button { container.present(.readingSettings) } label: { Label("Reading settings", systemImage: "textformat.size") }
                     Toggle("Sehaj focus", isOn: $focusMode)
+                    Toggle("Gutka layout", isOn: gutkaBinding)
                     Divider()
                     Button { startAgain() } label: { Label("Start again", systemImage: "arrow.counterclockwise") }
                 } label: { Image(systemName: "textformat.size") }
@@ -126,9 +141,15 @@ struct BaniReaderScreen: View {
         registry = await corpus.banis().banis
         guard let loaded else { failed = true; return }
         completedNow = false
-        outline = BaniOutline.sections(for: loaded)
-        // resume by seq when the registry is unchanged, else by verbatim anchor, else the top
-        if let resume = container.nitnem.resumeSeq(for: loaded.summary.id, lines: loaded.lines) {
+        let sections = BaniOutline.sections(for: loaded)
+        outline = sections
+        rows = computeRows(loaded, outline: sections)
+        lineIndex = Dictionary(loaded.lines.enumerated().map { ($0.element.seq, $0.offset) },
+                               uniquingKeysWith: { a, _ in a })
+        // resume by seq when the registry is unchanged, else by verbatim anchor, else the top;
+        // a seq drawn as the second half of a gutka pair resumes on its row
+        if let saved = container.nitnem.resumeSeq(for: loaded.summary.id, lines: loaded.lines) {
+            let resume = GutkaRows.rowStart(of: saved, in: rows)
             let landing = chrome.beginLanding()
             positionId = resume
             highlightedId = resume
@@ -254,23 +275,29 @@ struct BaniReaderScreen: View {
                                        value: -g.frame(in: .named("baniScroll")).minY)
             }
             .frame(height: 0)
-            LazyVStack(alignment: .leading, spacing: 18) {
+            // Gutka layout: lines inside a verse sit closer, and each verse opens with the larger gap.
+            LazyVStack(alignment: .leading, spacing: gutkaOn ? Theme.Space.s : 18) {
                 if context == .explore { cover(bani) } else { header(bani) }
-                ForEach(Array(lines.enumerated()), id: \.element.seq) { index, line in
-                    let opensGroup = index > 0 && lines[index - 1].lineGroup != line.lineGroup
-                    if let sec = sectionStarting(at: line.seq) {
-                        stanzaDivider(sec, firstInBani: index == 0)
+                ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
+                    let at = lineIndex[row.id] ?? 0
+                    let line = lines[at]
+                    let opensGroup = at > 0 && lines[at - 1].lineGroup != line.lineGroup
+                    let section = sectionStarting(at: line.seq)
+                    if let section {
+                        stanzaDivider(section, firstInBani: at == 0)
                     } else if opensGroup {
                         Rectangle().fill(Ink.hairline).frame(width: 56, height: 1)
                             .frame(maxWidth: .infinity)
                             .padding(.top, Theme.Space.m)
                             .accessibilityHidden(true)
                     }
-                    lineView(line)
+                    rowView(row, lines: lines,
+                            rule: index > 0 && !rows[index - 1].heading && section == nil && !opensGroup)
+                        .padding(.top, gutkaOn && row.opensVerse && index > 0 && !row.heading ? Theme.Space.m : 0)
                         .padding(.vertical, focusMode ? Theme.Space.s : 0)
-                        .focusHighlight(highlightedId == line.seq)
-                        .accessibilityFocused($voFocus, equals: line.seq)
-                        .id(line.seq)
+                        .focusHighlight(highlightedId == row.id)
+                        .accessibilityFocused($voFocus, equals: row.id)
+                        .id(row.id)
                 }
                 completion(bani)
                     .padding(.top, Theme.Space.xl)
@@ -438,26 +465,104 @@ struct BaniReaderScreen: View {
         }
     }
 
+    /// Dasam / Ardaas headings are trusted from the data; Sri Guru Granth Sahib Ji keeps its filter.
+    private func isHeading(_ line: BaniLine) -> Bool {
+        VerseTypography.rendersAsHeading(line.gurmukhi, flaggedHeader: line.isHeader,
+                                         trustFlag: !line.citation.isSGGS)
+    }
+
+    private func computeRows(_ bani: Bani, outline: [BaniSection]) -> [GutkaRows.Row] {
+        let showsEnglish = englishPref && !focusMode
+        let starts = Set(outline.filter { $0.kind == .pauri || $0.kind == .ashtapadi || $0.kind == .salok }
+            .map(\.startSeq))
+        let input = bani.lines.map { l in
+            GutkaRows.Line(seq: l.seq, gurmukhi: l.gurmukhi, lineGroup: l.lineGroup,
+                           heading: isHeading(l),
+                           pairable: !l.isRahao && !(showsEnglish && !(l.en ?? "").isEmpty),
+                           opensSection: starts.contains(l.seq))
+        }
+        return GutkaRows.pack(input, enabled: GutkaPrefs.isOn(key, stored: gutkaStored))
+    }
+
+    /// Rebuild the rows after a layout-affecting setting changes, keeping the reader on the row
+    /// that now draws the line they were on.
+    private func relayout() {
+        guard let bani else { return }
+        rows = computeRows(bani, outline: outline)
+        guard let seq = positionId else { return }
+        // re-land on the row that now draws the line
+        let target = GutkaRows.rowStart(of: seq, in: rows)
+        positionId = nil
+        DispatchQueue.main.async { positionId = target }
+    }
+
     @ViewBuilder
-    private func lineView(_ line: BaniLine) -> some View {
-        if VerseTypography.rendersAsHeading(line.gurmukhi, flaggedHeader: line.isHeader) {
-            VerseHeading(verbatim: line.gurmukhi)
+    private func rowView(_ row: GutkaRows.Row, lines: [BaniLine], rule: Bool) -> some View {
+        let first = lines[lineIndex[row.seqs[0]] ?? 0]
+        if row.heading {
+            VerseHeading(verbatim: first.gurmukhi, translit: focusMode ? "" : first.translit, rule: rule)
+        } else if row.isPair, let at = lineIndex[row.seqs[1]] {
+            gutkaPair(first, lines[at])
         } else {
-            switch line.citation {
-            case .sggs(let ang, let lineId, let compId):
-                LineRow(gurmukhi: line.gurmukhi,
-                        translit: focusMode ? "" : line.translit,
-                        meta: line.isRahao ? "ਰਹਾਉ · refrain" : "",
-                        en: focusMode ? nil : line.en,
-                        lineId: lineId, ang: ang, compId: compId) {
-                    container.present(.shabad(compId: compId, focusLineId: lineId))
+            lineView(first, centred: gutkaOn)
+        }
+    }
+
+    /// Two half-lines on one centred row when BOTH fit the column at the current size; otherwise
+    /// one per row. Each half is its own LineRow — verbatim Copy / Share / VoiceOver per line. The
+    /// joined transliteration below reports no ideal width, so only the Gurmukhi decides the fit.
+    @ViewBuilder
+    private func gutkaPair(_ a: BaniLine, _ b: BaniLine) -> some View {
+        let translit = focusMode || !translitPref ? "" : GutkaRows.joinedTranslit([a.translit, b.translit])
+        ViewThatFits(in: .horizontal) {
+            VStack(spacing: 6) {
+                HStack(alignment: .firstTextBaseline, spacing: Theme.Space.xl) {
+                    lineView(a, centred: true, translit: "").fixedSize()
+                        .accessibilityIdentifier("gutkaHalf")
+                    lineView(b, centred: true, translit: "").fixedSize()
+                        .accessibilityIdentifier("gutkaHalf")
                 }
-            case .dasam, .ardaas:
-                LineRow(gurmukhi: line.gurmukhi,
-                        translit: focusMode ? "" : line.translit,
-                        meta: "",
-                        sourceLabel: line.citation.citation)
+                if !translit.isEmpty {
+                    Text(translit).font(.callout).tracking(0.2).foregroundStyle(Ink.muted)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(minWidth: 0, idealWidth: 0, maxWidth: .infinity)
+                        .accessibilityHidden(true)          // a reading aid, not scripture
+                }
             }
+            .frame(maxWidth: .infinity)
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("gutkaRow")
+            VStack(spacing: Theme.Space.s) {
+                lineView(a, centred: true)
+                lineView(b, centred: true)
+            }
+            .frame(maxWidth: .infinity)
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("gutkaRowStacked")
+        }
+        // Never report the side-by-side width as this row's ideal: the lazy stack sizes itself
+        // from it (a pair too wide for the column pushed the whole column off-centre after the
+        // switch was flipped). Under a real width ViewThatFits still chooses as above.
+        .frame(minWidth: 0, idealWidth: 0, maxWidth: .infinity)
+    }
+
+    @ViewBuilder
+    private func lineView(_ line: BaniLine, centred: Bool, translit: String? = nil) -> some View {
+        switch line.citation {
+        case .sggs(let ang, let lineId, let compId):
+            LineRow(gurmukhi: line.gurmukhi,
+                    translit: focusMode ? "" : (translit ?? line.translit),
+                    meta: line.isRahao ? "ਰਹਾਉ · refrain" : "",
+                    en: focusMode ? nil : line.en,
+                    lineId: lineId, ang: ang, compId: compId, centred: centred) {
+                container.present(.shabad(compId: compId, focusLineId: lineId))
+            }
+        case .dasam, .ardaas:
+            LineRow(gurmukhi: line.gurmukhi,
+                    translit: focusMode ? "" : (translit ?? line.translit),
+                    meta: "",
+                    sourceLabel: line.citation.citation, centred: centred)
         }
     }
 
@@ -672,7 +777,8 @@ struct BaniReaderScreen: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { chrome.endLanding(landing) }
         showChrome()
         positionId = nil
-        DispatchQueue.main.async { MotionGate.run(Motion.gentle) { positionId = seq } }
+        let target = GutkaRows.rowStart(of: seq, in: rows)
+        DispatchQueue.main.async { MotionGate.run(Motion.gentle) { positionId = target } }
     }
 
     /// Pop this composition off the Explore stack, leaving the Index. Guarded: a deep link can

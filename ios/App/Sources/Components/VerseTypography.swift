@@ -26,7 +26,21 @@ enum VerseTypography {
         return tokens.joined(separator: " ")
     }
 
-    private static func isMarker(_ token: String) -> Bool {
+    /// The line ends a verse: its closing marker run carries a verse number ("॥੨॥", "॥੧॥੨੧॥").
+    /// A plain "॥" closes a half-line only. Used by the gutka layout to never pair across it.
+    static func closesVerse(_ line: String) -> Bool {
+        var hasNumeral = false
+        for token in line.split(separator: " ").reversed() {
+            let t = String(token)
+            guard isMarker(t) else { break }
+            if t.unicodeScalars.contains(where: { (0x0A66...0x0A6F).contains($0.value) || (0x30...0x39).contains($0.value) }) {
+                hasNumeral = true
+            }
+        }
+        return hasNumeral
+    }
+
+    static func isMarker(_ token: String) -> Bool {
         if token == "ਰਹਾਉ" { return true }
         guard !token.isEmpty else { return false }
         return token.unicodeScalars.allSatisfy { s in
@@ -39,8 +53,13 @@ enum VerseTypography {
     /// "ਲਖ ਵਾਰ", ਅਨੰਦੁ in "ਮਹਾ ਅਨੰਦੁ"), so those verses were drawn as centred headings. Until the
     /// corpus flag is rebuilt, a flagged line is styled as a heading only if it is short or
     /// carries a real heading signal. Styling only — text, ids and grouping are untouched.
-    static func rendersAsHeading(_ line: String, flaggedHeader: Bool) -> Bool {
+    ///
+    /// `trustFlag` is for the Nitnem extra layer (Sri Dasam Granth / Ardaas): its `is_header`
+    /// comes from ShabadOS, is clean (59 genuine labels such as ਭੁਜੰਗ ਪ੍ਰਯਾਤ ਛੰਦ ॥), and the
+    /// filter below — tuned for Sri Guru Granth Sahib Ji — would reject most of them.
+    static func rendersAsHeading(_ line: String, flaggedHeader: Bool, trustFlag: Bool = false) -> Bool {
         guard flaggedHeader else { return false }
+        if trustFlag { return true }
         let tokens = line.split(separator: " ").map(String.init)
         // a bare label — "ਪਉੜੀ ॥", "॥ ਜਪੁ ॥" — is one or two words once the markers are set aside
         if tokens.filter({ !isMarker($0) }).count <= 2 { return true }
@@ -65,15 +84,43 @@ enum VerseTypography {
     static let readingColumn: CGFloat = 640
 }
 
-/// A heading line (raag · mahala · ghar label, or the ੴ invocation): centred, ink, verbatim.
+/// A heading line (raag · mahala · ghar label, a Sri Dasam Granth chhand title, or the ੴ
+/// invocation), one style everywhere: Sant Lipi ExtraBold a step above the verse labels, centred,
+/// ink, verbatim, with an optional gold hairline above (a heading that follows verses) and its
+/// transliteration small and centred underneath. The invocation is set at full verse size.
 struct VerseHeading: View {
     let verbatim: String
+    var translit: String = ""
+    /// Draw the short gold rule above — the caller sets it for a heading that opens a new run
+    /// after verses, never for the second of two stacked headings.
+    var rule: Bool = false
+    @AppStorage("sggs_translit") private var translitPref = true
+    @Environment(\.palette) private var palette
+
     var body: some View {
         let invocation = VerseTypography.isInvocation(verbatim)
-        GurmukhiText(verbatim: verbatim, size: invocation ? 22 : 19,
-                     weight: invocation ? .regular : .semibold)
-            .multilineTextAlignment(.center)
-            .frame(maxWidth: .infinity, alignment: .center)
+        VStack(spacing: Theme.Space.xs) {
+            if rule {
+                Capsule().fill(palette.accent.opacity(0.7)).frame(width: 44, height: 1.5)
+                    .padding(.bottom, Theme.Space.s)
+                    .accessibilityHidden(true)
+            }
+            GurmukhiText(verbatim: verbatim, size: invocation ? 24 : 21, weight: .heavy)
+                .multilineTextAlignment(.center)
+            if translitPref && !translit.isEmpty {
+                Text(translit).font(.footnote).tracking(0.2).foregroundStyle(Ink.muted)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityHidden(true)          // a reading aid, not scripture
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.top, rule ? Theme.Space.l : Theme.Space.xs)
+        .padding(.bottom, Theme.Space.xs)
+        // One element: the verbatim heading spoken in Punjabi, announced as a heading.
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isHeader)
+        .accessibilityIdentifier("verseHeading")
     }
 }
 
