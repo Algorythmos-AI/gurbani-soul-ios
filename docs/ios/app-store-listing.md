@@ -74,6 +74,7 @@ are banis it does contain. `ios/tests/test_ios_gates.py` lints this section.)
 >
 > HUKAM
 > • Draw a complete Hukam unit any time.
+> • The Hukam of the day widget: one verse for the whole day, verbatim with its Ang, and a new one at midnight.
 >
 > WIDGETS
 > • Hukam, the current raag watch, and today's Nitnem on your Home Screen.
@@ -230,7 +231,7 @@ Store the source PNGs under `ios/AppStore/screenshots/<device>/` (add the direct
 > Explore → Raag Clock. Solar is the default; with no stored location it shows the fixed clock and offers
 > a "Use my location" button — the permission prompt appears only when that button is tapped.
 >
-> Widgets: three Home Screen widgets (Hukam verse, Raag now, Nitnem) read a small snapshot the app
+> Widgets: three Home Screen widgets (Hukam of the day, Raag now, Nitnem) read a small snapshot the app
 > writes to its App Group (`group.org.sggs`); the Nitnem widget also reads the app's Nitnem progress
 > file there (which banis were read today). Both stay on the device and are never transmitted; the only
 > personal values are that progress and, if the reader enabled solar mode, their location rounded to

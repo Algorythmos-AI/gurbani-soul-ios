@@ -40,7 +40,7 @@ struct PrivacyPolicyScreen: View {
                 "Nitnem progress, your own sets and your reading journey are stored in the app's App Group container so the Nitnem widget can show them.",
                 "Reminders are optional local notifications, scheduled on your device at times you choose. No push service is used and no device token is created.",
                 "The reading Live Activity is optional and off by default. It runs on your device with no push updates and never shows a verse.",
-                "Widgets read a small snapshot the app writes into its App Group container: the raag watch, a Hukam verse with its Ang, today's Nitnem progress, and — if you use solar mode — your clock-mode choice and your location rounded to about 1 km. Nothing leaves the device.",
+                "Widgets read a small snapshot the app writes into its App Group container: the raag watch, the Hukam of the day for the next two weeks with their Angs, today's Nitnem progress, and — if you use solar mode — your clock-mode choice and your location rounded to about 1 km. Nothing leaves the device.",
             ])
 
             policy("Location", [

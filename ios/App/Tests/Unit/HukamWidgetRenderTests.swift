@@ -5,7 +5,7 @@ import GurbaniDB
 import GurbaniSearchKit
 @testable import SGGS
 
-/// Renders the Hukam widget (systemMedium + systemLarge, light + dark) through `ImageRenderer`,
+/// Renders the Hukam of the day widget (systemMedium + systemLarge, light + dark) through `ImageRenderer`,
 /// modelled on `WidgetRenderTests`: a gate that each layout composes, and — when
 /// `SGGS_WIDGET_SNAPSHOT_DIR` is set — a PNG per family for visual review.
 ///
@@ -144,11 +144,13 @@ private struct HukamWidgetBody: View {
     let translit: String
     let ang: Int
     let large: Bool
+    /// "HUKAM OF THE DAY" for a Hukam-of-the-day entry (the longer eyebrow), "HUKAM" for an older snapshot.
+    var eyebrow = "HUKAM OF THE DAY"
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .center) {
-                Eyebrow(text: "HUKAM")
+                Eyebrow(text: eyebrow)
                 Spacer()
                 Mark(size: large ? 22 : 16)
             }

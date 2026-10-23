@@ -284,14 +284,29 @@ final class AppContainer {
         vaarCount = await corpus.vaars().count
     }
 
-    /// Refresh the <50 KB widget snapshot (App Group JSON): today's Hukam opening verse +
-    /// the fixed-clock pahar→raags table. Widgets NEVER open the corpus DB.
+    /// Refresh the <50 KB widget snapshot (App Group JSON): the Hukam of the day for today and
+    /// the next two weeks + the fixed-clock pahar→raags table. Widgets NEVER open the corpus DB.
     /// Runs post-launch (after integrity passes) and is cheap enough to run every launch.
     func refreshWidgetSnapshot() async {
         SharedDefaults.migrateFromStandard()   // clock mode + solar coords moved to the App Group
         guard let corpus, integrity?.ok == true else { return }
-        guard let hukam = try? await corpus.randomHukam(),
-              let firstVerse = hukam.lines.first(where: { !$0.isHeader }) else { return }
+        // The Hukam of the day: one verse per local calendar day, the unit's opening verse.
+        let calendar = Calendar.current
+        let startOfToday = calendar.startOfDay(for: Date())
+        var hukamDays: [HukamDay] = []
+        for offset in 0..<WidgetSnapshot.hukamDayCount {
+            guard let date = calendar.date(byAdding: .day, value: offset, to: startOfToday),
+                  let unit = try? await corpus.hukamOfTheDay(day: HukamOfTheDay.dayNumber(of: date, calendar: calendar)),
+                  let verse = unit.lines.first(where: { !$0.isHeader }) else { continue }
+            // The unit can open before its seed (a Vaar's saloks precede the pauri): cite the
+            // composition and line of the verse actually shown, so a tap opens what was read.
+            hukamDays.append(HukamDay(date: WidgetSnapshot.dayKey(date, calendar: calendar),
+                                      gurmukhi: verse.gurmukhi,     // verbatim — copied, never edited
+                                      translit: verse.translit, ang: verse.ang,
+                                      compId: verse.compId, lineId: verse.id))
+        }
+        guard let firstVerse = hukamDays.first,
+              firstVerse.date == WidgetSnapshot.dayKey(startOfToday, calendar: calendar) else { return }
         var paharRaags: [Int: [String]] = [:]
         var paharRaagsGurmukhi: [Int: [String]] = [:]
         let clock = await corpus.timingClock()
@@ -316,19 +331,19 @@ final class AppContainer {
         }
         WidgetStore.save(WidgetSnapshot(
             generatedAt: Date(),
-            hukamGurmukhi: firstVerse.gurmukhi,     // verbatim — copied, never edited
+            // today's verse, for a widget built before the Hukam of the day
+            hukamGurmukhi: firstVerse.gurmukhi,
             hukamTranslit: firstVerse.translit,
             hukamAng: firstVerse.ang,
-            // The unit can open before its seed (a Vaar's saloks precede the pauri): cite the
-            // composition and line of the verse actually shown, so a tap opens what was read.
             hukamCompId: firstVerse.compId,
-            hukamLineId: firstVerse.id,
+            hukamLineId: firstVerse.lineId,
             paharRaags: paharRaags,
             paharRaagsGurmukhi: paharRaagsGurmukhi,
             clockMode: SharedDefaults.clockMode,
             solarLat: SharedDefaults.solarCoords()?.lat,
             solarLon: SharedDefaults.solarCoords()?.lon,
-            nitnem: nitnemData))
+            nitnem: nitnemData,
+            hukamDays: hukamDays))
         #if canImport(WidgetKit)
         WidgetCenter.shared.reloadAllTimelines()
         #endif

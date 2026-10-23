@@ -61,26 +61,40 @@ struct RaagNowWidget: Widget {
     }
 }
 
-// MARK: - Hukam verse
+// MARK: - Hukam of the day
 
 struct HukamEntry: TimelineEntry {
     let date: Date
     let snapshot: WidgetSnapshot?
+    /// The day's verse when the snapshot carries the Hukam of the day; nil for an older snapshot
+    /// (or one the app has not refreshed for longer than the days it wrote), which shows its
+    /// single verse without calling it today's.
+    var day: HukamDay? = nil
 }
 
 struct HukamProvider: TimelineProvider {
     func placeholder(in context: Context) -> HukamEntry { HukamEntry(date: .now, snapshot: nil) }
     func getSnapshot(in context: Context, completion: @escaping (HukamEntry) -> Void) {
-        completion(HukamEntry(date: .now, snapshot: WidgetStore.load()))
+        let snapshot = WidgetStore.load()
+        let today = snapshot?.hukamSchedule(from: .now, calendar: .current).first?.day
+        completion(HukamEntry(date: .now, snapshot: snapshot, day: today))
     }
     func getTimeline(in context: Context, completion: @escaping (Timeline<HukamEntry>) -> Void) {
-        // The verse ROTATES when the app is opened (the app writes a fresh snapshot);
-        // the midnight refresh only re-reads the store so a rotation done during the day
-        // still lands by next morning. The widget copy/description must not promise daily.
+        let snapshot = WidgetStore.load()
+        // The app writes two weeks of days ahead: one entry per local midnight, so the verse
+        // turns at midnight whether or not the app is opened. When the last day is reached,
+        // WidgetKit asks again and the app's latest snapshot carries on from there.
+        let schedule = snapshot?.hukamSchedule(from: .now, calendar: .current) ?? []
+        if !schedule.isEmpty {
+            completion(Timeline(entries: schedule.map { HukamEntry(date: $0.date, snapshot: snapshot, day: $0.day) },
+                                policy: .atEnd))
+            return
+        }
+        // An older snapshot holds one verse: re-read the store after midnight in case the app
+        // has written a newer one by then.
         let next = Calendar(identifier: .gregorian).nextDate(
             after: .now, matching: DateComponents(hour: 0, minute: 5), matchingPolicy: .nextTime) ?? .now.addingTimeInterval(86_400)
-        completion(Timeline(entries: [HukamEntry(date: .now, snapshot: WidgetStore.load())],
-                            policy: .after(next)))
+        completion(Timeline(entries: [HukamEntry(date: .now, snapshot: snapshot)], policy: .after(next)))
     }
 }
 
@@ -90,8 +104,8 @@ struct HukamWidget: Widget {
             HukamView(entry: entry)
                 .containerBackground(for: .widget) { PaperGround() }
         }
-        .configurationDisplayName("Hukam verse")
-        .description("A Hukam unit's opening verse, verbatim with its Ang — a new draw each time you open the app.")
+        .configurationDisplayName("Hukam of the day")
+        .description("One verse of Sri Guru Granth Sahib Ji for the whole day, verbatim with its Ang, and a new one at midnight.")
         .supportedFamilies([.systemMedium, .systemLarge])
     }
 }
@@ -102,25 +116,33 @@ struct HukamView: View {
 
     private var large: Bool { family == .systemLarge }
 
+    /// The verse to show: the day's, or an older snapshot's single verse.
+    private var verse: (gurmukhi: String, translit: String, ang: Int, url: URL?)? {
+        if let d = entry.day { return (gurmukhi: d.gurmukhi, translit: d.translit, ang: d.ang, url: d.url) }
+        if let s = entry.snapshot { return (gurmukhi: s.hukamGurmukhi, translit: s.hukamTranslit, ang: s.hukamAng, url: s.hukamURL) }
+        return nil
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .center) {
-                Eyebrow(text: "HUKAM")
+                // "of the day" only when the verse really is today's
+                Eyebrow(text: entry.day != nil ? "HUKAM OF THE DAY" : "HUKAM")
                 Spacer()
                 Mark(size: large ? 22 : 16)
             }
-            if let s = entry.snapshot {
+            if let v = verse {
                 Spacer(minLength: large ? 14 : 8)
                 // The verse: verbatim, ink, generous leading for stacked matras.
-                Text(s.hukamGurmukhi)
+                Text(v.gurmukhi)
                     .font(WidgetType.gurmukhi(large ? 26 : 21))
                     .lineSpacing(large ? 8 : 5)
                     .minimumScaleFactor(0.7)
                     .lineLimit(large ? 5 : 3)
                     .foregroundStyle(.primary)
-                    .accessibilityLabel(Text(punjabi(s.hukamGurmukhi)))
-                if !s.hukamTranslit.isEmpty {
-                    Text(s.hukamTranslit)
+                    .accessibilityLabel(Text(punjabi(v.gurmukhi)))
+                if !v.translit.isEmpty {
+                    Text(v.translit)
                         .font(.system(size: large ? 13 : 11))
                         .foregroundStyle(.secondary)
                         .lineLimit(large ? 3 : 1)
@@ -128,10 +150,10 @@ struct HukamView: View {
                         .accessibilityHidden(true)
                 }
                 Spacer(minLength: large ? 14 : 8)
-                Citation(ang: s.hukamAng, action: large ? "Tap to read the shabad" : "Tap to read")
+                Citation(ang: v.ang, action: large ? "Tap to read the shabad" : "Tap to read")
             } else {
                 Spacer(minLength: 8)
-                Text("Open Gurbani Soul once to draw a Hukam.")
+                Text("Open Gurbani Soul once to bring in the Hukam of the day.")
                     .font(.system(size: 13)).foregroundStyle(.secondary)
                 Spacer(minLength: 8)
             }
@@ -141,7 +163,7 @@ struct HukamView: View {
         // all fit (the verse ellipsises, the citation is pushed off the edge). The shabad it
         // opens scales without limit. HukamWidgetRenderTests proves the citation up to AX2.
         .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
-        .widgetURL(entry.snapshot?.hukamURL ?? URL(string: "sggs://ang/1"))
+        .widgetURL(verse?.url ?? URL(string: "sggs://ang/1"))
     }
 
     private func punjabi(_ s: String) -> AttributedString {
