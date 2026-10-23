@@ -133,7 +133,7 @@ struct ConstellationScreen: View {
                 Picker("Voice", selection: $lens.author) {
                     Text("All voices").tag(String?.none)
                     ForEach(container.meta?.authors ?? [], id: \.name) { a in
-                        Text(a.name.replacingOccurrences(of: " Ji", with: "")).tag(Optional(a.name))
+                        Text(a.name).tag(Optional(a.name))   // names in full, as stored
                     }
                 }
             }
@@ -154,7 +154,7 @@ struct ConstellationScreen: View {
             }
             Section {
                 Toggle("Refrains only (Rahao)", isOn: $lens.rahaoOnly)
-                Toggle("Brightest stars (5+ themes)", isOn: Binding(
+                Toggle("Many themes (5 or more)", isOn: Binding(
                     get: { lens.minThemes >= 5 }, set: { lens.minThemes = $0 ? 5 : 0 }))
             }
             if lens.isActive {
@@ -171,7 +171,7 @@ struct ConstellationScreen: View {
     /// The lens in words, for the caption and VoiceOver.
     private var lensWords: String {
         var w: [String] = []
-        if let a = lens.author { w.append(a.replacingOccurrences(of: " Ji", with: "")) }
+        if let a = lens.author { w.append(a) }
         if let r = lens.raag {
             w.append("Raag " + (container.meta?.raags.first { $0.name == r }?.roman ?? r))
         }
@@ -446,7 +446,7 @@ struct PairSheet: View {
                             }
                             Text(request.with == nil
                                  ? "Shown because it carries a word of this theme and no other theme's word."
-                                 : "Shown because it carries a word of each theme — a verified word match, not an interpretation.")
+                                 : "Shown because it carries a word of each theme: matched by a shared word, not by meaning.")
                                 .font(.caption).foregroundStyle(Ink.muted)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
@@ -497,7 +497,7 @@ struct PairSheet: View {
     private func eyebrow(_ sh: PairShabad) -> String {
         var parts: [String] = []
         if let r = sh.raag { parts.append("Raag " + (container.meta?.raags.first { $0.name == r }?.roman ?? r)) }
-        if let a = sh.author { parts.append(a.replacingOccurrences(of: " Ji", with: "")) }
+        if let a = sh.author { parts.append(a) }
         parts.append("Ang \(sh.ang)")
         return parts.joined(separator: " · ")
     }

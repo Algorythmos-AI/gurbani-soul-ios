@@ -21,7 +21,7 @@ its full name, *Sri Guru Granth Sahib Ji · Ang N* — "Gurbani Soul" names the 
 | Name | `Gurbani Soul` | 30 |
 | Fallbacks if taken | `Gurbani Soul: Verified` · `Gurbani Soul — Sikh` | 30 |
 | On-device label (`CFBundleDisplayName`) | `Gurbani Soul` (12 chars — fits under the icon) | |
-| Subtitle | `Gurbani Search, Nitnem & Hukam` (30) — keyword-dense; alt: `Nitnem, Hukamnama & Gurbani` (27) | 30 |
+| Subtitle | `Gurbani Search, Nitnem & Hukam` (30) — keyword-dense; alt: `Nitnem, Hukam & Gurbani Search` (30) | 30 |
 | Publisher / seller | `Algorythmos Pty Ltd` (App Store shows this as the developer name) | |
 | Bundle ID | `org.sggs.app` (widget `org.sggs.app.widgets`) — internal, unchanged; users never see it | |
 | SKU | `sggs-ios` — internal, unchanged | |
@@ -39,7 +39,7 @@ its full name, *Sri Guru Granth Sahib Ji · Ang N* — "Gurbani Soul" names the 
 
 ## Keywords (100, comma-separated, no spaces after commas)
 
-`sikh,gurmukhi,punjabi,shabad,hukamnama,waheguru,sggs,granth,japji,rehras,sohila,sikhism,bani,guru`
+`sikh,gurmukhi,punjabi,shabad,waheguru,sggs,granth,japji,rehras,sohila,sikhism,bani,guru`
 
 (Do **not** repeat words already in the Name/Subtitle — Apple indexes those. So `gurbani`,
 `nitnem`, `hukam`, `search` are deliberately omitted here. Every keyword must name something the

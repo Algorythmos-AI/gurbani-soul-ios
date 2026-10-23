@@ -26,24 +26,31 @@ struct ThemeCardSheet: View {
                             }
                             Text("\(card.nVerses.formatted()) verses in \(card.nShabads.formatted()) shabads · \(card.nRahao.formatted()) refrains")
                                 .font(.subheadline.weight(.semibold))
-                            if !card.description.isEmpty {
-                                Text(card.description).font(.callout)
-                                    .fixedSize(horizontal: false, vertical: true)
-                            }
                         }
                         .accessibilityElement(children: .combine)
+                    }
+                    if !card.description.isEmpty {
+                        // an editorial note about the theme, set apart from scripture and labelled as such
+                        Section {
+                            Text(card.description).font(.callout)
+                                .fixedSize(horizontal: false, vertical: true)
+                        } header: {
+                            Text("About this theme")
+                        } footer: {
+                            Text("An editorial note, not scripture.")
+                        }
                     }
                     Section("The Gurmukhi words that tag it") {
                         FlowTerms(terms: card.terms)
                     }
                     if !card.raags.isEmpty {
-                        Section("Concentrates in") {
+                        Section("Raags where it appears more often") {
                             ForEach(card.raags) { row($0, name: raagName($0.entityId)) }
                         }
                     }
                     if !card.authors.isEmpty {
-                        Section("Voiced most by") {
-                            ForEach(card.authors) { row($0, name: $0.entityId.replacingOccurrences(of: " Ji", with: "")) }
+                        Section("Voices where it appears more often") {
+                            ForEach(card.authors) { row($0, name: $0.entityId) }   // names in full, as stored
                         }
                     }
                     Section {
