@@ -78,7 +78,7 @@ struct IndexScreen: View {
 
     private func ribbon(_ meta: CorpusMeta) -> some View {
         let map = GranthMap(meta: meta)
-        return GranthRibbon(layout: RibbonLayout(map: map), raagCount: map.raags.count,
+        return SaroopRibbon(layout: RibbonLayout(map: map), raagCount: map.raags.count,
                             pins: CompositionCatalog.heroes.map(\.ang),
                             hereAng: lastAng > 1 ? lastAng : nil) { segment, ang in
             if segment.movement == .raags, let r = map.raags.first(where: { $0.name == segment.name }) {

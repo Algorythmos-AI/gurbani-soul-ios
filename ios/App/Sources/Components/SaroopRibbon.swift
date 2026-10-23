@@ -1,13 +1,14 @@
 import SwiftUI
 
-/// The Granth Ribbon: all 1,430 Angs as one strip, every bani and raag drawn in proportion to the
-/// Angs it fills, so the saroop's shape is visible at once — Gauri's 196 Angs, Jaijavanti's 2, the
-/// thirteen opening Angs, the closing saloks and Raagmala. Slide a finger along it: a loupe names
+/// The Saroop Ribbon, the Index's map of the whole Granth: all 1,430 Angs as one strip, every
+/// bani and raag drawn in proportion to the Angs it fills, so the saroop's shape is visible at
+/// once — Gauri's 196 Angs, Jaijavanti's 2, the thirteen opening Angs, the closing saloks and
+/// Raagmala. Slide a finger along it: a loupe names
 /// the work and the Ang under it (a light tick at each new work), and lifting opens that work.
 ///
 /// Gold pins mark where the Index's major compositions begin; a small ink marker shows the Ang the
 /// reader last read. VoiceOver sees ONE adjustable element that steps work by work.
-struct GranthRibbon: View {
+struct SaroopRibbon: View {
     let layout: RibbonLayout
     let raagCount: Int
     /// Angs to pin (the major compositions' first Angs).
