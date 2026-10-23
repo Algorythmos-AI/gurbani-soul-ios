@@ -3,6 +3,7 @@
   "files": {
     "golden_analytics.ndjson": 56,
     "golden_banis.ndjson": 28,
+    "golden_constellation.ndjson": 31,
     "golden_difflib.ndjson": 49,
     "golden_pahar.ndjson": 2183,
     "golden_reader.ndjson": 27,

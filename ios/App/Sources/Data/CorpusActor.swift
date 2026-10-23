@@ -54,6 +54,16 @@ actor CorpusActor {
     func constellation(concept: String, author: String? = nil, raag: String? = nil) throws -> ConstellationResult {
         try db.constellation(concept: concept, author: author, raag: raag)
     }
+    // Constellation v2 (serve.py /api/analytics/constellation v2 fields, /sky, /pair, /theme).
+    func constellationFocus(concept: String, lens: ConstellationLens = .none) throws -> ConstellationFocus {
+        try db.constellationFocus(concept: concept, lens: lens)
+    }
+    func constellationSky(minPPMI: Double = 0.7) throws -> SkyGraph { try db.constellationSky(minPPMI: minPPMI) }
+    func constellationPair(concept: String, with other: String?, lens: ConstellationLens = .none,
+                           offset: Int = 0, limit: Int = 50) throws -> PairPage {
+        try db.constellationPair(concept: concept, with: other, lens: lens, offset: offset, limit: limit)
+    }
+    func themeCard(concept: String) throws -> ThemeCard? { try db.themeCard(concept: concept) }
     // Insight-Engine deep reads (Lineage profiles, chord, streamgraph, vaar anatomy).
     func authorProfile(_ author: String, full: Bool = false) -> AuthorProfile { db.authorProfile(author, full: full) }
     func resonance(minLines: Int = 250, minLift: Double = 1.0, minEdges: Int = 8) -> ResonanceGraph {

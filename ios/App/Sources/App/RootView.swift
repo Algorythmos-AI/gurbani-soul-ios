@@ -59,7 +59,7 @@ struct RootView: View {
                     switch p {
                     case .shabad, .hukam: ShabadSheet(presentation: p.composition ?? .hukam)
                     case .trail(let start): TrailScreen(start: start)
-                    case .cluster(let center, let cluster): ClusterSheet(center: center, cluster: cluster)
+                    case .pair(let request): PairSheet(request: request)
                     case .baniContents(let r): BaniContentsSheet(request: r)
                     case .readingSettings: ReadingSettingsSheet()
                     }

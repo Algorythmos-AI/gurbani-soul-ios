@@ -2,31 +2,14 @@ import SwiftUI
 import GurbaniSearchKit
 
 /// The 54 corpus themes, grouped theologically — native parity with the web /themes
-/// (frontend/src/scripts/themes.ts THEME_CATS). Tapping a card shows every tagged verse.
+/// (frontend/src/scripts/themegroups.ts). Tapping a card shows every tagged verse.
 /// Stack-less: pushed inside the Explore tab's NavigationStack, whose destination
 /// table resolves Route.theme — theme deep links land here via Router.explorePath.
 struct ThemesScreen: View {
     @Environment(AppContainer.self) private var container
     @Environment(\.palette) private var palette
 
-    /// Web THEME_CATS, with one correction: the web list still says `akal_kaal`, which was
-    /// split into `akal` + `kaal` in v2.9.5 — here `akal` (the Timeless) stays under the
-    /// Divine Reality and `kaal` (time/death) joins the Human Condition beside jam.
-    /// Any slug not matched below falls into "More Themes" — a theme is NEVER dropped.
-    private static let groups: [(title: String, caption: String, keys: [String])] = [
-        ("The Divine Reality", "God, the Names, and the cosmic Word",
-         ["ik_onkar", "vahiguru", "karta", "akal", "hukam", "naam", "shabad", "bani", "jot", "anhad", "patit_pavan"]),
-        ("The Human Condition & Illusions", "Ego, mind, attachment, and the wheel of birth–death",
-         ["haumai", "maya", "man", "sansar", "janam_maran", "avagavan", "manmukh", "bharam", "dukh_sukh", "garab", "trishna", "bhavjal", "jam", "kaal"]),
-        ("The Five Vices", "The panj chor that rob the soul",
-         ["kaam", "krodh", "lobh", "moh", "ahankar"]),
-        ("The Path & Praxis", "The Guru, the Sangat, and the daily practice",
-         ["satguru", "gurmukh", "simran", "bhagti", "seva", "sangat", "sant_sadh", "sifat_salah", "darshan", "charan", "marag_panth"]),
-        ("Virtues & Divine Attributes", "The qualities the gurmukh cultivates and the Lord embodies",
-         ["prem_pyar", "daya", "nimrata", "santokh", "bhau", "bhana", "karam_nadar"]),
-        ("Spiritual States", "The fruits of the path — poise, bliss, liberation",
-         ["anand", "sahaj", "sach", "mukti", "amrit", "maran_jeevan"]),
-    ]
+    // The six groups (and the leftover rule) live in ThemeGroup.all, shared with the Constellation.
 
     private let columns = [GridItem(.flexible(), spacing: Theme.Space.m), GridItem(.flexible())]
 
@@ -34,13 +17,13 @@ struct ThemesScreen: View {
         Group {
             if let meta = container.meta {
                 let byKey = Dictionary(uniqueKeysWithValues: meta.concepts.map { ($0.concept, $0) })
-                let placed = Set(Self.groups.flatMap(\.keys))
+                let placed = Set(ThemeGroup.all.flatMap(\.keys))
                 let leftover = meta.concepts.filter { !placed.contains($0.concept) }
                 ScrollView {
                     VStack(alignment: .leading, spacing: Theme.Space.xl) {
                         Text("Explore the Granth by idea — each theme gathers every verse that uses its corpus-verified Gurmukhi words, shown verbatim with its Ang.")
                             .font(.caption).foregroundStyle(.secondary)
-                        ForEach(Self.groups, id: \.title) { group in
+                        ForEach(ThemeGroup.all) { group in
                             let concepts = group.keys.compactMap { byKey[$0] }
                             if !concepts.isEmpty {
                                 themeSection(title: group.title, caption: group.caption, concepts: concepts)
