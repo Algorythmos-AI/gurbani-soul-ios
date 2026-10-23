@@ -96,7 +96,7 @@ struct HukamWidget: Widget {
                 .containerBackground(for: .widget) { PaperGround() }
         }
         .configurationDisplayName("Hukam of the day")
-        .description("One verse of Sri Guru Granth Sahib Ji for the whole day, verbatim with its Ang, and a new one at midnight.")
+        .description("One verse of Sri Guru Granth Sahib Ji for the whole day, chosen by date (not the Hukamnama from Sri Harmandir Sahib), verbatim with its Ang.")
         .supportedFamilies([.systemMedium, .systemLarge])
     }
 }

@@ -103,7 +103,7 @@ struct OpenAngIntent: AppIntent {
 
 struct OpenConstellationIntent: AppIntent {
     static let title: LocalizedStringResource = "Show the constellation"
-    static let description = IntentDescription("See which themes a theme's verses also carry, built from the Granth's verified theme words.")
+    static let description = IntentDescription("See which themes a theme's verses also carry, matched by each theme's Gurmukhi words.")
     static let openAppWhenRun = true
 
     @Parameter(title: "Theme", description: "A theme such as Naam, Haumai or Seva.") var theme: String?
