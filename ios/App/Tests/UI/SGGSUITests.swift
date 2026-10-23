@@ -1045,7 +1045,7 @@ final class SGGSUITests: XCTestCase {
         sleep(2)                                   // the position save is debounced
         shot("vaar_reader_mid")
         app.buttons["vaarReader.menu"].firstMatch.tap()
-        let paurisOnly = app.buttons["Pauris only"].firstMatch
+        let paurisOnly = app.buttons["Show pauris only"].firstMatch
         XCTAssertTrue(paurisOnly.waitForExistence(timeout: 5)); paurisOnly.tap()
         shot("vaar_reader_pauris_only")
         app.navigationBars.buttons.element(boundBy: 0).tap()      // → weave

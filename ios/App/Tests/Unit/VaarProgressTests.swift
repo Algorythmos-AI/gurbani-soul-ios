@@ -35,6 +35,15 @@ final class VaarProgressTests: XCTestCase {
         XCTAssertNil(b.position(for: 5))
     }
 
+    func testTheFirstPositionIsSaved() {
+        let s = VaarProgressStore(url: url)
+        s.setPosition(19, lineId: 51554, pauriNo: 1, nPauris: 3)
+        XCTAssertEqual(VaarProgressStore(url: url).position(for: 19)?.lineId, 51554, "a first position must reach disk")
+        s.setPosition(19, lineId: 51554, pauriNo: 1, nPauris: 3)       // unchanged: no write, no error
+        s.markComplete(19)
+        XCTAssertEqual(VaarProgressStore(url: url).fraction(for: 19), 1)
+    }
+
     func testCorruptFileIsMovedAsideNotLost() throws {
         try Data("not json".utf8).write(to: url)
         let s = VaarProgressStore(url: url)
@@ -68,5 +77,10 @@ final class VaarReaderRowIdTests: XCTestCase {
             XCTAssertLessThan(VaarReaderScreen.unitRowId(i), 0)
         }
         XCTAssertNotEqual(VaarReaderScreen.headingRowId, VaarReaderScreen.endRowId)
+        let mark = VaarReaderScreen.angMarkRowId(1430)
+        XCTAssertNil(VaarReaderScreen.unitIndex(fromRowId: mark), "an Ang marker is not a unit row")
+        XCTAssertEqual(VaarReaderScreen.ang(fromRowId: mark), 1430)
+        XCTAssertNil(VaarReaderScreen.ang(fromRowId: VaarReaderScreen.unitRowId(109)))
+        XCTAssertNil(VaarReaderScreen.ang(fromRowId: 3302))
     }
 }

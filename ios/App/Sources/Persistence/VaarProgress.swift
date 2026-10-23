@@ -62,9 +62,14 @@ final class VaarProgressStore {
     // MARK: writes
 
     func setPosition(_ vaarId: Int, lineId: Int, pauriNo: Int?, nPauris: Int, at date: Date = Date()) {
-        var p = position(for: vaarId) ?? VaarPosition(lineId: lineId, pauriNo: pauriNo, nPauris: nPauris, lastReadAt: date)
-        guard p.lineId != lineId || p.pauriNo != pauriNo || p.nPauris != nPauris else { return }
-        p.lineId = lineId; p.pauriNo = pauriNo; p.nPauris = nPauris; p.lastReadAt = date
+        var p: VaarPosition
+        if let old = position(for: vaarId) {
+            guard old.lineId != lineId || old.pauriNo != pauriNo || old.nPauris != nPauris else { return }
+            p = old
+            p.lineId = lineId; p.pauriNo = pauriNo; p.nPauris = nPauris; p.lastReadAt = date
+        } else {
+            p = VaarPosition(lineId: lineId, pauriNo: pauriNo, nPauris: nPauris, lastReadAt: date)
+        }
         file.vaars[String(vaarId)] = p
         save()
     }

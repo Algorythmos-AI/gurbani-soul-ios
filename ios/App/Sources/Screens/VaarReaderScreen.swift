@@ -21,6 +21,9 @@ struct VaarReaderScreen: View {
     @State private var readSinceLanding = false
     @State private var finished = false
     @State private var endVisible = false
+    /// Position changes until this moment come from the app (landing, a jump, a step, the view
+    /// toggle), not the reader's own scrolling: they are saved, but never count as reading.
+    @State private var programmaticUntil = Date.distantPast
     @State private var saveTask: Task<Void, Never>?
 
     var body: some View {
@@ -56,7 +59,11 @@ struct VaarReaderScreen: View {
     static let endRowId = -3
     static func unitRowId(_ index: Int) -> Int { -(index + 10) }
     /// The unit index a chrome row id names, nil for the heading / end rows and for line ids.
-    static func unitIndex(fromRowId id: Int) -> Int? { id <= -10 ? -id - 10 : nil }
+    static func unitIndex(fromRowId id: Int) -> Int? { id <= -10 && id > angMarkBase ? -id - 10 : nil }
+    /// "Ang N" marker rows: each Ang is marked at most once (reading order is monotonic).
+    static let angMarkBase = -1_000_000
+    static func angMarkRowId(_ ang: Int) -> Int { angMarkBase - ang }
+    static func ang(fromRowId id: Int) -> Int? { id < angMarkBase ? angMarkBase - id : nil }
 
     private func units(_ t: VaarText) -> [VaarTextUnit] { onlyPauris ? t.pauris : t.units }
 
@@ -66,10 +73,10 @@ struct VaarReaderScreen: View {
             LazyVStack(alignment: .center, spacing: Theme.Space.s) {
                 heading(t).id(Self.headingRowId)
                 ForEach(Array(shown.enumerated()), id: \.element.id) { k, u in
-                    if k > 0, shown[k - 1].lastAng != u.firstAng { angMark(u.firstAng) }
+                    if k > 0, shown[k - 1].lastAng != u.firstAng { angMark(u.firstAng).id(Self.angMarkRowId(u.firstAng)) }
                     unitHead(u).id(Self.unitRowId(u.index))
                     ForEach(Array(u.verse.enumerated()), id: \.element.id) { k, line in
-                        if k > 0, line.ang != u.verse[k - 1].ang { angMark(line.ang) }
+                        if k > 0, line.ang != u.verse[k - 1].ang { angMark(line.ang).id(Self.angMarkRowId(line.ang)) }
                         LineRow(gurmukhi: line.gurmukhi, translit: line.translit, meta: "",
                                 lineId: line.id, ang: line.ang, compId: line.compId, centred: true)
                             .id(line.id)
@@ -89,7 +96,7 @@ struct VaarReaderScreen: View {
                 Menu {
                     Picker("Show", selection: $onlyPauris) {
                         Label("The whole Vaar", systemImage: "text.justify").tag(false)
-                        Label("Pauris only", systemImage: "list.number").tag(true)
+                        Label("Show pauris only", systemImage: "list.number").tag(true)
                     }
                     Section("Go to pauri") {
                         ForEach(t.pauris) { p in
@@ -103,6 +110,7 @@ struct VaarReaderScreen: View {
         }
         .onChange(of: onlyPauris) { _, _ in
             // keep the place: land on the pauri the reader was in
+            markProgrammatic()
             if let p = currentGroup(t) { positionId = Self.unitRowId(p.index) }
         }
     }
@@ -165,11 +173,9 @@ struct VaarReaderScreen: View {
                 .font(.footnote).foregroundStyle(.secondary)
             if let next = nextVaarId {
                 Button {
-                    // replace this reader rather than stacking one reader per Vaar
-                    var path = container.router.explorePath
-                    if !path.isEmpty { path.removeLast() }
-                    path.append(Route.vaarReader(id: next, paurisOnly: onlyPauris, line: nil))
-                    container.router.explorePath = path
+                    // the next Vaar with its own weave underneath, never a stack of readers
+                    container.router.explorePath = NavigationPath(
+                        [Route.vaars, Route.vaar(next), Route.vaarReader(id: next, paurisOnly: onlyPauris, line: nil)])
                 } label: {
                     Label("Next Vaar", systemImage: "arrow.right")
                         .font(.subheadline.weight(.semibold))
@@ -183,7 +189,7 @@ struct VaarReaderScreen: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .onAppear { endVisible = true; if readSinceLanding { complete(t) } }
+        .onAppear { endVisible = true; if readSinceLanding && userDriven { complete(t) } }
         .onDisappear { endVisible = false }
     }
 
@@ -225,6 +231,7 @@ struct VaarReaderScreen: View {
         guard let id = positionId else { return nil }
         if id == Self.headingRowId { return nil }
         if id == Self.endRowId { return t.units.last }
+        if let ang = Self.ang(fromRowId: id) { return units(t).first { u in u.lines.contains { $0.ang == ang } } }
         if id < 0 { return Self.unitIndex(fromRowId: id).flatMap { t.units.indices.contains($0) ? t.units[$0] : nil } }
         return t.unitIndex(containing: id).map { t.units[$0] }
     }
@@ -241,8 +248,12 @@ struct VaarReaderScreen: View {
     }
 
     private func jump(to unit: VaarTextUnit) {
+        markProgrammatic()
         MotionGate.run(Motion.gentle) { positionId = Self.unitRowId(unit.index) }
     }
+
+    private func markProgrammatic() { programmaticUntil = Date().addingTimeInterval(1.0) }
+    private var userDriven: Bool { Date() >= programmaticUntil }
 
     private func step(_ t: VaarText, by delta: Int) {
         let n = (currentGroup(t)?.pauriNo ?? 0) + delta
@@ -253,9 +264,12 @@ struct VaarReaderScreen: View {
     }
 
     private func positionChanged(_ id: Int?) {
-        guard landed, let text, let id else { return }
-        readSinceLanding = true
-        if endVisible { complete(text) }
+        // once finished in this session the position stays where the seal was earned
+        guard landed, !finished, let text, let id else { return }
+        if userDriven {
+            readSinceLanding = true
+            if endVisible { complete(text); return }
+        }
         let lineId = id > 0 ? id : (currentUnit(text)?.verse.first?.id ?? text.units.first?.verse.first?.id)
         guard let lineId else { return }
         let pauri = currentGroup(text)?.pauriNo
@@ -268,7 +282,7 @@ struct VaarReaderScreen: View {
     }
 
     private func flushSave() {
-        guard let text, landed, readSinceLanding, let id = positionId else { return }
+        guard let text, landed, !finished, let id = positionId, id != Self.headingRowId else { return }
         saveTask?.cancel()
         let lineId = id > 0 ? id : (currentUnit(text)?.verse.first?.id ?? 0)
         guard lineId > 0 else { return }
@@ -277,7 +291,10 @@ struct VaarReaderScreen: View {
 
     private func complete(_ t: VaarText) {
         guard !finished else { return }
-        flushSave()
+        saveTask?.cancel()
+        if let last = t.units.last?.verse.last {
+            container.vaarProgress.setPosition(vaarId, lineId: last.id, pauriNo: t.nPauris, nPauris: t.nPauris)
+        }
         container.vaarProgress.markComplete(vaarId)
         MotionGate.run(Motion.spring) { finished = true }
         Haptics.success()
@@ -304,6 +321,7 @@ struct VaarReaderScreen: View {
                 positionId = unit.verse.contains { $0.id == want } ? want : Self.unitRowId(unit.index)
             }
         }
+        markProgrammatic()
         try? await Task.sleep(for: .milliseconds(400))   // let the landing settle before tracking
         landed = true
     }
