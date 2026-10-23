@@ -301,10 +301,15 @@ final class AppContainer {
         let calendar = Calendar.current
         let startOfToday = calendar.startOfDay(for: Date())
         var hukamDays: [HukamDay] = []
-        for offset in 0..<WidgetSnapshot.hukamDayCount {
+        // From yesterday: a reader who crosses the date line westward with the app closed lands on
+        // an earlier local date, and the widget still has that day's verse.
+        for offset in -1..<WidgetSnapshot.hukamDayCount {
             guard let date = calendar.date(byAdding: .day, value: offset, to: startOfToday),
                   let unit = try? await corpus.hukamOfTheDay(day: HukamOfTheDay.dayNumber(of: date, calendar: calendar)),
-                  let verse = unit.lines.first(where: { !$0.isHeader }) else { break }   // keep the days contiguous
+                  let verse = unit.lines.first(where: { !$0.isHeader }) else {
+                if offset < 0 { continue }   // yesterday is a courtesy; from today on the days stay contiguous
+                break
+            }
             // The unit can open before its seed (a Vaar's saloks precede the pauri): cite the
             // composition and line of the verse actually shown, so a tap opens what was read.
             hukamDays.append(HukamDay(date: WidgetSnapshot.dayKey(date, calendar: calendar),
@@ -312,8 +317,8 @@ final class AppContainer {
                                       translit: verse.translit, ang: verse.ang,
                                       compId: verse.compId, lineId: verse.id))
         }
-        guard let firstVerse = hukamDays.first,
-              firstVerse.date == WidgetSnapshot.dayKey(startOfToday, calendar: calendar) else { return }
+        let todayKey = WidgetSnapshot.dayKey(startOfToday, calendar: calendar)
+        guard let firstVerse = hukamDays.first(where: { $0.date == todayKey }) else { return }
         var paharRaags: [Int: [String]] = [:]
         var paharRaagsGurmukhi: [Int: [String]] = [:]
         let clock = await corpus.timingClock()

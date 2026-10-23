@@ -46,6 +46,15 @@ final class HukamOfTheDayTimelineTests: XCTestCase {
         XCTAssertEqual(s[2].date.timeIntervalSince(s[1].date), 25 * 3600)
     }
 
+    func testAWestwardTripStillFindsTheDay() {
+        // written in Kolkata on the 24th (with yesterday), read in Los Angeles where it is still the 23rd
+        let snap = snapshot([day("2026-10-23", ang: 1), day("2026-10-24", ang: 2), day("2026-10-25", ang: 3)])
+        let now = date(2026, 10, 23, 20, 0, tz: la)
+        let s = snap.hukamSchedule(from: now, calendar: calendar(la))
+        XCTAssertEqual(s.map { $0.day.ang }, [1, 2, 3])
+        XCTAssertEqual(s[0].date, now)
+    }
+
     func testPastDaysAreSkippedAndOrderIsByDate() {
         let now = date(2026, 10, 25, 8, 0, tz: la)
         let snap = snapshot([day("2026-10-26", ang: 4), day("2026-10-23", ang: 1),

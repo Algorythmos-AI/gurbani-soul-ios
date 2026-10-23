@@ -29,8 +29,9 @@ struct WidgetSnapshot: Codable, Sendable {
     /// lengths. Progress (completion, position) is read live from `nitnem-progress.json`.
     /// Optional so an older snapshot still decodes.
     var nitnem: NitnemWidgetData? = nil
-    /// The Hukam of the day for today and the days after it (`hukamDayCount` of them), so the
-    /// widget moves to the next verse at the reader's midnight without the app being opened.
+    /// The Hukam of the day for yesterday, today and the days after it (`hukamDayCount` from
+    /// today), so the widget moves to the next verse at the reader's midnight without the app
+    /// being opened, and still has the day's verse after a westward trip across the date line.
     /// Optional: an older snapshot decodes, and the widget then shows the single verse above.
     var hukamDays: [HukamDay]? = nil
 
