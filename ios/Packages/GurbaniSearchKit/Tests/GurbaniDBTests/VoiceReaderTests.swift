@@ -74,6 +74,9 @@ final class VoiceReaderTests: XCTestCase {
         XCTAssertEqual(jai.count, raags.first { $0.raag == "ਜੈਜਾਵੰਤੀ" }?.nCompositions)
         XCTAssertFalse(db.authorVerses(m9.author, containing: "ਨਾਨਕ").isEmpty)
         XCTAssertEqual(db.conceptHeadTerms()["naam"], "ਨਾਮੁ")
+        let signature = db.signatureRaags()
+        XCTAssertEqual(signature.first { $0.raag == "ਜੈਜਾਵੰਤੀ" }?.author, m9.author)
+        XCTAssertTrue(signature.allSatisfy { s in db.authorRaags(s.author).contains { $0.raag == s.raag && $0.isSignature } })
     }
 
     /// Comp 2749 (Ang 695) holds several voices: each voice's entry opens on its OWN first line,
@@ -191,6 +194,8 @@ final class VoiceReaderTests: XCTestCase {
         XCTAssertTrue(db.authorDialogues("Bhagat Kabir Ji").isEmpty)
         XCTAssertTrue(db.authorEchoes("Bhagat Kabir Ji").isEmpty)
         XCTAssertEqual(db.conceptHeadTerms(), [:], "no concepts table: no head terms, no error")
+        XCTAssertNil(db.dialogueSpan())
+        XCTAssertEqual(db.signatureRaags().map(\.raag), ["ਗਉੜੀ"], "raags table absent: roman is empty, not an error")
         // …while everything computed from `lines` still works.
         let kabir = try XCTUnwrap(db.voiceSummaries().first { $0.author == "Bhagat Kabir Ji" })
         XCTAssertEqual(kabir.nVerses, 3, "the header row is not a verse")
@@ -222,6 +227,10 @@ final class VoiceReaderTests: XCTestCase {
         XCTAssertEqual(m.namedBy.map(\.verse.gurmukhi), ["ਕਬੀਰ ਉਤਰ ਦੀ ਤੁਕ ॥੩॥"])
         XCTAssertEqual(m.namedBy.first?.form, "ਕਬੀਰ")
         XCTAssertTrue(m.names.isEmpty)
+        let span = try XCTUnwrap(db.dialogueSpan())
+        XCTAssertEqual(span.count, 1)
+        XCTAssertEqual(span.firstAng, 1364)
+        XCTAssertEqual(span.bhagats, ["Bhagat Kabir Ji"])
         let d = try XCTUnwrap(db.authorDialogues("Guru Arjan Dev Ji (M5)").first)
         XCTAssertEqual(d.bhagat.map(\.id), [2, 3], "headers excluded, verbatim by id")
         XCTAssertEqual(d.guru.map(\.id), [5])

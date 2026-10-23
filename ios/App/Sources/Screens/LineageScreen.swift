@@ -17,6 +17,21 @@ struct LineageScreen: View {
     @State private var groupMode = "time"                      // time | kind | volume (web parity)
     /// The card → voice page zoom (iOS 18+).
     @Namespace private var voiceZoom
+    @State private var lens: Lens = .roll
+    @State private var signatureRaags: [SignatureRaag] = []
+    @State private var dialogueSpan: DialogueSpan?
+    @State private var voiceOfTheDay: VoiceOfTheDay?
+
+    /// How the voices are laid out: the card list (Roll) or one timeline (River).
+    enum Lens: String, CaseIterable, Identifiable {
+        case roll = "Roll", river = "River"
+        var id: String { rawValue }
+    }
+
+    struct VoiceOfTheDay: Equatable {
+        let contributor: Contributor
+        let verse: VoiceVerse
+    }
     @State private var compareMode = false
     @State private var comparePicks: [Contributor] = []
     @State private var comparePair: ComparePair?
@@ -45,14 +60,29 @@ struct LineageScreen: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: Theme.Space.l) {
                         hero(contributors)
+                        if let voiceOfTheDay { voiceOfTheDayCard(voiceOfTheDay) }
+                        didYouKnow
+                        Picker("Lens", selection: $lens) {
+                            ForEach(Lens.allCases) { Text($0.rawValue).tag($0) }
+                        }
+                        .pickerStyle(.segmented)
+                        .accessibilityIdentifier("lineageLens")
                         controls
-                        ForEach(bands(contributors), id: \.title) { band in
-                            bandView(band.title, band.members)
+                        switch lens {
+                        case .roll:
+                            ForEach(bands(contributors), id: \.title) { band in
+                                bandView(band.title, band.members)
+                            }
+                        case .river:
+                            VoiceRiverView(voices: contributors.filter { kindFilter == "all" || $0.kind == kindFilter }) { c in
+                                open(c)
+                            }
                         }
                     }
                     .padding(Theme.Space.l)
                     .appAnimation(Motion.gentle, value: groupMode)
                     .appAnimation(Motion.gentle, value: kindFilter)
+                    .appAnimation(Motion.gentle, value: lens)
                 }
                 .background(Ink.canvas)
                 .contentMargins(.bottom, Theme.Space.xl, for: .scrollContent)
@@ -95,6 +125,9 @@ struct LineageScreen: View {
                     contributors = roster + list.filter { !known.contains($0.author) }
                         .map { Contributor(placeholderFor: $0.author) }
                 }
+                signatureRaags = await corpus.signatureRaags()
+                dialogueSpan = await corpus.dialogueSpan()
+                voiceOfTheDay = await pickVoiceOfTheDay(corpus)
             }
         }
     }
@@ -113,6 +146,8 @@ struct LineageScreen: View {
             // With the bundled roster this renders "30 voices · 12th–17th century" —
             // the exact header string testLineageAndVaars asserts.
             Text("\(String(list.count)) voices · \(span) century").font(.headline)
+            Text("Every verse here is verbatim and cited by Ang.")
+                .font(.caption).foregroundStyle(.secondary)
             Text("Five centuries of voices gathered into one Granth — the Gurus, the Bhagats of the Bhakti and Sufi traditions, the court Bhatts, and the Gursikh companions. Tap any voice for their page"
                  + (compareMode ? " — compare mode: pick two." : "; ⇄ compares two."))
                 .font(.caption).foregroundStyle(.secondary)
@@ -152,14 +187,118 @@ struct LineageScreen: View {
                     }
                 }
             }
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: Theme.Space.s) {
-                    ForEach(Self.groupModes, id: \.id) { g in
-                        ModePill(title: g.label, isSelected: groupMode == g.id) { groupMode = g.id }
+            if lens == .roll {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: Theme.Space.s) {
+                        ForEach(Self.groupModes, id: \.id) { g in
+                            ModePill(title: g.label, isSelected: groupMode == g.id) { groupMode = g.id }
+                        }
                     }
                 }
             }
         }
+    }
+
+    private func open(_ c: Contributor) {
+        container.router.explorePath.append(VoiceLink(name: c.name))
+    }
+
+    // MARK: voice of the day — one voice and one of its rahao verses, the same all day
+
+    private func pickVoiceOfTheDay(_ corpus: CorpusActor) async -> VoiceOfTheDay? {
+        let candidates = (contributors ?? []).filter { summaries[$0.name] != nil }.sorted { $0.name < $1.name }
+        guard !candidates.isEmpty else { return nil }
+        let day = max(0, HukamOfTheDay.dayNumber(of: Date()))
+        let c = candidates[day % candidates.count]
+        let deck = await corpus.authorRahao(c.name)
+        if !deck.verses.isEmpty {
+            return VoiceOfTheDay(contributor: c, verse: deck.verses[(day / candidates.count) % deck.verses.count])
+        }
+        guard let first = await corpus.authorCompositions(c.name).first else { return nil }
+        return VoiceOfTheDay(contributor: c, verse: VoiceVerse(id: first.firstLineId, ang: first.ang,
+                                                               compId: first.compId, gurmukhi: first.opening))
+    }
+
+    private func voiceOfTheDayCard(_ v: VoiceOfTheDay) -> some View {
+        Button { open(v.contributor) } label: {
+            VStack(alignment: .leading, spacing: Theme.Space.s) {
+                SectionEyebrow(text: "Voice of the day")
+                HStack(spacing: Theme.Space.s) {
+                    VoiceMedallionView(contributor: v.contributor, diameter: 32)
+                    Text(v.contributor.displayName).font(.headline)
+                }
+                GurmukhiText(verbatim: v.verse.gurmukhi, size: 22)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text("Ang \(v.verse.ang)").font(.caption).foregroundStyle(.secondary)
+            }
+            .padding(Theme.Space.l)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Ink.card, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
+            .overlay(RoundedRectangle(cornerRadius: Theme.Radius.card).strokeBorder(Ink.hairline))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.pressableCard)
+        .accessibilityElement(children: .combine)
+        .accessibilityHint("Opens their page")
+        .accessibilityIdentifier("voiceOfTheDay")
+    }
+
+    // MARK: did you know — only facts computed from the DB, each cited by Ang
+
+    @ViewBuilder private var didYouKnow: some View {
+        let bhatts = summaries.values.filter { $0.author.hasPrefix("Bhatt ") }
+        let facts = didYouKnowFacts(bhatts: bhatts)
+        if !facts.isEmpty {
+            VStack(alignment: .leading, spacing: Theme.Space.s) {
+                SectionEyebrow(text: "Did you know")
+                ForEach(facts, id: \.id) { f in
+                    Button { if let c = f.voice { open(c) } } label: {
+                        HStack(alignment: .top, spacing: Theme.Space.s) {
+                            if let g = f.gurmukhi { GurmukhiText(verbatim: g, size: 20) }
+                            Text(f.text).font(.callout)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            if f.voice != nil {
+                                Image(systemName: "chevron.right").font(.caption2).foregroundStyle(.tertiary)
+                            }
+                        }
+                        .padding(Theme.Space.m)
+                        .background(Ink.card, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
+                        .overlay(RoundedRectangle(cornerRadius: Theme.Radius.card).strokeBorder(Ink.hairline))
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(f.voice == nil)
+                    .accessibilityElement(children: .combine)
+                }
+            }
+        }
+    }
+
+    struct Fact { let id: String; let gurmukhi: String?; let text: String; let voice: Contributor? }
+
+    private func voice(_ author: String) -> Contributor? { contributors?.first { $0.name == author } }
+    private func displayName(_ author: String) -> String { voice(author)?.displayName ?? AuthorName(author).english }
+
+    private func didYouKnowFacts(bhatts: [VoiceSummary]) -> [Fact] {
+        var out: [Fact] = []
+        for r in signatureRaags.prefix(2) {
+            out.append(Fact(id: "raag-\(r.raag)", gurmukhi: r.raag,
+                            text: "appears in the Granth only in \(displayName(r.author))'s Bani, from Ang \(r.firstAng).",
+                            voice: voice(r.author)))
+        }
+        if let d = dialogueSpan {
+            let gurus = d.gurus.map(displayName).joined(separator: " and ")
+            let bhagats = d.bhagats.map(displayName).joined(separator: " and ")
+            out.append(Fact(id: "dialogues", gurmukhi: nil,
+                            text: "Saloks of \(gurus) are set beside saloks of \(bhagats), Angs \(d.firstAng)–\(d.lastAng).",
+                            voice: nil))
+        }
+        if bhatts.count > 1, let first = bhatts.map(\.firstAng).min(), let last = bhatts.map(\.lastAng).max() {
+            out.append(Fact(id: "bhatts", gurmukhi: nil,
+                            text: "\(bhatts.count) Bhatts each have Swaiyye in the Granth, Angs \(first)–\(last).",
+                            voice: nil))
+        }
+        return out
     }
 
     // MARK: bands (time / kind / volume)

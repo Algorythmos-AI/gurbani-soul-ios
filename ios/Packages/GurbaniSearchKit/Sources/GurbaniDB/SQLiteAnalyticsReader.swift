@@ -541,6 +541,51 @@ extension SQLiteCandidateSource {
         return failed ? [] : out
     }
 
+    /// Raags in which exactly one voice sings, in Granth order (e.g. ਜੈਜਾਵੰਤੀ → Guru Tegh Bahadur Ji).
+    public func signatureRaags() -> [SignatureRaag] {
+        var failed = false
+        var out: [SignatureRaag] = []
+        var stmt: OpaquePointer?
+        defer { sqlite3_finalize(stmt) }
+        let roman = hasTable("raags") ? "COALESCE((SELECT roman FROM raags r WHERE r.name=l.raag),'')" : "''"
+        guard sqlite3_prepare_v2(handle,
+            "SELECT l.raag, MIN(l.author), MIN(l.ang), COUNT(*), \(roman) FROM lines l "
+            + "WHERE l.is_header=0 AND l.raag<>'' AND l.author IS NOT NULL AND l.author<>'' "
+            + "GROUP BY l.raag HAVING COUNT(DISTINCT l.author)=1 ORDER BY MIN(l.ang)", -1, &stmt, nil) == SQLITE_OK
+        else { return [] }
+        while stepRow(stmt, failed: &failed) {
+            out.append(SignatureRaag(raag: aText(stmt, 0) ?? "", roman: aText(stmt, 4) ?? "", author: aText(stmt, 1) ?? "",
+                                     firstAng: aInt(stmt, 2) ?? 0, nVerses: aInt(stmt, 3) ?? 0))
+        }
+        return failed ? [] : out
+    }
+
+    /// The span of `author_dialogues` (optional): how many pairs, their Angs, and who is on each side.
+    public func dialogueSpan() -> DialogueSpan? {
+        guard columns(of: "author_dialogues").isSuperset(of: ["bhagat", "guru", "ang"]) else { return nil }
+        var failed = false
+        var count = 0, first = 0, last = 0
+        var bhagats: [String] = [], gurus: [String] = []
+        var stmt: OpaquePointer?
+        if sqlite3_prepare_v2(handle, "SELECT COUNT(*), MIN(ang), MAX(ang) FROM author_dialogues", -1, &stmt, nil) == SQLITE_OK,
+           stepRow(stmt, failed: &failed) {
+            count = aInt(stmt, 0) ?? 0; first = aInt(stmt, 1) ?? 0; last = aInt(stmt, 2) ?? 0
+        }
+        sqlite3_finalize(stmt)
+        for (col, sink) in [("bhagat", 0), ("guru", 1)] {
+            var s: OpaquePointer?
+            if sqlite3_prepare_v2(handle, "SELECT \(col) FROM author_dialogues GROUP BY \(col) ORDER BY MIN(ang)",
+                                  -1, &s, nil) == SQLITE_OK {
+                while stepRow(s, failed: &failed) {
+                    if let v = aText(s, 0) { if sink == 0 { bhagats.append(v) } else { gurus.append(v) } }
+                }
+            }
+            sqlite3_finalize(s)
+        }
+        return failed || count == 0 ? nil
+            : DialogueSpan(count: count, firstAng: first, lastAng: last, bhagats: bhagats, gurus: gurus)
+    }
+
     /// Each theme's head Gurmukhi term (`concepts.gurmukhi_terms[0]`), keyed by concept slug.
     public func conceptHeadTerms() -> [String: String] {
         guard columns(of: "concepts").isSuperset(of: ["concept", "gurmukhi_terms"]) else { return [:] }

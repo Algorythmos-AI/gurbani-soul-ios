@@ -982,6 +982,13 @@ final class SGGSUITests: XCTestCase {
         // "30 voices" today, "36 voices" once roster v2 and the attribution fix land.
         let header = app.staticTexts.matching(NSPredicate(format: "label MATCHES %@", "[0-9]+ voices · 12th–17th century")).firstMatch
         XCTAssertTrue(header.waitForExistence(timeout: 15), "lineage header missing")
+        // the River lens draws, then the Roll comes back for the cards below
+        let river = app.segmentedControls.buttons["River"]
+        XCTAssertTrue(river.waitForExistence(timeout: 8), "lens control missing")
+        river.tap()
+        XCTAssertTrue(app.staticTexts["Drag along the years to see who was alive."].waitForExistence(timeout: 8),
+                      "river scrubber missing")
+        app.segmentedControls.buttons["Roll"].tap()
         // open a voice page (pushed, with a zoom from the card on iOS 18+)
         let farid = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Sheikh Farid")).firstMatch
         XCTAssertTrue(farid.waitForExistence(timeout: 8)); farid.tap()
@@ -2163,6 +2170,14 @@ final class SGGSUITests: XCTestCase {
         _ = app.staticTexts.matching(NSPredicate(format: "label MATCHES %@", "[0-9]+ voices · 12th–17th century"))
             .firstMatch.waitForExistence(timeout: 8)
         shot("lineage")
+        let river = app.segmentedControls.buttons["River"]
+        if river.waitForExistence(timeout: 5) {
+            river.tap()
+            app.swipeUp()
+            shot("lineage-river")
+            app.swipeDown()
+            app.segmentedControls.buttons["Roll"].tap()
+        }
         // Guru Tegh Bahadur Ji's page: Gurus only, then scroll to the card (the list is lazy).
         let gurus = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Gurus")).firstMatch
         if gurus.waitForExistence(timeout: 5) { gurus.tap() }

@@ -183,3 +183,28 @@ public struct VoiceEcho: Sendable, Equatable, Identifiable {
     public var id: String { author }
     public init(author: String, edges: Int, lift: Double) { self.author = author; self.edges = edges; self.lift = lift }
 }
+
+/// A raag in which exactly one voice of the Granth sings (computed from `lines`).
+public struct SignatureRaag: Sendable, Equatable, Identifiable {
+    public let raag: String
+    public let roman: String
+    public let author: String
+    public let firstAng: Int
+    public let nVerses: Int
+    public var id: String { raag }
+    public init(raag: String, roman: String, author: String, firstAng: Int, nVerses: Int) {
+        self.raag = raag; self.roman = roman; self.author = author; self.firstAng = firstAng; self.nVerses = nVerses
+    }
+}
+
+/// Where the salok collections set saloks of the Gurus beside the Bhagats' (`author_dialogues`).
+public struct DialogueSpan: Sendable, Equatable {
+    public let count: Int
+    public let firstAng: Int
+    public let lastAng: Int
+    public let bhagats: [String]
+    public let gurus: [String]
+    public init(count: Int, firstAng: Int, lastAng: Int, bhagats: [String], gurus: [String]) {
+        self.count = count; self.firstAng = firstAng; self.lastAng = lastAng; self.bhagats = bhagats; self.gurus = gurus
+    }
+}
