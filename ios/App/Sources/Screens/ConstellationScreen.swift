@@ -68,7 +68,11 @@ struct ConstellationScreen: View {
         } message: {
             Text("The timing claims name no raag for the current pahar, so the lens stays off.")
         }
-        .task { await container.loadMeta() }
+        .task {
+            consumeLink()
+            await container.loadMeta()
+        }
+        .onChange(of: container.router.pendingConstellation) { _, _ in consumeLink() }
         .task(id: LoadKey(concept: concept, lens: lens)) { await load() }
     }
 
@@ -234,6 +238,18 @@ struct ConstellationScreen: View {
         let raags = Array(Set(clock.primary.filter { $0.pahar == pahar }.compactMap(\.raagName))).sorted()
         lens.raags = raags
         if raags.isEmpty { noRaagThisHour = true }
+    }
+
+    /// sggs://constellation?theme=&with= (deep link, Siri, Spotlight): land on that theme, and open
+    /// the pair (or its alone verses) when the link names one.
+    private func consumeLink() {
+        guard let link = container.router.pendingConstellation else { return }
+        container.router.pendingConstellation = nil
+        concept = link.theme
+        showSky = false
+        if link.alone || link.with != nil {
+            container.present(.pair(PairRequest(concept: link.theme, with: link.alone ? nil : link.with, lens: lens)))
+        }
     }
 
     /// nil = the verses that carry the theme alone.

@@ -821,6 +821,16 @@ final class SGGSUITests: XCTestCase {
         app.navigationBars["Kaam"].buttons["Done"].tap()
     }
 
+    /// sggs://constellation?theme=&with= lands on Focus for the theme and opens the pair sheet.
+    func testConstellationDeepLink() {
+        let app = launchApp()
+        XCUIDevice.shared.system.open(URL(string: "sggs://constellation?theme=kaam&with=krodh")!)
+        XCTAssertTrue(app.navigationBars["Kaam ✦ Krodh"].waitForExistence(timeout: 15), "the pair sheet did not open from the link")
+        app.navigationBars["Kaam ✦ Krodh"].buttons["Done"].tap()
+        let caption = app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "verses carry Kaam")).firstMatch
+        XCTAssertTrue(caption.waitForExistence(timeout: 12), "the link did not land on Focus for Kaam")
+    }
+
     /// English layer (personal profile): the English mode pill exists and returns results,
     /// and the More-tab toggle is present. (The public profile hides both — degradation gate.)
     func testEnglishSearchMode() {

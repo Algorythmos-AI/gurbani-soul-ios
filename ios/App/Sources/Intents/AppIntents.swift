@@ -87,6 +87,23 @@ struct OpenAngIntent: AppIntent {
     }
 }
 
+struct OpenConstellationIntent: AppIntent {
+    static let title: LocalizedStringResource = "Show the constellation"
+    static let description = IntentDescription("See which themes a theme's verses also carry, built from the Granth's verified theme words.")
+    static let openAppWhenRun = true
+
+    @Parameter(title: "Theme", description: "A theme such as Naam, Haumai or Seva.") var theme: String?
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        var comps = URLComponents(string: "sggs://constellation")!
+        let key = (theme ?? "naam").trimmingCharacters(in: .whitespaces).replacingOccurrences(of: " ", with: "_")
+        comps.queryItems = [URLQueryItem(name: "theme", value: ConstellationLink.slug(key) ?? "naam")]
+        await UIApplication.shared.open(comps.url!)
+        return .result()
+    }
+}
+
 struct SGGSShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(intent: DrawHukamIntent(),
@@ -104,5 +121,9 @@ struct SGGSShortcuts: AppShortcutsProvider {
         AppShortcut(intent: SearchGurbaniIntent(),
                     phrases: ["Search Gurbani in \(.applicationName)"],
                     shortTitle: "Search Gurbani", systemImageName: "magnifyingglass")
+        AppShortcut(intent: OpenConstellationIntent(),
+                    phrases: ["Show the constellation in \(.applicationName)",
+                              "Explore themes in \(.applicationName)"],
+                    shortTitle: "Constellation", systemImageName: "sparkle.magnifyingglass")
     }
 }
