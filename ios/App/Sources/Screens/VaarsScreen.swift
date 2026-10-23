@@ -79,8 +79,13 @@ struct VaarsScreen: View {
             }
             .onChange(of: ribbonPick) { _, id in
                 guard let id else { return }
-                if !shown.contains(where: { $0.vaarId == id }) { filterKey = VaarFilter.all.key }
-                MotionGate.run(Motion.gentle) { proxy.scrollTo(id, anchor: .top) }
+                let hidden = !shown.contains(where: { $0.vaarId == id })
+                if hidden { filterKey = VaarFilter.all.key }
+                // a card the filter hid exists only after the next layout pass
+                Task { @MainActor in
+                    if hidden { await Task.yield() }
+                    MotionGate.run(Motion.gentle) { proxy.scrollTo(id, anchor: .top) }
+                }
             }
         }
     }

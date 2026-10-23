@@ -940,6 +940,9 @@ final class SGGSUITests: XCTestCase {
         let vaars = app.buttons["Vaars"].firstMatch
         XCTAssertTrue(vaars.waitForExistence(timeout: 8)); vaars.tap()
         XCTAssertTrue(app.navigationBars["Vaars"].waitForExistence(timeout: 12))
+        // a filter kept from an earlier run (SceneStorage) must not hide the cards this test reads
+        let allChip = app.buttons["vaars.filter.all"].firstMatch
+        if allChip.waitForExistence(timeout: 10) { allChip.tap() }
         XCTAssertTrue(app.buttons["vaar.card.1"].firstMatch.waitForExistence(timeout: 15), "first Vaar card missing")
         shot("vaars_home")
 
@@ -970,8 +973,11 @@ final class SGGSUITests: XCTestCase {
         shot("vaar_weave_top")
         app.swipeUp(); app.swipeUp()
         shot("vaar_weave_spine")
-        let pauri = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'vaar.unit.'")).firstMatch
-        XCTAssertTrue(pauri.waitForExistence(timeout: 5)); pauri.tap()
+        // the first node actually on screen (a lazy list keeps some nodes above the viewport)
+        let nodes = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'vaar.unit.'"))
+        XCTAssertTrue(nodes.firstMatch.waitForExistence(timeout: 5))
+        let pauri = nodes.allElementsBoundByIndex.first { $0.isHittable } ?? nodes.firstMatch
+        pauri.tap()
         XCTAssertTrue(app.buttons["vaar.readFromHere"].waitForExistence(timeout: 8), "unit sheet missing")
         shot("vaar_unit_sheet")
         app.buttons["Done"].firstMatch.tap()
