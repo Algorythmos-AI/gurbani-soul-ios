@@ -37,12 +37,9 @@ struct VerseCardView: View {
                     .foregroundStyle(AccentPalette.gold.accentText)
             }
             if let context, !context.isEmpty {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Constellation · \(context) (a verified word match)")
-                        .font(.system(size: 12)).foregroundStyle(.secondary)
-                    Text("Gurbani Soul · Built by Algorythmos")
-                        .font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
-                }
+                // the endorser line stays on About and the store listing only (brand book §1)
+                Text("Constellation · \(context) (matched by a shared word, not by meaning)")
+                    .font(.system(size: 12)).foregroundStyle(.secondary)
             }
         }
         .padding(28)

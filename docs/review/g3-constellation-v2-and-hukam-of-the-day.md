@@ -290,6 +290,30 @@ arithmetic from the date.
     that each has a colour on every star? (`kaal` moved to the Human Condition; `hukam` is in the
     Divine Reality.)
 
+## 3a. Changes made after the pre-review (still for the reviewer to confirm)
+
+The engineer acted on the pre-review concerns that did not need a scholar's judgement. Each change
+is still open to the reviewer: approve it, change it, or ask for the earlier wording back. Where a
+row in section 2 shows the old string, the string below replaces it on web and iPhone alike.
+
+| Concern | Was | Now |
+|---|---|---|
+| Theme descriptions shown as if they were part of the reading | The description, unlabelled, under the counts | Its own block headed **About this theme**, with the note **An editorial note, not scripture.** The text itself is unchanged: cleaning it (engineering notes such as "does not appear as one token in the corpus", Gurmukhi quoted without an Ang, "ਮਾਰਗਿ ਚਲਾਏ" not found as a phrase) is a change to the sggs-data `concepts` table and is listed for the data maintainers. |
+| "A verified word match" could read as verified meaning | "a verified word match, not an interpretation" (pair view) · "(a verified word match)" (share card) | "matched by a shared word, not by meaning" (pair view, web and app) · "(matched by a shared word, not by meaning)" (share card) |
+| "Brightest stars" is a value word for verses | Brightest stars | **Many themes (5 or more)** |
+| "Voiced most by" orders Gurus and Bhagats; names shortened | "Voiced most by"; "Concentrates in"; " Ji" stripped from names | **Voices where it appears more often**; **Raags where it appears more often**; names shown in full as stored, everywhere in the Constellation |
+| Endorser on the share card | "Gurbani Soul · Built by Algorythmos" | Removed (brand book §1: About and the store listing only) |
+| Store text beside "Hukam of the day" | Keyword `hukamnama`; alternative subtitle "Nitnem, Hukamnama & Gurbani" | Keyword removed; alternative subtitle "Nitnem, Hukam & Gurbani Search". **App Store Connect must be updated by hand to match.** |
+| Siri credited the tags to the Granth | "built from the Granth's verified theme words" | "matched by each theme's Gurmukhi words" |
+| Hukam widget did not say what it is not | — | "chosen by date (not the Hukamnama from Sri Harmandir Sahib)" |
+| Web: "claims, never facts" | raags attributed to the current watch (claims, never facts) | raags that attributed timing claims give for the current watch |
+| Docs said "nothing is ranked" and "two rankings" | both | "No verse, raag or voice is ranked"; "two orders" for the companion list |
+| Explore caption no longer described the screen | "A theme's verses clustered by co-theme" | "Which other themes a theme's verses carry" |
+
+Left as they were, for the reviewer: "Hukam of the day" itself (Q1), the hand-set "ਰਹਾਉ · refrain"
+label (the app's existing pattern on every reading screen), the ੴ on the share card (audit E-13),
+the six group titles, and "the Granth" as shorthand.
+
 ## 4. Sign-off
 
 Mirror of `ios/Resources/NITNEM-REVIEW.md`. Fill in and commit; flip the flag in the same commit.

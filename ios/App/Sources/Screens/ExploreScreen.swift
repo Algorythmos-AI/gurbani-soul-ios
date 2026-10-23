@@ -33,7 +33,7 @@ struct ExploreScreen: View {
             .init(route: .insights, title: "Insights",
                   caption: "Contributors, network, resonance & flow", icon: "chart.bar.xaxis"),
             .init(route: .constellation, title: "Constellation",
-                  caption: "A theme's verses clustered by co-theme", icon: "circle.hexagongrid"),
+                  caption: "Which other themes a theme's verses carry", icon: "circle.hexagongrid"),
             .init(route: .vaars, title: "Vaars",
                   caption: "\(vaars) — pauri & salok anatomy", icon: "list.number"),
             .init(route: .clock, title: "Raag Clock",
