@@ -52,6 +52,17 @@ extension SQLiteCandidateSource {
                          matched: try matchedWords(concept: concept, lineIds: lines.map(\.id)))
     }
 
+    /// Where the theme's verses (under the filter) fall in reading order: the Constellation's 15
+    /// bins of 100 Angs.
+    public func themeAngBins(concept: String, filter: ThemeFilter = .none) throws -> [Int] {
+        let (w, b) = themeWhere(concept, filter)
+        var bins = Array(repeating: 0, count: ConstellationFocus.binCount)
+        try query("SELECT l.ang, COUNT(DISTINCT cl.line_id) FROM concept_lines cl JOIN lines l ON l.id=cl.line_id WHERE \(w) GROUP BY l.ang", b) { s in
+            bins[max(0, min(ConstellationFocus.binCount - 1, (cInt(s, 0) - 1) / ConstellationFocus.binWidth))] += cInt(s, 1)
+        }
+        return bins
+    }
+
     /// The theme's words in its printed order (`concepts.gurmukhi_terms`), verbatim.
     private func printedTerms(_ concept: String) throws -> [String] {
         var json = "[]"

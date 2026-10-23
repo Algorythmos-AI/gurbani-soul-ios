@@ -82,6 +82,9 @@ struct ThemeResultsScreen: View {
     @State private var state: LoadState<Bool> = .loading
     @State private var feed = ThemeFeed()
     @State private var words: [ThemeWord] = []
+    /// The filter the loaded list belongs to: coming back to the screen (a tab switch, a pop)
+    /// re-runs its task, which must keep the reader's place instead of reloading from verse 1.
+    @State private var loadedFor: ThemeFilter?
     @AppStorage("sggs_theme_grouped") private var grouped = true
 
     private static let pageSize = 50
@@ -277,6 +280,9 @@ struct ThemeResultsScreen: View {
 
     private func reload() async {
         guard let corpus = container.corpus else { state = .failed("No database"); return }
+        if loadedFor == filter {
+            switch state { case .loaded, .empty: return; default: break }
+        }
         state = .loading
         feed = ThemeFeed()
         let asked = filter
@@ -285,6 +291,7 @@ struct ThemeResultsScreen: View {
             try Task.checkCancellation()
             guard asked == filter else { return }
             feed = ThemeFeed(first: first)
+            loadedFor = asked
             state = first.lines.isEmpty ? .empty : .loaded(true)
         } catch is CancellationError {
         } catch { state = .failed(UserMessage.load(error)) }
@@ -309,5 +316,7 @@ struct ThemeResultsScreen: View {
     private func loadWords() async {
         guard let corpus = container.corpus, words.isEmpty else { return }
         words = (try? await corpus.themeWords(concept)) ?? []
+        // a word form this theme does not have (a hand-typed link) is dropped, not queried empty
+        if let t = filter.term, !words.isEmpty, !words.contains(where: { $0.term == t }) { filter.term = nil }
     }
 }

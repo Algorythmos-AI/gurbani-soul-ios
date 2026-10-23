@@ -246,6 +246,20 @@ final class ThemePageTests: XCTestCase {
         XCTAssertEqual(try db.themeWords(concept: "no_such_theme"), [])
     }
 
+    func testFilteredAngBinsCountTheFilteredVerses() throws {
+        let db = try SQLiteCandidateSource(path: try dbPath())
+        let index = Dictionary(uniqueKeysWithValues: try db.themeIndex().map { ($0.concept, $0) })
+        XCTAssertEqual(try db.themeAngBins(concept: "naam"), index["naam"]?.angBins)
+        let f = ThemeFilter(term: "ਸਹਜਿ")
+        let bins = try db.themeAngBins(concept: "sahaj", filter: f)
+        XCTAssertEqual(bins.reduce(0, +), 375)
+        for i in 0..<bins.count {
+            let r = ConstellationFocus.angRange(bin: i)
+            let lensed = ThemeFilter(term: "ਸਹਜਿ", lens: ConstellationLens(angMin: r.lowerBound, angMax: r.upperBound))
+            XCTAssertEqual(bins[i], try db.themeCount(concept: "sahaj", filter: lensed), "bin \(i): the strip and the list it opens must agree")
+        }
+    }
+
     func testSteepedShabadsFollowTheRule() throws {
         let path = try dbPath()
         let db = try SQLiteCandidateSource(path: path)

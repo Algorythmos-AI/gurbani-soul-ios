@@ -15,6 +15,7 @@ struct ThemeChapterScreen: View {
     @State private var failed: String?
     @State private var term: String?
     @State private var bin: Int?
+    @State private var showAllSteeped = false
 
     private var name: String { ConceptName.display(concept) }
 
@@ -34,6 +35,7 @@ struct ThemeChapterScreen: View {
         .navigationBarTitleDisplayMode(.inline)
         .task { await loadBase() }
         .task(id: term) { await loadDetail() }
+        .onChange(of: term) { _, _ in showAllSteeped = false; bin = nil }
     }
 
     private var filter: ThemeFilter { ThemeFilter(term: term) }
@@ -148,7 +150,7 @@ struct ThemeChapterScreen: View {
             Text("Shabads of \(SteepedShabad.minLines) or more verses where at least half carry \(name), in reading order.")
                 .font(.caption).foregroundStyle(Ink.muted)
                 .fixedSize(horizontal: false, vertical: true)
-            ForEach(d.steeped.prefix(d.showAllSteeped ? d.steeped.count : 5)) { s in
+            ForEach(d.steeped.prefix(showAllSteeped ? d.steeped.count : 5)) { s in
                 Button {
                     Haptics.tap()
                     container.present(.shabad(compId: s.compId, focusLineId: s.firstLineId))
@@ -166,8 +168,8 @@ struct ThemeChapterScreen: View {
                 .buttonStyle(.pressableCard)
                 .accessibilityHint("Opens the shabad")
             }
-            if d.steeped.count > 5 && !d.showAllSteeped {
-                Button { Haptics.tap(); detail?.showAllSteeped = true } label: {
+            if d.steeped.count > 5 && !showAllSteeped {
+                Button { Haptics.tap(); showAllSteeped = true } label: {
                     seeAll("Show all \(d.steeped.count) shabads")
                 }
                 .buttonStyle(.plain)
@@ -185,13 +187,20 @@ struct ThemeChapterScreen: View {
     private func whereItLives(_ b: ThemeBase) -> some View {
         VStack(alignment: .leading, spacing: Theme.Space.m) {
             SectionEyebrow(text: "Where it lives")
-            AngStrip(concept: concept, bins: b.row.angBins, selected: bin) { bin = $0 }
-            if let bin {
+            // the strip follows the word filter, so the count it shows is the list it opens
+            let bins = term == nil ? b.row.angBins : (detail?.term == term ? detail?.bins : nil) ?? b.row.angBins
+            AngStrip(concept: concept, bins: bins, selected: bin) { bin = $0 }
+            if let bin, bins.indices.contains(bin) {
                 let r = ConstellationFocus.angRange(bin: bin)
-                NavigationLink(value: Route.themeVerses(concept, ThemeFilter(term: term, lens: ConstellationLens(angMin: r.lowerBound, angMax: r.upperBound)))) {
-                    seeAll("See the \(b.row.angBins[bin].formatted()) verses in Angs \(r.lowerBound)–\(r.upperBound)")
+                if bins[bin] > 0 {
+                    NavigationLink(value: Route.themeVerses(concept, ThemeFilter(term: term, lens: ConstellationLens(angMin: r.lowerBound, angMax: r.upperBound)))) {
+                        seeAll("See the \(bins[bin].formatted()) \(bins[bin] == 1 ? "verse" : "verses") in Angs \(r.lowerBound)–\(r.upperBound)")
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    Text("No verse in Angs \(r.lowerBound)–\(r.upperBound) carries it\(term == nil ? "" : " in this form").")
+                        .font(.caption).foregroundStyle(Ink.muted)
                 }
-                .buttonStyle(.plain)
             }
             if let card = b.card {
                 if !card.raags.isEmpty {
@@ -257,7 +266,12 @@ struct ThemeChapterScreen: View {
     }
 
     private func allVerses(_ b: ThemeBase) -> some View {
-        let n = detail?.term == term ? (detail?.total ?? b.row.nVerses) : b.row.nVerses
+        // never a stale number: the filtered total once loaded, else the word's own count
+        let n: Int = {
+            guard let term else { return b.row.nVerses }
+            if detail?.term == term, let t = detail?.total { return t }
+            return b.words.first { $0.term == term }?.n ?? b.row.nVerses
+        }()
         return NavigationLink(value: Route.themeVerses(concept, filter)) {
             HStack {
                 Text(term == nil ? "All \(n.formatted()) verses" : "All \(n.formatted()) verses with this form")
@@ -340,18 +354,21 @@ struct ThemeChapterScreen: View {
     private func loadDetail() async {
         guard let corpus = container.corpus else { return }
         let asked = term
+        if let d = detail, d.term == asked, d.total != nil { return }     // coming back: keep it
         do {
             let f = ThemeFilter(term: asked)
             let heart = try await corpus.themePage(concept, filter: ThemeFilter(term: asked, lens: ConstellationLens(rahaoOnly: true)), limit: 24)
             let steeped = try await corpus.themeSteeped(concept, filter: f)
             let total = try await corpus.themeCount(concept, filter: f)
+            let bins = try await corpus.themeAngBins(concept, filter: f)
             try Task.checkCancellation()
             guard asked == term else { return }
             detail = ThemeDetail(term: asked, heart: ThemePageModel.groups(heart.lines), heartTotal: heart.total,
-                                 steeped: steeped, total: total)
+                                 steeped: steeped, total: total, bins: bins)
         } catch is CancellationError {
         } catch {
-            detail = ThemeDetail(term: asked, heart: [], heartTotal: 0, steeped: [], total: 0)
+            guard asked == term else { return }                     // a newer word owns the page
+            detail = ThemeDetail(term: asked, heart: [], heartTotal: 0, steeped: [], total: nil, bins: nil)
         }
     }
 }
@@ -368,8 +385,9 @@ struct ThemeDetail: Equatable {
     let heart: [ThemeFeed.Group]
     let heartTotal: Int
     let steeped: [SteepedShabad]
-    let total: Int
-    var showAllSteeped = false
+    /// nil when the counts could not be read (the page then falls back to the known counts).
+    let total: Int?
+    let bins: [Int]?
 }
 
 enum ThemePageModel {

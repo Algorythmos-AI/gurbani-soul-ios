@@ -128,6 +128,7 @@ actor CorpusActor {
     }
     func themeCount(_ concept: String, filter: ThemeFilter = .none) throws -> Int { try db.themeCount(concept: concept, filter: filter) }
     func themeWords(_ concept: String) throws -> [ThemeWord] { try db.themeWords(concept: concept) }
+    func themeAngBins(_ concept: String, filter: ThemeFilter = .none) throws -> [Int] { try db.themeAngBins(concept: concept, filter: filter) }
     func themeSteeped(_ concept: String, filter: ThemeFilter = .none) throws -> [SteepedShabad] {
         try db.themeSteeped(concept: concept, filter: filter)
     }

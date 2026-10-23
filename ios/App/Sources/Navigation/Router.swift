@@ -172,6 +172,7 @@ final class Router {
                     .map { $0.trimmingCharacters(in: .whitespaces) }
                     .flatMap { $0.isEmpty || $0.count > 40 ? nil : $0 }
                 let rahao = items.first(where: { $0.name == "rahao" })?.value == "1"
+                container.dismissSheetForNavigation()      // never land behind an open shabad sheet
                 selectedTab = .explore
                 if term != nil || rahao {
                     let f = ThemeFilter(term: term, lens: ConstellationLens(rahaoOnly: rahao))
