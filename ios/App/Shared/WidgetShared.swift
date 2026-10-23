@@ -29,10 +29,107 @@ struct WidgetSnapshot: Codable, Sendable {
     /// lengths. Progress (completion, position) is read live from `nitnem-progress.json`.
     /// Optional so an older snapshot still decodes.
     var nitnem: NitnemWidgetData? = nil
+    /// The Hukam of the day for yesterday, today and the days after it (`hukamDayCount` from
+    /// today), so the widget moves to the next verse at the reader's midnight without the app
+    /// being opened, and still has the day's verse after a westward trip across the date line.
+    /// Optional: an older snapshot decodes, and the widget then shows the single verse above.
+    var hukamDays: [HukamDay]? = nil
+
+    /// How many days of Hukam the app writes ahead: two weeks away from the app still turns daily.
+    static let hukamDayCount = 14
+
+    /// Whether the app should rewrite the days now: no verse for today (a time-zone change, or
+    /// the snapshot ran out), or fewer than a week left. Cheap; the app checks it on foreground.
+    func hukamDaysNeedRefresh(now: Date, calendar: Calendar) -> Bool {
+        let today = Self.dayKey(now, calendar: calendar)
+        let ahead = (hukamDays ?? []).filter { $0.date >= today }.map(\.date).sorted()
+        return ahead.first != today || ahead.count < 7
+    }
 
     /// Where a tap on the Hukam widget goes: the composition that holds the shown verse, landed on it.
     var hukamURL: URL? {
         URL(string: "sggs://shabad/\(hukamCompId)" + (hukamLineId.map { "?line=\($0)" } ?? ""))
+    }
+}
+
+/// One day's Hukam of the day, precomputed by the app: the unit's opening verse, verbatim,
+/// with its citation. The widget never opens the corpus DB, so the app writes these ahead.
+struct HukamDay: Codable, Sendable, Equatable {
+    /// The reader's local calendar date, "yyyy-MM-dd" (`WidgetSnapshot.dayKey`).
+    var date: String
+    var gurmukhi: String
+    var translit: String
+    var ang: Int
+    var compId: Int
+    var lineId: Int
+
+    /// Where a tap goes: the composition that holds the verse, landed on it.
+    var url: URL? { URL(string: "sggs://shabad/\(compId)?line=\(lineId)") }
+}
+
+extension WidgetSnapshot {
+    /// A Gregorian calendar in `calendar`'s time zone: day keys are always Gregorian
+    /// "yyyy-MM-dd", whatever calendar the reader has chosen, so they match the day numbers.
+    private static func gregorian(_ calendar: Calendar) -> Calendar {
+        var g = Calendar(identifier: .gregorian); g.timeZone = calendar.timeZone; return g
+    }
+
+    /// A date as Gregorian "yyyy-MM-dd" in `calendar`'s time zone; sorts as dates do.
+    static func dayKey(_ date: Date, calendar: Calendar) -> String {
+        let c = gregorian(calendar).dateComponents([.year, .month, .day], from: date)
+        return String(format: "%04ld-%02ld-%02ld", c.year ?? 1970, c.month ?? 1, c.day ?? 1)
+    }
+
+    /// The start of the day named by `key` in `calendar` (its local midnight, DST included).
+    static func startOfDay(key: String, calendar: Calendar) -> Date? {
+        let parts = key.split(separator: "-").compactMap { Int($0) }
+        guard parts.count == 3 else { return nil }
+        return gregorian(calendar).date(from: DateComponents(year: parts[0], month: parts[1], day: parts[2]))
+    }
+
+    /// The Hukam-of-the-day timeline from `now`: today's verse at once, then each later day's
+    /// verse at that day's local midnight. Empty when the snapshot has no verse for today (an
+    /// older app wrote it, or the app has not been opened for longer than the days it wrote),
+    /// so the widget never shows a later day's verse early or an earlier one as today's.
+    func hukamSchedule(from now: Date, calendar: Calendar) -> [(date: Date, day: HukamDay)] {
+        guard let days = hukamDays else { return [] }
+        let today = Self.dayKey(now, calendar: calendar)
+        var out: [(date: Date, day: HukamDay)] = []
+        for d in days.sorted(by: { $0.date < $1.date }) where d.date >= today {
+            if d.date == today { out.append((date: now, day: d)); continue }
+            guard let start = Self.startOfDay(key: d.date, calendar: calendar), start > now else { continue }
+            out.append((date: start, day: d))
+        }
+        guard out.first?.day.date == today else { return [] }
+        return out
+    }
+}
+
+/// The Hukam of the day widget's whole timeline decision, shared so tests drive exactly what the
+/// widget runs. With days in the snapshot: one entry per local midnight, then a closing fallback
+/// entry and a reload at the midnight after the last day (not `.atEnd`: the last day's entry
+/// starts at its own midnight, so `.atEnd` would reload at once and keep reloading all day). Without (an older snapshot, or one
+/// past its last day): the single verse, not called today's, re-read after the next 00:05.
+enum HukamTimeline {
+    struct Entry: Equatable {
+        let date: Date
+        /// Today's (or that midnight's) verse; nil means "show the snapshot's single verse".
+        let day: HukamDay?
+    }
+
+    static func build(snapshot: WidgetSnapshot?, now: Date, calendar: Calendar) -> (entries: [Entry], refresh: Date) {
+        let schedule = snapshot?.hukamSchedule(from: now, calendar: calendar) ?? []
+        if let last = schedule.last {
+            let afterLast = WidgetSnapshot.startOfDay(key: last.day.date, calendar: calendar)
+                .flatMap { calendar.date(byAdding: .day, value: 1, to: $0) } ?? now.addingTimeInterval(86_400)
+            // the closing entry: if WidgetKit grants no reload at that midnight, the last day's
+            // verse must not stay up as the next day's, so the widget drops to the plain fallback
+            return (schedule.map { Entry(date: $0.date, day: $0.day) } + [Entry(date: afterLast, day: nil)],
+                    afterLast)
+        }
+        let next = calendar.nextDate(after: now, matching: DateComponents(hour: 0, minute: 5), matchingPolicy: .nextTime)
+            ?? now.addingTimeInterval(86_400)
+        return ([Entry(date: now, day: nil)], next)
     }
 }
 

@@ -5,8 +5,9 @@ import UIKit
 /// Siri / Shortcuts / Spotlight entry points. Every intent routes through the app's sggs://
 /// deep-link table (Router.handle) — one navigation surface, no parallel code paths.
 
+/// A fresh draw: a new Hukam unit each time (the in-app Hukam button).
 struct DrawHukamIntent: AppIntent {
-    static let title: LocalizedStringResource = "Today's Hukam"
+    static let title: LocalizedStringResource = "Draw a Hukam"
     static let description = IntentDescription("Draw a complete Hukam unit and read it verbatim.")
     static let openAppWhenRun = true
 
@@ -15,6 +16,19 @@ struct DrawHukamIntent: AppIntent {
         // OpenURLIntent is iOS 18+; on the 17.0 target we open in-process (openAppWhenRun
         // guarantees the app is foregrounded before perform runs)
         await UIApplication.shared.open(URL(string: "sggs://hukam")!)
+        return .result()
+    }
+}
+
+/// The Hukam of the day: the same unit all day, and the same verse the widget shows.
+struct TodaysHukamIntent: AppIntent {
+    static let title: LocalizedStringResource = "Today's Hukam"
+    static let description = IntentDescription("Open the Hukam of the day: one Hukam unit for the whole day, the same as the widget's, read verbatim.")
+    static let openAppWhenRun = true
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        await UIApplication.shared.open(URL(string: "sggs://hukam/today")!)
         return .result()
     }
 }
@@ -89,7 +103,7 @@ struct OpenAngIntent: AppIntent {
 
 struct OpenConstellationIntent: AppIntent {
     static let title: LocalizedStringResource = "Show the constellation"
-    static let description = IntentDescription("See which themes a theme's verses also carry, built from the Granth's verified theme words.")
+    static let description = IntentDescription("See which themes a theme's verses also carry, matched by each theme's Gurmukhi words.")
     static let openAppWhenRun = true
 
     @Parameter(title: "Theme", description: "A theme such as Naam, Haumai or Seva.") var theme: String?
@@ -106,10 +120,13 @@ struct OpenConstellationIntent: AppIntent {
 
 struct SGGSShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
-        AppShortcut(intent: DrawHukamIntent(),
+        AppShortcut(intent: TodaysHukamIntent(),
                     phrases: ["Today's Hukam in \(.applicationName)",
-                              "Draw a Hukam in \(.applicationName)"],
-                    shortTitle: "Today's Hukam", systemImageName: "sparkles")
+                              "Hukam of the day in \(.applicationName)"],
+                    shortTitle: "Today's Hukam", systemImageName: "sun.horizon")
+        AppShortcut(intent: DrawHukamIntent(),
+                    phrases: ["Draw a Hukam in \(.applicationName)"],
+                    shortTitle: "Draw a Hukam", systemImageName: "sparkles")
         AppShortcut(intent: WhatRaagNowIntent(),
                     phrases: ["What raag is it now in \(.applicationName)",
                               "Show the raag clock in \(.applicationName)"],

@@ -46,6 +46,8 @@ actor CorpusActor {
     func ang(_ n: Int) throws -> AngPage { try db.fetchAng(n) }
     func shabad(compId: Int) throws -> Shabad { try db.fetchShabad(compId: compId) }
     func randomHukam() throws -> HukamUnit { try db.hukamUnit(seed: db.randomSeedCompId()) }
+    /// The Hukam of the day for a day number (`HukamOfTheDay.dayNumber`): the same unit all day.
+    func hukamOfTheDay(day: Int) throws -> HukamUnit { try db.hukamUnit(seed: db.hukamOfTheDaySeed(day: day)) }
     func meta() throws -> CorpusMeta { try db.fetchMeta() }
     func neighbors(lineId: Int, limit: Int = 12) throws -> NeighborsResult { try db.neighbors(lineId: lineId, limit: limit) }
     func authorAnalytics() throws -> [AuthorStat] { try db.authorAnalytics() }

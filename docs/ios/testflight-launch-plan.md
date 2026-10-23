@@ -81,8 +81,8 @@ Install from Xcode (or the exported `.ipa` via Apple Configurator) and walk the 
 [test plan §2](testflight-test-plan.md#2-first-device-checklist-maintainer). The items that the
 simulator cannot prove and that have never been seen on hardware:
 - More → About → Integrity shows **Widget App Group available** (the simulator always says so).
-- Both widgets render (Raag-now timeline, Hukam verse) and update after opening a Hukam in the app.
-- `sggs://hukam` from Safari, Siri "Today's Hukam", Spotlight for a saved verse.
+- Both widgets render (Raag-now timeline, Hukam of the day); the Hukam turns at local midnight without opening the app.
+- `sggs://hukam` (a draw) and `sggs://hukam/today` from Safari, Siri "Today's Hukam" (the Hukam of the day) and "Draw a Hukam", Spotlight for a saved verse.
 - Location prompt copy, denial path, and manual-entry fallback on the Raag Clock.
 - Cold launch time with the 108 MB DB on the oldest device you own; the fail-closed screen is
   never seen on a good install.

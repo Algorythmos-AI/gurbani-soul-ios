@@ -145,6 +145,26 @@ extension SQLiteCandidateSource: CorpusReader, AnalyticsSource {
         return Int(sqlite3_column_int64(stmt, 0))
     }
 
+    public func hukamOfTheDaySeed(day: Int) throws -> Int {
+        // The same weighting as randomSeedCompId (every verse line equally likely), keyed by the day.
+        var countStmt: OpaquePointer?
+        guard sqlite3_prepare_v2(handle, "SELECT COUNT(*) FROM lines WHERE is_header=0", -1, &countStmt, nil) == SQLITE_OK else {
+            throw DBError.prepare(String(cString: sqlite3_errmsg(handle)))
+        }
+        defer { sqlite3_finalize(countStmt) }
+        guard try stepRow(countStmt) else { throw DBError.prepare("corpus is empty") }
+        let count = Int(sqlite3_column_int64(countStmt, 0))
+        guard count > 0 else { throw DBError.prepare("corpus is empty") }
+        var stmt: OpaquePointer?
+        guard sqlite3_prepare_v2(handle, "SELECT comp_id FROM lines WHERE is_header=0 ORDER BY id LIMIT 1 OFFSET ?", -1, &stmt, nil) == SQLITE_OK else {
+            throw DBError.prepare(String(cString: sqlite3_errmsg(handle)))
+        }
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_int64(stmt, 1, Int64(HukamOfTheDay.lineIndex(day: day, count: count)))
+        guard try stepRow(stmt) else { throw DBError.prepare("corpus is empty") }
+        return Int(sqlite3_column_int64(stmt, 0))
+    }
+
     /// Port of serve.py:hukam_package(seed) — expand a seed comp_id to its full structural unit.
     public func hukamUnit(seed: Int) throws -> HukamUnit {
         let SAL: Set<String> = ["ਸਲੋਕ", "ਸਲੋਕੁ"]; let PAU = "ਪਉੜੀ"

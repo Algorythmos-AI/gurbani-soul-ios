@@ -188,14 +188,36 @@ struct NitnemScreen: View {
         return (p?.lastSeq ?? 0) > 1 ? "Continue \(b.titleEn)" : "Read \(b.titleEn)"
     }
 
+    /// The Hukam of the day (the widget's unit, the same all day), then a fresh draw.
     private var hukamCard: some View {
+        VStack(spacing: Theme.Space.s) {
+            Button { Haptics.tap(); container.present(.hukamOfTheDay) } label: {
+                Card {
+                    HStack(spacing: Theme.Space.m) {
+                        Image(systemName: "sun.horizon").font(.title2).foregroundStyle(palette.accent)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Hukam of the day").font(.headline).foregroundStyle(.primary)
+                            Text("One Hukam unit for the whole day, the same as the widget's").font(.caption).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)
+                    }
+                }
+            }
+            .buttonStyle(.pressableCard)
+            .accessibilityIdentifier("hukamOfTheDay")
+            drawHukamCard
+        }
+    }
+
+    private var drawHukamCard: some View {
         Button { Haptics.tap(); container.present(.hukam) } label: {
             Card {
                 HStack(spacing: Theme.Space.m) {
                     Image(systemName: "sparkles").font(.title2).foregroundStyle(palette.accent)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Hukam").font(.headline).foregroundStyle(.primary)
-                        Text("A complete Hukam unit, read verbatim").font(.caption).foregroundStyle(.secondary)
+                        Text("Draw a Hukam").font(.headline).foregroundStyle(.primary)
+                        Text("A new Hukam unit each time, read verbatim").font(.caption).foregroundStyle(.secondary)
                     }
                     Spacer()
                     Image(systemName: "chevron.right").font(.caption).foregroundStyle(.tertiary)

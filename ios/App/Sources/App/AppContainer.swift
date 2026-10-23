@@ -284,14 +284,41 @@ final class AppContainer {
         vaarCount = await corpus.vaars().count
     }
 
-    /// Refresh the <50 KB widget snapshot (App Group JSON): today's Hukam opening verse +
-    /// the fixed-clock pahar→raags table. Widgets NEVER open the corpus DB.
+    /// Refresh the <50 KB widget snapshot (App Group JSON): the Hukam of the day for today and
+    /// the next two weeks + the fixed-clock pahar→raags table. Widgets NEVER open the corpus DB.
     /// Runs post-launch (after integrity passes) and is cheap enough to run every launch.
+    /// On foreground and time-zone change: rewrite the snapshot only when its Hukam days have run
+    /// low or no longer hold today, so the widget keeps turning without a cold launch.
+    func refreshWidgetSnapshotIfStale() async {
+        guard WidgetStore.load()?.hukamDaysNeedRefresh(now: Date(), calendar: .current) ?? true else { return }
+        await refreshWidgetSnapshot()
+    }
+
     func refreshWidgetSnapshot() async {
         SharedDefaults.migrateFromStandard()   // clock mode + solar coords moved to the App Group
         guard let corpus, integrity?.ok == true else { return }
-        guard let hukam = try? await corpus.randomHukam(),
-              let firstVerse = hukam.lines.first(where: { !$0.isHeader }) else { return }
+        // The Hukam of the day: one verse per local calendar day, the unit's opening verse.
+        let calendar = Calendar.current
+        let startOfToday = calendar.startOfDay(for: Date())
+        var hukamDays: [HukamDay] = []
+        // From yesterday: a reader who crosses the date line westward with the app closed lands on
+        // an earlier local date, and the widget still has that day's verse.
+        for offset in -1..<WidgetSnapshot.hukamDayCount {
+            guard let date = calendar.date(byAdding: .day, value: offset, to: startOfToday),
+                  let unit = try? await corpus.hukamOfTheDay(day: HukamOfTheDay.dayNumber(of: date, calendar: calendar)),
+                  let verse = unit.lines.first(where: { !$0.isHeader }) else {
+                if offset < 0 { continue }   // yesterday is a courtesy; from today on the days stay contiguous
+                break
+            }
+            // The unit can open before its seed (a Vaar's saloks precede the pauri): cite the
+            // composition and line of the verse actually shown, so a tap opens what was read.
+            hukamDays.append(HukamDay(date: WidgetSnapshot.dayKey(date, calendar: calendar),
+                                      gurmukhi: verse.gurmukhi,     // verbatim — copied, never edited
+                                      translit: verse.translit, ang: verse.ang,
+                                      compId: verse.compId, lineId: verse.id))
+        }
+        let todayKey = WidgetSnapshot.dayKey(startOfToday, calendar: calendar)
+        guard let firstVerse = hukamDays.first(where: { $0.date == todayKey }) else { return }
         var paharRaags: [Int: [String]] = [:]
         var paharRaagsGurmukhi: [Int: [String]] = [:]
         let clock = await corpus.timingClock()
@@ -316,19 +343,19 @@ final class AppContainer {
         }
         WidgetStore.save(WidgetSnapshot(
             generatedAt: Date(),
-            hukamGurmukhi: firstVerse.gurmukhi,     // verbatim — copied, never edited
+            // today's verse, for a widget built before the Hukam of the day
+            hukamGurmukhi: firstVerse.gurmukhi,
             hukamTranslit: firstVerse.translit,
             hukamAng: firstVerse.ang,
-            // The unit can open before its seed (a Vaar's saloks precede the pauri): cite the
-            // composition and line of the verse actually shown, so a tap opens what was read.
             hukamCompId: firstVerse.compId,
-            hukamLineId: firstVerse.id,
+            hukamLineId: firstVerse.lineId,
             paharRaags: paharRaags,
             paharRaagsGurmukhi: paharRaagsGurmukhi,
             clockMode: SharedDefaults.clockMode,
             solarLat: SharedDefaults.solarCoords()?.lat,
             solarLon: SharedDefaults.solarCoords()?.lon,
-            nitnem: nitnemData))
+            nitnem: nitnemData,
+            hukamDays: hukamDays))
         #if canImport(WidgetKit)
         WidgetCenter.shared.reloadAllTimelines()
         #endif
@@ -340,14 +367,24 @@ enum CompositionPresentation: Identifiable, Hashable {
     /// `focusLineId`: the verse the sheet scrolls to and highlights (nil = top). Deliberately
     /// NOT part of `id` — `.sheet(item:)` keys on `id`, and a focus change must never re-present.
     case shabad(compId: Int, focusLineId: Int? = nil)
+    /// A fresh draw: a new Hukam unit each time.
     case hukam
-    var id: String { switch self { case .shabad(let c, _): return "shabad-\(c)"; case .hukam: return "hukam" } }
+    /// The Hukam of the day: today's unit, the same one the widget shows.
+    case hukamOfTheDay
+    var id: String {
+        switch self {
+        case .shabad(let c, _): return "shabad-\(c)"
+        case .hukam: return "hukam"
+        case .hukamOfTheDay: return "hukam-today"
+        }
+    }
 }
 
 /// Every root modal, behind ONE `.sheet(item:)`. Identifiable only (associated values needn't be Hashable).
 enum Presentation: Identifiable {
     case shabad(compId: Int, focusLineId: Int? = nil)
     case hukam
+    case hukamOfTheDay
     case trail(TrailStart)
     /// The verses two themes share (or one theme carries alone) — the Constellation's pair sheet.
     case pair(PairRequest)
@@ -362,6 +399,7 @@ enum Presentation: Identifiable {
         switch self {
         case .shabad(let c, _): return "shabad-\(c)"
         case .hukam: return "hukam"
+        case .hukamOfTheDay: return "hukam-today"
         case .trail(let t): return "trail-\(t.id)"
         case .pair(let r): return "pair-\(r.id)"
         case .themeCard(let c): return "theme-card-\(c)"
@@ -374,6 +412,7 @@ enum Presentation: Identifiable {
         switch self {
         case .shabad(let c, let l): return .shabad(compId: c, focusLineId: l)
         case .hukam: return .hukam
+        case .hukamOfTheDay: return .hukamOfTheDay
         default: return nil
         }
     }

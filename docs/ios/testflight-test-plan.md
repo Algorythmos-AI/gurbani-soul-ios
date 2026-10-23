@@ -39,7 +39,12 @@ Run on one physical iPhone before the first build reaches any tester. All must p
 - [ ] Second launch is visibly faster (launch cache hit); About → Integrity shows every check green.
 - [ ] About → Integrity: **Widget App Group available**; diagnostics collected = 0.
 - [ ] Add the Raag-now widget and the Hukam widget to the Home Screen; both render Gurmukhi in Sant Lipi (not a fallback font).
-- [ ] Open a Hukam in the app; the Hukam widget shows that verse on its next refresh.
+- [ ] **Hukam of the day (device check).** Open the app once, then add the Hukam widget (medium and large).
+  1. It is headed "HUKAM OF THE DAY" and its verse and Ang match Nitnem → "Hukam of the day" and Siri "Today's Hukam".
+  2. Swipe the app away. Settings → General → Date & Time → turn off Set Automatically and move the date one day forward: within a minute the widget shows a different verse, still headed "HUKAM OF THE DAY", without the app being opened. Move the date back: today's verse returns.
+  3. Tap the widget: the shabad opens on the verse shown.
+  4. "Draw a Hukam" (Siri, the Reader's Hukam button, Nitnem → Draw a Hukam) still gives a new unit each time, and "Another" draws again.
+  5. Turn Set Automatically back on.
 - [ ] Safari: `sggs://hukam` opens the app on a Hukam sheet; `sggs://ang/500` lands on Ang 500.
 - [ ] Siri / Shortcuts: "Today's Hukam", "What raag is it now", "Open Ang" (with 1430) all work.
 - [ ] Save a verse; Spotlight finds it by Gurmukhi and by transliteration; tapping opens the verse centred and highlighted.
@@ -264,7 +269,7 @@ counts here. Record once per run: device model · iOS version · app version · 
 | D5 | Forget location | Clock → Solar → set a location → Forget location; check the Raag widget | clock back to fixed hours; the widget shows no location | | Forget is only offered in Solar mode (known, P3) |
 | D6 | Clear reading history | Nitnem → journey → Clear reading history: cancel once, then confirm | cancel changes nothing; confirm clears completed days and positions only — saved verses, settings, plan and reminders stay | | |
 | D7 | Spotlight | save 2 verses → search Home Screen by Gurmukhi and transliteration → unsave one → relaunch the app → search again | the unsaved verse is gone after relaunch; the kept one opens centred and highlighted | | |
-| D8 | Widgets | Hukam, Raag Watch and Nitnem widgets; open a Hukam in the app; tap the Hukam widget | the widget shows Sant Lipi; a tap opens the composition holding the shown verse, landed on it | | |
+| D8 | Widgets | Hukam of the day, Raag Watch and Nitnem widgets; tap the Hukam widget | the widget shows Sant Lipi; a tap opens the composition holding the shown verse, landed on it | | |
 | D9 | Airplane Mode | enable Airplane Mode; force quit; launch; read, search, save a verse, open Nitnem progress | everything works; nothing asks for a network | | |
 | D10 | First-launch performance | fresh install on the oldest supported device; time launch to Reader | under 5 s on "Verifying scripture integrity…"; second launch faster | | |
 | D11 | Force quit and relaunch | read Ang 700, force quit, relaunch; then force quit during "Verifying…" and relaunch | resumes Ang 700; an interrupted verify re-runs fully, no integrity failure | | |

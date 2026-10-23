@@ -21,7 +21,7 @@ How they were made (2026-09-18, `integration` after PRs #33/#34):
   shot shows whatever pahar it is when captured).
 - Deep links used to land screens: `sggs://ang/1`, `sggs://search?q=naam`.
 
-- **Widgets shot** (`07-widgets`): both widgets (Hukam verse, medium; Raag now, medium) added to
+- **Widgets shot** (`07-widgets`): both widgets (Hukam of the day, medium; Raag now, medium) added to
   the Home Screen through the widget gallery. Captured on the iPhone 17 simulator (1206 × 2622)
   and resampled to 1320 × 2868 (+9%, aspect ratios match to 0.1%) because the widget gallery
   needs an interactive session on a device the tooling can drive. On a **signed** build the

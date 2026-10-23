@@ -168,6 +168,9 @@ public protocol CorpusReader: Sendable {
     func hukamUnit(seed: Int) throws -> HukamUnit
     /// A random seed comp_id (non-header line), for the Hukam draw.
     func randomSeedCompId() throws -> Int
+    /// The seed comp_id of the Hukam of the day for a day number (`HukamOfTheDay.dayNumber`):
+    /// the `HukamOfTheDay.lineIndex`-th non-header line in reading order. Deterministic.
+    func hukamOfTheDaySeed(day: Int) throws -> Int
     func fetchMeta() throws -> CorpusMeta
     /// Semantic neighbours of a line (line_neighbors → shabad_neighbors fallback). Trail surface.
     func neighbors(lineId: Int, limit: Int) throws -> NeighborsResult
