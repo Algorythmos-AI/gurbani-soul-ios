@@ -95,7 +95,7 @@ struct IndexFindResults: View {
             if !r.sections.isEmpty {
                 group("Banis", symbol: "book.pages") {
                     ForEach(r.sections) { s in
-                        row(title: GranthNames.section(s.name) ?? s.name, gurmukhi: s.name,
+                        row(title: GranthNames.section(s.name, firstAng: s.firstAng, lastAng: s.lastAng) ?? s.name, gurmukhi: s.name,
                             detail: (s.firstAng...s.lastAng).angLabel) { openAng(s.firstAng) }
                     }
                 }
