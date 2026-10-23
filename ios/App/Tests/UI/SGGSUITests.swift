@@ -801,6 +801,15 @@ final class SGGSUITests: XCTestCase {
         let count = app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "1,952 verses")).firstMatch
         XCTAssertTrue(count.waitForExistence(timeout: 8), "the alone sheet's count is wrong")
         app.navigationBars["Naam alone"].buttons["Done"].tap()
+        // the whole sky: every theme, and a star (here via the list twin) returns to Focus on it
+        app.navigationBars["Constellation"].buttons["See the whole sky"].tap()
+        XCTAssertTrue(app.navigationBars["The whole sky"].waitForExistence(timeout: 12), "the Sky did not open")
+        app.navigationBars["The whole sky"].buttons["View as list"].tap()
+        let kaam = app.buttons.containing(NSPredicate(format: "label BEGINSWITH %@", "Kaam,")).firstMatch
+        XCTAssertTrue(kaam.waitForExistence(timeout: 12), "the Sky's list twin has no Kaam row")
+        kaam.tap()
+        let kaamCaption = app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "verses carry Kaam")).firstMatch
+        XCTAssertTrue(kaamCaption.waitForExistence(timeout: 12), "a Sky star did not focus its theme")
     }
 
     /// English layer (personal profile): the English mode pill exists and returns results,
@@ -1617,6 +1626,15 @@ final class SGGSUITests: XCTestCase {
         _ = app.navigationBars["Constellation"].waitForExistence(timeout: 8)
         _ = app.staticTexts["Naam"].waitForExistence(timeout: 8)   // centre bubble rendered
         shot("constellation")
+        let sky = app.navigationBars["Constellation"].buttons["See the whole sky"]
+        if sky.waitForExistence(timeout: 8) {
+            sky.tap()
+            _ = app.navigationBars["The whole sky"].waitForExistence(timeout: 12)
+            _ = app.buttons.containing(NSPredicate(format: "label BEGINSWITH %@", "Naam:")).firstMatch.waitForExistence(timeout: 12)
+            shot("constellation-sky")
+            app.navigationBars.buttons.firstMatch.tap()   // back to Focus
+            _ = app.navigationBars["Constellation"].waitForExistence(timeout: 8)
+        }
         app.navigationBars.buttons.firstMatch.tap()   // back to the hub
         let lineage = app.buttons["Lineage"].firstMatch
         if lineage.waitForExistence(timeout: 8) { lineage.tap() }

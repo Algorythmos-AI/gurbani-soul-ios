@@ -15,6 +15,7 @@ struct ConstellationScreen: View {
     @State private var rank: Rank = .shared
     @State private var lens = ConstellationLens()
     @State private var asList = false
+    @State private var showSky = false
     @State private var state: LoadState<ConstellationFocus> = .loading
 
     enum Rank: String, CaseIterable, Identifiable {
@@ -41,10 +42,19 @@ struct ConstellationScreen: View {
         .navigationTitle("Constellation")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button { showSky = true } label: { Label("See the whole sky", systemImage: "sparkles") }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button(showList ? "Map" : "List") { asList.toggle() }
                     .disabled(typeSize.isAccessibilitySize)
                     .accessibilityLabel(showList ? "View as map" : "View as list")
+            }
+        }
+        .navigationDestination(isPresented: $showSky) {
+            ConstellationSkyScreen(current: concept) { picked in
+                concept = picked
+                showSky = false          // tapping a star in the Sky returns to Focus on that theme
             }
         }
         .task { await container.loadMeta() }
