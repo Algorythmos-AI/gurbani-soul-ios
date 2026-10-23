@@ -27,6 +27,8 @@ enum Route: Hashable {
     case themeVerses(String, ThemeFilter)
     /// The reader's own saved verses that carry a theme (Your themes).
     case yourTheme(String)
+    /// One voice's page, by `Contributor.slug` (deep link / App Intent; Lineage pushes its own).
+    case voice(String)
     /// A bani from the Nitnem registry, by its stable key (variant is a user setting).
     case bani(String)
     /// The same registry bani read as a standalone composition from Explore → Index. Carries the
@@ -168,6 +170,12 @@ final class Router {
         !key.isEmpty && key.count <= 32 && key.allSatisfy { ("a"..."z").contains($0) || ("0"..."9").contains($0) || $0 == "_" }
     }
 
+    /// `Contributor.slug` shape: lowercase ascii, digits and single hyphens, 1–64 chars.
+    nonisolated static func isValidVoiceSlug(_ s: String) -> Bool {
+        !s.isEmpty && s.count <= 64 && !s.hasPrefix("-") && !s.hasSuffix("-") && !s.contains("--")
+            && s.allSatisfy { ("a"..."z").contains($0) || ("0"..."9").contains($0) || $0 == "-" }
+    }
+
     /// Mirrors serve.py `_BANI_VARIANTS`. "" means "whichever row is the registry default".
     static let baniVariants = ["", "sgpc", "taksal", "kirtan", "printed"]
     static func isValidBaniVariant(_ v: String) -> Bool { baniVariants.contains(v) }
@@ -179,7 +187,8 @@ final class Router {
     ///   sggs://raag/<slug> (gauri, nat-narayan, or the corpus roman) ·
     ///   sggs://constellation[?theme=naam&with=haumai | &alone=1] ·
     ///   sggs://hukam (a fresh draw) · sggs://hukam/today (the Hukam of the day) ·
-    ///   sggs://vaars · sggs://vaar/<1–22>[/read][?pauri=N | ?line=Y]
+    ///   sggs://vaars · sggs://vaar/<1–22>[/read][?pauri=N | ?line=Y] ·
+    ///   sggs://voice/<slug> (a voice's page, e.g. guru-tegh-bahadur-ji)
     /// `line` lands on that verse (scrolled + highlighted). Out-of-range/malformed values are
     /// ignored (never crash on a hostile URL).
     func handle(_ url: URL, container: AppContainer) {
@@ -271,6 +280,12 @@ final class Router {
             container.dismissSheetForNavigation()
             openConstellation(ConstellationLink(theme: q("theme") ?? "naam", with: q("with"),
                                                 alone: items.first(where: { $0.name == "alone" })?.value == "1"))
+        case "voice":
+            if Router.isValidVoiceSlug(value) {
+                container.dismissSheetForNavigation()
+                selectedTab = .explore
+                explorePath = NavigationPath([Route.lineage, Route.voice(value)])
+            }
         case "search":
             let q = URLComponents(url: url, resolvingAgainstBaseURL: false)?
                 .queryItems?.first(where: { $0.name == "q" })?.value ?? ""

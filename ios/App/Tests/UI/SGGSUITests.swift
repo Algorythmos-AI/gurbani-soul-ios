@@ -1016,8 +1016,9 @@ final class SGGSUITests: XCTestCase {
         // far-scrolled voice wouldn't exist in the hierarchy yet)
         let jaidev = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Bhagat Jaidev Ji,")).firstMatch
         XCTAssertTrue(jaidev.waitForExistence(timeout: 8)); jaidev.tap()
-        XCTAssertTrue(app.staticTexts["Theme emphasis (lift)"].waitForExistence(timeout: 12),
+        XCTAssertTrue(app.staticTexts["ACROSS THE GRANTH"].waitForExistence(timeout: 12),
                       "compare sheet missing")
+        XCTAssertTrue(app.staticTexts["THEME EMPHASIS"].waitForExistence(timeout: 12), "diverging theme bars missing")
         app.buttons["Done"].tap()
         app.navigationBars.buttons.element(boundBy: 0).tap()   // back to Explore
         // vaars
@@ -2090,6 +2091,29 @@ final class SGGSUITests: XCTestCase {
                 try app.performAccessibilityAudit { @Sendable issue in
                     let el = issue.element.map { "\($0.elementType.rawValue) '\($0.label.prefix(40))'" } ?? "-"
                     log.add("Theme page\t\(issue.auditType.rawValue)\t\(issue.compactDescription)\t\(el)")
+                    return true
+                }
+            }
+        }
+        // Lineage and one voice page (report-only)
+        openTab(app, "Explore", expectingNavBar: "Explore")
+        let lineage = app.buttons["Lineage"].firstMatch
+        if lineage.waitForExistence(timeout: 8) {
+            lineage.tap()
+            _ = app.staticTexts.matching(NSPredicate(format: "label MATCHES %@", "[0-9]+ voices · 12th–17th century"))
+                .firstMatch.waitForExistence(timeout: 12)
+            try app.performAccessibilityAudit { @Sendable issue in
+                let el = issue.element.map { "\($0.elementType.rawValue) '\($0.label.prefix(40))'" } ?? "-"
+                log.add("Lineage\t\(issue.auditType.rawValue)\t\(issue.compactDescription)\t\(el)")
+                return true
+            }
+            let farid = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Sheikh Farid")).firstMatch
+            if farid.waitForExistence(timeout: 8) {
+                farid.tap()
+                _ = app.buttons["voiceBeginFirst"].waitForExistence(timeout: 12)
+                try app.performAccessibilityAudit { @Sendable issue in
+                    let el = issue.element.map { "\($0.elementType.rawValue) '\($0.label.prefix(40))'" } ?? "-"
+                    log.add("Voice\t\(issue.auditType.rawValue)\t\(issue.compactDescription)\t\(el)")
                     return true
                 }
             }

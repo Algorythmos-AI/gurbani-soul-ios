@@ -98,4 +98,31 @@ final class ContributorsTests: XCTestCase {
                                angs: AngSet([5]))
         XCTAssertEqual(LineageScreen.countLine(one), "1 verse · 1 composition · Ang 5")
     }
+
+    // MARK: deep link + intent (I5)
+
+    func testSlugs() throws {
+        XCTAssertEqual(Contributor.slug(for: "Guru Tegh Bahadur Ji (M9)"), "guru-tegh-bahadur-ji")
+        XCTAssertEqual(Contributor.slug(for: "Bhatt Kalsahar (ਭਟ)"), "bhatt-kalsahar")
+        XCTAssertEqual(Contributor.slug(for: "Satta & Balwand"), "satta-balwand")
+        let roster = try XCTUnwrap(ContributorsStore.load())
+        XCTAssertEqual(Set(roster.map(\.slug)).count, roster.count, "slugs are unique")
+        XCTAssertTrue(roster.allSatisfy { Router.isValidVoiceSlug($0.slug) })
+        XCTAssertEqual(Set(VoiceQuery.all().map(\.id)), Set(roster.map(\.slug)))
+    }
+
+    @MainActor
+    func testVoiceDeepLink() {
+        let c = AppContainer(); let r = Router()
+        r.handle(URL(string: "sggs://voice/guru-tegh-bahadur-ji")!, container: c)
+        XCTAssertEqual(r.selectedTab, .explore)
+        XCTAssertEqual(r.explorePath.count, 2, "Lineage, then the voice")
+        let r2 = Router()
+        for bad in ["sggs://voice/", "sggs://voice/Guru%20Nanak", "sggs://voice/-x", "sggs://voice/a--b",
+                    "sggs://voice/" + String(repeating: "a", count: 65)] {
+            r2.handle(URL(string: bad)!, container: c)
+        }
+        XCTAssertEqual(r2.explorePath.count, 0, "malformed slugs are ignored")
+        XCTAssertNotEqual(r2.selectedTab, .explore)
+    }
 }

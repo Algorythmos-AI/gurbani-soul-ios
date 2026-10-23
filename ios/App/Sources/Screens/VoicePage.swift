@@ -703,3 +703,37 @@ struct VoiceZoomDestination: ViewModifier {
         }
     }
 }
+
+/// A voice's page reached by slug (sggs://voice/<slug>, "Open a voice"): resolves the roster entry —
+/// or a DB voice the roster does not list yet — and its canonical summary, then shows `VoicePage`.
+struct VoiceRouteView: View {
+    let slug: String
+    @Environment(AppContainer.self) private var container
+    @State private var resolved: (contributor: Contributor, summary: VoiceSummary?, roster: [Contributor])?
+    @State private var missing = false
+
+    var body: some View {
+        Group {
+            if let resolved {
+                VoicePage(contributor: resolved.contributor, summary: resolved.summary, roster: resolved.roster)
+            } else if missing {
+                ContentUnavailableView("Voice not found", systemImage: "person.slash",
+                                       description: Text("No voice of the Granth matches this link."))
+            } else {
+                ProgressView()
+            }
+        }
+        .task {
+            guard resolved == nil, let corpus = container.corpus else { return }
+            let summaries = await corpus.voiceSummaries()
+            var roster = ContributorsStore.load() ?? []
+            let known = Set(roster.map(\.name))
+            roster += summaries.filter { !known.contains($0.author) }.map { Contributor(placeholderFor: $0.author) }
+            if let c = roster.first(where: { $0.slug == slug }) {
+                resolved = (c, summaries.first { $0.author == c.name }, roster)
+            } else {
+                missing = true
+            }
+        }
+    }
+}
