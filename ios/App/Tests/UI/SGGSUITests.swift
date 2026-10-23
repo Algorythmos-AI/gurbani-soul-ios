@@ -1031,8 +1031,35 @@ final class SGGSUITests: XCTestCase {
         shot("vaar_unit_sheet")
         app.buttons["Done"].firstMatch.tap()
 
-        // a one-Ang Vaar reads "Ang 1193", never "Angs 1193–1193"
+        // the continuous reader: lands at the heading, steps by pauri, and remembers the place
+        app.swipeDown(); app.swipeDown()
+        let read = app.buttons["vaar.read"].firstMatch
+        XCTAssertTrue(read.waitForExistence(timeout: 5)); read.tap()
+        let position = app.descendants(matching: .any)["vaarReader.position"].firstMatch
+        XCTAssertTrue(position.waitForExistence(timeout: 10), "reader position bar missing")
+        shot("vaar_reader_top")
+        app.buttons["Next pauri"].firstMatch.tap()
+        app.buttons["Next pauri"].firstMatch.tap()
+        XCTAssertTrue(position.label.contains("Pauri"), position.label)
+        app.swipeUp()
+        sleep(2)                                   // the position save is debounced
+        shot("vaar_reader_mid")
+        app.buttons["vaarReader.menu"].firstMatch.tap()
+        let paurisOnly = app.buttons["Pauris only"].firstMatch
+        XCTAssertTrue(paurisOnly.waitForExistence(timeout: 5)); paurisOnly.tap()
+        shot("vaar_reader_pauris_only")
+        app.navigationBars.buttons.element(boundBy: 0).tap()      // → weave
+        XCTAssertTrue(app.buttons["vaar.read"].firstMatch.waitForExistence(timeout: 5))
+        XCTAssertEqual(app.buttons["vaar.read"].firstMatch.label, "Continue")
+        app.navigationBars.buttons.element(boundBy: 0).tap()      // → home
+        XCTAssertTrue(app.buttons["vaars.continue"].firstMatch.waitForExistence(timeout: 8), "Continue card missing")
+        shot("vaars_home_continue")
+        app.buttons["vaars.continue"].firstMatch.tap()
+        XCTAssertTrue(position.waitForExistence(timeout: 10))
+        XCTAssertTrue(position.label.contains("Pauri"), "resumed at a pauri: \(position.label)")
         app.navigationBars.buttons.element(boundBy: 0).tap()
+
+        // a one-Ang Vaar reads "Ang 1193", never "Angs 1193–1193"
         let short = app.buttons["vaars.filter.short"].firstMatch
         XCTAssertTrue(short.waitForExistence(timeout: 8)); short.tap()
         shot("vaars_filter_short")

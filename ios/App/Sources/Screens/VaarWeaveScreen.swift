@@ -30,7 +30,12 @@ struct VaarWeaveScreen: View {
         .navigationTitle(summary?.roman.map { "Vaar · \($0.capitalized)" } ?? "Vaar")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(item: $openUnit) { unit in
-            if let text, let summary { VaarUnitSheet(summary: summary, text: text, unit: unit) }
+            if let text, let summary {
+                VaarUnitSheet(summary: summary, text: text, unit: unit) { line in
+                    openUnit = nil
+                    read(paurisOnly: false, from: line)
+                }
+            }
         }
         .task {
             guard !loaded, let corpus = container.corpus else { return }
@@ -91,7 +96,7 @@ struct VaarWeaveScreen: View {
                 }
                 Text("Sri Guru Granth Sahib Ji · \(angSpan(t.firstAng, t.lastAng))")
                     .font(.footnote).foregroundStyle(.secondary)
-                VoiceStrip(text: t, height: 20)
+                VoiceStrip(text: t, height: 20, highlight: resumeUnit(t))
                 VoiceLegend(text: t)
             }
         }
@@ -100,8 +105,9 @@ struct VaarWeaveScreen: View {
 
     private func actions(_ t: VaarText) -> some View {
         HStack(spacing: Theme.Space.s) {
-            Button { read(t, from: t.units.first) } label: {
-                Label("Read the Vaar", systemImage: "book")
+            Button { read(paurisOnly: false) } label: {
+                Label(container.vaarProgress.fraction(for: vaarId).isZero || container.vaarProgress.fraction(for: vaarId) >= 1
+                      ? "Read the Vaar" : "Continue", systemImage: "book")
                     .font(.subheadline.weight(.semibold))
                     .frame(maxWidth: .infinity, minHeight: 44)
                     .background(Capsule().fill(palette.accentFill))
@@ -109,7 +115,7 @@ struct VaarWeaveScreen: View {
                     .foregroundStyle(palette.onAccent)
             }
             .accessibilityIdentifier("vaar.read")
-            Button { read(t, from: t.pauris.first) } label: {
+            Button { read(paurisOnly: true) } label: {
                 Label("Pauris only", systemImage: "list.number")
                     .font(.subheadline.weight(.medium))
                     .frame(maxWidth: .infinity, minHeight: 44)
@@ -121,9 +127,8 @@ struct VaarWeaveScreen: View {
         .buttonStyle(.plain)
     }
 
-    private func read(_ t: VaarText, from unit: VaarTextUnit?) {
-        guard let line = unit?.firstVerse else { return }
-        container.router.openAng(line.ang, lineId: line.id)
+    private func read(paurisOnly: Bool, from line: Int? = nil) {
+        container.router.explorePath.append(Route.vaarReader(id: vaarId, paurisOnly: paurisOnly, line: line))
     }
 
     /// The Vaar's tables are present but its printed structure could not be proven: say so and
@@ -137,6 +142,13 @@ struct VaarWeaveScreen: View {
             Button("Open Ang \(s.firstAng)") { container.router.openAng(s.firstAng) }
                 .buttonStyle(.borderedProminent)
         }
+    }
+
+    /// The unit holding the saved reading position, if this Vaar is in progress.
+    private func resumeUnit(_ t: VaarText) -> Int? {
+        guard let p = container.vaarProgress.position(for: vaarId), p.completedAt.map({ $0 < p.lastReadAt }) ?? true
+        else { return nil }
+        return t.unitIndex(containing: p.lineId)
     }
 
     // MARK: grouping
@@ -264,8 +276,9 @@ struct VaarUnitSheet: View {
     let summary: VaarSummary
     let text: VaarText
     let unit: VaarTextUnit
+    /// Read the Vaar from this line (the sheet dismisses itself first).
+    let readFrom: (Int) -> Void
     @Environment(\.dismiss) private var dismiss
-    @Environment(AppContainer.self) private var container
 
     var body: some View {
         NavigationStack {
@@ -296,8 +309,7 @@ struct VaarUnitSheet: View {
                 ToolbarItem(placement: .cancellationAction) { Button("Done") { dismiss() } }
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        dismiss()
-                        if let line = unit.firstVerse { container.router.openAng(line.ang, lineId: line.id) }
+                        if let line = unit.firstVerse { readFrom(line.id) } else { dismiss() }
                     } label: { Label("Read from here", systemImage: "book") }
                     .accessibilityIdentifier("vaar.readFromHere")
                 }

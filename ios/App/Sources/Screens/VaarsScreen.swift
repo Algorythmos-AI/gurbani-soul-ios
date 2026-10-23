@@ -62,6 +62,9 @@ struct VaarsScreen: View {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: Theme.Space.m) {
                     hero(all)
+                    if let c = container.vaarProgress.current(), let v = all.first(where: { $0.vaarId == c.vaarId }) {
+                        continueCard(v, c.position)
+                    }
                     filterRow(filters, active: active)
                     ForEach(shown) { v in
                         VaarCard(summary: v, text: texts[v.vaarId], isPicked: v.vaarId == ribbonPick) { line in
@@ -115,6 +118,30 @@ struct VaarsScreen: View {
         .padding(.top, Theme.Space.s)
     }
 
+    /// Resume the Vaar last read and not yet finished.
+    private func continueCard(_ v: VaarSummary, _ p: VaarPosition) -> some View {
+        NavigationLink(value: Route.vaarReader(id: v.vaarId, paurisOnly: false, line: nil)) {
+            HStack(spacing: Theme.Space.m) {
+                ProgressRing(fraction: container.vaarProgress.fraction(for: v.vaarId), done: false).frame(width: 36, height: 36)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Continue").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                    if let line = texts[v.vaarId]?.titleLines.first {
+                        GurmukhiText(verbatim: line.gurmukhi, size: 16)
+                    }
+                    Text(p.pauriNo.map { "Pauri \($0) of \(p.nPauris)" } ?? "Started")
+                        .font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                }
+                Spacer(minLength: Theme.Space.s)
+                Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(.tertiary)
+            }
+            .padding(Theme.Space.l)
+            .background(Ink.card, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
+            .overlay(RoundedRectangle(cornerRadius: Theme.Radius.card).strokeBorder(Theme.accent.opacity(0.5)))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("vaars.continue")
+    }
+
     private func filterRow(_ filters: [VaarFilter], active: VaarFilter) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Theme.Space.s) {
@@ -138,6 +165,8 @@ private struct VaarCard: View {
     let isPicked: Bool
     let showDhuni: (VaarLine) -> Void
     @Environment(\.palette) private var palette
+    @Environment(AppContainer.self) private var container
+    private var progress: Double { container.vaarProgress.fraction(for: summary.vaarId) }
 
     var body: some View {
         NavigationLink(value: Route.vaar(summary.vaarId)) { card }
@@ -188,6 +217,9 @@ private struct VaarCard: View {
                     Spacer(minLength: Theme.Space.s)
                     // room for the ਧੁਨੀ button, which sits over the card (outside the link)
                     if text?.dhuni != nil { Color.clear.frame(width: 64, height: 30) }
+                    if progress > 0 {
+                        ProgressRing(fraction: progress, done: progress >= 1).frame(width: 22, height: 22)
+                    }
                     Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(.tertiary)
                 }
             }

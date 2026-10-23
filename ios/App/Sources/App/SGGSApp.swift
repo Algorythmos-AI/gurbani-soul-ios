@@ -27,6 +27,7 @@ struct SGGSApp: App {
             }
             NitnemProgressStore.wipe()
             NitnemPlanStore.wipe()
+            VaarProgressStore.wipe()
             // D10: a cold integrity verify (full re-hash), as after an install or an update
             if ProcessInfo.processInfo.environment["SGGS_UITEST_COLD_VERIFY"] == "1" {
                 UserDefaults.standard.removeObject(forKey: LaunchIntegrity.cacheKey)

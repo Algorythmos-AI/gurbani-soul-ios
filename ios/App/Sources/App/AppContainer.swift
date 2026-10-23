@@ -33,6 +33,10 @@ final class AppContainer {
     let nitnem = NitnemProgressStore()
     /// "My Nitnem" customised sets (order/hidden/added). Sibling file, never a progress migration.
     let nitnemPlan = NitnemPlanStore()
+    /// Where the reader is in each Vaar (sibling JSON; never SwiftData).
+    let vaarProgress = VaarProgressStore()
+    /// The 22 vaar ids in Granth order (set by the first Vaar reader that needs "Next Vaar").
+    var vaarOrder: [Int]?
     /// Gentle local reminders (opt-in, no entitlement, no network). Under `SGGS_UITEST` a fake
     /// scheduler stands in so tests never touch the real notification center.
     let reminders: NitnemReminderController

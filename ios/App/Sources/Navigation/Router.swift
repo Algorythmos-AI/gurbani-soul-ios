@@ -17,6 +17,8 @@ enum Route: Hashable {
     case vaars
     /// One Vaar's weave, by `vaars.vaar_id` (1…22).
     case vaar(Int)
+    /// A Vaar read straight through (or its pauris only), optionally from a line.
+    case vaarReader(id: Int, paurisOnly: Bool, line: Int?)
     case clock
     case nitnemJourney
     case theme(String)

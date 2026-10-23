@@ -114,6 +114,8 @@ struct RouteDestination: View {
         case .constellation: ConstellationScreen()
         case .vaars: VaarsScreen()
         case .vaar(let id): VaarWeaveScreen(vaarId: id)
+        case .vaarReader(let id, let paurisOnly, let line):
+            VaarReaderScreen(vaarId: id, paurisOnly: paurisOnly, startLineId: line)
         case .clock: ClockScreen()
         case .nitnemJourney: NitnemJourneyScreen()
         case .theme(let name): ThemeResultsScreen(concept: name)

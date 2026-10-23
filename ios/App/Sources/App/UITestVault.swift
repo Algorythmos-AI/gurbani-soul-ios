@@ -73,6 +73,7 @@ enum UITestVault {
         var items: [Item] = []
         if let u = NitnemProgressStore.defaultURL() { items.append(Item(name: "nitnem-progress", url: u, kind: .file)) }
         if let u = NitnemPlanStore.defaultURL() { items.append(Item(name: "nitnem-plan", url: u, kind: .file)) }
+        if let u = VaarProgressStore.defaultURL() { items.append(Item(name: "vaar-progress", url: u, kind: .file)) }
         if let u = WidgetStore.url() { items.append(Item(name: "widget-snapshot", url: u, kind: .file)) }
         let store = ModelConfiguration(schema: Schema(versionedSchema: SavedLineSchemaV1.self)).url
         items.append(Item(name: "saved-store", url: store, kind: .sqlite))
