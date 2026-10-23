@@ -789,7 +789,18 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(cons.waitForExistence(timeout: 12))
         cons.tap()
         XCTAssertTrue(app.navigationBars["Constellation"].waitForExistence(timeout: 12), "Constellation did not open")
-        _ = app.staticTexts.element(boundBy: 2).waitForExistence(timeout: 8)   // let the map render
+        // the caption adds up: "N verses carry Naam" then "S also carry another theme · A carry Naam alone"
+        let caption = app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "verses carry Naam")).firstMatch
+        XCTAssertTrue(caption.waitForExistence(timeout: 12), "the Focus caption did not appear")
+        // the list twin carries the same model, and a companion opens the verses both themes share
+        app.navigationBars["Constellation"].buttons["View as list"].tap()
+        let alone = app.buttons.containing(NSPredicate(format: "label BEGINSWITH %@", "Naam alone")).firstMatch
+        XCTAssertTrue(alone.waitForExistence(timeout: 8), "the list twin has no alone row")
+        alone.tap()
+        XCTAssertTrue(app.navigationBars["Naam alone"].waitForExistence(timeout: 12), "the alone sheet did not open")
+        let count = app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "1,952 verses")).firstMatch
+        XCTAssertTrue(count.waitForExistence(timeout: 8), "the alone sheet's count is wrong")
+        app.navigationBars["Naam alone"].buttons["Done"].tap()
     }
 
     /// English layer (personal profile): the English mode pill exists and returns results,

@@ -10,11 +10,12 @@
       "version": "1.0.0"
     },
     "platform": {
-      "commit": "0a9f2b899da489e24494f531c11da1ab210c84fd",
+      "commit": "fa7704a1d5a5dc28df04cc1e5b9311da69620eb8",
       "files": {
-        "contract/_meta.json": "d8149b366523353945f54e56010ac94629af295ebe650a2a4d48ef85e14bce82",
+        "contract/_meta.json": "834374b6deda968628aa0a24e1a795a004f2e6c1e93a103c6d05a438157d8bc2",
         "contract/golden_analytics.ndjson": "70624246ac9f8b54719c5bf50be2235182d15a25f406b308b816b4f78a18c043",
         "contract/golden_banis.ndjson": "2aec62ccbd402e0324b8474256a12c858467a75f9a509f7908fa27a8506ea584",
+        "contract/golden_constellation.ndjson": "cc8a8135242b4b1878c0573ba3f7eba84bd93af06cf0793129b8df840e6f168f",
         "contract/golden_difflib.ndjson": "2abfeef0181ab2cae25c9c671336502a76245255c672d81f1bf73aa5d6bcaf56",
         "contract/golden_pahar.ndjson": "c1aa55c13ccfe90852265a095441fdc0253dc7ada56175919a4111fdf258c1ff",
         "contract/golden_reader.ndjson": "d5d113a3af6000b689677df583cf15cef2e3d0596ceba7bed21bb6195ae8cffd",
@@ -25,7 +26,7 @@
         "docs/brand/tokens.json": "483d2c35f04872fb381c114b41056c325f8e7c177b5af66ef9c902420c2434c0",
         "frontend/public/contributors.json": "0e6316d025f65a5b9c15f2a0c68a184935b388da0590fdba410bbd5532e5cf4e"
       },
-      "ref": "0a9f2b899da489e24494f531c11da1ab210c84fd",
+      "ref": "fa7704a1d5a5dc28df04cc1e5b9311da69620eb8",
       "repository": "Algorythmos-AI/sggs-platform",
       "version": "1.4.7"
     }

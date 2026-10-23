@@ -349,7 +349,8 @@ enum Presentation: Identifiable {
     case shabad(compId: Int, focusLineId: Int? = nil)
     case hukam
     case trail(TrailStart)
-    case cluster(center: String, cluster: ConstellationCluster)
+    /// The verses two themes share (or one theme carries alone) — the Constellation's pair sheet.
+    case pair(PairRequest)
     /// The bani reader's Contents sheet (jump to a pauri/ashtapadi) — routed through the one
     /// sheet host so it can never collide with a deep-linked shabad/hukam.
     case baniContents(BaniContentsRequest)
@@ -360,7 +361,7 @@ enum Presentation: Identifiable {
         case .shabad(let c, _): return "shabad-\(c)"
         case .hukam: return "hukam"
         case .trail(let t): return "trail-\(t.id)"
-        case .cluster(let center, let cl): return "cluster-\(center)-\(cl.co)"
+        case .pair(let r): return "pair-\(r.id)"
         case .baniContents(let r): return "contents-\(r.baniId)"
         case .readingSettings: return "reading-settings"
         }
