@@ -24,6 +24,19 @@ struct ThemeGroup: Identifiable, Hashable {
         }
     }
 
+    /// A one- or two-word name for the family chip bar (the full title is its VoiceOver label).
+    var shortTitle: String {
+        switch key {
+        case "divine": "Divine"
+        case "condition": "Human condition"
+        case "vices": "Five vices"
+        case "path": "Path"
+        case "virtues": "Virtues"
+        case "states": "States"
+        default: title
+        }
+    }
+
     static let all: [ThemeGroup] = [
         ThemeGroup(key: "divine", title: "The Divine Reality", caption: "God, the Names, and the cosmic Word",
                    keys: ["ik_onkar", "vahiguru", "karta", "akal", "hukam", "naam", "shabad", "bani", "jot", "anhad", "patit_pavan"]),

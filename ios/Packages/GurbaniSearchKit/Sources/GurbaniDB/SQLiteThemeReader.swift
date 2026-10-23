@@ -50,4 +50,75 @@ extension SQLiteCandidateSource {
         if more { lines.removeLast() }
         return ThemePage(concept: concept, total: total, lines: lines, nextAfterId: more ? lines.last?.id : nil)
     }
+
+    /// Every theme (including any with no tagged verse) with its words, headword, counts and
+    /// Ang bins, in slug order. One scan of the tags (~62k rows), aggregated here: about 5× faster
+    /// than grouped SQL, and it runs once per launch.
+    public func themeIndex() throws -> [ThemeIndexRow] {
+        var meta: [(String, String, [String])] = []
+        try query("SELECT concept, COALESCE(gurmukhi_terms,'[]'), COALESCE(description,'') FROM concepts ORDER BY concept", []) { s in
+            let terms = (try? JSONDecoder().decode([String].self, from: Data((cText(s, 1) ?? "[]").utf8))) ?? []
+            meta.append((cText(s, 0) ?? "", cText(s, 2) ?? "", terms))
+        }
+        struct Acc {
+            var lines = Set<Int>(), comps = Set<Int>(), rahao = Set<Int>()
+            var terms: [String: Set<Int>] = [:]
+            var bins = Array(repeating: 0, count: ConstellationFocus.binCount)
+        }
+        var acc: [String: Acc] = [:]
+        try query("SELECT cl.concept, cl.term, cl.line_id, l.ang, l.comp_id, l.is_rahao "
+                  + "FROM concept_lines cl JOIN lines l ON l.id=cl.line_id", []) { s in
+            let c = cText(s, 0) ?? "", id = cInt(s, 2)
+            var a = acc[c] ?? Acc()
+            a.terms[cText(s, 1) ?? "", default: []].insert(id)
+            if a.lines.insert(id).inserted {
+                let bin = max(0, min(ConstellationFocus.binCount - 1, (cInt(s, 3) - 1) / ConstellationFocus.binWidth))
+                a.bins[bin] += 1
+                a.comps.insert(cInt(s, 4))
+                if cInt(s, 5) != 0 { a.rahao.insert(id) }
+            }
+            acc[c] = a
+        }
+        return meta.map { concept, description, terms in
+            let a = acc[concept] ?? Acc()
+            // most verses wins; ties go to the earlier word in the printed list; a tagged word
+            // missing from the list (never expected) still counts, after the listed ones
+            let ordered = terms + a.terms.keys.filter { !terms.contains($0) }.sorted()
+            var headword: String?, best = 0
+            for t in ordered where (a.terms[t]?.count ?? 0) > best { headword = t; best = a.terms[t]?.count ?? 0 }
+            return ThemeIndexRow(concept: concept, description: description, terms: terms, headword: headword,
+                                 nVerses: a.lines.count, nShabads: a.comps.count, nRahao: a.rahao.count, angBins: a.bins)
+        }
+    }
+
+    /// The theme of the day: themes in slug order, the day number modulo their count; its verse is
+    /// the theme's first Rahao line in reading order, or its first verse when it has no refrain.
+    public func themeOfTheDay(day: Int) throws -> ThemeOfTheDay? {
+        var slugs: [String] = []
+        try query("SELECT DISTINCT concept FROM concept_lines ORDER BY concept", []) { slugs.append(cText($0, 0) ?? "") }
+        guard !slugs.isEmpty else { return nil }
+        let concept = slugs[ThemeOfTheDay.index(day: day, count: slugs.count)]
+        let cols = Self.lineCols.split(separator: ",").map { "l." + $0.trimmingCharacters(in: .whitespaces) }.joined(separator: ", ")
+        var line: SearchLine?
+        try query("SELECT \(cols) FROM concept_lines cl JOIN lines l ON l.id=cl.line_id WHERE cl.concept=? "
+                  + "ORDER BY l.is_rahao DESC, l.id LIMIT 1", [.text(concept)]) { line = mapLine($0) }
+        return line.map { ThemeOfTheDay(concept: concept, line: $0) }
+    }
+
+    /// How many of the given verses carry each theme, most first (ties by slug). Ids are bound in
+    /// chunks (SQLite caps host parameters); unknown ids simply match nothing.
+    public func themeTally(lineIds: [Int]) throws -> [ThemeTally] {
+        let ids = Array(Set(lineIds)).sorted()
+        var tally: [String: Int] = [:]
+        var start = 0
+        while start < ids.count {
+            let chunk = Array(ids[start..<min(start + 500, ids.count)])
+            start += chunk.count
+            let marks = Array(repeating: "?", count: chunk.count).joined(separator: ",")
+            try query("SELECT concept, COUNT(DISTINCT line_id) FROM concept_lines WHERE line_id IN (\(marks)) GROUP BY concept",
+                      chunk.map { .int($0) }) { s in tally[cText(s, 0) ?? "", default: 0] += cInt(s, 1) }
+        }
+        return tally.map { ThemeTally(concept: $0.key, n: $0.value) }
+            .sorted { $0.n != $1.n ? $0.n > $1.n : $0.concept < $1.concept }
+    }
 }

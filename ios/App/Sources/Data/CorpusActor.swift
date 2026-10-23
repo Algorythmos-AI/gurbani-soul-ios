@@ -91,6 +91,23 @@ actor CorpusActor {
     func banis() -> BaniList { db.fetchBanis() }
     func bani(key: String, variant: String = "") -> Bani? { db.fetchBani(key: key, variant: variant) }
 
+    private var cachedThemeIndex: [ThemeIndexRow]?
+    /// The 54 themes with words, headword, counts and Ang bins — computed once, then cached (the
+    /// DB is immutable for the life of the process).
+    func themeIndex() throws -> [ThemeIndexRow] {
+        if let cachedThemeIndex { return cachedThemeIndex }
+        let rows = try db.themeIndex()
+        cachedThemeIndex = rows
+        return rows
+    }
+    func themeOfTheDay(day: Int) throws -> ThemeOfTheDay? { try db.themeOfTheDay(day: day) }
+    func themeTally(lineIds: [Int]) throws -> [ThemeTally] { try db.themeTally(lineIds: lineIds) }
+    /// The themes today's Hukam carries (its verses only, never its headings).
+    func hukamThemes(day: Int) throws -> [ThemeTally] {
+        let unit = try db.hukamUnit(seed: db.hukamOfTheDaySeed(day: day))
+        return try db.themeTally(lineIds: unit.lines.filter { !$0.isHeader }.map(\.id))
+    }
+
     /// One keyset page of a theme's verses in reading order, with the true total under the same
     /// filter (the card's count and the list's end always agree).
     func themePage(_ concept: String, filter: ThemeFilter = .none, afterId: Int = 0, limit: Int = 50) throws -> ThemePage {

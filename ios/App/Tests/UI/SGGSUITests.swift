@@ -1250,25 +1250,63 @@ final class SGGSUITests: XCTestCase {
     /// end (it used to stop silently at 200 while the card promised thousands).
     func testThemeListStatesItsTrueTotal() {
         let app = launchApp(selectSearch: false)
-        openTab(app, "Explore", expectingNavBar: "Explore")
-        let hub = app.buttons["Themes"].firstMatch
-        XCTAssertTrue(hub.waitForExistence(timeout: 12), "Themes card missing")
-        hub.tap()
-        XCTAssertTrue(app.navigationBars["Themes"].waitForExistence(timeout: 12))
-        let naam = app.buttons.containing(NSPredicate(format: "label BEGINSWITH %@", "Naam —")).firstMatch
+        openThemes(app)
+        let naam = app.buttons["theme_naam"].firstMatch
         XCTAssertTrue(naam.waitForExistence(timeout: 12), "Naam card missing")
         naam.tap()
         XCTAssertTrue(app.navigationBars["Naam"].waitForExistence(timeout: 12))
         let header = app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH %@", "5,672 verses carry Naam")).firstMatch
         XCTAssertTrue(header.waitForExistence(timeout: 15), "the list does not state the theme's true total")
+        attachShot(app, "theme-verses")
         app.navigationBars.buttons.element(boundBy: 0).tap()
-        let akal = app.buttons.containing(NSPredicate(format: "label BEGINSWITH %@", "Akal —")).firstMatch
+        let akal = app.buttons["theme_akal"].firstMatch
         XCTAssertTrue(akal.waitForExistence(timeout: 12), "Akal card missing")
         akal.tap()
         let footer = app.staticTexts["themes.verses.footer"]
         for _ in 0..<6 where !(footer.exists && footer.isHittable) { app.swipeUp() }
         XCTAssertTrue(footer.waitForExistence(timeout: 10))
         XCTAssertEqual(footer.label, "All 15 verses shown")
+    }
+
+    /// The Themes index: today's theme, the family bar, cards with honest counts, and search that
+    /// finds a theme by its English name, its meaning, or one of its Gurmukhi words.
+    func testThemesIndexSearchFindsByMeaningAndGurmukhi() {
+        let app = launchApp(selectSearch: false)
+        openThemes(app)
+        XCTAssertTrue(app.buttons["themes.today"].waitForExistence(timeout: 12), "no theme of the day")
+        let naam = app.buttons["theme_naam"].firstMatch
+        XCTAssertTrue(naam.waitForExistence(timeout: 12))
+        XCTAssertTrue(naam.label.contains("5,672 verses in 2,472 shabads"), "card label: \(naam.label)")
+        attachShot(app, "themes-index")
+        let family = app.buttons["The Five Vices"].firstMatch
+        if family.waitForExistence(timeout: 5) {
+            family.tap()
+            XCTAssertTrue(app.buttons["theme_kaam"].waitForExistence(timeout: 8), "the family chip did not reach the Five Vices")
+            attachShot(app, "themes-family-jump")
+        }
+        let field = app.searchFields.firstMatch
+        if !field.exists { app.swipeDown() }
+        XCTAssertTrue(field.waitForExistence(timeout: 8), "no search field")
+        field.tap()
+        field.typeText("ਹਉਮੈ")
+        XCTAssertTrue(app.buttons["theme_haumai"].waitForExistence(timeout: 8), "Gurmukhi word did not find Haumai")
+        attachShot(app, "themes-search-gurmukhi")
+        field.buttons.firstMatch.tap()                 // clear
+        field.typeText("ego")
+        XCTAssertTrue(app.buttons["theme_haumai"].waitForExistence(timeout: 8), "meaning did not find Haumai")
+        XCTAssertTrue(app.buttons["theme_ahankar"].exists, "meaning did not find Ahankar")
+        field.buttons.firstMatch.tap()
+        field.typeText("zzzz")
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH %@", "No theme matches")).firstMatch
+                        .waitForExistence(timeout: 8), "no empty state")
+    }
+
+    private func openThemes(_ app: XCUIApplication) {
+        openTab(app, "Explore", expectingNavBar: "Explore")
+        let hub = app.buttons["Themes"].firstMatch
+        XCTAssertTrue(hub.waitForExistence(timeout: 12), "Themes card missing")
+        hub.tap()
+        XCTAssertTrue(app.navigationBars["Themes"].waitForExistence(timeout: 12))
     }
 
     /// Regression for the consolidated single root sheet: opening a shabad from INSIDE the Trail must

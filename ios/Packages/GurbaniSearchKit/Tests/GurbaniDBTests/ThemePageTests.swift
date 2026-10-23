@@ -74,7 +74,7 @@ final class ThemePageTests: XCTestCase {
 
     func testPageSizeDoesNotChangeWhatIsListed() throws {
         let db = try SQLiteCandidateSource(path: try dbPath())
-        for c in ["naam", "akal", "sahaj", "kaam"] {
+        for c in ["akal", "sahaj", "kaam", "garab"] {
             let (_, a) = try walk(db, c, size: 7)
             let (_, b) = try walk(db, c, size: 37)
             let (_, d) = try walk(db, c, size: 10_000)            // clamped to themePageMax
@@ -136,5 +136,68 @@ final class ThemePageTests: XCTestCase {
         XCTAssertEqual(p.total, 0); XCTAssertTrue(p.lines.isEmpty); XCTAssertNil(p.nextAfterId)
         let injection = try db.themePage(concept: "naam' OR '1'='1")
         XCTAssertEqual(injection.total, 0)
+    }
+
+    // MARK: the Themes index
+
+    func testIndexCountsAgreeWithEverySurface() throws {
+        let path = try dbPath()
+        let db = try SQLiteCandidateSource(path: path)
+        let index = try db.themeIndex()
+        let meta = try db.fetchMeta().concepts
+        XCTAssertEqual(index.map(\.concept), meta.map(\.concept), "same 54 themes, same order")
+        for (row, m) in zip(index, meta) {
+            XCTAssertEqual(row.nVerses, m.nLines, "\(row.concept): verse count")
+            XCTAssertEqual(row.angBins.count, ConstellationFocus.binCount)
+            XCTAssertEqual(row.angBins.reduce(0, +), row.nVerses, "\(row.concept): bins must add up")
+            XCTAssertEqual(row.angBins, try db.constellationFocus(concept: row.concept).angBins, "\(row.concept): Ang strip")
+            XCTAssertEqual(row.nRahao, try db.themeCount(concept: row.concept, filter: ThemeFilter(lens: ConstellationLens(rahaoOnly: true))))
+            let shabads = try ints(path, "SELECT COUNT(DISTINCT l.comp_id) FROM concept_lines cl JOIN lines l ON l.id=cl.line_id WHERE cl.concept=?", [row.concept])
+            XCTAssertEqual([row.nShabads], shabads, row.concept)
+            XCTAssertFalse(row.terms.isEmpty, "\(row.concept): no Gurmukhi words")
+            let head = try XCTUnwrap(row.headword, "\(row.concept): no headword")
+            XCTAssertTrue(row.terms.contains(head), "\(row.concept): headword \(head) is not one of its words")
+            let headN = try db.themeCount(concept: row.concept, filter: ThemeFilter(term: head))
+            for t in row.terms { XCTAssertLessThanOrEqual(try db.themeCount(concept: row.concept, filter: ThemeFilter(term: t)), headN) }
+        }
+        let byKey = Dictionary(uniqueKeysWithValues: index.map { ($0.concept, $0) })
+        XCTAssertEqual(byKey["sahaj"]?.headword, "ਸਹਜਿ")
+        XCTAssertEqual(byKey["haumai"]?.headword, "ਹਉਮੈ")
+        XCTAssertEqual(byKey["naam"]?.nShabads, 2472)
+        XCTAssertEqual(byKey["akal"]?.nRahao, 0)
+    }
+
+    func testThemeOfTheDayIsDeterministicAndNeverEmpty() throws {
+        let db = try SQLiteCandidateSource(path: try dbPath())
+        let today = HukamOfTheDay.dayNumber(year: 2026, month: 10, day: 23)
+        var seen = Set<String>()
+        for day in today..<(today + 54) {
+            let t = try XCTUnwrap(try db.themeOfTheDay(day: day))
+            XCTAssertEqual(t, try db.themeOfTheDay(day: day), "day \(day) must always give the same theme and verse")
+            XCTAssertFalse(t.line.gurmukhi.isEmpty)
+            XCTAssertFalse(t.line.isHeader)
+            let tagged = try db.themePage(concept: t.concept, limit: 500).lines.map(\.id)
+            XCTAssertTrue(try db.themeCount(concept: t.concept) > 0)
+            if t.concept != "akal" { XCTAssertTrue(t.isRefrain, "\(t.concept): has refrains, so the verse must be one") }
+            if t.concept == "akal" { XCTAssertEqual(t.line.id, tagged.first, "Akal falls back to its first verse") }
+            seen.insert(t.concept)
+        }
+        XCTAssertEqual(seen.count, 54, "54 consecutive days visit every theme once")
+        XCTAssertEqual(ThemeOfTheDay.index(day: -1, count: 54), 53)
+    }
+
+    func testTallyCountsOnlyTheGivenVerses() throws {
+        let path = try dbPath()
+        let db = try SQLiteCandidateSource(path: path)
+        XCTAssertEqual(try db.themeTally(lineIds: []), [])
+        XCTAssertEqual(try db.themeTally(lineIds: [-5, 99_999_999]), [])
+        let naam = try ints(path, "SELECT line_id FROM concept_lines WHERE concept='naam' ORDER BY line_id LIMIT 1200")
+        let tally = try db.themeTally(lineIds: naam + naam)                // duplicates count once; > one chunk
+        XCTAssertEqual(tally.first, ThemeTally(concept: "naam", n: 1200))
+        for t in tally {
+            let truth = try ints(path, "SELECT COUNT(DISTINCT line_id) FROM concept_lines WHERE concept=? AND line_id IN (SELECT line_id FROM concept_lines WHERE concept='naam' ORDER BY line_id LIMIT 1200)", [t.concept])
+            XCTAssertEqual([t.n], truth, t.concept)
+        }
+        XCTAssertEqual(tally.map(\.n), tally.map(\.n).sorted(by: >))
     }
 }
