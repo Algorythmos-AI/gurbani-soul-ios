@@ -195,7 +195,7 @@ struct ResonanceSection: View {
                 Section("Strongest resonances") {
                     ForEach(Array(graph.edges.prefix(20).enumerated()), id: \.offset) { _, e in
                         HStack {
-                            Text("\(InsightsScreen.shortAuthor(e.source)) → \(InsightsScreen.shortAuthor(e.target))")
+                            Text("\(AuthorName(e.source).compact) → \(AuthorName(e.target).compact)")
                                 .font(.subheadline)
                             Spacer()
                             Text("lift \(e.lift, format: .number.precision(.fractionLength(2)))")
@@ -244,7 +244,7 @@ private struct ChordCanvas: View {
             arc.addArc(center: center, radius: radius, startAngle: .radians(cursor),
                        endAngle: .radians(cursor + span), clockwise: false)
             ctx.stroke(arc, with: .color(Brand.primary), lineWidth: 8)
-            ctx.draw(Text(InsightsScreen.shortAuthor(n.author)).font(.system(size: 8))
+            ctx.draw(Text(AuthorName(n.author).compact).font(.system(size: 8))
                 .foregroundStyle(.secondary), at: point(center, radius + 18, mid))
             cursor += span + gap
         }

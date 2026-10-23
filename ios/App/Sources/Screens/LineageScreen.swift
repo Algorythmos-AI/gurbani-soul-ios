@@ -355,6 +355,7 @@ struct AuthorProfileSheet: View {
     @Environment(AppContainer.self) private var container
     @Environment(\.dismiss) private var dismiss
     @State private var profile: AuthorProfile?
+    @State private var showVocabularyInfo = false
 
     var body: some View {
         NavigationStack {
@@ -367,10 +368,10 @@ struct AuthorProfileSheet: View {
                             .background(Circle().fill(contributor.kindColor.opacity(0.16)))
                             .overlay(Circle().strokeBorder(contributor.kindColor.opacity(0.4)))
                             .foregroundStyle(contributor.kindColor)
-                        VStack(alignment: .leading, spacing: 2) {
-                            GurmukhiText(verbatim: contributor.name, size: 24)
-                            Text(contributor.roman).font(.subheadline).foregroundStyle(.secondary)
-                        }
+                        // The stored name is English ("Guru Arjan Dev Ji (M5)"): it is drawn as
+                        // English, with the Mahala badge and any Gurmukhi suffix split out.
+                        AuthorNameLabel(name: AuthorName(contributor.name),
+                                        font: .title3.weight(.semibold), gurmukhiSize: 22)
                     }
                     // life chips: kind · lifespan · region · tradition
                     FlowChipsRow(chips: [contributor.kindTag.capitalized,
@@ -383,14 +384,25 @@ struct AuthorProfileSheet: View {
                                   spacing: Theme.Space.s) {
                             StatTile(value: "\(String(s.nLines))", caption: "lines preserved")
                             StatTile(value: "\(String(s.nShabads))", caption: "compositions")
-                            StatTile(value: "\(String(s.nRaags))", caption: "raags")
-                            StatTile(value: String(format: "%.2f", s.mattr100), caption: "lexical diversity")
+                            if s.nRaags == 0 {
+                                StatTile(value: "Swaiyye", caption: "outside the raag framework")
+                            } else {
+                                StatTile(value: "\(String(s.nRaags))", caption: "raags")
+                            }
+                            if s.isReliable {
+                                StatTile(value: String(format: "%.2f", s.mattr100), caption: "vocabulary range")
+                            }
                             StatTile(value: String(format: "%.1f", s.avgWordsLine), caption: "words / line")
                             StatTile(value: String(format: "%.1f", s.avgLinesShabad), caption: "lines / shabad")
                         }
-                        if !s.isReliable {
-                            Text("Small sample — stylometry is indicative only.")
+                        HStack(spacing: Theme.Space.xs) {
+                            Text(s.isReliable ? "Vocabulary range: how varied the wording is."
+                                              : "Vocabulary range: \(VoiceCopy.tooFewLines.lowercased()).")
                                 .font(.caption2).foregroundStyle(.secondary)
+                            Button { showVocabularyInfo = true } label: {
+                                Image(systemName: "info.circle").font(.caption)
+                            }
+                            .accessibilityLabel("About vocabulary range")
                         }
                     }
                     if let themes = profile?.stylometry?.topThemes, !themes.isEmpty {
@@ -449,6 +461,7 @@ struct AuthorProfileSheet: View {
             .navigationTitle("Voice in the Granth")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .sheet(isPresented: $showVocabularyInfo) { VocabularyRangeInfo() }
         }
         .task {
             guard profile == nil, let corpus = container.corpus else { return }
@@ -575,10 +588,20 @@ struct CompareVoicesSheet: View {
             statRow("Compositions", pa.stylometry?.nShabads, pb.stylometry?.nShabads)
             statRow("Raags", pa.stylometry?.nRaags, pb.stylometry?.nRaags)
             GridRow {
-                Text("Lexical diversity").font(.caption)
-                Text(String(format: "%.3f", pa.stylometry?.mattr100 ?? 0)).font(.caption).monospacedDigit()
-                Text(String(format: "%.3f", pb.stylometry?.mattr100 ?? 0)).font(.caption).monospacedDigit()
+                Text("Vocabulary range").font(.caption)
+                vocabularyCell(pa.stylometry)
+                vocabularyCell(pb.stylometry)
             }
+        }
+    }
+
+    /// MATTR only where the sample is large enough to be fair; otherwise a dash with a reason.
+    @ViewBuilder private func vocabularyCell(_ s: AuthorStylometry?) -> some View {
+        if let s, s.isReliable {
+            Text(String(format: "%.2f", s.mattr100)).font(.caption).monospacedDigit()
+        } else {
+            Text("—").font(.caption).foregroundStyle(.secondary)
+                .accessibilityLabel(VoiceCopy.tooFewLines)
         }
     }
 
