@@ -644,9 +644,7 @@ final class SGGSUITests: XCTestCase {
         let app = launchApp(selectSearch: false)
         openIndex(app)
 
-        let card = app.buttons["composition_sukhmani"].firstMatch
-        XCTAssertTrue(card.waitForExistence(timeout: 12), "Sukhmani card missing from the Index")
-        card.tap()
+        compositionCard(app, "sukhmani").tap()
         XCTAssertTrue(app.navigationBars["Sukhmani Sahib"].waitForExistence(timeout: 15),
                       "the composition did not open its own reader")
         XCTAssertFalse(app.navigationBars["Ang 262"].exists, "must NOT drop into the Ang reader")
@@ -771,7 +769,7 @@ final class SGGSUITests: XCTestCase {
         let app = launchApp(selectSearch: false)   // SGGS_UITEST starts with no progress
         openIndex(app)
         XCTAssertFalse(app.buttons["index_continue"].exists, "nothing is in progress yet")
-        app.buttons["composition_sukhmani"].firstMatch.tap()
+        compositionCard(app, "sukhmani").tap()
         XCTAssertTrue(app.navigationBars["Sukhmani Sahib"].waitForExistence(timeout: 15))
         app.buttons["Next ashtapadi"].firstMatch.tap()
         app.buttons["Next ashtapadi"].firstMatch.tap()
@@ -799,6 +797,15 @@ final class SGGSUITests: XCTestCase {
         attachShot(app, "index_find")
         hit.tap()
         XCTAssertTrue(app.navigationBars["Raag Ramkali"].waitForExistence(timeout: 12))
+    }
+
+    /// A hero card once the bani registry has resolved it. Before that the same identifier sits on
+    /// the no-registry fallback, which opens the Reader at the first Ang instead of the reader.
+    private func compositionCard(_ app: XCUIApplication, _ key: String) -> XCUIElement {
+        let card = app.buttons.matching(NSPredicate(format: "identifier == %@ AND label CONTAINS %@",
+                                                    "composition_\(key)", "read the composition")).firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 15), "\(key) card never resolved from the registry")
+        return card
     }
 
     /// Explore hub → Index, waiting for each step (the glass tab bar can swallow a first tap).

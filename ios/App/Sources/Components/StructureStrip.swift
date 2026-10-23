@@ -26,18 +26,21 @@ struct StructureStrip: View {
 
     private func drawSteps(_ ctx: GraphicsContext, _ size: CGSize) {
         let n = shape.steps.count
-        let gap: CGFloat = n > 40 ? 0.75 : 1.5
+        // Gaps shrink (to none) before the strip could ever overrun its width.
+        var gap: CGFloat = n > 40 ? 0.75 : 1.5
+        if gap * CGFloat(n - 1) > size.width / 3 { gap = 0 }
         let total = CGFloat(shape.steps.reduce(0) { $0 + $1.length })
         let usable = max(0, size.width - gap * CGFloat(n - 1))
         let fills = shape.fill(at: seq, completed: completed)
         var x: CGFloat = 0
         for (i, s) in shape.steps.enumerated() {
-            let w = max(1, usable * CGFloat(s.length) / max(total, 1))
+            // Exactly proportional, so the steps sum to `usable` and never pass the edge.
+            let w = usable * CGFloat(s.length) / max(total, 1)
             let r = CGRect(x: x, y: 0, width: w, height: size.height)
             ctx.fill(Path(roundedRect: r, cornerRadius: min(2, w / 2)), with: .color(Ink.raised))
             let f = fills[i]
             if f > 0 {
-                let fr = CGRect(x: x, y: 0, width: max(1, w * CGFloat(f)), height: size.height)
+                let fr = CGRect(x: x, y: 0, width: w * CGFloat(f), height: size.height)
                 ctx.fill(Path(roundedRect: fr, cornerRadius: min(2, w / 2)), with: .color(palette.accent))
             }
             x += w + gap
