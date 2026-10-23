@@ -28,9 +28,11 @@ struct IndexScreen: View {
     @State private var query = ""
     /// `resumeKey` → whether that saved position resumes (filled by `checkResumable`).
     @State private var resumable: [String: Bool] = [:]
+    /// The compositions whose printed headings name a poetic form (empty without the form layer).
+    @State private var forms: [PoeticFormEntry] = []
 
     private let tabs: [(id: String, label: String)] =
-        [("compositions", "Compositions"), ("raags", "Raags"), ("authors", "Voices")]
+        [("compositions", "Compositions"), ("raags", "Raags"), ("forms", "Forms"), ("authors", "Voices")]
 
     private var columns: [GridItem] {
         let n = dynamicTypeSize.isAccessibilitySize ? 1 : 2
@@ -43,9 +45,10 @@ struct IndexScreen: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: Theme.Space.l) {
                       if !query.trimmingCharacters(in: .whitespaces).isEmpty {
-                        IndexFindResults(query: query, meta: meta, registry: registry,
+                        IndexFindResults(query: query, meta: meta, registry: registry, forms: forms,
                                          openRaag: { openRaag($0, at: $0.firstAng) },
-                                         openAng: { container.router.openAng($0) })
+                                         openAng: { container.router.openAng($0) },
+                                         openComposition: { container.present(.shabad(compId: $0)) })
                       } else {
                         ribbon(meta)
                         ScrollView(.horizontal, showsIndicators: false) {
@@ -62,6 +65,8 @@ struct IndexScreen: View {
                                           openRaag: { openRaag($0, at: $0.firstAng) },
                                           openSection: { container.router.openAng($0.firstAng) },
                                           openClock: { container.router.explorePath.append(Route.clock) })
+                        case "forms":
+                            IndexFormsTab(forms: forms) { container.present(.shabad(compId: $0)) }
                         case "authors": authorsList(meta)
                         default: compositionsGrid
                         }
@@ -87,6 +92,7 @@ struct IndexScreen: View {
             await container.loadMeta()
             await loadRegistry()
             await loadPahars()
+            await loadForms()
             await loadShapes()
         }
     }
@@ -127,6 +133,11 @@ struct IndexScreen: View {
             }
         }
         shapes = out
+    }
+
+    private func loadForms() async {
+        guard forms.isEmpty, let corpus = container.corpus else { return }
+        forms = await corpus.poeticForms()
     }
 
     private func loadPahars() async {
