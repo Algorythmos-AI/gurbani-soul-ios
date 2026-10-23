@@ -16,6 +16,7 @@ struct ConstellationScreen: View {
     @State private var lens = ConstellationLens()
     @State private var asList = false
     @State private var showSky = false
+    @State private var noRaagThisHour = false
     @State private var state: LoadState<ConstellationFocus> = .loading
 
     enum Rank: String, CaseIterable, Identifiable {
@@ -24,6 +25,11 @@ struct ConstellationScreen: View {
     }
 
     private var concepts: [ConceptRow] { container.meta?.concepts ?? [] }
+    /// The Ang-strip bin the lens is narrowed to (nil = all 1,430 Angs).
+    private var selectedBin: Int? {
+        guard lens.angMin > 1 || lens.angMax < 1430 else { return nil }
+        return (lens.angMin - 1) / ConstellationFocus.binWidth
+    }
     /// Large type reads better as a list; the map is still one tap away.
     private var showList: Bool { asList || typeSize.isAccessibilitySize }
 
@@ -56,6 +62,11 @@ struct ConstellationScreen: View {
                 concept = picked
                 showSky = false          // tapping a star in the Sky returns to Focus on that theme
             }
+        }
+        .alert("No raag is attributed to this watch", isPresented: $noRaagThisHour) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("The timing claims name no raag for the current pahar, so the lens stays off.")
         }
         .task { await container.loadMeta() }
         .task(id: LoadKey(concept: concept, lens: lens)) { await load() }
@@ -130,6 +141,13 @@ struct ConstellationScreen: View {
                     }
                 }
             }
+            if container.corpus?.capabilities.hasTiming == true {
+                Section("Time of day") {
+                    Toggle("This hour", isOn: Binding(get: { !lens.raags.isEmpty }, set: { on in
+                        Task { await setThisHour(on) }
+                    }))
+                }
+            }
             Section {
                 Toggle("Refrains only (Rahao)", isOn: $lens.rahaoOnly)
                 Toggle("Brightest stars (5+ themes)", isOn: Binding(
@@ -153,6 +171,7 @@ struct ConstellationScreen: View {
         if let r = lens.raag {
             w.append("Raag " + (container.meta?.raags.first { $0.name == r }?.roman ?? r))
         }
+        if !lens.raags.isEmpty { w.append("this hour") }
         if lens.rahaoOnly { w.append("refrains") }
         if lens.minThemes >= 5 { w.append("5+ themes") }
         return w.joined(separator: " · ")
@@ -165,6 +184,14 @@ struct ConstellationScreen: View {
         let shown = Array((rank == .shared ? f.companions : f.distinctive).prefix(9))
         VStack(alignment: .leading, spacing: Theme.Space.m) {
             caption(f, name: name)
+            if f.angBins.count == ConstellationFocus.binCount && (f.total > 0 || selectedBin != nil) {
+                AngStrip(concept: concept, bins: f.angBins, selected: selectedBin) { bin in
+                    if let bin {
+                        let r = ConstellationFocus.angRange(bin: bin)
+                        lens.angMin = r.lowerBound; lens.angMax = r.upperBound
+                    } else { lens.angMin = 1; lens.angMax = 1430 }
+                }
+            }
             if f.total == 0 {
                 ContentUnavailableView("No verses under this lens", systemImage: "circle.dotted",
                                        description: Text("Try a different voice, raag or filter."))
@@ -173,7 +200,8 @@ struct ConstellationScreen: View {
             } else if showList {
                 ConstellationList(concept: concept, focus: f, shown: shown) { open($0) }
             } else {
-                ConstellationMap(center: concept, solo: f.solo, companions: shown) { open($0) }
+                ConstellationMap(center: concept, solo: f.solo, companions: shown,
+                                 onCentre: { container.present(.themeCard(concept)) }) { open($0) }
                     .frame(height: 380)
                     .accessibilityElement(children: .contain)
                 Text("Nearer stars appear together more often than chance (PPMI); thicker lines share more shabads; larger stars share more verses.")
@@ -194,6 +222,18 @@ struct ConstellationScreen: View {
             }
         }
         .accessibilityElement(children: .combine)
+    }
+
+    /// "This hour": the raags whose attributed primary timing claim names the current watch
+    /// (fixed clock). Claims, never facts — the caption says "this hour", the Raag Clock says why.
+    private func setThisHour(_ on: Bool) async {
+        guard on, let corpus = container.corpus else { lens.raags = []; return }
+        let clock = await corpus.timingClock()
+        let now = Calendar.current.dateComponents([.hour, .minute], from: Date())
+        let pahar = Pahar.paharFromMinutes((now.hour ?? 0) * 60 + (now.minute ?? 0))
+        let raags = Array(Set(clock.primary.filter { $0.pahar == pahar }.compactMap(\.raagName))).sorted()
+        lens.raags = raags
+        if raags.isEmpty { noRaagThisHour = true }
     }
 
     /// nil = the verses that carry the theme alone.
@@ -223,6 +263,7 @@ private struct ConstellationMap: View {
     let center: String
     let solo: Int
     let companions: [ConstellationCompanion]
+    var onCentre: () -> Void
     var onSelect: (String?) -> Void
     @Environment(\.palette) private var palette
 
@@ -284,15 +325,18 @@ private struct ConstellationMap: View {
                     .position(pts[i])
                     .accessibilityLabel("\(ConceptName.display(co.co)): \(co.n) verses carry both \(ConceptName.display(center)) and \(ConceptName.display(co.co)); together in \(co.shabadCount) shabads")
                 }
-                Text(ConceptName.display(center))
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(palette.onAccent)
-                    .lineLimit(1).minimumScaleFactor(0.6)
-                    .frame(width: 72, height: 72)
-                    .background(Circle().fill(palette.accentFill))
-                    .overlay(Circle().strokeBorder(palette.accent, lineWidth: 1.5))
-                    .position(c)
-                    .accessibilityHidden(true)
+                Button(action: onCentre) {
+                    Text(ConceptName.display(center))
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(palette.onAccent)
+                        .lineLimit(1).minimumScaleFactor(0.6)
+                        .frame(width: 72, height: 72)
+                        .background(Circle().fill(palette.accentFill))
+                        .overlay(Circle().strokeBorder(palette.accent, lineWidth: 1.5))
+                }
+                .buttonStyle(.plain)
+                .position(c)
+                .accessibilityLabel("\(ConceptName.display(center)): about this theme")
             }
         }
     }

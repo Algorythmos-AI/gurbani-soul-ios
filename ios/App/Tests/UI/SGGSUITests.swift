@@ -810,6 +810,15 @@ final class SGGSUITests: XCTestCase {
         kaam.tap()
         let kaamCaption = app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "verses carry Kaam")).firstMatch
         XCTAssertTrue(kaamCaption.waitForExistence(timeout: 12), "a Sky star did not focus its theme")
+        // the theme card: the centre star opens the description, the words and where it concentrates
+        app.navigationBars["Constellation"].buttons["View as map"].tap()
+        let centre = app.buttons["Kaam: about this theme"]
+        XCTAssertTrue(centre.waitForExistence(timeout: 12), "the centre star is not a button")
+        centre.tap()
+        XCTAssertTrue(app.navigationBars["Kaam"].waitForExistence(timeout: 12), "the theme card did not open")
+        let terms = app.staticTexts.containing(NSPredicate(format: "label CONTAINS[c] %@", "gurmukhi words that tag it")).firstMatch
+        XCTAssertTrue(terms.waitForExistence(timeout: 8), "the theme card has no terms section")
+        app.navigationBars["Kaam"].buttons["Done"].tap()
     }
 
     /// English layer (personal profile): the English mode pill exists and returns results,
