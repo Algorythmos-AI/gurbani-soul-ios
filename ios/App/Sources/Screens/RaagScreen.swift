@@ -166,7 +166,7 @@ struct RaagScreen: View {
                 if f.voices.count > 5 {
                     Divider()
                     Button(voicesExpanded ? "Show fewer" : "Show all \(String(f.voices.count)) voices") {
-                        withAnimation(Motion.gentle) { voicesExpanded.toggle() }
+                        MotionGate.run(Motion.gentle) { voicesExpanded.toggle() }
                     }
                     .font(.footnote.weight(.medium))
                     .padding(.vertical, 10)
