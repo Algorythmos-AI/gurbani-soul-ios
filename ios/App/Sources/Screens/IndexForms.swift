@@ -56,6 +56,8 @@ enum PoeticFormGroups {
 /// The Forms tab.
 struct IndexFormsTab: View {
     let forms: [PoeticFormEntry]
+    /// False while the read is in flight: show progress, never a false "none".
+    var loaded = true
     let openComposition: (Int) -> Void
 
     @Environment(\.palette) private var palette
@@ -65,11 +67,15 @@ struct IndexFormsTab: View {
         VStack(alignment: .leading, spacing: Theme.Space.l) {
             VStack(alignment: .leading, spacing: Theme.Space.xs) {
                 SectionEyebrow(text: "Forms the headings name", symbol: "text.word.spacing")
-                Text("\(String(groups.count)) forms, in the order the Granth first meets them. Each row is the printed heading it was read from.")
-                    .font(.footnote).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                if !groups.isEmpty {
+                    Text("\(String(groups.count)) forms, in the order the Granth first meets them. Each row is the printed heading it was read from.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
-            if groups.isEmpty {
+            if !loaded {
+                ProgressView().frame(maxWidth: .infinity).padding(.top, Theme.Space.xl)
+            } else if groups.isEmpty {
                 ContentUnavailableView("Forms not in this build", systemImage: "text.word.spacing")
             }
             ForEach(groups) { g in group(g) }

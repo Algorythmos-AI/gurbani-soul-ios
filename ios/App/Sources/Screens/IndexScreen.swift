@@ -30,6 +30,8 @@ struct IndexScreen: View {
     @State private var resumable: [String: Bool] = [:]
     /// The compositions whose printed headings name a poetic form (empty without the form layer).
     @State private var forms: [PoeticFormEntry] = []
+    /// True once the forms read has returned (with rows, or none on a build without the layer).
+    @State private var formsLoaded = false
 
     private let tabs: [(id: String, label: String)] =
         [("compositions", "Compositions"), ("raags", "Raags"), ("forms", "Forms"), ("authors", "Voices")]
@@ -66,7 +68,7 @@ struct IndexScreen: View {
                                           openSection: { container.router.openAng($0.firstAng) },
                                           openClock: { container.router.explorePath.append(Route.clock) })
                         case "forms":
-                            IndexFormsTab(forms: forms) { container.present(.shabad(compId: $0)) }
+                            IndexFormsTab(forms: forms, loaded: formsLoaded) { container.present(.shabad(compId: $0)) }
                         case "authors": authorsList(meta)
                         default: compositionsGrid
                         }
@@ -136,8 +138,9 @@ struct IndexScreen: View {
     }
 
     private func loadForms() async {
-        guard forms.isEmpty, let corpus = container.corpus else { return }
+        guard !formsLoaded, let corpus = container.corpus else { return }
         forms = await corpus.poeticForms()
+        formsLoaded = true
     }
 
     private func loadPahars() async {
