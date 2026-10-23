@@ -1,8 +1,12 @@
 import Foundation
 
-/// The 30 voices of the Granth — static biographical metadata bundled from the web app's
+/// The voices of the Granth — static biographical metadata bundled from the web app's
 /// frontend/public/contributors.json (single source of truth; referenced, not copied).
 /// Dates are historical approximations; volume comes from the DB, never from here.
+///
+/// Roster v2 adds optional fields (honorific `display`, `gurmukhi` name, `chhap`, `context`,
+/// `sources`, `review`, `notable`…). They decode leniently: a missing field or one of an
+/// unexpected shape is nil, so a newer roster never stops this app from loading the list.
 struct Contributor: Decodable, Identifiable, Sendable, Hashable {
     let name: String        // matches authors/author_analytics.author exactly (verified: 30/30)
     let roman: String
@@ -15,10 +19,141 @@ struct Contributor: Decodable, Identifiable, Sendable, Hashable {
     let region: String
     let tradition: String
     let blurb: String
+    // Roster v2 (all optional).
+    let display: String?
+    let gurmukhi: String?
+    let chhap: [String]?
+    let rangeNote: String?
+    let birthplace: String?
+    let context: String?
+    let sources: [Source]?
+    let review: Review?
+    let notable: [Notable]?
     var id: String { name }
+
+    struct Source: Decodable, Sendable, Hashable { let ref: String; let entry: String? }
+    struct Review: Decodable, Sendable, Hashable {
+        let status: String
+        let reviewer: String?
+        let date: String?
+        var isApproved: Bool { status.lowercased() == "approved" }
+    }
+    struct Notable: Decodable, Sendable, Hashable {
+        let title: String
+        let compId: Int?
+        enum CodingKeys: String, CodingKey { case title, compId = "comp_id" }
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case name, roman, kind, seq, born, died, circa, era, region, tradition, blurb
+        case display, gurmukhi, chhap, birthplace, context, sources, review, notable
+        case rangeNote = "range_note"
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        name = try c.decode(String.self, forKey: .name)
+        roman = try c.decode(String.self, forKey: .roman)
+        kind = try c.decode(String.self, forKey: .kind)
+        seq = try c.decodeIfPresent(Int.self, forKey: .seq)
+        born = try c.decodeIfPresent(Int.self, forKey: .born)
+        died = try c.decodeIfPresent(Int.self, forKey: .died)
+        circa = try c.decodeIfPresent(Bool.self, forKey: .circa) ?? false
+        era = try c.decode(String.self, forKey: .era)
+        region = try c.decode(String.self, forKey: .region)
+        tradition = try c.decode(String.self, forKey: .tradition)
+        blurb = try c.decode(String.self, forKey: .blurb)
+        func lenient<T: Decodable>(_ type: T.Type, _ key: CodingKeys) -> T? {
+            (try? c.decodeIfPresent(type, forKey: key)) ?? nil
+        }
+        display = lenient(String.self, .display).flatMap { $0.isEmpty ? nil : $0 }
+        gurmukhi = lenient(String.self, .gurmukhi).flatMap { $0.isEmpty ? nil : $0 }
+        chhap = lenient([String].self, .chhap)
+        rangeNote = lenient(String.self, .rangeNote)
+        birthplace = lenient(String.self, .birthplace)
+        context = lenient(String.self, .context)
+        sources = lenient([Source].self, .sources)
+        review = lenient(Review.self, .review)
+        notable = lenient([Notable].self, .notable)
+    }
+
+    /// A voice the DB carries but the bundled roster does not list yet (a dataset release can
+    /// land before the roster that describes it). Shown with what the DB knows; no dates.
+    init(placeholderFor author: String) {
+        let english = AuthorName(author).english
+        name = author
+        roman = english
+        kind = AuthorName(author).mahala != nil ? "guru"
+            : english.hasPrefix("Bhagat") ? "bhagat" : english.hasPrefix("Bhatt") ? "bhatt" : "gursikh"
+        seq = AuthorName(author).mahala
+        born = nil; died = nil; circa = false
+        era = ""; region = ""; tradition = ""; blurb = ""
+        display = nil; gurmukhi = nil; chhap = nil; rangeNote = nil; birthplace = nil
+        context = nil; sources = nil; review = nil; notable = nil
+    }
 
     /// Sort key for the timeline (birth year; unknowns last).
     var timelineYear: Int { born ?? died ?? 9999 }
+
+    /// The honorific English name: roster v2 `display`, else the stored name without its
+    /// "(M5)" / "(ਭਟ)" suffix ("Bhagat Kabir Ji", "Guru Tegh Bahadur Ji").
+    var displayName: String { display ?? AuthorName(name).english }
+
+    /// The Mahala number for the Gurus, read from the stored name ("(M9)") or the roster `seq`.
+    var mahala: Int? { kind == "guru" ? (AuthorName(name).mahala ?? seq) : nil }
+
+    /// The biographical paragraph: reviewed `context` when the roster has it, else `blurb`.
+    var lifeText: String { context ?? blurb }
+
+    /// True when roster v2 marks this entry's prose as not yet approved by the scholar.
+    var awaitingReview: Bool { review.map { !$0.isApproved } ?? false }
+}
+
+/// The medallion on a voice's card and page. A Guru shows the Mahala in Gurmukhi ("ਮ: ੯"),
+/// every other voice the first letter of their Gurmukhi name. Until roster v2 brings the
+/// Gurmukhi name, a non-Guru voice shows its Latin initial (honorifics dropped).
+enum VoiceMedallion {
+    case gurmukhi(String)
+    case latin(String)
+
+    var text: String {
+        switch self { case .gurmukhi(let s), .latin(let s): return s }
+    }
+    var isGurmukhi: Bool { if case .gurmukhi = self { return true } else { return false } }
+
+    static func of(_ c: Contributor) -> VoiceMedallion {
+        if let m = c.mahala { return .gurmukhi("ਮ: \(gurmukhiNumeral(m))") }
+        if let g = c.gurmukhi, let initial = gurmukhiInitial(g) { return .gurmukhi(initial) }
+        return .latin(latinInitial(c.displayName))
+    }
+
+    /// 9 → "੯", 10 → "੧੦".
+    static func gurmukhiNumeral(_ n: Int) -> String {
+        String(String(n).unicodeScalars.map { s -> Character in
+            guard let d = Int(String(s)) else { return Character(s) }
+            return Character(Unicode.Scalar(0x0A66 + UInt32(d))!)
+        })
+    }
+
+    /// Titles that precede a name in Gurmukhi and are not part of it.
+    private static let gurmukhiHonorifics: Set<String> = ["ਗੁਰੂ", "ਭਗਤ", "ਬਾਬਾ", "ਭਾਈ", "ਭਟ", "ਭੱਟ", "ਸ਼ੇਖ", "ਸੇਖ", "ਸ੍ਰੀ", "ਜੀ", "ਜੀਉ"]
+
+    /// The first letter of the name (its consonant, with a nukta if it carries one).
+    static func gurmukhiInitial(_ name: String) -> String? {
+        let word = name.split(separator: " ").map(String.init).first { !gurmukhiHonorifics.contains($0) }
+        guard let scalars = word?.unicodeScalars, let first = scalars.first,
+              (0x0A00...0x0A7F).contains(first.value) else { return nil }
+        var out = String(first)
+        if scalars.count > 1, scalars[scalars.index(after: scalars.startIndex)].value == 0x0A3C { out.append("\u{0A3C}") }
+        return out
+    }
+
+    private static let latinHonorifics: Set<String> = ["baba", "bhai", "bhagat", "bhatt", "guru", "sant", "sheikh", "the", "ji"]
+
+    static func latinInitial(_ name: String) -> String {
+        let word = name.split(separator: " ").first { !latinHonorifics.contains($0.lowercased()) }
+        return (word ?? Substring(name)).prefix(1).uppercased()
+    }
 }
 
 enum ContributorsStore {
@@ -28,10 +163,12 @@ enum ContributorsStore {
     /// screen shows its designed empty state then, never crashes).
     static func load(bundle: Bundle = .main) -> [Contributor]? {
         guard let url = bundle.url(forResource: "contributors", withExtension: "json"),
-              let data = try? Data(contentsOf: url),
-              let file = try? JSONDecoder().decode(File.self, from: data),
-              !file.contributors.isEmpty
-        else { return nil }
+              let data = try? Data(contentsOf: url) else { return nil }
+        return decode(data)
+    }
+
+    static func decode(_ data: Data) -> [Contributor]? {
+        guard let file = try? JSONDecoder().decode(File.self, from: data), !file.contributors.isEmpty else { return nil }
         return file.contributors
     }
 }

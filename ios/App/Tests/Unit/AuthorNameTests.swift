@@ -4,7 +4,7 @@ import GurbaniSearchKit
 
 /// Contributors labels: full names with a Mahala badge (never a bare "(M5)"), the Gurmukhi
 /// suffix split out for `GurmukhiText` (never inline in English), and inflected counts
-/// ("1 shabad", not "1 shabads"; the Bhatts' Swaiyye, not "0 raags").
+/// ("1 shabad", not "1 shabads"; "Outside the raag sections", not "0 raags").
 final class AuthorNameTests: XCTestCase {
 
     func testGuruNameSplitsIntoFullNameAndMahala() {
@@ -67,9 +67,9 @@ final class AuthorNameTests: XCTestCase {
         XCTAssertEqual(text(VoiceCopy.lines(2, locale: en)), "2 lines")
     }
 
-    func testNoRaagSaysSwaiyyeInsteadOfZeroRaags() {
+    func testNoRaagSaysOutsideTheRaagSections() {
         let bhatt = text(VoiceCopy.summary(lines: 4, shabads: 1, raags: 0, locale: en))
-        XCTAssertEqual(bhatt, "4 lines · 1 shabad · Swaiyye · outside the raag framework")
+        XCTAssertEqual(bhatt, "4 lines · 1 shabad · Outside the raag sections")
         XCTAssertFalse(bhatt.contains("0 raag"))
         XCTAssertEqual(text(VoiceCopy.summary(lines: 230, shabads: 63, raags: 9, locale: en)),
                        "230 lines · 63 shabads · 9 raags")

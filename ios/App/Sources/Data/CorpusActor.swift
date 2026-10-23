@@ -69,6 +69,20 @@ actor CorpusActor {
     func themeCard(concept: String) throws -> ThemeCard? { try db.themeCard(concept: concept) }
     // Insight-Engine deep reads (Lineage profiles, chord, streamgraph, vaar anatomy).
     func authorProfile(_ author: String, full: Bool = false) -> AuthorProfile { db.authorProfile(author, full: full) }
+    // Lineage — Voices of the Granth (counts from `lines`; optional pipeline tables hide when absent).
+    func voiceSummaries() -> [VoiceSummary] { db.voiceSummaries() }
+    func authorRaags(_ author: String) -> [RaagShare] { db.authorRaags(author) }
+    func authorRahao(_ author: String) -> RahaoDeck { db.authorRahao(author) }
+    func authorCompositions(_ author: String, raag: String? = nil) -> [VoiceComposition] {
+        db.authorCompositions(author, raag: raag)
+    }
+    func authorVerses(_ author: String, containing token: String, limit: Int = 3) -> [VoiceVerse] {
+        db.authorVerses(author, containing: token, limit: limit)
+    }
+    func authorFacts(_ author: String) -> AuthorFacts? { db.authorFacts(author) }
+    func authorMentions(_ author: String) -> VoiceMentions { db.authorMentions(author) }
+    func authorDialogues(_ author: String) -> [VoiceDialogue] { db.authorDialogues(author) }
+    func authorEchoes(_ author: String) -> [VoiceEcho] { db.authorEchoes(author) }
     func resonance(minLines: Int = 250, minLift: Double = 1.0, minEdges: Int = 8) -> ResonanceGraph {
         db.resonance(minLines: minLines, minLift: minLift, minEdges: minEdges)
     }

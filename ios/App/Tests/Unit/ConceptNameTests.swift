@@ -16,6 +16,24 @@ final class ConceptNameTests: XCTestCase {
         XCTAssertNotEqual(ConceptName.display("dukh_sukh"), "dukh_sukh".capitalized)
     }
 
+    /// Lineage's signature themes read the label from `concepts.description`, never the slug.
+    func testLabelsComeFromTheDescriptionHead() {
+        XCTAssertEqual(ConceptName.label("hukam", description: "Divine Command/Order — the sovereign will of the Creator"),
+                       "Divine Command/Order")
+        XCTAssertEqual(ConceptName.label("haumai", description: "The ego-self; the primal sense of 'I-ness'"), "The ego-self")
+        XCTAssertEqual(ConceptName.label("patit_pavan",
+                       description: "The purifier of the fallen/sinful (ਪਤਿਤ ਪਾਵਨ); in Gurbani ਪਤਿਤ co-occurs"),
+                       "The purifier of the fallen/sinful", "Gurmukhi is never inlined in an English label")
+        XCTAssertEqual(ConceptName.label("bhavjal", description: "The terrifying world-ocean (ਭਵਜਲੁ / ਭਉਜਲੁ — both spellings)"),
+                       "The terrifying world-ocean")
+        XCTAssertEqual(ConceptName.label("sahaj", description: "Intuitive poise, natural ease, and equipoise of the realised state — x"),
+                       "Intuitive poise")
+        XCTAssertEqual(ConceptName.label("dukh_sukh", description: "The paired poles of suffering (dukh) and ease/peace (sukh) — x"),
+                       "Dukh Sukh", "an over-long head falls back to the slug's display name")
+        XCTAssertEqual(ConceptName.label("naam", description: nil), "Naam")
+        XCTAssertEqual(ConceptName.label("naam", description: ""), "Naam")
+    }
+
     func testDegenerateSlugsDoNotCrash() {
         XCTAssertEqual(ConceptName.display(""), "")
         XCTAssertEqual(ConceptName.display("_a__b_"), "A B")
