@@ -20,6 +20,8 @@ struct IndexScreen: View {
     @State private var registry: [BaniSummary] = []
     /// Raag name → cited primary pahars; empty when this DB carries no timing layer.
     @State private var pahars: [String: [Int]] = [:]
+    /// The Reader's last Ang (its own resume key) — the Ribbon's "you are here".
+    @AppStorage("sggs_last_ang") private var lastAng = 1
 
     private let tabs: [(id: String, label: String)] =
         [("compositions", "Compositions"), ("raags", "Raags"), ("authors", "Voices")]
@@ -34,6 +36,7 @@ struct IndexScreen: View {
             if let meta = container.meta {
                 ScrollView {
                     VStack(alignment: .leading, spacing: Theme.Space.l) {
+                        ribbon(meta)
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: Theme.Space.s) {
                                 ForEach(tabs, id: \.id) { t in
@@ -45,7 +48,7 @@ struct IndexScreen: View {
                         switch tab {
                         case "raags":
                             IndexRaagsTab(map: GranthMap(meta: meta), pahars: pahars,
-                                          openRaag: { container.router.openAng($0.firstAng) },
+                                          openRaag: { openRaag($0, at: $0.firstAng) },
                                           openSection: { container.router.openAng($0.firstAng) })
                         case "authors": authorsList(meta)
                         default: compositionsGrid
@@ -69,6 +72,26 @@ struct IndexScreen: View {
             await loadRegistry()
             await loadPahars()
         }
+    }
+
+    // MARK: the Ribbon
+
+    private func ribbon(_ meta: CorpusMeta) -> some View {
+        let map = GranthMap(meta: meta)
+        return GranthRibbon(layout: RibbonLayout(map: map), raagCount: map.raags.count,
+                            pins: CompositionCatalog.heroes.map(\.ang),
+                            hereAng: lastAng > 1 ? lastAng : nil) { segment, ang in
+            if segment.movement == .raags, let r = map.raags.first(where: { $0.name == segment.name }) {
+                openRaag(r, at: ang)
+            } else {
+                container.router.openAng(ang)
+            }
+        }
+    }
+
+    /// Where a raag opens. The Reader at `ang` for now; the Raag page takes over in the next step.
+    private func openRaag(_ r: RaagRow, at ang: Int) {
+        container.router.openAng(ang)
     }
 
     private func loadRegistry() async {
