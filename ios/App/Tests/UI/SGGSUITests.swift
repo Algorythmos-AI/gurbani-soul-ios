@@ -1501,6 +1501,28 @@ final class SGGSUITests: XCTestCase {
                 return true   // record, never fail
             }
         }
+        // Constellation v2: Focus and the Sky (report-only, like the tabs above)
+        openTab(app, "Explore", expectingNavBar: "Explore")
+        let cons = app.buttons["Constellation"].firstMatch
+        if cons.waitForExistence(timeout: 8) {
+            cons.tap()
+            _ = app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "verses carry Naam")).firstMatch.waitForExistence(timeout: 12)
+            try app.performAccessibilityAudit { @Sendable issue in
+                let el = issue.element.map { "\($0.elementType.rawValue) '\($0.label.prefix(40))'" } ?? "-"
+                log.add("Constellation\t\(issue.auditType.rawValue)\t\(issue.compactDescription)\t\(el)")
+                return true
+            }
+            let sky = app.navigationBars["Constellation"].buttons["See the whole sky"]
+            if sky.waitForExistence(timeout: 8) {
+                sky.tap()
+                _ = app.navigationBars["The whole sky"].waitForExistence(timeout: 12)
+                try app.performAccessibilityAudit { @Sendable issue in
+                    let el = issue.element.map { "\($0.elementType.rawValue) '\($0.label.prefix(40))'" } ?? "-"
+                    log.add("Sky\t\(issue.auditType.rawValue)\t\(issue.compactDescription)\t\(el)")
+                    return true
+                }
+            }
+        }
         let text = (["tab\tauditType\tissue\telement"] + log.all).joined(separator: "\n") + "\n"
         try text.write(toFile: "\(dir)/a11y-audit.txt", atomically: true, encoding: .utf8)
     }
@@ -1645,6 +1667,26 @@ final class SGGSUITests: XCTestCase {
         _ = app.navigationBars["Constellation"].waitForExistence(timeout: 8)
         _ = app.staticTexts["Naam"].waitForExistence(timeout: 8)   // centre bubble rendered
         shot("constellation")
+        shot("constellation-focus")
+        let consCentre = app.buttons["Naam: about this theme"]
+        if consCentre.waitForExistence(timeout: 8) {
+            consCentre.tap()
+            _ = app.navigationBars["Naam"].waitForExistence(timeout: 12)
+            shot("constellation-card")
+            app.navigationBars["Naam"].buttons["Done"].tap()
+        }
+        let consList = app.navigationBars["Constellation"].buttons["View as list"]
+        if consList.waitForExistence(timeout: 8) {
+            consList.tap()
+            let first = app.buttons.containing(NSPredicate(format: "label CONTAINS %@", "verses shared")).firstMatch
+            if first.waitForExistence(timeout: 8) {
+                first.tap()
+                _ = app.buttons.containing(NSPredicate(format: "label BEGINSWITH %@", "Show ")).firstMatch.waitForExistence(timeout: 12)
+                shot("constellation-pair")
+                app.buttons["Done"].firstMatch.tap()
+            }
+            app.navigationBars["Constellation"].buttons["View as map"].tap()
+        }
         let sky = app.navigationBars["Constellation"].buttons["See the whole sky"]
         if sky.waitForExistence(timeout: 8) {
             sky.tap()

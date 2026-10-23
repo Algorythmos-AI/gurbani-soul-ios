@@ -11,6 +11,9 @@ struct VerseCardView: View {
     let translit: String
     let en: String?
     let ang: Int
+    /// Where the verse was found, e.g. "Naam ✦ Haumai" from the Constellation. When set, the card
+    /// names it under the citation and carries the endorsement line.
+    var context: String? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -33,6 +36,14 @@ struct VerseCardView: View {
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(AccentPalette.gold.accentText)
             }
+            if let context, !context.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Constellation · \(context) (a verified word match)")
+                        .font(.system(size: 12)).foregroundStyle(.secondary)
+                    Text("Gurbani Soul · Built by Algorythmos")
+                        .font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
+                }
+            }
         }
         .padding(28)
         .frame(width: 480, alignment: .leading)
@@ -47,9 +58,9 @@ enum VerseCardRenderer {
     /// ImageRenderer resolves them against ITS environment, not the presenting window's —
     /// without this the shared image could silently flip scheme.
     static func render(gurmukhi: String, translit: String, en: String?, ang: Int,
-                       scheme: ColorScheme) -> UIImage? {
+                       context: String? = nil, scheme: ColorScheme) -> UIImage? {
         let renderer = ImageRenderer(content: VerseCardView(
-            gurmukhi: gurmukhi, translit: translit, en: en, ang: ang)
+            gurmukhi: gurmukhi, translit: translit, en: en, ang: ang, context: context)
             .environment(\.colorScheme, scheme))
         renderer.scale = 3
         return renderer.uiImage

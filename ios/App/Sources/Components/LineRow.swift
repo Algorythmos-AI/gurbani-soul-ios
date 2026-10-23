@@ -25,6 +25,8 @@ struct LineRow: View {
     var sourceLabel: String? = nil
     /// Centre the line (the bani reader's gutka layout). Display only; actions are unchanged.
     var centred = false
+    /// Named on the share card (e.g. the Constellation's "Naam ✦ Haumai"); nil on other surfaces.
+    var shareContext: String? = nil
     var onTap: (() -> Void)? = nil
 
     @Environment(\.modelContext) private var modelContext
@@ -79,7 +81,7 @@ struct LineRow: View {
                 // provide line identity falls back to the plain text share (which self-gates).
                 if ang > 0, let img = VerseCardRenderer.render(gurmukhi: gurmukhi, translit: translit,
                                                                en: englishPref ? en : nil, ang: ang,
-                                                               scheme: colorScheme) {
+                                                               context: shareContext, scheme: colorScheme) {
                     presentShareSheet(items: [img])
                 } else {
                     assert(ang > 0 || sourceLabel != nil, "LineRow used without line identity — pass lineId/ang/compId")

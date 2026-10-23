@@ -40,7 +40,7 @@ struct ConstellationSkyScreen: View {
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .background(Ink.base.ignoresSafeArea())
+        .background(Ink.clockFace.ignoresSafeArea())   // the night sky (the Raag dial's surface)
         .navigationTitle("The whole sky")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

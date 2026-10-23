@@ -207,6 +207,7 @@ struct ConstellationScreen: View {
                 ConstellationMap(center: concept, solo: f.solo, companions: shown,
                                  onCentre: { container.present(.themeCard(concept)) }) { open($0) }
                     .frame(height: 380)
+                    .background(RoundedRectangle(cornerRadius: Theme.Radius.card).fill(Ink.clockFace))   // the night sky
                     .accessibilityElement(children: .contain)
                 Text("Nearer stars appear together more often than chance (PPMI); thicker lines share more shabads; larger stars share more verses.")
                     .font(.caption2).foregroundStyle(Ink.muted)
@@ -458,7 +459,7 @@ struct PairSheet: View {
                                 VStack(alignment: .leading, spacing: 4) {
                                     LineRow(gurmukhi: v.gurmukhi, translit: v.translit,
                                             meta: (v.isRahao ? "ਰਹਾਉ · refrain · " : "") + "Ang \(v.ang)",
-                                            lineId: v.id, ang: v.ang, compId: sh.compId) {
+                                            lineId: v.id, ang: v.ang, compId: sh.compId, shareContext: title) {
                                         container.present(.shabad(compId: sh.compId, focusLineId: v.id))
                                     }
                                     Text("Carries " + v.terms.joined(separator: " · "))
