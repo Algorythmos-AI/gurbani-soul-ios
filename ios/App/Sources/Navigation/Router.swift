@@ -227,6 +227,9 @@ final class Router {
                 container.dismissSheetForNavigation()
                 openRaag(value)
             }
+        case "themes":
+            selectedTab = .explore
+            explorePath = NavigationPath([Route.themes])
         case "theme":
             // sggs://theme/<slug>[?term=<Gurmukhi word>&rahao=1]: the theme page, or its verse list
             // when narrowed. A malformed slug is ignored, never queried.

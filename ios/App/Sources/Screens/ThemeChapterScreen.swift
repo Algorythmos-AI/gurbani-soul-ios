@@ -33,6 +33,14 @@ struct ThemeChapterScreen: View {
         .background(Ink.canvas)
         .navigationTitle(name)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if let base {
+                ToolbarItem(placement: .topBarTrailing) {
+                    ShareLink(item: ThemeShare.text(base.row)) { Image(systemName: "square.and.arrow.up") }
+                        .accessibilityLabel("Share this theme")
+                }
+            }
+        }
         .task { await loadBase() }
         .task(id: term) { await loadDetail() }
         .onChange(of: term) { _, _ in showAllSteeped = false; bin = nil }

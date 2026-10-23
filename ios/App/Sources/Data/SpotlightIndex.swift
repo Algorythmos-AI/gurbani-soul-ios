@@ -1,9 +1,11 @@
 import Foundation
 import CoreSpotlight
+import GurbaniSearchKit
 
-/// System-search indexing for SAVED verses only (a user's own bookmarks — never the full 60k
-/// corpus: index size/rebuild cost isn't worth it, and search inside the app is far better).
-/// Verbatim Gurmukhi + Ang citation; tapping a result deep-links to the composition.
+/// System-search indexing for SAVED verses (a user's own bookmarks — never the full 60k corpus:
+/// index size/rebuild cost isn't worth it, and search inside the app is far better), plus the 54
+/// themes (names, headwords and counts only — no verse text). Verbatim Gurmukhi + Ang citation;
+/// tapping a result deep-links to the composition or the theme page.
 enum SpotlightIndex {
     private static let domain = "org.sggs.saved"
 
@@ -45,6 +47,37 @@ enum SpotlightIndex {
             guard !rows.isEmpty else { return }
             CSSearchableIndex.default().indexSearchableItems(
                 rows.map { item(lineId: $0.0, compId: $0.1, gurmukhi: $0.2, translit: $0.3, ang: $0.4) })
+        }
+    }
+
+    // MARK: themes
+
+    private static let themeDomain = "org.sggs.themes"
+
+    static func themeIdentifier(_ concept: String) -> String { "theme-\(concept)" }
+
+    /// The theme slug of a theme result (nil for any other identifier, or a malformed slug).
+    static func themeSlug(fromIdentifier id: String) -> String? {
+        guard id.hasPrefix("theme-") else { return nil }
+        return ConstellationLink.slug(String(id.dropFirst(6)))
+    }
+
+    static func themeItem(_ r: ThemeIndexRow) -> CSSearchableItem {
+        let attrs = CSSearchableItemAttributeSet(contentType: .text)
+        let name = ConceptName.display(r.concept)
+        attrs.title = r.headword.map { "\(name) · \($0)" } ?? name       // the headword verbatim
+        attrs.contentDescription = "\(ThemeIndexModel.gloss(r.description))\n\(r.nVerses.formatted()) verses in Sri Guru Granth Sahib Ji"
+        attrs.keywords = ["Gurbani", "theme", name, r.concept] + r.terms
+        return CSSearchableItem(uniqueIdentifier: themeIdentifier(r.concept), domainIdentifier: themeDomain, attributeSet: attrs)
+    }
+
+    /// Make system search's themes exactly the bundled ones (a theme renamed or dropped by a
+    /// dataset update does not linger). Cheap: 54 small entries, once per launch.
+    static func indexThemes(_ rows: [ThemeIndexRow]) {
+        let items = rows.filter { $0.nVerses > 0 }.map(themeItem)
+        CSSearchableIndex.default().deleteSearchableItems(withDomainIdentifiers: [themeDomain]) { _ in
+            guard !items.isEmpty else { return }
+            CSSearchableIndex.default().indexSearchableItems(items)
         }
     }
 

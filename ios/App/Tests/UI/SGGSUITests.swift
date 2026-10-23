@@ -1549,6 +1549,8 @@ final class SGGSUITests: XCTestCase {
         let naam = app.buttons["theme_naam"].firstMatch
         XCTAssertTrue(naam.waitForExistence(timeout: 12))
         XCTAssertTrue(naam.label.contains("5,672 verses in 2,472 shabads"), "card label: \(naam.label)")
+        XCTAssertTrue(app.descendants(matching: .any)["themes.yours"].firstMatch.waitForExistence(timeout: 8),
+                      "Your themes is on by default")
         attachShot(app, "themes-index")
         let family = app.buttons["The Five Vices"].firstMatch
         if family.waitForExistence(timeout: 5) {

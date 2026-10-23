@@ -4,6 +4,7 @@ struct MoreScreen: View {
     @Environment(AppContainer.self) private var container
     @AppStorage("sggs_saroop") private var saroop = true
     @AppStorage("sggs_translit") private var showTranslit = true
+    @AppStorage(YourThemes.enabledKey) private var yourThemes = true
     @AppStorage("sggs_show_english") private var showEnglish = true
     @AppStorage("sggs_gurmukhi_size") private var gurmukhiSize = 24.0
     @AppStorage("sggs_appearance") private var appearance = "system"
@@ -59,6 +60,15 @@ struct MoreScreen: View {
 
                     Toggle("Show transliteration", isOn: $showTranslit)
                         .accessibilityIdentifier("translitToggle")
+
+                    Toggle(isOn: $yourThemes) {
+                        VStack(alignment: .leading) {
+                            Text("Show Your themes")
+                            Text("On the Themes page, the themes your saved verses carry. Worked out on this iPhone; nothing leaves it.")
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+                    .accessibilityIdentifier("yourThemesToggle")
 
                     if container.corpus?.capabilities.hasEnglish == true {
                         Toggle(isOn: $showEnglish) {

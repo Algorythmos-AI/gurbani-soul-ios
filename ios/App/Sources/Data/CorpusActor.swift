@@ -136,6 +136,7 @@ actor CorpusActor {
     }
     func themeOfTheDay(day: Int) throws -> ThemeOfTheDay? { try db.themeOfTheDay(day: day) }
     func themeTally(lineIds: [Int]) throws -> [ThemeTally] { try db.themeTally(lineIds: lineIds) }
+    func themeMembers(lineIds: [Int]) throws -> [String: Set<Int>] { try db.themeMembers(lineIds: lineIds) }
     /// The themes today's Hukam carries (its verses only, never its headings).
     func hukamThemes(day: Int) throws -> [ThemeTally] {
         let unit = try db.hukamUnit(seed: db.hukamOfTheDaySeed(day: day))

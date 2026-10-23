@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 import GurbaniSearchKit
 
 /// The Themes index: the 54 corpus themes as a living index — today's theme and the themes of
@@ -21,6 +22,9 @@ struct ThemesScreen: View {
     /// Families whose header has scrolled under the bar; the last of them is the current chip.
     /// Updated only when a header crosses the line, never on every scroll frame.
     @State private var passed: Set<String> = []
+    @Environment(\.modelContext) private var modelContext
+    @AppStorage(YourThemes.enabledKey) private var yoursOn = true
+    @State private var yours: YourThemes.Summary?
     @AppStorage("sggs_themes_arrange") private var arrangeRaw = ThemeIndexModel.Arrangement.family.rawValue
     @AppStorage("sggs_themes_layout") private var layoutRaw = ThemeCardView.Style.grid.rawValue
 
@@ -65,6 +69,9 @@ struct ThemesScreen: View {
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in refreshDay() }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in refreshDay() }
         .onChange(of: scenePhase) { _, phase in if phase == .active { refreshDay() } }
+        // saved verses change elsewhere (a Save on any screen): recount on every return here
+        .onAppear { Task { await loadYours() } }
+        .onChange(of: yoursOn) { _, _ in Task { await loadYours() } }
     }
 
     // MARK: the index
@@ -74,6 +81,7 @@ struct ThemesScreen: View {
             .font(.caption).foregroundStyle(Ink.muted)
             .fixedSize(horizontal: false, vertical: true)
         if let today { TodayHero(today: today) }
+        if yoursOn, let yours { YourThemesCard(summary: yours) }
         switch arrangement {
         case .family:
             ForEach(ThemeIndexModel.grouped(rows), id: \.group?.key) { section in
@@ -139,6 +147,12 @@ struct ThemesScreen: View {
             ThemeCardView(row: r, style: typeSize.isAccessibilitySize ? .grid : style)
         }
         .buttonStyle(.pressableCard)
+        .contextMenu {
+            Button {
+                container.router.openConstellation(ConstellationLink(theme: r.concept, with: nil, alone: false))
+            } label: { Label("Open in the Constellation", systemImage: "sparkles") }
+            ShareLink(item: ThemeShare.text(r)) { Label("Share", systemImage: "square.and.arrow.up") }
+        }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(ThemeIndexModel.accessibilitySummary(r))
         .accessibilityAddTraits(.isButton)
@@ -213,6 +227,17 @@ struct ThemesScreen: View {
     }
 
     // MARK: data
+
+    private func loadYours() async {
+        guard yoursOn, let corpus = container.corpus else { yours = nil; return }
+        let saved = ((try? modelContext.fetch(FetchDescriptor<SavedLine>())) ?? []).map {
+            YourThemes.Verse(lineId: $0.lineId, compId: $0.compId, ang: $0.ang, gurmukhi: $0.gurmukhi, translit: $0.translit)
+        }
+        guard let rows = try? await corpus.themeIndex() else { return }
+        let members = saved.count >= YourThemes.minimumSaved ? ((try? await corpus.themeMembers(lineIds: saved.map(\.lineId))) ?? [:]) : [:]
+        yours = YourThemes.summarize(saved: saved, members: members, themes: rows,
+                                     day: HukamOfTheDay.dayNumber(of: Date(), calendar: .current))
+    }
 
     private func load() async {
         guard let corpus = container.corpus else { state = .failed("No database"); return }
@@ -332,5 +357,17 @@ private struct TodayHero: View {
         .padding(Theme.Space.l)
         .background(Ink.card, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
         .overlay(RoundedRectangle(cornerRadius: Theme.Radius.card).strokeBorder(Ink.hairline))
+    }
+}
+
+/// The words a theme is shared with: its name, headword, counts and citation — no verse text, so
+/// nothing of the scripture is ever paraphrased or cut.
+enum ThemeShare {
+    static func text(_ r: ThemeIndexRow) -> String {
+        var head = ConceptName.display(r.concept)
+        if let w = r.headword { head += " · \(w)" }
+        let gloss = ThemeIndexModel.gloss(r.description)
+        return [head, gloss, "\(r.nVerses.formatted()) verses in \(r.nShabads.formatted()) shabads of Sri Guru Granth Sahib Ji",
+                "Gurbani Soul · gurbanisoul.com"].filter { !$0.isEmpty }.joined(separator: "\n")
     }
 }

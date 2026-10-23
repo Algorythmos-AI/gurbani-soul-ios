@@ -282,6 +282,14 @@ final class AppContainer {
     /// Number of voices in the bundled roster (Explore caption).
     let contributorCount: Int? = ContributorsStore.load()?.count
 
+    /// The 54 themes into system search, after the integrity check passes (never from a DB that
+    /// failed it). Failure is silent: Spotlight is a convenience, never a dependency.
+    func indexThemesForSpotlight() async {
+        guard let corpus, integrity?.ok == true, !DebugHooks.isUITest else { return }
+        guard let rows = try? await corpus.themeIndex() else { return }
+        SpotlightIndex.indexThemes(rows)
+    }
+
     func loadMeta() async {
         guard meta == nil, let corpus else { return }
         meta = try? await corpus.meta()
