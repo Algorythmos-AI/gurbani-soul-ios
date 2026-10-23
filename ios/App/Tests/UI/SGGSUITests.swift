@@ -286,6 +286,7 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Amrit Vela"].waitForExistence(timeout: 8), "band title missing")
         let row = app.buttons["bani_japji"].firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 12))
+        for _ in 0..<4 where !row.isHittable { app.swipeUp() }   // the Hukam cards sit above the banis
         row.tap()
         XCTAssertTrue(app.navigationBars["Japji Sahib"].waitForExistence(timeout: 12), "bani reader did not open")
         let mool = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "ੴ ਸਤਿ ਨਾਮੁ ਕਰਤਾ ਪੁਰਖੁ")).firstMatch
@@ -507,6 +508,7 @@ final class SGGSUITests: XCTestCase {
         let app = launchApp(selectSearch: false)
         let row = app.buttons["bani_japji"].firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 12))
+        for _ in 0..<4 where !row.isHittable { app.swipeUp() }   // the Hukam cards sit above the banis
         row.tap()
         XCTAssertTrue(app.navigationBars["Japji Sahib"].waitForExistence(timeout: 12))
         app.buttons["baniOptions"].tap()

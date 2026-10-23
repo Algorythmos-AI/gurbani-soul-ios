@@ -64,12 +64,14 @@ struct SGGSApp: App {
                 if phase == .active {
                     container.flushIfIdle()   // never presents mid-dismiss
                     Task { await container.refreshReminders() }   // re-plan dated reminders on return
+                    Task { await container.refreshWidgetSnapshotIfStale() }   // keep the Hukam days ahead
                 }
             }
             // The dated plan drops "today" once its time has passed, so a time-zone or clock change
             // while the app is open re-plans at once rather than waiting for the next foreground.
             .onReceive(NotificationCenter.default.publisher(for: .NSSystemTimeZoneDidChange)) { _ in
                 Task { await container.refreshReminders() }
+                Task { await container.refreshWidgetSnapshotIfStale() }   // a new local date may need today's verse
             }
             .onReceive(NotificationCenter.default.publisher(for: .NSSystemClockDidChange)) { _ in
                 Task { await container.refreshReminders() }

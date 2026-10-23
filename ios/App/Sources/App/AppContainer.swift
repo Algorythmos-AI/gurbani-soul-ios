@@ -287,6 +287,13 @@ final class AppContainer {
     /// Refresh the <50 KB widget snapshot (App Group JSON): the Hukam of the day for today and
     /// the next two weeks + the fixed-clock pahar→raags table. Widgets NEVER open the corpus DB.
     /// Runs post-launch (after integrity passes) and is cheap enough to run every launch.
+    /// On foreground and time-zone change: rewrite the snapshot only when its Hukam days have run
+    /// low or no longer hold today, so the widget keeps turning without a cold launch.
+    func refreshWidgetSnapshotIfStale() async {
+        guard WidgetStore.load()?.hukamDaysNeedRefresh(now: Date(), calendar: .current) ?? true else { return }
+        await refreshWidgetSnapshot()
+    }
+
     func refreshWidgetSnapshot() async {
         SharedDefaults.migrateFromStandard()   // clock mode + solar coords moved to the App Group
         guard let corpus, integrity?.ok == true else { return }
@@ -297,7 +304,7 @@ final class AppContainer {
         for offset in 0..<WidgetSnapshot.hukamDayCount {
             guard let date = calendar.date(byAdding: .day, value: offset, to: startOfToday),
                   let unit = try? await corpus.hukamOfTheDay(day: HukamOfTheDay.dayNumber(of: date, calendar: calendar)),
-                  let verse = unit.lines.first(where: { !$0.isHeader }) else { continue }
+                  let verse = unit.lines.first(where: { !$0.isHeader }) else { break }   // keep the days contiguous
             // The unit can open before its seed (a Vaar's saloks precede the pauri): cite the
             // composition and line of the verse actually shown, so a tap opens what was read.
             hukamDays.append(HukamDay(date: WidgetSnapshot.dayKey(date, calendar: calendar),

@@ -31,7 +31,7 @@ final class HukamOfTheDayTimelineTests: XCTestCase {
         let now = date(2026, 10, 23, 15, 20, tz: la)
         let snap = snapshot([day("2026-10-23", ang: 1), day("2026-10-24", ang: 2), day("2026-10-25", ang: 3)])
         let s = snap.hukamSchedule(from: now, calendar: calendar(la))
-        XCTAssertEqual(s.map(\.day.ang), [1, 2, 3])
+        XCTAssertEqual(s.map { $0.day.ang }, [1, 2, 3])
         XCTAssertEqual(s[0].date, now, "today's verse shows at once")
         XCTAssertEqual(s[1].date, date(2026, 10, 24, 0, 0, tz: la))
         XCTAssertEqual(s[2].date, date(2026, 10, 25, 0, 0, tz: la))
@@ -50,7 +50,7 @@ final class HukamOfTheDayTimelineTests: XCTestCase {
         let now = date(2026, 10, 25, 8, 0, tz: la)
         let snap = snapshot([day("2026-10-26", ang: 4), day("2026-10-23", ang: 1),
                              day("2026-10-25", ang: 3), day("2026-10-24", ang: 2)])
-        XCTAssertEqual(snap.hukamSchedule(from: now, calendar: calendar(la)).map(\.day.ang), [3, 4])
+        XCTAssertEqual(snap.hukamSchedule(from: now, calendar: calendar(la)).map { $0.day.ang }, [3, 4])
     }
 
     func testNoVerseForTodayMeansNoSchedule() {
@@ -81,10 +81,16 @@ final class HukamOfTheDayTimelineTests: XCTestCase {
         let snap = snapshot([day("2026-10-21", ang: 1), day("2026-10-22", ang: 2), day("2026-10-23", ang: 3),
                              day("2026-10-24", ang: 4), day("2026-10-25", ang: 5)])
         let t = HukamTimeline.build(snapshot: snap, now: now, calendar: calendar(la))
-        XCTAssertEqual(t.entries.map { $0.day?.ang }, [3, 4, 5])
+        XCTAssertEqual(t.entries.map { $0.day?.ang }, [3, 4, 5, nil], "then a closing fallback entry")
+        XCTAssertEqual(t.entries.last?.date, date(2026, 10, 26, 0, 0, tz: la))
         XCTAssertEqual(t.entries[0].date, now)
         XCTAssertEqual(t.entries[1].date, date(2026, 10, 24, 0, 0, tz: la), "tomorrow's verse lands at local midnight")
-        XCTAssertNil(t.refresh, "with days ahead the widget reloads at the end (.atEnd)")
+        XCTAssertEqual(t.refresh, date(2026, 10, 26, 0, 0, tz: la),
+                       "with days ahead the widget reloads at the midnight after the last day, not in a loop on it")
+        // on the last day itself: one entry, and the reload still waits for the next midnight
+        let lastDay = HukamTimeline.build(snapshot: snap, now: date(2026, 10, 25, 9, 0, tz: la), calendar: calendar(la))
+        XCTAssertEqual(lastDay.entries.map { $0.day?.ang }, [5, nil])
+        XCTAssertEqual(lastDay.refresh, date(2026, 10, 26, 0, 0, tz: la))
     }
 
     func testWidgetFallsBackWithoutDays() {
@@ -98,6 +104,33 @@ final class HukamOfTheDayTimelineTests: XCTestCase {
         let empty = HukamTimeline.build(snapshot: nil, now: now, calendar: calendar(la))
         XCTAssertEqual(empty.entries.count, 1)
         XCTAssertNil(empty.entries[0].day)
+    }
+
+    func testANonGregorianCalendarDrawsTheSameDay() {
+        // a reader on the Buddhist or Japanese calendar gets the same day key and verse as anyone else
+        let instant = date(2026, 10, 23, 12, 0, tz: la)
+        for id in [Calendar.Identifier.buddhist, .japanese, .islamicUmmAlQura, .hebrew] {
+            var c = Calendar(identifier: id); c.timeZone = la
+            XCTAssertEqual(WidgetSnapshot.dayKey(instant, calendar: c), "2026-10-23", "\(id)")
+            XCTAssertEqual(HukamOfTheDay.dayNumber(of: instant, calendar: c), 20_749, "\(id)")
+            XCTAssertEqual(WidgetSnapshot.startOfDay(key: "2026-10-24", calendar: c), date(2026, 10, 24, 0, 0, tz: la), "\(id)")
+        }
+    }
+
+    func testTheAppRewritesTheDaysWhenTheyRunLow() {
+        let now = date(2026, 10, 23, 9, 0, tz: la)
+        let cal = calendar(la)
+        func days(from d: Int, count: Int) -> [HukamDay] {
+            (0..<count).map { i in
+                let date = cal.date(byAdding: .day, value: d + i, to: cal.startOfDay(for: now))!
+                return day(WidgetSnapshot.dayKey(date, calendar: cal), ang: i + 1)
+            }
+        }
+        XCTAssertFalse(snapshot(days(from: 0, count: 14)).hukamDaysNeedRefresh(now: now, calendar: cal))
+        XCTAssertFalse(snapshot(days(from: -6, count: 14)).hukamDaysNeedRefresh(now: now, calendar: cal), "8 days still ahead")
+        XCTAssertTrue(snapshot(days(from: -8, count: 14)).hukamDaysNeedRefresh(now: now, calendar: cal), "6 days left")
+        XCTAssertTrue(snapshot(days(from: 1, count: 14)).hukamDaysNeedRefresh(now: now, calendar: cal), "no verse for today")
+        XCTAssertTrue(snapshot(nil).hukamDaysNeedRefresh(now: now, calendar: cal))
     }
 
     func testSnapshotWithoutDaysStillDecodes() throws {

@@ -139,13 +139,15 @@ struct ShabadSheet: View {
                 state = s.lines.isEmpty ? .empty : .loaded(s.lines)
             case .hukam:
                 let h = try await corpus.randomHukam()
-                title = h.lines.first.map { "Hukam · Ang \($0.ang)" } ?? "Hukam"
+                // the Ang of the first verse (a header can sit at the foot of the Ang before)
+                title = (h.lines.first(where: { !$0.isHeader }) ?? h.lines.first).map { "Hukam · Ang \($0.ang)" } ?? "Hukam"
                 openAng = h.lines.first?.ang
                 state = h.lines.isEmpty ? .empty : .loaded(h.lines)
             case .hukamOfTheDay:
                 // the reader's local date, exactly as the widget snapshot computes it
                 let h = try await corpus.hukamOfTheDay(day: HukamOfTheDay.dayNumber(of: Date(), calendar: .current))
-                title = h.lines.first.map { "Hukam of the day · Ang \($0.ang)" } ?? "Hukam of the day"
+                // the first verse's Ang: the same Ang the widget cites
+                title = (h.lines.first(where: { !$0.isHeader }) ?? h.lines.first).map { "Hukam of the day · Ang \($0.ang)" } ?? "Hukam of the day"
                 openAng = h.lines.first?.ang
                 state = h.lines.isEmpty ? .empty : .loaded(h.lines)
             }

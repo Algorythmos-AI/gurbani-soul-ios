@@ -22,9 +22,12 @@ public enum HukamOfTheDay {
         return era * 146_097 + doe - 719_468
     }
 
-    /// The day number of `date` as the reader's calendar sees it.
+    /// The day number of `date` on the reader's local date: `calendar`'s time zone, but always
+    /// Gregorian year/month/day (a Buddhist or Japanese calendar setting must not shift the draw).
     public static func dayNumber(of date: Date, calendar: Calendar = .current) -> Int {
-        let c = calendar.dateComponents([.year, .month, .day], from: date)
+        var gregorian = Calendar(identifier: .gregorian)
+        gregorian.timeZone = calendar.timeZone
+        let c = gregorian.dateComponents([.year, .month, .day], from: date)
         return dayNumber(year: c.year ?? 1970, month: c.month ?? 1, day: c.day ?? 1)
     }
 

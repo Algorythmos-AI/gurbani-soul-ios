@@ -85,7 +85,7 @@ struct HukamProvider: TimelineProvider {
         let snapshot = WidgetStore.load()
         let t = HukamTimeline.build(snapshot: snapshot, now: .now, calendar: .current)
         completion(Timeline(entries: t.entries.map { HukamEntry(date: $0.date, snapshot: snapshot, day: $0.day) },
-                            policy: t.refresh.map { TimelineReloadPolicy.after($0) } ?? .atEnd))
+                            policy: .after(t.refresh)))
     }
 }
 
