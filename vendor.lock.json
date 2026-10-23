@@ -10,7 +10,7 @@
       "version": "1.0.0"
     },
     "platform": {
-      "commit": "2384ba273d1c1ebea851a30ae4568ad327ed9a46",
+      "commit": "0a9f2b899da489e24494f531c11da1ab210c84fd",
       "files": {
         "contract/_meta.json": "d8149b366523353945f54e56010ac94629af295ebe650a2a4d48ef85e14bce82",
         "contract/golden_analytics.ndjson": "70624246ac9f8b54719c5bf50be2235182d15a25f406b308b816b4f78a18c043",
@@ -22,10 +22,10 @@
         "contract/golden_search.ndjson": "f48a3027cc60fc1c0ff5806915f992a5b663107b7ea4c9279864a7e6f36c1055",
         "contract/golden_timing.ndjson": "6f9de023a40374e19b0ad146c8c21e6b3ec3b28f6201eb8f54c2d50dff487216",
         "contract/golden_verify.ndjson": "9383e014e3f50f224f6aff67955120b3a33d951034f9ca41343da98e854ef79d",
-        "docs/brand/tokens.json": "762c1347c7b491e243e07807de58ab305b57fefdeabd3f5c4c00b36a50f8607b",
+        "docs/brand/tokens.json": "483d2c35f04872fb381c114b41056c325f8e7c177b5af66ef9c902420c2434c0",
         "frontend/public/contributors.json": "0e6316d025f65a5b9c15f2a0c68a184935b388da0590fdba410bbd5532e5cf4e"
       },
-      "ref": "v1.4.7",
+      "ref": "0a9f2b899da489e24494f531c11da1ab210c84fd",
       "repository": "Algorythmos-AI/sggs-platform",
       "version": "1.4.7"
     }

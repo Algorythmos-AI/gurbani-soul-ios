@@ -35,6 +35,12 @@ final class BrandTokensParityTests: XCTestCase {
             "status.negative": Ink.negative,
             "status.info": Ink.info,
             "status.special": Ink.special,
+            "themeGroup.divine": ThemeGroupInk.divine,
+            "themeGroup.condition": ThemeGroupInk.condition,
+            "themeGroup.vices": ThemeGroupInk.vices,
+            "themeGroup.path": ThemeGroupInk.path,
+            "themeGroup.virtues": ThemeGroupInk.virtues,
+            "themeGroup.states": ThemeGroupInk.states,
         ]
     }
 
@@ -108,7 +114,7 @@ final class BrandTokensParityTests: XCTestCase {
     }
 
     /// Colour roles: every top-level object whose members are all arrays of strings (surfaces,
-    /// soul, brand and status today). Detected rather than listed, so a colour group added
+    /// soul, brand, status and themeGroup today). Detected rather than listed, so a colour group added
     /// upstream is covered, and has to be mapped, without an edit here.
     private func colourRoles(_ json: [String: Any]) -> [String: [String]] {
         roles(json) { $0 as? [String] }
