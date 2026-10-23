@@ -716,15 +716,6 @@ final class SGGSUITests: XCTestCase {
         attachShot(app, "index_raags_after")
     }
 
-    /// A screenshot kept in the result bundle (CI uploads it), for reviewing a surface without a
-    /// local simulator. Small PNGs; only the Index tests use it.
-    private func attachShot(_ app: XCUIApplication, _ name: String) {
-        let a = XCTAttachment(screenshot: app.screenshot())
-        a.name = name
-        a.lifetime = .keepAlways
-        add(a)
-    }
-
     /// Explore hub → Index, waiting for each step (the glass tab bar can swallow a first tap).
     private func openIndex(_ app: XCUIApplication) {
         openTab(app, "Explore", expectingNavBar: "Explore")
