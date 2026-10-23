@@ -355,14 +355,24 @@ enum CompositionPresentation: Identifiable, Hashable {
     /// `focusLineId`: the verse the sheet scrolls to and highlights (nil = top). Deliberately
     /// NOT part of `id` — `.sheet(item:)` keys on `id`, and a focus change must never re-present.
     case shabad(compId: Int, focusLineId: Int? = nil)
+    /// A fresh draw: a new Hukam unit each time.
     case hukam
-    var id: String { switch self { case .shabad(let c, _): return "shabad-\(c)"; case .hukam: return "hukam" } }
+    /// The Hukam of the day: today's unit, the same one the widget shows.
+    case hukamOfTheDay
+    var id: String {
+        switch self {
+        case .shabad(let c, _): return "shabad-\(c)"
+        case .hukam: return "hukam"
+        case .hukamOfTheDay: return "hukam-today"
+        }
+    }
 }
 
 /// Every root modal, behind ONE `.sheet(item:)`. Identifiable only (associated values needn't be Hashable).
 enum Presentation: Identifiable {
     case shabad(compId: Int, focusLineId: Int? = nil)
     case hukam
+    case hukamOfTheDay
     case trail(TrailStart)
     /// The verses two themes share (or one theme carries alone) — the Constellation's pair sheet.
     case pair(PairRequest)
@@ -377,6 +387,7 @@ enum Presentation: Identifiable {
         switch self {
         case .shabad(let c, _): return "shabad-\(c)"
         case .hukam: return "hukam"
+        case .hukamOfTheDay: return "hukam-today"
         case .trail(let t): return "trail-\(t.id)"
         case .pair(let r): return "pair-\(r.id)"
         case .themeCard(let c): return "theme-card-\(c)"
@@ -389,6 +400,7 @@ enum Presentation: Identifiable {
         switch self {
         case .shabad(let c, let l): return .shabad(compId: c, focusLineId: l)
         case .hukam: return .hukam
+        case .hukamOfTheDay: return .hukamOfTheDay
         default: return nil
         }
     }

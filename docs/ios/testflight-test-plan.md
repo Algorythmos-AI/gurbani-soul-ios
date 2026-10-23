@@ -39,7 +39,12 @@ Run on one physical iPhone before the first build reaches any tester. All must p
 - [ ] Second launch is visibly faster (launch cache hit); About → Integrity shows every check green.
 - [ ] About → Integrity: **Widget App Group available**; diagnostics collected = 0.
 - [ ] Add the Raag-now widget and the Hukam widget to the Home Screen; both render Gurmukhi in Sant Lipi (not a fallback font).
-- [ ] The Hukam of the day widget shows one verse all day, headed "HUKAM OF THE DAY", and a different one after local midnight (or after setting the date a day forward), without opening the app.
+- [ ] **Hukam of the day (device check).** Open the app once, then add the Hukam widget (medium and large).
+  1. It is headed "HUKAM OF THE DAY" and its verse and Ang match Nitnem → "Hukam of the day" and Siri "Today's Hukam".
+  2. Swipe the app away. Settings → General → Date & Time → turn off Set Automatically and move the date one day forward: within a minute the widget shows a different verse, still headed "HUKAM OF THE DAY", without the app being opened. Move the date back: today's verse returns.
+  3. Tap the widget: the shabad opens on the verse shown.
+  4. "Draw a Hukam" (Siri, the Reader's Hukam button, Nitnem → Draw a Hukam) still gives a new unit each time, and "Another" draws again.
+  5. Turn Set Automatically back on.
 - [ ] Safari: `sggs://hukam` opens the app on a Hukam sheet; `sggs://ang/500` lands on Ang 500.
 - [ ] Siri / Shortcuts: "Today's Hukam", "What raag is it now", "Open Ang" (with 1430) all work.
 - [ ] Save a verse; Spotlight finds it by Gurmukhi and by transliteration; tapping opens the verse centred and highlighted.

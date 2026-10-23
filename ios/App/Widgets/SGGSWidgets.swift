@@ -76,25 +76,16 @@ struct HukamProvider: TimelineProvider {
     func placeholder(in context: Context) -> HukamEntry { HukamEntry(date: .now, snapshot: nil) }
     func getSnapshot(in context: Context, completion: @escaping (HukamEntry) -> Void) {
         let snapshot = WidgetStore.load()
-        let today = snapshot?.hukamSchedule(from: .now, calendar: .current).first?.day
-        completion(HukamEntry(date: .now, snapshot: snapshot, day: today))
+        let first = HukamTimeline.build(snapshot: snapshot, now: .now, calendar: .current).entries.first
+        completion(HukamEntry(date: .now, snapshot: snapshot, day: first?.day))
     }
     func getTimeline(in context: Context, completion: @escaping (Timeline<HukamEntry>) -> Void) {
-        let snapshot = WidgetStore.load()
         // The app writes two weeks of days ahead: one entry per local midnight, so the verse
-        // turns at midnight whether or not the app is opened. When the last day is reached,
-        // WidgetKit asks again and the app's latest snapshot carries on from there.
-        let schedule = snapshot?.hukamSchedule(from: .now, calendar: .current) ?? []
-        if !schedule.isEmpty {
-            completion(Timeline(entries: schedule.map { HukamEntry(date: $0.date, snapshot: snapshot, day: $0.day) },
-                                policy: .atEnd))
-            return
-        }
-        // An older snapshot holds one verse: re-read the store after midnight in case the app
-        // has written a newer one by then.
-        let next = Calendar(identifier: .gregorian).nextDate(
-            after: .now, matching: DateComponents(hour: 0, minute: 5), matchingPolicy: .nextTime) ?? .now.addingTimeInterval(86_400)
-        completion(Timeline(entries: [HukamEntry(date: .now, snapshot: snapshot)], policy: .after(next)))
+        // turns at midnight whether or not the app is opened (HukamTimeline, tested in the app).
+        let snapshot = WidgetStore.load()
+        let t = HukamTimeline.build(snapshot: snapshot, now: .now, calendar: .current)
+        completion(Timeline(entries: t.entries.map { HukamEntry(date: $0.date, snapshot: snapshot, day: $0.day) },
+                            policy: t.refresh.map { TimelineReloadPolicy.after($0) } ?? .atEnd))
     }
 }
 

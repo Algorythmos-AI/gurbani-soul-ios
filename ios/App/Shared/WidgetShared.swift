@@ -90,6 +90,28 @@ extension WidgetSnapshot {
     }
 }
 
+/// The Hukam of the day widget's whole timeline decision, shared so tests drive exactly what the
+/// widget runs. With days in the snapshot: one entry per local midnight and a reload after the
+/// last (`refresh == nil`, i.e. `.atEnd`). Without (an older snapshot, or one past its last day):
+/// the single verse, not called today's, re-read after the next 00:05.
+enum HukamTimeline {
+    struct Entry: Equatable {
+        let date: Date
+        /// Today's (or that midnight's) verse; nil means "show the snapshot's single verse".
+        let day: HukamDay?
+    }
+
+    static func build(snapshot: WidgetSnapshot?, now: Date, calendar: Calendar) -> (entries: [Entry], refresh: Date?) {
+        let schedule = snapshot?.hukamSchedule(from: now, calendar: calendar) ?? []
+        if !schedule.isEmpty {
+            return (schedule.map { Entry(date: $0.date, day: $0.day) }, nil)
+        }
+        let next = calendar.nextDate(after: now, matching: DateComponents(hour: 0, minute: 5), matchingPolicy: .nextTime)
+            ?? now.addingTimeInterval(86_400)
+        return ([Entry(date: now, day: nil)], next)
+    }
+}
+
 /// The Nitnem facts a widget needs from the registry (titles, minutes, line counts). Progress
 /// is read separately and live, so the snapshot is rewritten only when the sets/variant/DB change.
 struct NitnemWidgetData: Codable, Sendable {

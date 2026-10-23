@@ -73,8 +73,8 @@ are banis it does contain. `ios/tests/test_ios_gates.py` lints this section.)
 > • Nitnem also includes banis from Sri Dasam Granth and Ardaas, shown as a separate, clearly labelled layer — never presented as part of Sri Guru Granth Sahib Ji.
 >
 > HUKAM
+> • The Hukam of the day: one Hukam unit for the whole day, in the app, by Siri ("Today's Hukam") and on a widget that turns at midnight.
 > • Draw a complete Hukam unit any time.
-> • The Hukam of the day widget: one verse for the whole day, verbatim with its Ang, and a new one at midnight.
 >
 > WIDGETS
 > • Hukam, the current raag watch, and today's Nitnem on your Home Screen.

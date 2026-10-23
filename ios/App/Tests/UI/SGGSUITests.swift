@@ -1376,6 +1376,27 @@ final class SGGSUITests: XCTestCase {
         app.buttons["Done"].tap()
     }
 
+    /// sggs://hukam/today (Siri's "Today's Hukam") opens the Hukam of the day: the widget's unit,
+    /// the same every time today and with no redraw. The Nitnem home card opens the same one.
+    func testHukamOfTheDayIsTheSameEachTime() {
+        let app = launchApp()
+        XCTAssertTrue(app.navigationBars["Search"].waitForExistence(timeout: 20))
+        let bar = app.navigationBars.matching(NSPredicate(format: "identifier BEGINSWITH %@", "Hukam of the day")).firstMatch
+        XCUIDevice.shared.system.open(URL(string: "sggs://hukam/today")!)
+        XCTAssertTrue(bar.waitForExistence(timeout: 15), "sggs://hukam/today did not open the Hukam of the day")
+        let first = bar.identifier
+        XCTAssertTrue(first.contains("Ang"), "the title cites its Ang: \(first)")
+        XCTAssertFalse(app.buttons["Another"].exists, "the day's Hukam must not offer a redraw")
+        app.buttons["Done"].tap()
+        openTab(app, "Nitnem", expectingNavBar: "Nitnem")
+        let card = app.buttons["hukamOfTheDay"].firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 12), "Hukam of the day card missing")
+        card.tap()
+        XCTAssertTrue(bar.waitForExistence(timeout: 15), "the card did not open the Hukam of the day")
+        XCTAssertEqual(bar.identifier, first, "the card and the link must open the same day's Hukam")
+        app.buttons["Done"].tap()
+    }
+
     // MARK: Reader & Shabad UX pass
 
     /// Tapping a verse opens its composition scrolled to THAT verse; "Open Ang N in Reader" lands

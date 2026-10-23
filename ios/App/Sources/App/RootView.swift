@@ -57,7 +57,7 @@ struct RootView: View {
                 .onDisappear { container.sheetHostDidDisappear() }
                 .sheet(item: $c.presentation, onDismiss: { container.flushPendingPresentation() }) { p in
                     switch p {
-                    case .shabad, .hukam: ShabadSheet(presentation: p.composition ?? .hukam)
+                    case .shabad, .hukam, .hukamOfTheDay: ShabadSheet(presentation: p.composition ?? .hukam)
                     case .trail(let start): TrailScreen(start: start)
                     case .pair(let request): PairSheet(request: request)
                     case .themeCard(let concept): ThemeCardSheet(concept: concept)

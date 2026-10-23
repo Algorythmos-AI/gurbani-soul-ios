@@ -125,7 +125,8 @@ final class Router {
     ///   sggs://ang/1430[?line=Y] · sggs://theme/naam · sggs://shabad/123[?line=Y] ·
     ///   sggs://search?q=mercy · sggs://clock (optional /<raag-roman>) · sggs://nitnem ·
     ///   sggs://bani/<key>[?variant=] · sggs://composition/<key>[?variant=] ·
-    ///   sggs://constellation[?theme=naam&with=haumai | &alone=1]
+    ///   sggs://constellation[?theme=naam&with=haumai | &alone=1] ·
+    ///   sggs://hukam (a fresh draw) · sggs://hukam/today (the Hukam of the day)
     /// `line` lands on that verse (scrolled + highlighted). Out-of-range/malformed values are
     /// ignored (never crash on a hostile URL).
     func handle(_ url: URL, container: AppContainer) {
@@ -169,7 +170,8 @@ final class Router {
                 container.present(.shabad(compId: c, focusLineId: line))
             }
         case "hukam":
-            container.present(.hukam)
+            // sggs://hukam draws afresh; sggs://hukam/today opens the Hukam of the day (the widget's verse)
+            container.present(value == "today" ? .hukamOfTheDay : .hukam)
         case "constellation":
             let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
             func q(_ k: String) -> String? { items.first(where: { $0.name == k })?.value.flatMap(ConstellationLink.slug) }

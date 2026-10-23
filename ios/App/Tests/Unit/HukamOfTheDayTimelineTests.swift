@@ -14,8 +14,8 @@ final class HukamOfTheDayTimelineTests: XCTestCase {
         var c = Calendar(identifier: .gregorian); c.timeZone = tz; return c
     }
 
-    private func date(_ y: Int, _ mo: Int, _ d: Int, _ h: Int, _ mi: Int, tz: TimeZone) -> Date {
-        calendar(tz).date(from: DateComponents(year: y, month: mo, day: d, hour: h, minute: mi))!
+    private func date(_ y: Int, _ mo: Int, _ d: Int, _ h: Int, _ mi: Int, _ s: Int = 0, tz: TimeZone) -> Date {
+        calendar(tz).date(from: DateComponents(year: y, month: mo, day: d, hour: h, minute: mi, second: s))!
     }
 
     private func day(_ key: String, ang: Int) -> HukamDay {
@@ -70,6 +70,34 @@ final class HukamOfTheDayTimelineTests: XCTestCase {
         XCTAssertEqual(WidgetSnapshot.startOfDay(key: "2026-10-24", calendar: calendar(la)), date(2026, 10, 24, 0, 0, tz: la))
         XCTAssertNil(WidgetSnapshot.startOfDay(key: "not a day", calendar: calendar(la)))
         XCTAssertEqual(day("2026-10-23", ang: 13).url, URL(string: "sggs://shabad/130?line=1300"))
+    }
+
+    // MARK: the widget's own timeline (HukamTimeline is exactly what HukamProvider returns)
+
+    func testWidgetTurnsAtMidnightWithoutTheApp() {
+        // 30 seconds to midnight, and the app was last opened days ago: the next entry is
+        // tomorrow's verse at 00:00, and WidgetKit reloads only after the last day
+        let now = date(2026, 10, 23, 23, 59, 30, tz: la)
+        let snap = snapshot([day("2026-10-21", ang: 1), day("2026-10-22", ang: 2), day("2026-10-23", ang: 3),
+                             day("2026-10-24", ang: 4), day("2026-10-25", ang: 5)])
+        let t = HukamTimeline.build(snapshot: snap, now: now, calendar: calendar(la))
+        XCTAssertEqual(t.entries.map { $0.day?.ang }, [3, 4, 5])
+        XCTAssertEqual(t.entries[0].date, now)
+        XCTAssertEqual(t.entries[1].date, date(2026, 10, 24, 0, 0, tz: la), "tomorrow's verse lands at local midnight")
+        XCTAssertNil(t.refresh, "with days ahead the widget reloads at the end (.atEnd)")
+    }
+
+    func testWidgetFallsBackWithoutDays() {
+        let now = date(2026, 10, 23, 15, 0, tz: la)
+        for snap in [snapshot(nil), snapshot([day("2026-10-01", ang: 9)])] {
+            let t = HukamTimeline.build(snapshot: snap, now: now, calendar: calendar(la))
+            XCTAssertEqual(t.entries, [HukamTimeline.Entry(date: now, day: nil)],
+                           "an older or stale snapshot shows its single verse, never as today's")
+            XCTAssertEqual(t.refresh, date(2026, 10, 24, 0, 5, tz: la), "and is re-read just after midnight")
+        }
+        let empty = HukamTimeline.build(snapshot: nil, now: now, calendar: calendar(la))
+        XCTAssertEqual(empty.entries.count, 1)
+        XCTAssertNil(empty.entries[0].day)
     }
 
     func testSnapshotWithoutDaysStillDecodes() throws {
