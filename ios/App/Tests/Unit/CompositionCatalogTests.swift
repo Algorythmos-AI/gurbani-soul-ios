@@ -62,6 +62,8 @@ final class CompositionCatalogTests: XCTestCase {
 
     /// "Next" walks the curated rail and stops at the end — it never wraps round to the start.
     func testNextHeroWalksTheRailAndStopsAtTheEnd() {
+        XCTAssertEqual(CompositionCatalog.heroes.first?.key, "japji", "the rail opens where the Granth opens")
+        XCTAssertEqual(CompositionCatalog.nextHero(after: "japji", variant: "")?.key, "sukhmani")
         XCTAssertEqual(CompositionCatalog.nextHero(after: "sukhmani", variant: "")?.key, "asa_di_vaar")
         XCTAssertEqual(CompositionCatalog.nextHero(after: "asa_di_vaar", variant: "printed")?.key, "anand")
         let last = CompositionCatalog.heroes.last!

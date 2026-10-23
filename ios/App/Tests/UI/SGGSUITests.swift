@@ -692,6 +692,39 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Index"].waitForExistence(timeout: 10))
     }
 
+    /// The Index reads in the Granth's own order: the banis before the raags, the 31 raags as
+    /// cards that each name their place in the saroop, then the banis after the raags. Japji
+    /// Sahib leads the composition rail.
+    func testIndexFollowsTheSaroop() {
+        let app = launchApp(selectSearch: false)
+        openIndex(app)
+        let japji = app.buttons["composition_japji"].firstMatch
+        XCTAssertTrue(japji.waitForExistence(timeout: 12), "Japji Sahib must lead the composition rail")
+        attachShot(app, "index_compositions")
+
+        app.buttons["index_raags"].firstMatch.tap()
+        XCTAssertTrue(app.staticTexts["BEFORE THE RAAGS"].waitForExistence(timeout: 10), "opening movement missing")
+        attachShot(app, "index_raags_top")
+        let gauri = app.buttons["raag_gauri"].firstMatch
+        for _ in 0..<6 where !(gauri.exists && gauri.isHittable) { app.swipeUp() }
+        XCTAssertTrue(gauri.waitForExistence(timeout: 8), "Raag Gauri card missing")
+        XCTAssertTrue(gauri.label.contains("Angs 151–346"), "the card must name its Angs: \(gauri.label)")
+        attachShot(app, "index_raags_grid")
+        let after = app.staticTexts["AFTER THE RAAGS"].firstMatch
+        for _ in 0..<12 where !(after.exists && after.isHittable) { app.swipeUp() }
+        XCTAssertTrue(after.waitForExistence(timeout: 8), "closing movement missing")
+        attachShot(app, "index_raags_after")
+    }
+
+    /// A screenshot kept in the result bundle (CI uploads it), for reviewing a surface without a
+    /// local simulator. Small PNGs; only the Index tests use it.
+    private func attachShot(_ app: XCUIApplication, _ name: String) {
+        let a = XCTAttachment(screenshot: app.screenshot())
+        a.name = name
+        a.lifetime = .keepAlways
+        add(a)
+    }
+
     /// Explore hub → Index, waiting for each step (the glass tab bar can swallow a first tap).
     private func openIndex(_ app: XCUIApplication) {
         openTab(app, "Explore", expectingNavBar: "Explore")

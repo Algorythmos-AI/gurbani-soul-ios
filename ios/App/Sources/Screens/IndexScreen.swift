@@ -1,29 +1,33 @@
 import SwiftUI
 import GurbaniSearchKit
 
-/// Browse the Granth — native parity with the web /browse: a Major-Compositions rail, then
-/// pill-switched Raags / Banis & Sections / Voices (meta-driven). Stack-less: pushed inside the
-/// Explore NavigationStack.
+/// Browse the Granth in its own order. Pill-switched: Compositions (the hero rail and the
+/// registry shelf), Raags (the banis before the raags, the 31 raags, the banis after them) and
+/// Voices. Stack-less: pushed inside the Explore NavigationStack.
 ///
 /// A major composition opens its OWN reader (`Route.composition`, pushed on this same stack) so
 /// Sukhmani Sahib reads as one work — cover, contents, saved position — instead of dropping the
-/// Ang reader mid-page. Raags, sections and voices still jump the Reader to their first Ang, and
-/// so does a composition when this DB profile carries no bani registry.
+/// Ang reader mid-page. Raags, sections and voices jump the Reader to their first Ang, and so
+/// does a composition when this DB profile carries no bani registry.
 struct IndexScreen: View {
     @Environment(AppContainer.self) private var container
     @Environment(\.palette) private var palette
-    @State private var tab = "compositions"
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    /// The open pill survives leaving and returning to the Index (and state restoration).
+    @SceneStorage("index_tab") private var tab = "compositions"
     /// The bani registry — summary rows only, one query, never any lines. Loaded before the grid
     /// renders so a tap can't race it; empty when this profile has no registry.
     @State private var registry: [BaniSummary] = []
+    /// Raag name → cited primary pahars; empty when this DB carries no timing layer.
+    @State private var pahars: [String: [Int]] = [:]
 
-    /// The raag count comes from the DB's `raags` table (31 in the certified corpus).
-    private func tabs(_ meta: CorpusMeta) -> [(id: String, label: String)] {
-        [("compositions", "Compositions"), ("raags", "The \(String(meta.raags.count)) Raags"),
-         ("sections", "Banis & Sections"), ("authors", "Voices")]
+    private let tabs: [(id: String, label: String)] =
+        [("compositions", "Compositions"), ("raags", "Raags"), ("authors", "Voices")]
+
+    private var columns: [GridItem] {
+        let n = dynamicTypeSize.isAccessibilitySize ? 1 : 2
+        return Array(repeating: GridItem(.flexible(), spacing: Theme.Space.m, alignment: .top), count: n)
     }
-
-    private let columns = [GridItem(.flexible(), spacing: Theme.Space.m), GridItem(.flexible())]
 
     var body: some View {
         Group {
@@ -32,15 +36,17 @@ struct IndexScreen: View {
                     VStack(alignment: .leading, spacing: Theme.Space.l) {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: Theme.Space.s) {
-                                ForEach(tabs(meta), id: \.id) { t in
+                                ForEach(tabs, id: \.id) { t in
                                     ModePill(title: t.label, isSelected: tab == t.id,
                                              accessibilityID: "index_\(t.id)") { tab = t.id }
                                 }
                             }
                         }
                         switch tab {
-                        case "raags": raagsGrid(meta)
-                        case "sections": sectionsList(meta)
+                        case "raags":
+                            IndexRaagsTab(map: GranthMap(meta: meta), pahars: pahars,
+                                          openRaag: { container.router.openAng($0.firstAng) },
+                                          openSection: { container.router.openAng($0.firstAng) })
                         case "authors": authorsList(meta)
                         default: compositionsGrid
                         }
@@ -58,11 +64,15 @@ struct IndexScreen: View {
         .task {
             await container.loadMeta()
             await loadRegistry()
+            await loadPahars()
         }
         // The reading rings come from `container.nitnem`, which is @Observable — they refresh
         // themselves when a composition reader writes a position. This only retries the registry
         // when the DB was not open yet on first appearance (a cold launch straight into Explore).
-        .task(id: container.corpus == nil) { await loadRegistry() }
+        .task(id: container.corpus == nil) {
+            await loadRegistry()
+            await loadPahars()
+        }
     }
 
     private func loadRegistry() async {
@@ -70,17 +80,25 @@ struct IndexScreen: View {
         registry = await corpus.banis().banis
     }
 
+    private func loadPahars() async {
+        guard pahars.isEmpty, let corpus = container.corpus, corpus.capabilities.hasTiming else { return }
+        pahars = GranthMap.primaryPahars(await corpus.timingClock())
+    }
+
     // MARK: compositions — the hero rail
 
     private var compositionsGrid: some View {
-        VStack(alignment: .leading, spacing: Theme.Space.l) {
+        let heroes = CompositionCatalog.heroes
+        return VStack(alignment: .leading, spacing: Theme.Space.l) {
             VStack(alignment: .leading, spacing: Theme.Space.s) {
                 Text("MAJOR COMPOSITIONS")
                     .font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
                     .accessibilityAddTraits(.isHeader)
+                // The opening bani spans the row: the rail starts where the Granth starts.
+                if let lead = heroes.first { heroCard(lead, featured: true) }
                 LazyVGrid(columns: columns, spacing: Theme.Space.m) {
-                    ForEach(CompositionCatalog.heroes) { hero in
-                        heroCard(hero)
+                    ForEach(heroes.dropFirst()) { hero in
+                        heroCard(hero, featured: false)
                     }
                 }
             }
@@ -110,12 +128,12 @@ struct IndexScreen: View {
     /// One hero card. Titles and reading facts come from the registry when it resolves, so the
     /// card and the screen it opens always agree; the curated text is the no-registry fallback.
     @ViewBuilder
-    private func heroCard(_ hero: CompositionCatalog.Hero) -> some View {
+    private func heroCard(_ hero: CompositionCatalog.Hero, featured: Bool) -> some View {
         let summary = CompositionCatalog.resolve(hero, in: registry)
         let label = accessibilityLabel(hero, summary)
         if let summary {
             NavigationLink(value: Route.composition(key: hero.key, variant: hero.variant)) {
-                heroCardBody(hero, summary)
+                heroCardBody(hero, summary, featured: featured)
             }
             .buttonStyle(.pressableCard)
             .accessibilityElement(children: .combine)
@@ -125,7 +143,7 @@ struct IndexScreen: View {
             // No registry in this DB profile (or the key is missing): the card still works,
             // exactly as it always did, by opening the composition's first Ang.
             Button { container.router.openAng(hero.ang) } label: {
-                heroCardBody(hero, nil)
+                heroCardBody(hero, nil, featured: featured)
             }
             .buttonStyle(.pressableCard)
             .accessibilityElement(children: .combine)
@@ -134,11 +152,11 @@ struct IndexScreen: View {
         }
     }
 
-    private func heroCardBody(_ hero: CompositionCatalog.Hero, _ summary: BaniSummary?) -> some View {
+    private func heroCardBody(_ hero: CompositionCatalog.Hero, _ summary: BaniSummary?, featured: Bool) -> some View {
         Card {
             VStack(alignment: .leading, spacing: Theme.Space.xs) {
                 HStack(alignment: .top) {
-                    GurmukhiText(verbatim: summary?.titleGm ?? hero.gm, size: 20)
+                    GurmukhiText(verbatim: summary?.titleGm ?? hero.gm, size: featured ? 24 : 20)
                     Spacer(minLength: Theme.Space.xs)
                     // The ring appears only once there IS something to show — an empty ring on
                     // every card would read as a checkbox and clutter a browsing surface.
@@ -154,17 +172,20 @@ struct IndexScreen: View {
                     .font(.footnote.weight(.medium)).italic()
                     .foregroundStyle(palette.accentText)
                     .fixedSize(horizontal: false, vertical: true)
-                Text(meta(hero, summary))
+                Text(place(hero))
                     .font(.caption2).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+                if let m = summary?.estimatedMinutes {
+                    MinutesChip(minutes: m)
+                }
             }
         }
     }
 
-    private func meta(_ hero: CompositionCatalog.Hero, _ summary: BaniSummary?) -> String {
-        var parts = ["Ang \(String(hero.ang))", hero.raag]
-        if let m = summary?.estimatedMinutes { parts.append("about \(m) min") }
-        return parts.joined(separator: " · ")
+    /// Where the work sits: "Ang 262 · Raag Gauri". Reading time is a separate chip so the line
+    /// never breaks mid-phrase ("about / 15 min").
+    private func place(_ hero: CompositionCatalog.Hero) -> String {
+        hero.raag.isEmpty ? "Ang \(String(hero.ang))" : "Ang \(String(hero.ang)) · \(hero.raag)"
     }
 
     private func accessibilityLabel(_ hero: CompositionCatalog.Hero, _ summary: BaniSummary?) -> String {
@@ -172,50 +193,10 @@ struct IndexScreen: View {
         let pct = Int(container.nitnem.fraction(for: summary.id, total: summary.nLines) * 100)
         let progress = container.nitnem.isCompleted(summary.id) ? "read today"
             : (pct > 0 ? "\(pct) percent read" : "not started")
-        return "\(summary.titleEn) — read the composition. \(meta(hero, summary)). \(progress)."
-    }
-
-    // MARK: raags
-
-    private func raagsGrid(_ meta: CorpusMeta) -> some View {
-        LazyVGrid(columns: columns, spacing: Theme.Space.m) {
-            ForEach(meta.raags) { r in
-                Button { container.router.openAng(r.firstAng) } label: {
-                    Card {
-                        VStack(alignment: .leading, spacing: Theme.Space.xs) {
-                            GurmukhiText(verbatim: r.name, size: 20)
-                            Text("Ang \(String(r.firstAng))")
-                                .font(.caption2).foregroundStyle(.secondary)
-                        }
-                    }
-                }
-                .buttonStyle(.pressableCard)
-                .accessibilityLabel("Raag \(r.name), from Ang \(r.firstAng)")
-            }
-        }
-    }
-
-    // MARK: banis & sections
-
-    private func sectionsList(_ meta: CorpusMeta) -> some View {
-        VStack(spacing: Theme.Space.s) {
-            ForEach(meta.sections) { s in
-                Button { container.router.openAng(s.firstAng) } label: {
-                    Card {
-                        HStack {
-                            GurmukhiText(verbatim: s.name, size: 18)
-                            Spacer()
-                            Text("Ang \(String(s.firstAng))")
-                                .font(.caption).foregroundStyle(.secondary)
-                            Image(systemName: "chevron.right")
-                                .font(.caption2).foregroundStyle(.tertiary)
-                        }
-                    }
-                }
-                .buttonStyle(.pressableCard)
-                .accessibilityLabel("\(s.name), from Ang \(s.firstAng)")
-            }
-        }
+        var parts = ["\(summary.titleEn) — read the composition", place(hero)]
+        if let m = summary.estimatedMinutes { parts.append("about \(m) minutes") }
+        parts.append(progress)
+        return parts.joined(separator: ". ") + "."
     }
 
     // MARK: voices
@@ -239,5 +220,21 @@ struct IndexScreen: View {
                 .accessibilityLabel("\(a.name), \(a.nLines) lines, from Ang \(a.firstAng)")
             }
         }
+    }
+}
+
+/// "≈ 15 min" — a reading-time chip on the raised surface.
+struct MinutesChip: View {
+    let minutes: Int
+    var body: some View {
+        Label("\(String(minutes)) min", systemImage: "clock")
+            .labelStyle(.titleAndIcon)
+            .font(.caption2.weight(.medium)).monospacedDigit()
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, Theme.Space.s).padding(.vertical, 3)
+            .background(Ink.raised, in: Capsule())
+            .overlay(Capsule().strokeBorder(Ink.hairline))
+            .padding(.top, 2)
+            .accessibilityHidden(true)
     }
 }

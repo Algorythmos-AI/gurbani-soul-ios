@@ -26,12 +26,16 @@ enum CompositionCatalog {
         var id: String { variant.isEmpty ? key : "\(key)/\(variant)" }
     }
 
-    /// The curated rail, in the order the Index has always shown it.
+    /// The curated rail. Japji Sahib leads because it opens the Granth (Ang 1–8); its progress
+    /// identity is the same `japji` row the Nitnem surface reads, so one reading counts once.
+    /// The rest keep the order the Index has always shown.
     static let heroes: [Hero] = [
+        Hero(key: "japji", variant: "", gm: "ਜਪੁਜੀ ਸਾਹਿਬ", roman: "Japji Sahib",
+             ang: 1, raag: "The opening bani"),
         Hero(key: "sukhmani", variant: "", gm: "ਸੁਖਮਨੀ ਸਾਹਿਬ", roman: "Sukhmani Sahib",
              ang: 262, raag: "Raag Gauri"),
         // The Vaar as printed (Ang 462–475), not the kirtan interleave the Nitnem list carries.
-        Hero(key: "asa_di_vaar", variant: "printed", gm: "ਆਸਾ ਕੀ ਵਾਰ", roman: "Asa Ki Vaar",
+        Hero(key: "asa_di_vaar", variant: "printed", gm: "ਆਸਾ ਕੀ ਵਾਰ", roman: "Asa Di Vaar",
              ang: 462, raag: "Raag Asa"),
         Hero(key: "anand", variant: "", gm: "ਅਨੰਦੁ ਸਾਹਿਬ", roman: "Anand Sahib",
              ang: 917, raag: "Raag Ramkali"),
