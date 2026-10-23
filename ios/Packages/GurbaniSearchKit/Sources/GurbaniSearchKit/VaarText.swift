@@ -47,8 +47,12 @@ public struct VaarLine: Sendable, Equatable, Identifiable {
     public let ang: Int
     public let isHeader: Bool
     public let gurmukhi: String
-    public init(id: Int, ang: Int, isHeader: Bool, gurmukhi: String) {
+    /// Reading aid (corpus `translit`), never scripture.
+    public let translit: String
+    public let compId: Int
+    public init(id: Int, ang: Int, isHeader: Bool, gurmukhi: String, translit: String = "", compId: Int = 0) {
         self.id = id; self.ang = ang; self.isHeader = isHeader; self.gurmukhi = gurmukhi
+        self.translit = translit; self.compId = compId
     }
 }
 

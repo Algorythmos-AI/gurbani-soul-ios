@@ -61,14 +61,16 @@ extension SQLiteCandidateSource {
 
         var lines: [VaarLine] = []
         var ls: OpaquePointer?
-        guard sqlite3_prepare_v2(handle, "SELECT id, ang, is_header, gurmukhi FROM lines WHERE id BETWEEN ? AND ? ORDER BY id",
+        guard sqlite3_prepare_v2(handle, "SELECT id, ang, is_header, gurmukhi, translit, comp_id FROM lines WHERE id BETWEEN ? AND ? ORDER BY id",
                                  -1, &ls, nil) == SQLITE_OK else { return nil }
         sqlite3_bind_int64(ls, 1, Int64(lo))
         sqlite3_bind_int64(ls, 2, Int64(hi))
         while stepRow(ls, failed: &failed) {
             lines.append(VaarLine(id: Int(sqlite3_column_int64(ls, 0)), ang: Int(sqlite3_column_int64(ls, 1)),
                                   isHeader: sqlite3_column_int64(ls, 2) != 0,
-                                  gurmukhi: sqlite3_column_text(ls, 3).map { String(cString: $0) } ?? ""))
+                                  gurmukhi: sqlite3_column_text(ls, 3).map { String(cString: $0) } ?? "",
+                                  translit: sqlite3_column_text(ls, 4).map { String(cString: $0) } ?? "",
+                                  compId: Int(sqlite3_column_int64(ls, 5))))
         }
         sqlite3_finalize(ls)
         guard !failed else { return nil }
