@@ -119,6 +119,7 @@ struct RouteDestination: View {
         case .bani(let key): BaniReaderScreen(key: key)
         case .composition(let key, let variant):
             BaniReaderScreen(key: key, variantOverride: variant.isEmpty ? nil : variant, context: .explore)
+        case .raag(let name): RaagScreen(raag: name)
         }
     }
 }

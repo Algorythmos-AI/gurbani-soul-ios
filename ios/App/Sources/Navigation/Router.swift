@@ -24,6 +24,8 @@ enum Route: Hashable {
     /// variant explicitly (the Index asks for a specific form, e.g. Asa Di Vaar as printed) and
     /// reads in the Explore context, so it never offers the Nitnem band's "next" or "Back to Nitnem".
     case composition(key: String, variant: String)
+    /// One raag's page (Explore → Index), by its corpus Gurmukhi name.
+    case raag(String)
 }
 
 /// Where a bani reader was opened from. Decides only the closing chrome — the scripture, the
@@ -112,6 +114,25 @@ final class Router {
         explorePath = NavigationPath([Route.index, Route.composition(key: key, variant: variant)])
     }
 
+    /// A raag's page, pushed on top of the Index inside Explore. `value` is a deep-link slug
+    /// ("gauri", "nat-narayan"), the corpus roman ("gaurhee"), or the Gurmukhi name; anything
+    /// that names no raag is ignored (never pushed, never queried).
+    func openRaag(_ value: String) {
+        guard let name = Router.raagName(value) else { return }
+        selectedTab = .explore
+        explorePath = NavigationPath([Route.index, Route.raag(name)])
+    }
+
+    /// Resolves a raag deep-link value to its corpus Gurmukhi name, without the DB: the 31 names
+    /// are fixed (GranthNames), so a cold-launch link resolves before the corpus opens.
+    static func raagName(_ value: String) -> String? {
+        if GranthNames.raags[value] != nil { return value }
+        let known = GranthNames.raags.keys.map { (name: $0, roman: String?.none) }
+        if let hit = GranthNames.raagName(forSlug: value, in: known) { return hit }
+        return GranthNames.romanToRaag[value.lowercased().replacingOccurrences(of: "-", with: " ")
+            .replacingOccurrences(of: "_", with: " ")]
+    }
+
     /// Same allowlist as the API: lowercase ascii, digits, underscore, 1–32 chars.
     static func isValidBaniKey(_ key: String) -> Bool {
         !key.isEmpty && key.count <= 32 && key.allSatisfy { ("a"..."z").contains($0) || ("0"..."9").contains($0) || $0 == "_" }
@@ -125,6 +146,7 @@ final class Router {
     ///   sggs://ang/1430[?line=Y] · sggs://theme/naam · sggs://shabad/123[?line=Y] ·
     ///   sggs://search?q=mercy · sggs://clock (optional /<raag-roman>) · sggs://nitnem ·
     ///   sggs://bani/<key>[?variant=] · sggs://composition/<key>[?variant=] ·
+    ///   sggs://raag/<slug> (gauri, nat-narayan, or the corpus roman) ·
     ///   sggs://constellation[?theme=naam&with=haumai | &alone=1] ·
     ///   sggs://hukam (a fresh draw) · sggs://hukam/today (the Hukam of the day)
     /// `line` lands on that verse (scrolled + highlighted). Out-of-range/malformed values are
@@ -160,6 +182,9 @@ final class Router {
             }
         case "composition":
             openComposition(key: value, variant: variant ?? "")
+        case "raag":
+            container.dismissSheetForNavigation()
+            openRaag(value)
         case "theme":
             if !value.isEmpty {
                 selectedTab = .explore

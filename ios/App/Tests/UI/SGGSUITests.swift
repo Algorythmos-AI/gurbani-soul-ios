@@ -721,6 +721,50 @@ final class SGGSUITests: XCTestCase {
         attachShot(app, "index_raags_after")
     }
 
+    /// A raag card opens that raag's own page on the Explore stack: its place in the saroop, its
+    /// voices, the forms its headings name, its Vaars, and its cited traditional hour. Back
+    /// returns to the Index.
+    func testRaagPageFromTheIndex() {
+        let app = launchApp(selectSearch: false)
+        openIndex(app)
+        app.buttons["index_raags"].firstMatch.tap()
+        let ramkali = app.buttons["raag_ramkali"].firstMatch
+        for _ in 0..<10 where !(ramkali.exists && ramkali.isHittable) { app.swipeUp() }
+        XCTAssertTrue(ramkali.waitForExistence(timeout: 8), "Ramkali card missing")
+        ramkali.tap()
+        XCTAssertTrue(app.navigationBars["Raag Ramkali"].waitForExistence(timeout: 12), "the Raag page did not open")
+        XCTAssertTrue(tab(app, "Explore").isSelected, "a raag page lives inside Explore")
+        XCTAssertTrue(app.buttons["raagBegin"].firstMatch.waitForExistence(timeout: 8))
+        XCTAssertTrue(app.buttons["raagBegin"].firstMatch.label.contains("Ang 876"), "Ramkali begins at Ang 876")
+        XCTAssertTrue(app.staticTexts["VOICES IN THIS RAAG"].waitForExistence(timeout: 8))
+        attachShot(app, "raag_ramkali_top")
+        let vaars = app.staticTexts["ITS 3 VAARS"].firstMatch
+        for _ in 0..<8 where !(vaars.exists && vaars.isHittable) { app.swipeUp() }
+        XCTAssertTrue(vaars.waitForExistence(timeout: 8), "Ramkali carries three Vaars")
+        XCTAssertTrue(app.staticTexts["FORMS IN THIS RAAG"].exists, "the forms section is missing")
+        attachShot(app, "raag_ramkali_forms")
+        let clock = app.buttons["raagOpenClock"].firstMatch
+        for _ in 0..<6 where !(clock.exists && clock.isHittable) { app.swipeUp() }
+        XCTAssertTrue(app.staticTexts["TRADITIONAL TIME"].exists, "the cited hour section is missing")
+        attachShot(app, "raag_ramkali_time")
+
+        app.navigationBars["Raag Ramkali"].buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(app.navigationBars["Index"].waitForExistence(timeout: 10), "Back must return to the Index")
+    }
+
+    /// sggs://raag/<slug> opens the Raag page on top of the Index, from a familiar name or the
+    /// corpus roman; an unknown slug changes nothing.
+    func testRaagDeepLink() {
+        let app = launchApp()
+        XCUIDevice.shared.system.open(URL(string: "sggs://raag/gauri")!)
+        XCTAssertTrue(app.navigationBars["Raag Gauri"].waitForExistence(timeout: 15), "sggs://raag/gauri did not open")
+        attachShot(app, "raag_gauri")
+        app.navigationBars["Raag Gauri"].buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(app.navigationBars["Index"].waitForExistence(timeout: 10), "a raag link sits on top of the Index")
+        XCUIDevice.shared.system.open(URL(string: "sggs://raag/maalee-gaurhaa")!)
+        XCTAssertTrue(app.navigationBars["Raag Mali Gaura"].waitForExistence(timeout: 15), "the corpus roman did not resolve")
+    }
+
     /// Explore hub → Index, waiting for each step (the glass tab bar can swallow a first tap).
     private func openIndex(_ app: XCUIApplication) {
         openTab(app, "Explore", expectingNavBar: "Explore")

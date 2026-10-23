@@ -67,6 +67,27 @@ final class GranthMapTests: XCTestCase {
         XCTAssertNil(GranthNames.raagName(forSlug: "not-a-raag", in: pairs))
     }
 
+    func testRomanTableMatchesTheDB() throws {
+        let m = try meta()
+        XCTAssertEqual(GranthNames.romanToRaag.count, m.raags.count)
+        for r in m.raags { XCTAssertEqual(GranthNames.romanToRaag[try XCTUnwrap(r.roman)], r.name) }
+    }
+
+    @MainActor
+    func testRaagDeepLinkValuesResolveWithoutTheDB() {
+        XCTAssertEqual(Router.raagName("gauri"), "ਗਉੜੀ")
+        XCTAssertEqual(Router.raagName("Gauri"), "ਗਉੜੀ")
+        XCTAssertEqual(Router.raagName("gaurhee"), "ਗਉੜੀ", "the corpus roman (Raag Clock form)")
+        XCTAssertEqual(Router.raagName("maalee-gaurhaa"), "ਮਾਲੀ ਗਉੜਾ")
+        XCTAssertEqual(Router.raagName("mali-gaura"), "ਮਾਲੀ ਗਉੜਾ")
+        XCTAssertEqual(Router.raagName("nat-narayan"), "ਨਟ")
+        XCTAssertEqual(Router.raagName("sri-raag"), "ਸਿਰੀਰਾਗੁ")
+        XCTAssertEqual(Router.raagName("ਰਾਮਕਲੀ"), "ਰਾਮਕਲੀ")
+        for bad in ["", "x", "../etc", "gauri;drop", String(repeating: "a", count: 200)] {
+            XCTAssertNil(Router.raagName(bad), bad)
+        }
+    }
+
     func testPrimaryPaharsKeepOnlyPrimaryClaimsInRange() {
         func claim(_ raag: String, _ type: String, _ p: Int?) -> TimingClaim {
             TimingClaim(raagName: raag, roman: nil, firstAng: nil, seq: nil, claimType: type, pahar: p,
