@@ -57,3 +57,16 @@ final class VaarProgressTests: XCTestCase {
                       "UI tests wipe vaar progress, so the vault must seal it first")
     }
 }
+
+final class VaarReaderRowIdTests: XCTestCase {
+    func testRowIdsNeverCollideOrOverflow() {
+        XCTAssertNil(VaarReaderScreen.unitIndex(fromRowId: VaarReaderScreen.headingRowId))
+        XCTAssertNil(VaarReaderScreen.unitIndex(fromRowId: VaarReaderScreen.endRowId))
+        XCTAssertNil(VaarReaderScreen.unitIndex(fromRowId: 3302), "a line id is not a unit row")
+        for i in [0, 1, 109] {
+            XCTAssertEqual(VaarReaderScreen.unitIndex(fromRowId: VaarReaderScreen.unitRowId(i)), i)
+            XCTAssertLessThan(VaarReaderScreen.unitRowId(i), 0)
+        }
+        XCTAssertNotEqual(VaarReaderScreen.headingRowId, VaarReaderScreen.endRowId)
+    }
+}

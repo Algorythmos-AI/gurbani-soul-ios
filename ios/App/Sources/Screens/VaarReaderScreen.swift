@@ -53,7 +53,10 @@ struct VaarReaderScreen: View {
     /// Row ids: corpus line ids for lines (the scroll position IS the reading position), negative
     /// ids for the chrome rows so they can never collide with a line.
     static let headingRowId = -1
-    static func unitRowId(_ index: Int) -> Int { -(index + 2) }
+    static let endRowId = -3
+    static func unitRowId(_ index: Int) -> Int { -(index + 10) }
+    /// The unit index a chrome row id names, nil for the heading / end rows and for line ids.
+    static func unitIndex(fromRowId id: Int) -> Int? { id <= -10 ? -id - 10 : nil }
 
     private func units(_ t: VaarText) -> [VaarTextUnit] { onlyPauris ? t.pauris : t.units }
 
@@ -62,7 +65,8 @@ struct VaarReaderScreen: View {
         return ScrollView {
             LazyVStack(alignment: .center, spacing: Theme.Space.s) {
                 heading(t).id(Self.headingRowId)
-                ForEach(shown) { u in
+                ForEach(Array(shown.enumerated()), id: \.element.id) { k, u in
+                    if k > 0, shown[k - 1].lastAng != u.firstAng { angMark(u.firstAng) }
                     unitHead(u).id(Self.unitRowId(u.index))
                     ForEach(Array(u.verse.enumerated()), id: \.element.id) { k, line in
                         if k > 0, line.ang != u.verse[k - 1].ang { angMark(line.ang) }
@@ -71,7 +75,7 @@ struct VaarReaderScreen: View {
                             .id(line.id)
                     }
                 }
-                ending(s, t).padding(.top, Theme.Space.xl).id(Int.min)
+                ending(s, t).padding(.top, Theme.Space.xl).id(Self.endRowId)
             }
             .scrollTargetLayout()
             .padding()
@@ -161,7 +165,11 @@ struct VaarReaderScreen: View {
                 .font(.footnote).foregroundStyle(.secondary)
             if let next = nextVaarId {
                 Button {
-                    container.router.explorePath.append(Route.vaarReader(id: next, paurisOnly: onlyPauris, line: nil))
+                    // replace this reader rather than stacking one reader per Vaar
+                    var path = container.router.explorePath
+                    if !path.isEmpty { path.removeLast() }
+                    path.append(Route.vaarReader(id: next, paurisOnly: onlyPauris, line: nil))
+                    container.router.explorePath = path
                 } label: {
                     Label("Next Vaar", systemImage: "arrow.right")
                         .font(.subheadline.weight(.semibold))
@@ -216,7 +224,8 @@ struct VaarReaderScreen: View {
     private func currentUnit(_ t: VaarText) -> VaarTextUnit? {
         guard let id = positionId else { return nil }
         if id == Self.headingRowId { return nil }
-        if id < 0 { let idx = -id - 2; return t.units.indices.contains(idx) ? t.units[idx] : nil }
+        if id == Self.endRowId { return t.units.last }
+        if id < 0 { return Self.unitIndex(fromRowId: id).flatMap { t.units.indices.contains($0) ? t.units[$0] : nil } }
         return t.unitIndex(containing: id).map { t.units[$0] }
     }
 
