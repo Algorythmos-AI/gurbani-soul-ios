@@ -215,14 +215,14 @@ public enum VaarStructure {
                 guard closing.contains(pauriNo) else { return nil }
                 number = pauriNo
             }
-            let named = label.flatMap { author(ofLabel: $0.gurmukhi) }
-            let author: String?
+            let named = label.flatMap { Self.author(ofLabel: $0.gurmukhi) }
+            let voice: String?
             if kind == .pauri {
-                author = named ?? pauriAuthor
+                voice = named ?? pauriAuthor
             } else {
-                author = named ?? hints.first { range.contains($0.firstLineId) && $0.kind == "salok" }?.author
+                voice = named ?? hints.first { range.contains($0.firstLineId) && $0.kind == "salok" }?.author
             }
-            units.append(VaarTextUnit(index: k, kind: kind, pauriNo: number, label: label, author: author, lines: slice))
+            units.append(VaarTextUnit(index: k, kind: kind, pauriNo: number, label: label, author: voice, lines: slice))
         }
         guard pauriNo > 0 else { return nil }
         return VaarText(vaarId: vaarId, heading: heading, dhuni: heading.first { isDhuni($0.gurmukhi) }, units: units)
