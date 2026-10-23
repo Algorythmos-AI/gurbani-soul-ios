@@ -226,6 +226,28 @@ enum Ink {
     static let special = Color(light: 0x6D3FBF, dark: 0xB79AF2, lightHC: 0x58309C, darkHC: 0xCDB6F7)
 }
 
+// MARK: - Theme groups
+
+/// One colour per theological group of the 54 corpus themes (Themes, Constellation): a star, a
+/// chip or a legend swatch says which family a theme belongs to. Equal to docs/brand/tokens.json
+/// `themeGroup.*` in all four legs (BrandTokensParityTests). Every leg clears 4.5:1 on every
+/// surface, so a group colour may also label text; none is red or brand gold, so the centre of a
+/// constellation stays Soul Gold and no red sits beside Gurmukhi.
+enum ThemeGroupInk {
+    /// The Divine Reality (kesri).
+    static let divine = Color(light: 0x9C4D10, dark: 0xF2A060, lightHC: 0x7A3A0A, darkHC: 0xF8BC8A)
+    /// The Human Condition & Illusions (earth).
+    static let condition = Color(light: 0x6B5440, dark: 0xCDB39A, lightHC: 0x523F2F, darkHC: 0xDEC9B3)
+    /// The Five Vices (plum, never red).
+    static let vices = Color(light: 0x7B3F91, dark: 0xD7A0EA, lightHC: 0x5F2F71, darkHC: 0xE5BDF2)
+    /// The Path & Praxis (teal).
+    static let path = Color(light: 0x1D6B67, dark: 0x62CEC4, lightHC: 0x14524F, darkHC: 0x8ADDD5)
+    /// Virtues & Divine Attributes (leaf).
+    static let virtues = Color(light: 0x3E6A1E, dark: 0xA6D47A, lightHC: 0x2F5216, darkHC: 0xBEE29C)
+    /// Spiritual States (sky).
+    static let states = Color(light: 0x1F62A6, dark: 0x8EC2F5, lightHC: 0x174D84, darkHC: 0xB0D5F8)
+}
+
 // MARK: - Elevation
 
 /// Shadow tokens. Dark mode intentionally has NO shadow — cards get an Ink.hairline
