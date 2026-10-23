@@ -22,6 +22,10 @@ struct IndexScreen: View {
     @State private var pahars: [String: [Int]] = [:]
     /// The Reader's last Ang (its own resume key) — the Ribbon's "you are here".
     @AppStorage("sggs_last_ang") private var lastAng = 1
+    /// Each hero's printed rhythm (by `Hero.id`), read once from its verbatim markers.
+    @State private var shapes: [String: CompositionShape] = [:]
+    /// Find in Index.
+    @State private var query = ""
 
     private let tabs: [(id: String, label: String)] =
         [("compositions", "Compositions"), ("raags", "Raags"), ("authors", "Voices")]
@@ -36,6 +40,11 @@ struct IndexScreen: View {
             if let meta = container.meta {
                 ScrollView {
                     VStack(alignment: .leading, spacing: Theme.Space.l) {
+                      if !query.trimmingCharacters(in: .whitespaces).isEmpty {
+                        IndexFindResults(query: query, meta: meta, registry: registry,
+                                         openRaag: { openRaag($0, at: $0.firstAng) },
+                                         openAng: { container.router.openAng($0) })
+                      } else {
                         ribbon(meta)
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: Theme.Space.s) {
@@ -54,6 +63,7 @@ struct IndexScreen: View {
                         case "authors": authorsList(meta)
                         default: compositionsGrid
                         }
+                      }
                     }
                     .padding(Theme.Space.l)
                     .appAnimation(Motion.gentle, value: tab)
@@ -65,6 +75,8 @@ struct IndexScreen: View {
             }
         }
         .navigationTitle("Index")
+        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .automatic),
+                    prompt: "Find a raag, bani or voice")
         // One load, in order; each step is a no-op once its data is in (re-appearing costs
         // nothing). The reading rings come from `container.nitnem`, which is @Observable, so they
         // refresh themselves when a composition reader writes a position.
@@ -72,6 +84,7 @@ struct IndexScreen: View {
             await container.loadMeta()
             await loadRegistry()
             await loadPahars()
+            await loadShapes()
         }
     }
 
@@ -100,6 +113,19 @@ struct IndexScreen: View {
         registry = await corpus.banis().banis
     }
 
+    /// The heroes' outlines, read one bani at a time (the largest, Sukhmani, is ~2,000 lines).
+    /// Only the reduced shape is kept; the lines are dropped as soon as it is computed.
+    private func loadShapes() async {
+        guard shapes.isEmpty, !registry.isEmpty, let corpus = container.corpus else { return }
+        var out: [String: CompositionShape] = [:]
+        for hero in CompositionCatalog.heroes where CompositionCatalog.resolve(hero, in: registry) != nil {
+            if let bani = await corpus.bani(key: hero.key, variant: hero.variant) {
+                out[hero.id] = CompositionShape(bani: bani)
+            }
+        }
+        shapes = out
+    }
+
     private func loadPahars() async {
         guard pahars.isEmpty, let corpus = container.corpus, corpus.capabilities.hasTiming else { return }
         pahars = GranthMap.primaryPahars(await corpus.timingClock())
@@ -110,6 +136,7 @@ struct IndexScreen: View {
     private var compositionsGrid: some View {
         let heroes = CompositionCatalog.heroes
         return VStack(alignment: .leading, spacing: Theme.Space.l) {
+            if let c = continueTarget { continueCard(c) }
             VStack(alignment: .leading, spacing: Theme.Space.s) {
                 Text("MAJOR COMPOSITIONS")
                     .font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
@@ -178,14 +205,13 @@ struct IndexScreen: View {
                 HStack(alignment: .top) {
                     GurmukhiText(verbatim: summary?.titleGm ?? hero.gm, size: featured ? 24 : 20)
                     Spacer(minLength: Theme.Space.xs)
-                    // The ring appears only once there IS something to show — an empty ring on
-                    // every card would read as a checkbox and clutter a browsing surface.
-                    if let summary {
-                        let done = container.nitnem.isCompleted(summary.id)
+                    if let summary, container.nitnem.isCompleted(summary.id) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.body).foregroundStyle(palette.accent)
+                    } else if let summary, shapes[hero.id] == nil {
+                        // No outline yet (or none to draw): the ring, once there is progress.
                         let frac = container.nitnem.fraction(for: summary.id, total: summary.nLines)
-                        if done || frac > 0 {
-                            ProgressRing(fraction: frac, done: done).frame(width: 22, height: 22)
-                        }
+                        if frac > 0 { ProgressRing(fraction: frac, done: false).frame(width: 22, height: 22) }
                     }
                 }
                 Text(summary?.titleEn ?? hero.roman)
@@ -195,11 +221,74 @@ struct IndexScreen: View {
                 Text(place(hero))
                     .font(.caption2).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+                if let summary, let shape = shapes[hero.id] {
+                    let seq = container.nitnem.progress(for: summary.id)?.lastSeq
+                    StructureStrip(shape: shape, seq: (seq ?? 0) > 0 ? seq : nil,
+                                   completed: container.nitnem.isCompleted(summary.id))
+                        .padding(.top, 4)
+                    if let caption = shapeCaption(shape, summary) {
+                        Text(caption).font(.caption2).foregroundStyle(.secondary).monospacedDigit()
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
                 if let m = summary?.estimatedMinutes {
                     MinutesChip(minutes: m)
                 }
             }
         }
+    }
+
+    /// "24 ashtapadis", or "Ashtapadi 5 of 24" once begun.
+    private func shapeCaption(_ shape: CompositionShape, _ summary: BaniSummary) -> String? {
+        guard let unit = shape.unit, !shape.steps.isEmpty else { return nil }
+        let n = shape.steps.count
+        if !container.nitnem.isCompleted(summary.id),
+           let seq = container.nitnem.progress(for: summary.id)?.lastSeq, seq > 0,
+           let k = shape.stepNumber(at: seq) {
+            return "\(String(unit.dropLast()).capitalized) \(String(k)) of \(String(n))"
+        }
+        return "\(String(n)) \(unit)"
+    }
+
+    // MARK: continue
+
+    /// The composition the reader most recently left part-way through (not finished today),
+    /// among the ones this Index offers.
+    private var continueTarget: BaniSummary? {
+        let offered = CompositionCatalog.heroes.compactMap { CompositionCatalog.resolve($0, in: registry) }
+            + CompositionCatalog.more(from: registry)
+        return offered
+            .filter { !container.nitnem.isCompleted($0.id) && container.nitnem.fraction(for: $0.id, total: $0.nLines) > 0 }
+            .max { (container.nitnem.progress(for: $0.id)?.lastReadAt ?? .distantPast)
+                    < (container.nitnem.progress(for: $1.id)?.lastReadAt ?? .distantPast) }
+    }
+
+    private func continueCard(_ b: BaniSummary) -> some View {
+        let pct = Int((container.nitnem.fraction(for: b.id, total: b.nLines) * 100).rounded())
+        let hero = CompositionCatalog.heroes.first { CompositionCatalog.resolve($0, in: registry)?.id == b.id }
+        let detail = hero.flatMap { h in shapes[h.id].flatMap { shapeCaption($0, b) } }
+        return NavigationLink(value: Route.composition(key: b.key, variant: hero?.variant ?? b.variant)) {
+            HStack(spacing: Theme.Space.m) {
+                VStack(alignment: .leading, spacing: 3) {
+                    SectionEyebrow(text: "Continue reading", symbol: "bookmark")
+                    Text(b.titleEn).font(Brand.heading(.headline)).foregroundStyle(.primary)
+                    GurmukhiText(verbatim: b.titleGm, size: 17)
+                    Text([detail, "\(String(pct))% read"].compactMap { $0 }.joined(separator: " · "))
+                        .font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                }
+                Spacer(minLength: Theme.Space.s)
+                Image(systemName: "arrow.right.circle.fill")
+                    .font(.title2).foregroundStyle(palette.accent)
+            }
+            .padding(Theme.Space.l)
+            .background(Ink.card, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
+            .overlay(RoundedRectangle(cornerRadius: Theme.Radius.card).strokeBorder(palette.accent.opacity(0.55)))
+        }
+        .buttonStyle(.pressableCard)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Continue reading \(b.titleEn). \([detail, "\(pct) percent read"].compactMap { $0 }.joined(separator: ", ")).")
+        .accessibilityAddTraits(.isButton)
+        .accessibilityIdentifier("index_continue")
     }
 
     /// Where the work sits: "Ang 262 · Raag Gauri". Reading time is a separate chip so the line
@@ -214,6 +303,7 @@ struct IndexScreen: View {
         let progress = container.nitnem.isCompleted(summary.id) ? "read today"
             : (pct > 0 ? "\(pct) percent read" : "not started")
         var parts = ["\(summary.titleEn) — read the composition", place(hero)]
+        if let shape = shapes[hero.id], let c = shapeCaption(shape, summary) { parts.append(c) }
         if let m = summary.estimatedMinutes { parts.append("about \(m) minutes") }
         parts.append(progress)
         return parts.joined(separator: ". ") + "."

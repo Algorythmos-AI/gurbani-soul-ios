@@ -765,6 +765,42 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Raag Mali Gaura"].waitForExistence(timeout: 15), "the corpus roman did not resolve")
     }
 
+    /// A composition left part-way surfaces as "Continue reading" at the top of the Index and
+    /// resumes in one tap; its card shows where the reader is in its printed rhythm.
+    func testIndexContinueCardResumes() {
+        let app = launchApp(selectSearch: false)   // SGGS_UITEST starts with no progress
+        openIndex(app)
+        XCTAssertFalse(app.buttons["index_continue"].exists, "nothing is in progress yet")
+        app.buttons["composition_sukhmani"].firstMatch.tap()
+        XCTAssertTrue(app.navigationBars["Sukhmani Sahib"].waitForExistence(timeout: 15))
+        app.buttons["Next ashtapadi"].firstMatch.tap()
+        app.buttons["Next ashtapadi"].firstMatch.tap()
+        app.navigationBars["Sukhmani Sahib"].buttons.element(boundBy: 0).tap()
+        let resume = app.buttons["index_continue"].firstMatch
+        XCTAssertTrue(resume.waitForExistence(timeout: 10), "the Continue card did not appear")
+        XCTAssertTrue(resume.label.contains("Sukhmani Sahib"), resume.label)
+        XCTAssertTrue(resume.label.contains("Ashtapadi 3 of 24"), "the card names the step: \(resume.label)")
+        attachShot(app, "index_continue")
+        resume.tap()
+        XCTAssertTrue(app.navigationBars["Sukhmani Sahib"].waitForExistence(timeout: 15), "Continue did not resume")
+    }
+
+    /// Find in Index: a familiar name, the corpus roman and Gurmukhi all find the raag.
+    func testFindInIndex() {
+        let app = launchApp(selectSearch: false)
+        openIndex(app)
+        let field = app.searchFields.firstMatch
+        if !field.waitForExistence(timeout: 4) { app.swipeDown() }
+        XCTAssertTrue(field.waitForExistence(timeout: 8), "the Index has no find field")
+        field.tap()
+        field.typeText("raamakalee")
+        let hit = app.buttons.containing(NSPredicate(format: "label BEGINSWITH %@", "Raag Ramkali")).firstMatch
+        XCTAssertTrue(hit.waitForExistence(timeout: 8), "the corpus roman did not find Ramkali")
+        attachShot(app, "index_find")
+        hit.tap()
+        XCTAssertTrue(app.navigationBars["Raag Ramkali"].waitForExistence(timeout: 12))
+    }
+
     /// Explore hub → Index, waiting for each step (the glass tab bar can swallow a first tap).
     private func openIndex(_ app: XCUIApplication) {
         openTab(app, "Explore", expectingNavBar: "Explore")
