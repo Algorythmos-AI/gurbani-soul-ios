@@ -91,6 +91,20 @@ final class VaarStructureTests: XCTestCase {
         XCTAssertEqual(t.units[0].author, "Guru Arjan Dev Ji (M5)")
     }
 
+    func testMalformedHintsNeverCrash() {
+        let rows: [(Bool, String)] = [
+            (true, "ਟੇਸਟ ਕੀ ਵਾਰ"), (false, "ਇਕ ॥"), (false, "ਦੋ ॥੧॥"), (false, "ਤਿੰਨ ॥"), (false, "ਚਾਰ ॥੨॥"),
+        ]
+        // duplicated and out-of-order starts (a broken vaar_units) must still build or refuse — never trap
+        let hints = [VaarUnitHint(kind: "pauri", firstLineId: 103, author: nil),
+                     VaarUnitHint(kind: "pauri", firstLineId: 101, author: nil),
+                     VaarUnitHint(kind: "pauri", firstLineId: 103, author: nil)]
+        let t = VaarStructure.build(vaarId: 1, pauriAuthor: nil, lines: run(rows), hints: hints)
+        XCTAssertEqual(t?.units.map(\.pauriNo), [1, 2])
+        XCTAssertNil(VaarStructure.build(vaarId: 1, pauriAuthor: nil, lines: run(rows),
+                                         hints: [VaarUnitHint(kind: "pauri", firstLineId: 9_999, author: nil)]))
+    }
+
     func testLabelGrammar() {
         func label(_ s: String, header: Bool = true) -> Bool {
             VaarStructure.isLabel(VaarLine(id: 1, ang: 1, isHeader: header, gurmukhi: s))

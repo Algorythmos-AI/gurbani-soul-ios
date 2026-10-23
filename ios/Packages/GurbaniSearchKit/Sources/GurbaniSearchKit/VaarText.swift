@@ -189,7 +189,8 @@ public enum VaarStructure {
         var starts: [Int]
         if labelIdx.isEmpty {
             let base = lines[0].id
-            starts = hints.map { $0.firstLineId - base }.filter { $0 >= h && $0 < lines.count }
+            // sorted and de-duplicated: a malformed table can never yield an empty or reversed slice
+            starts = Array(Set(hints.map { $0.firstLineId - base }.filter { $0 >= h && $0 < lines.count })).sorted()
             guard !starts.isEmpty else { return nil }
             starts[0] = h
         } else {
@@ -200,6 +201,7 @@ public enum VaarStructure {
         var pauriNo = 0
         for (k, a) in starts.enumerated() {
             let b = k + 1 < starts.count ? starts[k + 1] : lines.count
+            guard a < b else { return nil }
             let slice = Array(lines[a..<b])
             let label = isLabel(lines[a]) ? lines[a] : nil
             let range = slice.first!.id...slice.last!.id
