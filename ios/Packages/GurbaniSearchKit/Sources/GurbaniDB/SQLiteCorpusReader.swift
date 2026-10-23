@@ -77,7 +77,8 @@ extension SQLiteCandidateSource: CorpusReader, AnalyticsSource {
         return CorpusCapabilities(
             hasEnglish: has("translations") && has("fts_en"),
             hasTiming: has("raag_timing_claims") && has("timing_sources"),
-            hasBanis: has("banis") && has("bani_lines") && has("extra_lines"))
+            hasBanis: has("banis") && has("bani_lines") && has("extra_lines"),
+            hasVoices: has("author_raag") && has("author_ang_hist") && has("author_entry"))
     }
 
     private func readerRows(_ sql: String, bind: (OpaquePointer?) -> Void) throws -> [ReaderLine] {
@@ -290,6 +291,31 @@ extension SQLiteCandidateSource: CorpusReader, AnalyticsSource {
                                   avgWordsLine: sqlite3_column_double(s, 5), isReliable: int(s, 6) != 0))
         }
         return out
+    }
+
+    /// Voices of the Granth (build_voices.py). nil when the DB predates the voices tables —
+    /// callers hide the views that need it rather than show zeros.
+    public func voicesAtlas() throws -> VoicesAtlas? {
+        guard detectCapabilities().hasVoices else { return nil }
+        var hist: [String: [Int]] = [:]
+        try prepareEach("SELECT author, bucket, n_lines FROM author_ang_hist") { s in
+            let b = int(s, 1)
+            guard let a = col(s, 0), (0..<VoicesAtlas.bucketCount).contains(b) else { return }
+            hist[a, default: Array(repeating: 0, count: VoicesAtlas.bucketCount)][b] = int(s, 2)
+        }
+        var places: [String: [VoicePlace]] = [:]
+        try prepareEach("SELECT author, raag, is_raag, n_lines, n_shabads FROM author_raag "
+                        + "ORDER BY author, n_lines DESC, raag") { s in
+            guard let a = col(s, 0), let r = col(s, 1) else { return }
+            places[a, default: []].append(VoicePlace(name: r, isRaag: int(s, 2) != 0,
+                                                     nLines: int(s, 3), nShabads: int(s, 4)))
+        }
+        var entries: [String: VoiceEntry] = [:]
+        try prepareEach("SELECT author, comp_id, ang, line_id FROM author_entry") { s in
+            guard let a = col(s, 0) else { return }
+            entries[a] = VoiceEntry(compId: int(s, 1), ang: int(s, 2), lineId: int(s, 3))
+        }
+        return VoicesAtlas(histogram: hist, places: places, entries: entries)
     }
 
     public func raagAnalytics() throws -> [RaagStat] {

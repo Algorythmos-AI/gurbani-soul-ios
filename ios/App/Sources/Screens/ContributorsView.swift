@@ -5,17 +5,26 @@ import GurbaniSearchKit
 /// Insights › Contributors: every voice, in Granth order (where its Bani first appears) by
 /// default, or by how much Bani is preserved. Descriptive — never a ranking of merit.
 struct ContributorsView: View {
+    @Environment(AppContainer.self) private var container
     let authors: [AuthorStat]
     /// author → `authors` row (first/last Ang), for Granth order and each voice's Ang range.
     let rows: [String: AuthorRow]
+    /// Voices of the Granth (ribbon); nil on a dataset without the voices tables.
+    var atlas: VoicesAtlas? = nil
+
+    @State private var grouping: DotFieldLayout.Grouping = .voice
+    @State private var selected: String?
+    private let roster = Self.rosterIndex
+    /// The bundled roster by name, read once (it never changes at runtime).
+    private static let rosterIndex: [String: Contributor] =
+        Dictionary((ContributorsStore.load() ?? []).map { ($0.name, $0) }, uniquingKeysWith: { a, _ in a })
 
     enum Order: String, CaseIterable, Identifiable {
         case granth = "Granth order", volume = "Most Bani"
         var id: String { rawValue }
     }
     @State private var order: Order = .granth
-    @ScaledMetric(relativeTo: .caption) private var barRow: CGFloat = 24
-    @ScaledMetric(relativeTo: .caption) private var axisAllowance: CGFloat = 40   // x-axis ticks + title
+    @ScaledMetric(relativeTo: .caption) private var barRow: CGFloat = 22
 
     private var ordered: [AuthorStat] {
         Self.ordered(authors, by: order, firstAngs: rows.mapValues(\.firstAng))
@@ -32,36 +41,87 @@ struct ContributorsView: View {
         }
     }
 
+    /// The dot field is always laid out in Granth order, whatever order the list below uses,
+    /// so a dot keeps its place while the reader re-sorts the list.
+    private var granthOrdered: [AuthorStat] {
+        Self.ordered(authors, by: .granth, firstAngs: rows.mapValues(\.firstAng))
+    }
+
+    private var legend: some View {
+        HStack(spacing: Theme.Space.m) {
+            ForEach(VoiceKind.allCases, id: \.self) { k in
+                HStack(spacing: 4) {
+                    Circle().fill(k.color).frame(width: 8, height: 8)
+                    Text(k.legend).font(.caption2).foregroundStyle(.secondary)
+                }
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
     var body: some View {
         List {
             Section {
-                Picker("Order", selection: $order) {
-                    ForEach(Order.allCases) { Text($0.rawValue).tag($0) }
+                VStack(alignment: .leading, spacing: Theme.Space.m) {
+                    Text("\(String(authors.count)) voices · one Granth")
+                        .font(Brand.heading(.title3)).accessibilityAddTraits(.isHeader)
+                    Picker("Group", selection: $grouping) {
+                        ForEach(DotFieldLayout.Grouping.allCases) { Text($0.rawValue).tag($0) }
+                    }
+                    .pickerStyle(.segmented)
+                    .accessibilityIdentifier("voicesGrouping")
+                    VoicesDotField(voices: granthOrdered.map { ($0.author, $0.nLines) }, roster: roster,
+                                   grouping: grouping, selected: $selected)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("Every verse line of the Granth as dots, one dot for about \(DotFieldLayout.linesPerDot) lines, coloured by tradition")
+                        .accessibilityChartDescriptor(ContributorsChartDescriptor(authors: ordered, order: order))
+                        .accessibilityIdentifier("voicesDotField")
+                    legend
+                    if let selected, let stat = authors.first(where: { $0.author == selected }) {
+                        HStack {
+                            AuthorNameLabel(name: AuthorName(selected))
+                            Spacer()
+                            Text(VoiceCopy.lines(stat.nLines)).font(.caption).foregroundStyle(.secondary)
+                        }
+                        .transition(.opacity)
+                    }
                 }
-                .pickerStyle(.segmented)
-                .accessibilityIdentifier("contributorsOrder")
-                Chart(ordered) { a in
-                    BarMark(x: .value("Lines", a.nLines),
-                            y: .value("Voice", AuthorName(a.author).compact),
-                            height: .ratio(0.7))
-                        .foregroundStyle(AccentPalette.soul.accentFill)   // brand gold, as fill only
-                }
-                .chartXAxisLabel("Lines")
-                .chartYScale(domain: ordered.map { AuthorName($0.author).compact })
-                // Names in a leading column: the default draws each label inside its band,
-                // above the bar, which squeezes a 24-pt row's bar to a hairline.
-                .chartYAxis { AxisMarks(preset: .aligned, position: .leading) { _ in AxisValueLabel() } }
-                .frame(height: CGFloat(max(ordered.count, 1)) * barRow + axisAllowance)
-                .accessibilityChartDescriptor(ContributorsChartDescriptor(authors: ordered, order: order))
+                .padding(.vertical, Theme.Space.xs)
             } footer: {
-                Text(order == .granth
-                     ? "Lines preserved in the Granth, per voice, in the order their Bani first appears. Descriptive — never a ranking of merit."
-                     : "Lines preserved in the Granth, per voice, most first. Volume reflects what is preserved here — never importance.")
+                Text("One dot ≈ \(DotFieldLayout.linesPerDot) verse lines; every voice keeps at least one. Size shows how much Bani is preserved here — never importance.")
             }
             .inkRow()
-            Section("Voices") {
+            if let atlas {
+                Section {
+                    GranthRibbon(model: RibbonModel(atlas: atlas, roster: roster), selected: selected) { ang in
+                        container.router.openAng(ang)
+                    }
+                } header: {
+                    Text("Where each voice sings")
+                } footer: {
+                    Text("Verse lines in every ten Angs, stacked by tradition. Tap a dot above or a voice below to follow one voice through the Granth.")
+                }
+                .inkRow()
+            }
+            Section {
                 ForEach(ordered) { a in
-                    VoiceRow(stat: a, row: rows[a.author])
+                    Button {
+                        MotionGate.run(Motion.gentle) { selected = (selected == a.author) ? nil : a.author }
+                    } label: {
+                        VoiceRow(stat: a, row: rows[a.author], isSelected: selected == a.author)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityHint(atlas == nil ? "" : "Shows where this voice sings in the Granth ribbon")
+                }
+            } header: {
+                HStack {
+                    Text("Voices")
+                    Spacer()
+                    Picker("Order", selection: $order) {
+                        ForEach(Order.allCases) { Text($0.rawValue).tag($0) }
+                    }
+                    .pickerStyle(.menu)
+                    .accessibilityIdentifier("contributorsOrder")
                 }
             }
             .inkRow()
@@ -77,6 +137,7 @@ struct ContributorsView: View {
 private struct VoiceRow: View {
     let stat: AuthorStat
     let row: AuthorRow?
+    var isSelected = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -90,6 +151,15 @@ private struct VoiceRow: View {
             }
         }
         .padding(.vertical, 2)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
+        .overlay(alignment: .leading) {
+            if isSelected {
+                Capsule().fill(Brand.primary).frame(width: 3).offset(x: -Theme.Space.s)
+                    .accessibilityHidden(true)
+            }
+        }
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }
 
