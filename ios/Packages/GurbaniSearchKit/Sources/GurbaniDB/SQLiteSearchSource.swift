@@ -7,9 +7,9 @@ import GurbaniSearchKit
 extension SQLiteCandidateSource: SearchSource {
 
     private static let ftsCols: Set<String> = ["text", "translit", "translit_norm", "fl_g", "fl_r", "skeleton"]
-    private static let lineCols = "id, ang, gurmukhi, translit, raag, section, author, comp_id, is_rahao, is_header"
+    static let lineCols = "id, ang, gurmukhi, translit, raag, section, author, comp_id, is_rahao, is_header"
 
-    private func mapLine(_ stmt: OpaquePointer?) -> SearchLine {
+    func mapLine(_ stmt: OpaquePointer?) -> SearchLine {
         func text(_ c: Int32) -> String { sqlite3_column_text(stmt, c).map { String(cString: $0) } ?? "" }
         func optText(_ c: Int32) -> String? { sqlite3_column_type(stmt, c) == SQLITE_NULL ? nil : text(c) }
         return SearchLine(

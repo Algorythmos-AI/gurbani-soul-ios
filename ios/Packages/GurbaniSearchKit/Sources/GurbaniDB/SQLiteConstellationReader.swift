@@ -8,9 +8,9 @@ import GurbaniSearchKit
 /// Pinned by contract/golden_constellation.ndjson (ConstellationParityTests).
 extension SQLiteCandidateSource {
 
-    private enum Bind { case text(String), int(Int) }
+    enum Bind { case text(String), int(Int) }
 
-    private func bindAll(_ s: OpaquePointer?, _ binds: [Bind]) {
+    func bindAll(_ s: OpaquePointer?, _ binds: [Bind]) {
         for (i, b) in binds.enumerated() {
             switch b {
             case .text(let t): sqlite3_bind_text(s, Int32(i + 1), t, -1, Self.transientDtor)
@@ -19,7 +19,7 @@ extension SQLiteCandidateSource {
         }
     }
 
-    private func query(_ sql: String, _ binds: [Bind], _ row: (OpaquePointer?) -> Void) throws {
+    func query(_ sql: String, _ binds: [Bind], _ row: (OpaquePointer?) -> Void) throws {
         var stmt: OpaquePointer?
         guard sqlite3_prepare_v2(handle, sql, -1, &stmt, nil) == SQLITE_OK else {
             throw DBError.prepare(String(cString: sqlite3_errmsg(handle)))
@@ -29,10 +29,10 @@ extension SQLiteCandidateSource {
         while try stepRow(stmt) { row(stmt) }
     }
 
-    private func cText(_ s: OpaquePointer?, _ c: Int32) -> String? {
+    func cText(_ s: OpaquePointer?, _ c: Int32) -> String? {
         sqlite3_column_type(s, c) == SQLITE_NULL ? nil : (sqlite3_column_text(s, c).map { String(cString: $0) })
     }
-    private func cInt(_ s: OpaquePointer?, _ c: Int32) -> Int { Int(sqlite3_column_int64(s, c)) }
+    func cInt(_ s: OpaquePointer?, _ c: Int32) -> Int { Int(sqlite3_column_int64(s, c)) }
 
     /// serve.py `_lens`: the lens clamped exactly as the server clamps it, and its WHERE fragment.
     static func normalised(_ lens: ConstellationLens) -> ConstellationLens {
@@ -44,7 +44,7 @@ extension SQLiteCandidateSource {
                                  angMin: max(1, min(1430, lens.angMin)), angMax: max(1, min(1430, lens.angMax)))
     }
 
-    private func lensWhere(_ lens: ConstellationLens) -> (String, [Bind]) {
+    func lensWhere(_ lens: ConstellationLens) -> (String, [Bind]) {
         var parts: [String] = [], binds: [Bind] = []
         if let au = lens.author { parts.append("l.author=?"); binds.append(.text(au)) }
         if let rg = lens.raag { parts.append("l.raag=?"); binds.append(.text(rg)) }
