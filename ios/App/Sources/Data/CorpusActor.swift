@@ -123,6 +123,12 @@ actor CorpusActor {
     /// filter (the card's count and the list's end always agree).
     func themePage(_ concept: String, filter: ThemeFilter = .none, afterId: Int = 0, limit: Int = 50) throws -> ThemePage {
         let p = try db.themePage(concept: concept, filter: filter, afterId: afterId, limit: limit)
-        return ThemePage(concept: p.concept, total: p.total, lines: db.attachTranslations(p.lines), nextAfterId: p.nextAfterId)
+        return ThemePage(concept: p.concept, total: p.total, lines: db.attachTranslations(p.lines), nextAfterId: p.nextAfterId,
+                         matched: p.matched)
+    }
+    func themeCount(_ concept: String, filter: ThemeFilter = .none) throws -> Int { try db.themeCount(concept: concept, filter: filter) }
+    func themeWords(_ concept: String) throws -> [ThemeWord] { try db.themeWords(concept: concept) }
+    func themeSteeped(_ concept: String, filter: ThemeFilter = .none) throws -> [SteepedShabad] {
+        try db.themeSteeped(concept: concept, filter: filter)
     }
 }
