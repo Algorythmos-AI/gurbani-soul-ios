@@ -808,6 +808,24 @@ final class SGGSUITests: XCTestCase {
         return card
     }
 
+    /// The Forms tab lists the forms the printed headings name, each row its verbatim heading,
+    /// and a row opens its composition.
+    func testIndexFormsOpenTheirComposition() {
+        let app = launchApp(selectSearch: false)
+        openIndex(app)
+        app.buttons["index_forms"].firstMatch.tap()
+        let pahare = app.buttons["form_pahare_74"].firstMatch
+        XCTAssertTrue(pahare.waitForExistence(timeout: 10), "Sri Raag's Pahare (Ang 74) should lead the forms")
+        attachShot(app, "index_forms")
+        let barah = app.buttons["form_barah_maha_1107"].firstMatch
+        for _ in 0..<8 where !(barah.exists && barah.isHittable) { app.swipeUp() }
+        XCTAssertTrue(barah.waitForExistence(timeout: 8), "Tukhari Barah Maha missing")
+        XCTAssertTrue(barah.label.contains("Raag Tukhari"), barah.label)
+        barah.tap()
+        XCTAssertTrue(app.navigationBars["Ang 1107"].waitForExistence(timeout: 12), "the composition did not open")
+        attachShot(app, "index_forms_open")
+    }
+
     /// Explore hub → Index, waiting for each step (the glass tab bar can swallow a first tap).
     private func openIndex(_ app: XCUIApplication) {
         openTab(app, "Explore", expectingNavBar: "Explore")
