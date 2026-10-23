@@ -49,6 +49,9 @@ public struct PoeticFormEntry: Sendable, Equatable, Identifiable {
 /// Everything the Raag page shows that `CorpusMeta.raags` does not already carry.
 public struct RaagFacts: Sendable, Equatable {
     public let raag: RaagRow
+    /// Non-heading lines (verses) in the raag — what the voice counts add up to, plus any verses
+    /// the print leaves unattributed. `raag.nLines` also counts heading lines.
+    public let nVerses: Int
     /// Attributed voices, most verses first (ties by name, so the order is stable).
     public let voices: [RaagVoice]
     /// Heading-named forms present, in a fixed reading order (see `RaagFacts.formOrder`).
@@ -65,9 +68,9 @@ public struct RaagFacts: Sendable, Equatable {
 
     public static let formOrder = ["pada", "ashtpadi", "chhant", "solahe", "vaar", "pauri", "salok"]
 
-    public init(raag: RaagRow, voices: [RaagVoice], forms: [RaagForm], genres: [PoeticFormEntry],
+    public init(raag: RaagRow, nVerses: Int, voices: [RaagVoice], forms: [RaagForm], genres: [PoeticFormEntry],
                 ghars: [Int], partaalCompIds: [Int], hasFormLayer: Bool) {
-        self.raag = raag; self.voices = voices; self.forms = forms; self.genres = genres
+        self.raag = raag; self.nVerses = nVerses; self.voices = voices; self.forms = forms; self.genres = genres
         self.ghars = ghars; self.partaalCompIds = partaalCompIds; self.hasFormLayer = hasFormLayer
     }
 }

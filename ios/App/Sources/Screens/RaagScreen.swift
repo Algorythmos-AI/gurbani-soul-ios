@@ -134,7 +134,7 @@ struct RaagScreen: View {
                          count: dynamicTypeSize.isAccessibilitySize ? 2 : 4)
         return LazyVGrid(columns: cols, spacing: Theme.Space.s) {
             StatTile(value: r.nShabads.formatted(), caption: "shabads")
-            StatTile(value: r.nLines.formatted(), caption: "lines")
+            StatTile(value: f.nVerses.formatted(), caption: "verses")
             StatTile(value: (r.lastAng - r.firstAng + 1).formatted(), caption: "Angs")
             StatTile(value: f.voices.count.formatted(), caption: f.voices.count == 1 ? "voice" : "voices")
         }
@@ -157,7 +157,7 @@ struct RaagScreen: View {
                         Circle().fill(VoiceShareBar.color(i, palette: palette)).frame(width: 8, height: 8)
                         Text(v.author).font(.subheadline)
                         Spacer(minLength: Theme.Space.s)
-                        Text("\(v.nLines.formatted()) lines").font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                        Text("\(v.nLines.formatted()) verses").font(.caption).foregroundStyle(.secondary).monospacedDigit()
                     }
                     .padding(.horizontal, Theme.Space.l).padding(.vertical, 10)
                     .accessibilityElement(children: .combine)
@@ -227,8 +227,8 @@ struct RaagScreen: View {
                         Button {
                             container.present(.shabad(compId: first))
                         } label: {
-                            Text(f.partaalCompIds.count == 1 ? "1 partaal composition"
-                                 : "\(String(f.partaalCompIds.count)) partaal compositions")
+                            Text(f.partaalCompIds.count == 1 ? "1 partaal composition — open it"
+                                 : "\(String(f.partaalCompIds.count)) partaal compositions — open the first")
                                 .font(.footnote)
                         }
                     }
@@ -300,7 +300,11 @@ struct RaagScreen: View {
                     }
                 }
             }
-            Button { container.router.openClock(raag: f.raag.roman ?? f.raag.name) } label: {
+            // Pushed on top of this page, so Back returns here (openClock would reset the stack).
+            Button {
+                container.router.pendingClockRaag = f.raag.roman ?? f.raag.name
+                container.router.explorePath.append(Route.clock)
+            } label: {
                 Label("See it on the Raag Clock", systemImage: "clock.arrow.circlepath")
                     .font(.footnote.weight(.medium))
             }

@@ -183,8 +183,11 @@ final class Router {
         case "composition":
             openComposition(key: value, variant: variant ?? "")
         case "raag":
-            container.dismissSheetForNavigation()
-            openRaag(value)
+            // Only a value that names a raag may close an open sheet; anything else changes nothing.
+            if Router.raagName(value) != nil {
+                container.dismissSheetForNavigation()
+                openRaag(value)
+            }
         case "theme":
             if !value.isEmpty {
                 selectedTab = .explore

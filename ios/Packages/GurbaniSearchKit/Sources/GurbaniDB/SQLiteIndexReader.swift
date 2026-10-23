@@ -42,6 +42,11 @@ extension SQLiteCandidateSource {
         }
         guard let raag, !failed else { return nil }
 
+        var nVerses = 0
+        _ = eachRow("SELECT COUNT(*) FROM lines WHERE raag = ? AND is_header = 0", [raag.name], failed: &failed) { s in
+            nVerses = iInt(s, 0) ?? 0
+        }
+
         var voices: [RaagVoice] = []
         _ = eachRow("SELECT author, COUNT(*) AS n FROM lines WHERE raag = ? AND is_header = 0 "
                     + "AND author IS NOT NULL GROUP BY author ORDER BY n DESC, author",
@@ -84,7 +89,7 @@ extension SQLiteCandidateSource {
         }
 
         if failed { return nil }
-        return RaagFacts(raag: raag, voices: voices, forms: forms, genres: genres,
+        return RaagFacts(raag: raag, nVerses: nVerses, voices: voices, forms: forms, genres: genres,
                          ghars: ghars.sorted(), partaalCompIds: partaal, hasFormLayer: hasFormLayer)
     }
 
