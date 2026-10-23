@@ -40,6 +40,15 @@ final class GranthMapTests: XCTestCase {
         for s in m.sections { XCTAssertNotNil(GranthNames.section(s.name), "no English name for \(s.name)") }
     }
 
+    /// The pinned data's ਚਉਬੋਲੇ row also holds the Kabir and Farid saloks; the Index must say so
+    /// rather than call 22 Angs "Chaubole" — and must go back to "Chaubole" once the data is split.
+    func testChauboleNamesWhatItsSpanHolds() {
+        XCTAssertEqual(GranthNames.section("ਚਉਬੋਲੇ", firstAng: 1363, lastAng: 1384),
+                       "Chaubole, Salok Bhagat Kabir Ji, Salok Sheikh Farid Ji")
+        XCTAssertEqual(GranthNames.section("ਚਉਬੋਲੇ", firstAng: 1363, lastAng: 1364), "Chaubole")
+        XCTAssertEqual(GranthNames.section("ਗਾਥਾ", firstAng: 1360, lastAng: 1361), "Gatha")
+    }
+
     func testRaagSlugsAreUniqueAndRoundTrip() throws {
         let m = try meta()
         let pairs = m.raags.map { (name: $0.name, roman: $0.roman) }

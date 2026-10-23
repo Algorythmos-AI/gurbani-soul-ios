@@ -37,6 +37,18 @@ enum GranthNames {
 
     static func section(_ gurmukhi: String) -> String? { sections[gurmukhi] }
 
+    /// The English name for a section AS THE DATA SPANS IT. The pinned dataset's ਚਉਬੋਲੇ row runs
+    /// Ang 1363–1384 because the corpus section detector does not yet open the two salok
+    /// collections whose headings sit inside it (ਸਲੋਕ ਭਗਤ ਕਬੀਰ ਜੀਉ ਕੇ, Ang 1364; ਸਲੋਕ ਸੇਖ ਫਰੀਦ ਕੇ,
+    /// Ang 1377). Until sggs-data splits it, the name says what the span really holds, so no
+    /// reader is told Chaubole fills 22 Angs. Once the row ends by Ang 1364 this returns "Chaubole".
+    static func section(_ gurmukhi: String, firstAng: Int, lastAng: Int) -> String? {
+        if gurmukhi == "ਚਉਬੋਲੇ", lastAng > 1364 {
+            return "Chaubole, Salok Bhagat Kabir Ji, Salok Sheikh Farid Ji"
+        }
+        return section(gurmukhi)
+    }
+
     /// The URL slug a raag answers to: its English name, lowercased, words joined by "-"
     /// ("gauri", "nat-narayan", "sri-raag"). Lowercase ascii letters and "-" only.
     static func slug(forRaag gurmukhi: String, roman: String?) -> String {

@@ -15,8 +15,8 @@ struct IndexScreen: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     /// The open pill survives leaving and returning to the Index (and state restoration).
     @SceneStorage("index_tab") private var tab = "compositions"
-    /// The bani registry — summary rows only, one query, never any lines. Loaded before the grid
-    /// renders so a tap can't race it; empty when this profile has no registry.
+    /// The bani registry — summary rows only, one query, never any lines; empty when this profile
+    /// has no registry. Until it arrives a hero card falls back to opening its first Ang.
     @State private var registry: [BaniSummary] = []
     /// Raag name → cited primary pahars; empty when this DB carries no timing layer.
     @State private var pahars: [String: [Int]] = [:]
@@ -61,15 +61,11 @@ struct IndexScreen: View {
             }
         }
         .navigationTitle("Index")
+        // One load, in order; each step is a no-op once its data is in (re-appearing costs
+        // nothing). The reading rings come from `container.nitnem`, which is @Observable, so they
+        // refresh themselves when a composition reader writes a position.
         .task {
             await container.loadMeta()
-            await loadRegistry()
-            await loadPahars()
-        }
-        // The reading rings come from `container.nitnem`, which is @Observable — they refresh
-        // themselves when a composition reader writes a position. This only retries the registry
-        // when the DB was not open yet on first appearance (a cold launch straight into Explore).
-        .task(id: container.corpus == nil) {
             await loadRegistry()
             await loadPahars()
         }

@@ -114,7 +114,7 @@ struct IndexRaagsTab: View {
                 Button { openSection(s) } label: { sectionRow(s) }
                     .buttonStyle(.plain)
                     .accessibilityElement(children: .ignore)
-                    .accessibilityLabel("\(GranthNames.section(s.name) ?? s.name), \((s.firstAng...s.lastAng).angLabel)")
+                    .accessibilityLabel("\(GranthNames.section(s.name, firstAng: s.firstAng, lastAng: s.lastAng) ?? s.name), \((s.firstAng...s.lastAng).angLabel)")
                     .accessibilityAddTraits(.isButton)
                 if i < rows.count - 1 { Divider().padding(.leading, Theme.Space.l) }
             }
@@ -128,7 +128,7 @@ struct IndexRaagsTab: View {
         HStack(spacing: Theme.Space.m) {
             VStack(alignment: .leading, spacing: 2) {
                 GurmukhiText(verbatim: s.name, size: 18)
-                if let en = GranthNames.section(s.name) {
+                if let en = GranthNames.section(s.name, firstAng: s.firstAng, lastAng: s.lastAng) {
                     Text(en).font(.caption).foregroundStyle(.secondary)
                 }
             }
