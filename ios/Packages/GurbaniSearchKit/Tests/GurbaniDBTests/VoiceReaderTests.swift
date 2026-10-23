@@ -73,6 +73,7 @@ final class VoiceReaderTests: XCTestCase {
         let jai = db.authorCompositions(m9.author, raag: "ਜੈਜਾਵੰਤੀ")
         XCTAssertEqual(jai.count, raags.first { $0.raag == "ਜੈਜਾਵੰਤੀ" }?.nCompositions)
         XCTAssertFalse(db.authorVerses(m9.author, containing: "ਨਾਨਕ").isEmpty)
+        XCTAssertEqual(db.conceptHeadTerms()["naam"], "ਨਾਮੁ")
     }
 
     func testBhattsSitOutsideTheRaagSections() throws {

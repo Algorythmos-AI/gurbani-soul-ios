@@ -895,13 +895,15 @@ final class SGGSUITests: XCTestCase {
         // "30 voices" today, "36 voices" once roster v2 and the attribution fix land.
         let header = app.staticTexts.matching(NSPredicate(format: "label MATCHES %@", "[0-9]+ voices · 12th–17th century")).firstMatch
         XCTAssertTrue(header.waitForExistence(timeout: 15), "lineage header missing")
-        // open a profile
+        // open a voice page (pushed, with a zoom from the card on iOS 18+)
         let farid = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Sheikh Farid")).firstMatch
         XCTAssertTrue(farid.waitForExistence(timeout: 8)); farid.tap()
         // the "verses" stat tile (the canonical count, same as the card) always renders once the
         // profile loads (some voices, like Farid, legitimately have no signature-themes section)
-        XCTAssertTrue(app.staticTexts["verses"].waitForExistence(timeout: 12), "profile did not load")
-        app.buttons["Done"].tap()
+        XCTAssertTrue(app.staticTexts["verses"].waitForExistence(timeout: 12), "voice page did not load")
+        XCTAssertTrue(app.staticTexts["THEIR BANI IN THE GRANTH"].exists, "Ang barcode section missing")
+        XCTAssertTrue(app.buttons["voiceBeginFirst"].waitForExistence(timeout: 12), "voice actions missing")
+        app.navigationBars.buttons.element(boundBy: 0).tap()   // back to Lineage
         // compare two voices
         app.buttons["compareVoices"].tap()
         farid.tap()
@@ -1925,6 +1927,17 @@ final class SGGSUITests: XCTestCase {
         _ = app.staticTexts.matching(NSPredicate(format: "label MATCHES %@", "[0-9]+ voices · 12th–17th century"))
             .firstMatch.waitForExistence(timeout: 8)
         shot("lineage")
+        // Guru Tegh Bahadur Ji's page: Gurus only, then scroll to the card (the list is lazy).
+        let gurus = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Gurus")).firstMatch
+        if gurus.waitForExistence(timeout: 5) { gurus.tap() }
+        let m9 = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Guru Tegh Bahadur Ji,")).firstMatch
+        for _ in 0..<6 where !m9.isHittable { app.swipeUp() }
+        if m9.waitForExistence(timeout: 5) {
+            m9.tap()
+            _ = app.buttons["voiceBeginFirst"].waitForExistence(timeout: 12)
+            shot("voice-m9")
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+        }
         openTab(app, "More", expectingNavBar: "More")
         _ = app.staticTexts["Accent"].waitForExistence(timeout: 8)
         shot("more_display")

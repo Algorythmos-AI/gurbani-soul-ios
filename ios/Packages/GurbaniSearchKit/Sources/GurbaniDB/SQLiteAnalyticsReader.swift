@@ -540,6 +540,22 @@ extension SQLiteCandidateSource {
         return failed ? [] : out
     }
 
+    /// Each theme's head Gurmukhi term (`concepts.gurmukhi_terms[0]`), keyed by concept slug.
+    public func conceptHeadTerms() -> [String: String] {
+        guard columns(of: "concepts").isSuperset(of: ["concept", "gurmukhi_terms"]) else { return [:] }
+        var failed = false
+        var out: [String: String] = [:]
+        var stmt: OpaquePointer?
+        defer { sqlite3_finalize(stmt) }
+        guard sqlite3_prepare_v2(handle, "SELECT concept, gurmukhi_terms FROM concepts", -1, &stmt, nil) == SQLITE_OK
+        else { return [:] }
+        while stepRow(stmt, failed: &failed) {
+            let terms = (try? JSONDecoder().decode([String].self, from: Data((aText(stmt, 1) ?? "[]").utf8))) ?? []
+            if let concept = aText(stmt, 0), let head = terms.first, !head.isEmpty { out[concept] = head }
+        }
+        return failed ? [:] : out
+    }
+
     /// Columns 0…3 = id, ang, comp_id, gurmukhi.
     private func verse(_ s: OpaquePointer?) -> VoiceVerse {
         VoiceVerse(id: aInt(s, 0) ?? 0, ang: aInt(s, 1) ?? 0, compId: aInt(s, 2) ?? 0, gurmukhi: aText(s, 3) ?? "")
