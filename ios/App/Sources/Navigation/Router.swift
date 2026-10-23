@@ -15,6 +15,8 @@ enum Route: Hashable {
     case insights
     case constellation
     case vaars
+    /// One Vaar's weave, by `vaars.vaar_id` (1…22).
+    case vaar(Int)
     case clock
     case nitnemJourney
     case theme(String)

@@ -917,9 +917,73 @@ final class SGGSUITests: XCTestCase {
         let vaars = app.buttons["Vaars"].firstMatch
         XCTAssertTrue(vaars.waitForExistence(timeout: 8)); vaars.tap()
         XCTAssertTrue(app.navigationBars["Vaars"].waitForExistence(timeout: 12))
-        app.cells.firstMatch.tap()
-        XCTAssertTrue(app.staticTexts["Anatomy in reading order"].waitForExistence(timeout: 12),
-                      "vaar anatomy missing")
+        let card = app.buttons["vaar.card.2"].firstMatch      // Majh Ki Vaar
+        XCTAssertTrue(card.waitForExistence(timeout: 12), "vaar card missing")
+        card.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["vaar.weave"].waitForExistence(timeout: 12),
+                      "vaar weave missing")
+    }
+
+    /// Vaars v2: the home (hero, ribbon, filters, ਧੁਨੀ) and one Vaar's weave + unit sheet.
+    /// Captures are attached to the result bundle (CI uploads it) and, on a simulator, also
+    /// written to SGGS_SHOT_DIR.
+    func testVaarsWeave() {
+        let app = launchApp(forwardCaptureEnv: true)
+        let dir = ProcessInfo.processInfo.environment["SGGS_SHOT_DIR"] ?? NSTemporaryDirectory()
+        func shot(_ name: String) {
+            let png = app.screenshot()
+            try? png.pngRepresentation.write(to: URL(fileURLWithPath: "\(dir)/\(name).png"))
+            let a = XCTAttachment(screenshot: png)
+            a.name = "shot \(name)"; a.lifetime = .keepAlways; add(a)
+        }
+        openTab(app, "Explore", expectingNavBar: "Explore")
+        let vaars = app.buttons["Vaars"].firstMatch
+        XCTAssertTrue(vaars.waitForExistence(timeout: 8)); vaars.tap()
+        XCTAssertTrue(app.navigationBars["Vaars"].waitForExistence(timeout: 12))
+        XCTAssertTrue(app.buttons["vaar.card.1"].firstMatch.waitForExistence(timeout: 15), "first Vaar card missing")
+        shot("vaars_home")
+
+        // the four Vaars the old table mis-titled now show their printed titles
+        let sri = app.buttons["vaar.card.1"].firstMatch.label
+        XCTAssertTrue(sri.contains("ਸਿਰੀਰਾਗ ਕੀ ਵਾਰ"), "Sri Raag Ki Vaar title missing: \(sri)")
+        XCTAssertFalse(sri.contains("ਸਤਿਗੁਰ ਪ੍ਰਸਾਦਿ"), "Sri Raag Ki Vaar still titled by the invocation")
+
+        // ਧੁਨੀ filter → 9 cards, then the rubric sheet
+        let dhuniFilter = app.buttons["vaars.filter.dhuni"].firstMatch
+        XCTAssertTrue(dhuniFilter.waitForExistence(timeout: 5)); dhuniFilter.tap()
+        XCTAssertTrue(app.buttons["vaar.card.2"].firstMatch.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["vaar.card.1"].firstMatch.exists, "Sri Raag has no ਧੁਨੀ")
+        shot("vaars_filter_dhuni")
+        let dhuni = app.buttons["vaar.dhuni.2"].firstMatch
+        XCTAssertTrue(dhuni.waitForExistence(timeout: 5)); dhuni.tap()
+        XCTAssertTrue(app.staticTexts["Sri Guru Granth Sahib Ji · Ang 137"].waitForExistence(timeout: 5), "ਧੁਨੀ citation missing")
+        shot("vaars_dhuni_sheet")
+        app.swipeDown(velocity: .fast)
+        let all = app.buttons["vaars.filter.all"].firstMatch
+        XCTAssertTrue(all.waitForExistence(timeout: 5)); all.tap()
+
+        // Majh Ki Vaar → weave → a pauri sheet
+        let card = app.buttons["vaar.card.2"].firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 5)); card.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["vaar.weave"].waitForExistence(timeout: 12), "weave missing")
+        XCTAssertTrue(app.buttons["vaar.read"].exists && app.buttons["vaar.pauris"].exists, "read actions missing")
+        shot("vaar_weave_top")
+        app.swipeUp(); app.swipeUp()
+        shot("vaar_weave_spine")
+        let pauri = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'vaar.unit.'")).firstMatch
+        XCTAssertTrue(pauri.waitForExistence(timeout: 5)); pauri.tap()
+        XCTAssertTrue(app.buttons["vaar.readFromHere"].waitForExistence(timeout: 8), "unit sheet missing")
+        shot("vaar_unit_sheet")
+        app.buttons["Done"].firstMatch.tap()
+
+        // a one-Ang Vaar reads "Ang 1193", never "Angs 1193–1193"
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        let short = app.buttons["vaars.filter.short"].firstMatch
+        XCTAssertTrue(short.waitForExistence(timeout: 8)); short.tap()
+        shot("vaars_filter_short")
+        let basant = app.buttons["vaar.card.19"].firstMatch
+        XCTAssertTrue(basant.waitForExistence(timeout: 8))
+        XCTAssertTrue(basant.label.contains("Ang 1193") && !basant.label.contains("1193–1193"), basant.label)
     }
 
     /// Insights completions: network + resonance + flow views render their content.

@@ -141,4 +141,22 @@ final class ThemeContrastTests: XCTestCase {
             XCTAssertEqual(ab, cb, accuracy: 0.005, "AccentColor asset drifted from the brand-default accent (blue, \(leg))")
         }
     }
+
+    // MARK: Vaar voices
+
+    func testVoiceInkReadsOnEverySurface() {
+        for (k, c) in VoiceInk.all.enumerated() {
+            for (name, bg) in [("canvas", Ink.canvas), ("card", Ink.card), ("raised", Ink.raised)] {
+                assertRatio(c, on: bg, atLeast: 4.5, "VoiceInk[\(k)] on \(name)")
+            }
+        }
+    }
+
+    func testVoiceInkMapsCorpusAuthors() {
+        XCTAssertEqual(VoiceInk.short("Guru Arjan Dev Ji (M5)"), "M5")
+        XCTAssertEqual(VoiceInk.short("Satta & Balwand"), "Satta & Balwand")
+        XCTAssertEqual(UIColor(VoiceInk.color(for: "Guru Nanak Dev Ji (M1)")), UIColor(VoiceInk.m1))
+        XCTAssertEqual(UIColor(VoiceInk.color(for: "Bhai Mardana")), UIColor(VoiceInk.mardana))
+        XCTAssertEqual(UIColor(VoiceInk.color(for: nil)), UIColor(VoiceInk.bards))
+    }
 }

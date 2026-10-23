@@ -248,6 +248,42 @@ enum ThemeGroupInk {
     static let states = Color(light: 0x1F62A6, dark: 0x8EC2F5, lightHC: 0x174D84, darkHC: 0xB0D5F8)
 }
 
+// MARK: - Voices (Vaars)
+
+/// One colour per voice of the Vaars — the five Gurus whose saloks and pauris interleave there,
+/// Bhai Mardana, and Satta & Balwand. Drawn as marks (the voice strip, weave nodes, legend dots)
+/// and as the short label beside them, so every leg clears 4.5:1 on canvas, card and raised
+/// (ThemeContrastTests). None is red or brand gold: the pauri spine keeps the accent, and no red
+/// sits beside Gurmukhi. App-local (not in tokens.json): the website has no Vaar voice view.
+enum VoiceInk {
+    static let m1 = Color(light: 0xA34A06, dark: 0xF4A866, lightHC: 0x7F3904, darkHC: 0xF8C293)
+    static let m2 = Color(light: 0x16706B, dark: 0x5FD0C7, lightHC: 0x0F5551, darkHC: 0x8ADFD8)
+    static let m3 = Color(light: 0x2659AD, dark: 0x92BFFA, lightHC: 0x1C4486, darkHC: 0xB4D3FB)
+    static let m4 = Color(light: 0x3D6A1C, dark: 0xA8D67C, lightHC: 0x2E5214, darkHC: 0xC0E39F)
+    static let m5 = Color(light: 0x7D3C93, dark: 0xD9A4EC, lightHC: 0x602E71, darkHC: 0xE6C0F3)
+    static let mardana = Color(light: 0x6E5A12, dark: 0xD9C27A, lightHC: 0x54450D, darkHC: 0xE6D6A2)
+    static let bards = Color(light: 0x4E5A66, dark: 0xB9C4CF, lightHC: 0x3B4550, darkHC: 0xD0D8E0)
+    static let all: [Color] = [m1, m2, m3, m4, m5, mardana, bards]
+
+    /// The colour for a corpus `author` string; anything unrecognised reads as `bards`.
+    static func color(for author: String?) -> Color {
+        guard let author else { return bards }
+        if author.hasSuffix("(M1)") { return m1 }
+        if author.hasSuffix("(M2)") { return m2 }
+        if author.hasSuffix("(M3)") { return m3 }
+        if author.hasSuffix("(M4)") { return m4 }
+        if author.hasSuffix("(M5)") { return m5 }
+        if author.contains("Mardana") { return mardana }
+        return bards
+    }
+
+    /// Short form for chips and legends: "M1" … "M5", else the name itself.
+    static func short(_ author: String) -> String {
+        for k in 1...5 where author.hasSuffix("(M\(k))") { return "M\(k)" }
+        return author
+    }
+}
+
 // MARK: - Elevation
 
 /// Shadow tokens. Dark mode intentionally has NO shadow — cards get an Ink.hairline
