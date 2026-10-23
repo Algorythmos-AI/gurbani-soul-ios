@@ -61,14 +61,14 @@ struct MoreScreen: View {
                     Toggle("Show transliteration", isOn: $showTranslit)
                         .accessibilityIdentifier("translitToggle")
 
-                    Toggle(isOn: $yourThemes) {
+                    if container.modelContainer != nil { Toggle(isOn: $yourThemes) {
                         VStack(alignment: .leading) {
                             Text("Show Your themes")
-                            Text("On the Themes page, the themes your saved verses carry. Worked out on this iPhone; nothing leaves it.")
+                            Text("On the Themes page, the themes your saved verses carry. Worked out on this device; nothing leaves it.")
                                 .font(.caption).foregroundStyle(.secondary)
                         }
                     }
-                    .accessibilityIdentifier("yourThemesToggle")
+                    .accessibilityIdentifier("yourThemesToggle") }
 
                     if container.corpus?.capabilities.hasEnglish == true {
                         Toggle(isOn: $showEnglish) {

@@ -59,11 +59,11 @@ struct YourThemesCard: View {
             HStack {
                 SectionEyebrow(text: "Your themes", symbol: "bookmark")
                 Spacer()
-                Image(systemName: "iphone").font(.caption).foregroundStyle(Ink.muted)
-                    .accessibilityLabel("Worked out on this iPhone")
+                Image(systemName: "lock").font(.caption).foregroundStyle(Ink.muted)
+                    .accessibilityLabel("Worked out on this device")
             }
             if summary.savedCount < YourThemes.minimumSaved {
-                Text("Save verses as you read, and this shows the themes they carry. It is worked out on this iPhone; nothing leaves it.")
+                Text("Save verses as you read, and this shows the themes they carry. It is worked out on this device; nothing leaves it.")
                     .font(.callout).foregroundStyle(Ink.muted)
                     .fixedSize(horizontal: false, vertical: true)
             } else {
@@ -72,9 +72,7 @@ struct YourThemesCard: View {
                 let cols = [GridItem(.adaptive(minimum: 110), spacing: Theme.Space.s, alignment: .leading)]
                 LazyVGrid(columns: cols, alignment: .leading, spacing: Theme.Space.s) {
                     ForEach(summary.carried.prefix(9), id: \.concept) { item in
-                        NavigationLink {
-                            YourThemeVersesScreen(concept: item.concept, verses: item.verses)
-                        } label: {
+                        NavigationLink(value: Route.yourTheme(item.concept)) {
                             chip(item.concept, count: item.verses.count)
                         }
                         .buttonStyle(.plain)
@@ -116,11 +114,12 @@ struct YourThemesCard: View {
     }
 }
 
-/// The reader's own saved verses that carry one theme (each opens its shabad).
+/// The reader's own saved verses that carry one theme (each opens its shabad). Pushed by value
+/// on the Explore stack and derived here from the saved store, so it survives path changes.
 struct YourThemeVersesScreen: View {
     let concept: String
-    let verses: [YourThemes.Verse]
     @Environment(AppContainer.self) private var container
+    @State private var verses: [YourThemes.Verse] = []
 
     var body: some View {
         List {
@@ -148,5 +147,16 @@ struct YourThemeVersesScreen: View {
         .inkPlainList()
         .navigationTitle("Your \(ConceptName.display(concept))")
         .navigationBarTitleDisplayMode(.inline)
+        .task(id: container.presentation != nil) { await load() }
+    }
+
+    private func load() async {
+        guard let corpus = container.corpus, let store = container.modelContainer else { verses = []; return }
+        let saved = ((try? store.mainContext.fetch(FetchDescriptor<SavedLine>())) ?? []).map {
+            YourThemes.Verse(lineId: $0.lineId, compId: $0.compId, ang: $0.ang, gurmukhi: $0.gurmukhi, translit: $0.translit)
+        }
+        let ids = (try? await corpus.themeMembers(lineIds: saved.map(\.lineId)))?[concept] ?? []
+        guard !Task.isCancelled else { return }
+        verses = saved.filter { ids.contains($0.lineId) }.sorted { $0.lineId < $1.lineId }
     }
 }

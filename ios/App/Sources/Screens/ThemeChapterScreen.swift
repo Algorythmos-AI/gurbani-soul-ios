@@ -16,6 +16,7 @@ struct ThemeChapterScreen: View {
     @State private var term: String?
     @State private var bin: Int?
     @State private var showAllSteeped = false
+    @State private var notFound = false
 
     private var name: String { ConceptName.display(concept) }
 
@@ -23,6 +24,9 @@ struct ThemeChapterScreen: View {
         Group {
             if let base {
                 content(base)
+            } else if notFound {
+                EmptyStateView(title: "No such theme", message: "There is no theme called “\(concept)”.",
+                               actionTitle: "See all themes") { container.router.explorePath = NavigationPath([Route.themes]) }
             } else if let failed {
                 EmptyStateView(title: "Something went wrong", message: failed, isError: true,
                                actionTitle: "Try again") { Task { await loadBase() } }
@@ -353,7 +357,7 @@ struct ThemeChapterScreen: View {
         failed = nil
         do {
             guard let row = try await corpus.themeIndex().first(where: { $0.concept == concept }) else {
-                failed = "There is no theme called “\(concept)”."
+                notFound = true
                 return
             }
             let words = try await corpus.themeWords(concept)

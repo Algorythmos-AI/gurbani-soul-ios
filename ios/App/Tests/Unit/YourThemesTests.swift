@@ -57,4 +57,17 @@ final class YourThemesTests: XCTestCase {
         XCTAssertEqual(r.selectedTab, .explore)
         XCTAssertEqual(r.explorePath.count, 1)
     }
+
+    /// A well-formed name that is not one of the 54 themes (e.g. Siri's "mercy") lands on the
+    /// index, never a not-found page; a real theme still opens its page.
+    @MainActor
+    func testUnknownThemeNameOpensTheIndex() async throws {
+        let c = AppContainer(); let r = Router()
+        await c.loadMeta()
+        guard c.meta != nil else { throw XCTSkip("no bundled DB") }
+        r.handle(URL(string: "sggs://theme/mercy")!, container: c)
+        XCTAssertEqual(r.explorePath.count, 1, "unknown theme → the index")
+        r.handle(URL(string: "sggs://theme/sahaj")!, container: c)
+        XCTAssertEqual(r.explorePath.count, 2, "a real theme → its page")
+    }
 }

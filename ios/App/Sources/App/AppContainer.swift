@@ -275,6 +275,7 @@ final class AppContainer {
     func retryIntegrity() async {
         integrity = nil
         await runIntegrity()
+        await indexThemesForSpotlight()          // a recovered check indexes as launch would have
     }
 
     /// Number of Vaars in the bundled DB (Explore caption; nil until loaded).
