@@ -240,27 +240,35 @@ struct RaagScreen: View {
 
     // MARK: vaars
 
+    /// The raag's Vaars as facts, with one way into the Vaars surface. Rows do not deep-link a
+    /// single Vaar here: the Vaars screens are being rebuilt (Vaars v2), and `Route.vaars` is the
+    /// one entry point both versions share.
     private var vaarsSection: some View {
         VStack(alignment: .leading, spacing: Theme.Space.s) {
             SectionEyebrow(text: vaars.count == 1 ? "Its Vaar" : "Its \(String(vaars.count)) Vaars", symbol: "list.number")
             VStack(spacing: 0) {
                 ForEach(Array(vaars.enumerated()), id: \.element.id) { i, v in
-                    NavigationLink { VaarAnatomyScreen(summary: v) } label: {
-                        HStack(spacing: Theme.Space.m) {
-                            VStack(alignment: .leading, spacing: 2) {
-                                if let author = v.pauriAuthor { Text(author).font(.subheadline.weight(.medium)) }
-                                Text("\(String(v.nPauris)) pauris · \(String(v.nSaloks)) saloks · \((v.firstAng...v.lastAng).angLabel)")
-                                    .font(.caption).foregroundStyle(.secondary).monospacedDigit()
-                            }
-                            Spacer(minLength: Theme.Space.s)
-                            Image(systemName: "chevron.right").font(.caption2).foregroundStyle(.tertiary)
-                        }
-                        .padding(.horizontal, Theme.Space.l).padding(.vertical, Theme.Space.m)
-                        .contentShape(Rectangle())
+                    VStack(alignment: .leading, spacing: 2) {
+                        if let author = v.pauriAuthor { Text(author).font(.subheadline.weight(.medium)) }
+                        Text("\(String(v.nPauris)) pauris · \(String(v.nSaloks)) saloks · \((v.firstAng...v.lastAng).angLabel)")
+                            .font(.caption).foregroundStyle(.secondary).monospacedDigit()
                     }
-                    .buttonStyle(.plain)
-                    if i < vaars.count - 1 { Divider().padding(.leading, Theme.Space.l) }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, Theme.Space.l).padding(.vertical, Theme.Space.m)
+                    .accessibilityElement(children: .combine)
+                    Divider().padding(.leading, i < vaars.count - 1 ? Theme.Space.l : 0)
                 }
+                NavigationLink(value: Route.vaars) {
+                    HStack {
+                        Text("Open the Vaars").font(.footnote.weight(.medium)).foregroundStyle(palette.accentText)
+                        Spacer()
+                        Image(systemName: "chevron.right").font(.caption2).foregroundStyle(.tertiary)
+                    }
+                    .padding(.horizontal, Theme.Space.l).padding(.vertical, Theme.Space.m)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("raagOpenVaars")
             }
             .background(Ink.card, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
             .overlay(RoundedRectangle(cornerRadius: Theme.Radius.card).strokeBorder(Ink.hairline))
