@@ -121,6 +121,7 @@ struct RouteDestination: View {
         case .theme(let name): ThemeChapterScreen(concept: name)
         case .themeVerses(let name, let filter): ThemeResultsScreen(concept: name, filter: filter)
         case .yourTheme(let name): YourThemeVersesScreen(concept: name)
+        case .voice(let slug): VoiceRouteView(slug: slug)
         case .bani(let key): BaniReaderScreen(key: key)
         case .composition(let key, let variant):
             BaniReaderScreen(key: key, variantOverride: variant.isEmpty ? nil : variant, context: .explore)

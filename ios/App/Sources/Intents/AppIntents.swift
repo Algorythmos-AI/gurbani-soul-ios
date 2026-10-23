@@ -169,6 +169,45 @@ struct OpenThemeIntent: AppIntent {
     }
 }
 
+/// A voice of the Granth, for "Open a voice" (Spotlight / Siri / Shortcuts). The id is
+/// `Contributor.slug`; names come from the bundled roster.
+struct VoiceEntity: AppEntity {
+    static let typeDisplayRepresentation: TypeDisplayRepresentation = "Voice"
+    static let defaultQuery = VoiceQuery()
+    let id: String
+    let name: String
+    var displayRepresentation: DisplayRepresentation { DisplayRepresentation(title: "\(name)") }
+}
+
+struct VoiceQuery: EntityStringQuery {
+    func entities(for identifiers: [String]) async throws -> [VoiceEntity] {
+        Self.all().filter { identifiers.contains($0.id) }
+    }
+    func entities(matching string: String) async throws -> [VoiceEntity] {
+        Self.all().filter { $0.name.localizedCaseInsensitiveContains(string) || $0.id.contains(string.lowercased()) }
+    }
+    func suggestedEntities() async throws -> [VoiceEntity] { Self.all() }
+
+    static func all() -> [VoiceEntity] {
+        (ContributorsStore.load() ?? []).map { VoiceEntity(id: $0.slug, name: $0.displayName) }
+    }
+}
+
+struct OpenVoiceIntent: AppIntent {
+    static let title: LocalizedStringResource = "Open a voice"
+    static let description = IntentDescription("Open the page of one of the voices of the Granth: their Bani, raags and rahao verses, cited by Ang.")
+    static let openAppWhenRun = true
+
+    @Parameter(title: "Voice") var voice: VoiceEntity
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        guard Router.isValidVoiceSlug(voice.id) else { return .result() }
+        await UIApplication.shared.open(URL(string: "sggs://voice/\(voice.id)")!)
+        return .result()
+    }
+}
+
 struct SGGSShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(intent: TodaysHukamIntent(),
@@ -200,5 +239,9 @@ struct SGGSShortcuts: AppShortcutsProvider {
         AppShortcut(intent: OpenThemeIntent(),
                     phrases: ["Open a theme in \(.applicationName)"],
                     shortTitle: "Open a theme", systemImageName: "square.grid.2x2")
+        AppShortcut(intent: OpenVoiceIntent(),
+                    phrases: ["Open a voice in \(.applicationName)",
+                              "Show a voice of the Granth in \(.applicationName)"],
+                    shortTitle: "Open a voice", systemImageName: "person.wave.2")
     }
 }
