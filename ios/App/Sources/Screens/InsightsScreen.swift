@@ -22,7 +22,7 @@ struct InsightsScreen: View {
     @Environment(AppContainer.self) private var container
     @State private var model: InsightsModel?
     @State private var tab = 0
-    @State private var firstAngs: [String: Int] = [:]
+    @State private var authorRows: [String: AuthorRow] = [:]
 
     private static let views: [(id: Int, label: String)] = [
         (0, "Contributors"), (1, "Raags"), (2, "Network"), (3, "Resonance"), (4, "Flow"),
@@ -44,7 +44,7 @@ struct InsightsScreen: View {
 
             if let model, model.loaded {
                 switch tab {
-                case 0: ContributorsView(authors: model.authors, firstAngs: firstAngs)
+                case 0: ContributorsView(authors: model.authors, rows: authorRows)
                 case 1: RaagsView(raags: model.raags)
                 case 2: ThemeNetworkSection()
                 case 3: ResonanceSection()
@@ -60,10 +60,10 @@ struct InsightsScreen: View {
         .task {
             if model == nil { model = InsightsModel(corpus: container.corpus) }
             await model?.load()
-            // first Ang per voice (authors.first_ang) — Contributors' default Granth order
+            // first/last Ang per voice (authors) — Granth order and each voice's Ang range
             if container.meta == nil { await container.loadMeta() }
-            firstAngs = Dictionary((container.meta?.authors ?? []).map { ($0.name, $0.firstAng) },
-                                   uniquingKeysWith: { a, _ in a })
+            authorRows = Dictionary((container.meta?.authors ?? []).map { ($0.name, $0) },
+                                    uniquingKeysWith: { a, _ in a })
         }
     }
 }

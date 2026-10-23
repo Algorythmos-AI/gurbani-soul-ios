@@ -6,18 +6,19 @@ import GurbaniSearchKit
 /// default, or by how much Bani is preserved. Descriptive — never a ranking of merit.
 struct ContributorsView: View {
     let authors: [AuthorStat]
-    /// author → first Ang (`authors.first_ang`), for Granth order.
-    let firstAngs: [String: Int]
+    /// author → `authors` row (first/last Ang), for Granth order and each voice's Ang range.
+    let rows: [String: AuthorRow]
 
     enum Order: String, CaseIterable, Identifiable {
         case granth = "Granth order", volume = "Most Bani"
         var id: String { rawValue }
     }
     @State private var order: Order = .granth
-    @State private var showVocabularyInfo = false
     @ScaledMetric(relativeTo: .caption) private var barRow: CGFloat = 22
 
-    private var ordered: [AuthorStat] { Self.ordered(authors, by: order, firstAngs: firstAngs) }
+    private var ordered: [AuthorStat] {
+        Self.ordered(authors, by: order, firstAngs: rows.mapValues(\.firstAng))
+    }
 
     /// Granth order = first Ang, then volume, then name (stable for voices sharing an Ang).
     /// A voice with no known first Ang sorts last rather than disappearing.
@@ -55,45 +56,32 @@ struct ContributorsView: View {
             .inkRow()
             Section("Voices") {
                 ForEach(ordered) { a in
-                    VoiceRow(stat: a, firstAng: firstAngs[a.author]) { showVocabularyInfo = true }
+                    VoiceRow(stat: a, row: rows[a.author])
                 }
             }
             .inkRow()
         }
         .inkGroupedList()
         .appAnimation(Motion.gentle, value: order)
-        .sheet(isPresented: $showVocabularyInfo) { VocabularyRangeInfo() }
     }
 }
 
 /// One voice: full English name, a Mahala badge for the Gurus, any Gurmukhi suffix in Sant
-/// Lipi, inflected counts, and Vocabulary range only where the sample is large enough.
+/// Lipi, inflected counts and where in the Granth its Bani sits. No stylometry: those metrics
+/// are computed on the English translation, so they describe the translation, not the voice.
 private struct VoiceRow: View {
     let stat: AuthorStat
-    let firstAng: Int?
-    let onInfo: () -> Void
+    let row: AuthorRow?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             AuthorNameLabel(name: AuthorName(stat.author))
             Text(VoiceCopy.summary(lines: stat.nLines, shabads: stat.nShabads, raags: stat.nRaags))
                 .font(.caption).foregroundStyle(.secondary)
-            if let firstAng {
-                Text("First appears at Ang \(String(firstAng))")
+            if let row {
+                Text(row.firstAng == row.lastAng ? "Ang \(String(row.firstAng))"
+                                                 : "Angs \(String(row.firstAng))–\(String(row.lastAng))")
                     .font(.caption).foregroundStyle(.secondary)
-            }
-            if stat.isReliable {
-                HStack(spacing: Theme.Space.xs) {
-                    Text("\(VoiceCopy.vocabularyRange) \(stat.mattr100, format: .number.precision(.fractionLength(2)))")
-                        .font(.caption).foregroundStyle(.secondary)
-                    Button(action: onInfo) {
-                        Image(systemName: "info.circle").font(.caption)
-                    }
-                    .buttonStyle(.borderless)
-                    .accessibilityLabel("About vocabulary range")
-                }
-            } else {
-                Text(VoiceCopy.tooFewLines).font(.caption).foregroundStyle(.secondary)
             }
         }
         .padding(.vertical, 2)
@@ -130,29 +118,6 @@ struct AuthorNameLabel: View {
         if let g = name.gurmukhi {
             GurmukhiText(verbatim: g, size: gurmukhiSize).foregroundStyle(.secondary)
         }
-    }
-}
-
-/// The ⓘ sheet behind "Vocabulary range": one plain explanation of MATTR-100.
-struct VocabularyRangeInfo: View {
-    @Environment(\.dismiss) private var dismiss
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: Theme.Space.m) {
-                    Text(VoiceCopy.vocabularyExplainer).font(.body)
-                    Text("Shown only where a voice has enough lines for the measure to be fair; otherwise it reads “\(VoiceCopy.tooFewLines)”.")
-                        .font(.callout).foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding()
-            }
-            .background(Ink.base.ignoresSafeArea())
-            .navigationTitle(VoiceCopy.vocabularyRange)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
-        }
-        .presentationDetents([.medium, .large])
     }
 }
 

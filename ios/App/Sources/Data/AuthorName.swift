@@ -77,11 +77,6 @@ enum VoiceCopy {
     /// voice with no raag says that instead of "0 raags".
     static let outsideRaags = "Swaiyye · outside the raag framework"
 
-    /// "Vocabulary range" (MATTR-100) is shown only where the sample is large enough.
-    static let vocabularyRange = "Vocabulary range"
-    static let tooFewLines = "Too few lines to measure fairly"
-    static let vocabularyExplainer = "How varied a voice's wording is: the share of different words in each run of 100 words, averaged across all of its Bani (a moving-average type–token ratio, measured on the English translation). Higher means more varied wording. It describes style — never merit."
-
     /// "1,204 lines · 61 shabads · 15 raags", or "… · Swaiyye · outside the raag framework".
     static func summary(lines n: Int, shabads s: Int, raags r: Int, locale: Locale = .current) -> AttributedString {
         var out = lines(n, locale: locale)

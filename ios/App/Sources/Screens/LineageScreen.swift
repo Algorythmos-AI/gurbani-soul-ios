@@ -355,7 +355,6 @@ struct AuthorProfileSheet: View {
     @Environment(AppContainer.self) private var container
     @Environment(\.dismiss) private var dismiss
     @State private var profile: AuthorProfile?
-    @State private var showVocabularyInfo = false
 
     var body: some View {
         NavigationStack {
@@ -389,20 +388,8 @@ struct AuthorProfileSheet: View {
                             } else {
                                 StatTile(value: "\(String(s.nRaags))", caption: "raags")
                             }
-                            if s.isReliable {
-                                StatTile(value: String(format: "%.2f", s.mattr100), caption: "vocabulary range")
-                            }
                             StatTile(value: String(format: "%.1f", s.avgWordsLine), caption: "words / line")
                             StatTile(value: String(format: "%.1f", s.avgLinesShabad), caption: "lines / shabad")
-                        }
-                        HStack(spacing: Theme.Space.xs) {
-                            Text(s.isReliable ? "Vocabulary range: how varied the wording is."
-                                              : "Vocabulary range: \(VoiceCopy.tooFewLines.lowercased()).")
-                                .font(.caption2).foregroundStyle(.secondary)
-                            Button { showVocabularyInfo = true } label: {
-                                Image(systemName: "info.circle").font(.caption)
-                            }
-                            .accessibilityLabel("About vocabulary range")
                         }
                     }
                     if let themes = profile?.stylometry?.topThemes, !themes.isEmpty {
@@ -461,7 +448,6 @@ struct AuthorProfileSheet: View {
             .navigationTitle("Voice in the Granth")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
-            .sheet(isPresented: $showVocabularyInfo) { VocabularyRangeInfo() }
         }
         .task {
             guard profile == nil, let corpus = container.corpus else { return }
@@ -587,21 +573,6 @@ struct CompareVoicesSheet: View {
             statRow("Lines", pa.stylometry?.nLines, pb.stylometry?.nLines)
             statRow("Compositions", pa.stylometry?.nShabads, pb.stylometry?.nShabads)
             statRow("Raags", pa.stylometry?.nRaags, pb.stylometry?.nRaags)
-            GridRow {
-                Text("Vocabulary range").font(.caption)
-                vocabularyCell(pa.stylometry)
-                vocabularyCell(pb.stylometry)
-            }
-        }
-    }
-
-    /// MATTR only where the sample is large enough to be fair; otherwise a dash with a reason.
-    @ViewBuilder private func vocabularyCell(_ s: AuthorStylometry?) -> some View {
-        if let s, s.isReliable {
-            Text(String(format: "%.2f", s.mattr100)).font(.caption).monospacedDigit()
-        } else {
-            Text("—").font(.caption).foregroundStyle(.secondary)
-                .accessibilityLabel(VoiceCopy.tooFewLines)
         }
     }
 
