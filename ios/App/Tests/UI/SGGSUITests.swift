@@ -1285,7 +1285,7 @@ final class SGGSUITests: XCTestCase {
             attachShot(app, "themes-family-jump")
         }
         let field = app.searchFields.firstMatch
-        if !field.exists { app.swipeDown() }
+        for _ in 0..<6 where !field.exists { app.swipeDown() }    // back to the top reveals the drawer
         XCTAssertTrue(field.waitForExistence(timeout: 8), "no search field")
         field.tap()
         field.typeText("ਹਉਮੈ")

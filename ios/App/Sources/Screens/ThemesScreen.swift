@@ -14,7 +14,9 @@ struct ThemesScreen: View {
     @State private var state: LoadState<[ThemeIndexRow]> = .loading
     @State private var today: ThemesToday?
     @State private var query = ""
-    @State private var sectionTops: [String: CGFloat] = [:]
+    /// Families whose header has scrolled under the bar; the last of them is the current chip.
+    /// Updated only when a header crosses the line, never on every scroll frame.
+    @State private var passed: Set<String> = []
     @AppStorage("sggs_themes_arrange") private var arrangeRaw = ThemeIndexModel.Arrangement.family.rawValue
     @AppStorage("sggs_themes_layout") private var layoutRaw = ThemeCardView.Style.grid.rawValue
 
@@ -99,7 +101,9 @@ struct ThemesScreen: View {
             cards(rows)
         }
         .id(key)
-        .onGeometryChange(for: CGFloat.self) { $0.frame(in: .named(Self.space)).minY } action: { sectionTops[key] = $0 }
+        .onGeometryChange(for: Bool.self) { $0.frame(in: .named(Self.space)).minY <= 140 } action: { isPast in
+            if isPast { passed.insert(key) } else { passed.remove(key) }
+        }
     }
 
     @ViewBuilder private func cards(_ rows: [ThemeIndexRow]) -> some View {
@@ -153,7 +157,7 @@ struct ThemesScreen: View {
     private func familyBar(_ rows: [ThemeIndexRow], _ proxy: ScrollViewProxy) -> some View {
         let groups = ThemeIndexModel.grouped(rows)
         let current = groups.map { $0.group?.key ?? "more" }
-            .last { (sectionTops[$0] ?? .infinity) <= 140 } ?? groups.first?.group?.key
+            .last { passed.contains($0) } ?? groups.first?.group?.key
         return ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: Theme.Space.s) {
                 ForEach(groups, id: \.group?.key) { section in
@@ -248,7 +252,7 @@ private struct TodayHero: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Theme of the day: \(ConceptName.display(concept))")
+            .accessibilityLabel("Theme of the day: \(ConceptName.display(concept))\(today.row?.headword.map { ", \($0)" } ?? "")")
             .accessibilityIdentifier("themes.today")
 
             Button {

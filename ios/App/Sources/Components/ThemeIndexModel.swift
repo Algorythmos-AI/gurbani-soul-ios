@@ -106,6 +106,7 @@ enum ThemeIndexModel {
     /// The VoiceOver summary of a card: the counts a sighted reader gets from the card's text.
     static func accessibilitySummary(_ r: ThemeIndexRow) -> String {
         var parts = [ConceptName.display(r.concept)]
+        if let head = r.headword { parts.append(head) }          // VoiceOver reads it in Punjabi
         parts.append("\(r.nVerses.formatted()) \(r.nVerses == 1 ? "verse" : "verses") in \(r.nShabads.formatted()) \(r.nShabads == 1 ? "shabad" : "shabads")")
         if let p = peakPhrase(r.angBins) { parts.append(p.prefix(1).lowercased() + p.dropFirst()) }
         let g = gloss(r.description)

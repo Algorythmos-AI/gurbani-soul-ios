@@ -74,6 +74,8 @@ final class ThemeIndexModelTests: XCTestCase {
         bins[14] = 20
         XCTAssertEqual(ThemeIndexModel.peakPhrase(bins), "Most in Angs 1401–1430", "the last stretch ends at 1430")
         let naam = try XCTUnwrap(try rows().first { $0.concept == "naam" })
-        XCTAssertTrue(ThemeIndexModel.accessibilitySummary(naam).hasPrefix("Naam, 5,672 verses in 2,472 shabads, most in Angs "))
+        let head = try XCTUnwrap(naam.headword)
+        XCTAssertTrue(ThemeIndexModel.accessibilitySummary(naam).hasPrefix("Naam, \(head), 5,672 verses in 2,472 shabads, most in Angs "),
+                      "VoiceOver hears the name, the Gurmukhi headword, then the counts")
     }
 }
