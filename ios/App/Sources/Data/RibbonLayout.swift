@@ -53,11 +53,13 @@ struct RibbonLayout: Equatable, Sendable {
         struct Item { let movement: Movement; let name: String; let english: String?
                       let first: Int; let last: Int; let seq: Int?; let shabads: Int? }
         var items: [Item] = []
-        items += map.opening.map { Item(movement: .opening, name: $0.name, english: GranthNames.section($0.name),
+        items += map.opening.map { Item(movement: .opening, name: $0.name,
+                                        english: GranthNames.section($0.name, firstAng: $0.firstAng, lastAng: $0.lastAng),
                                         first: $0.firstAng, last: $0.lastAng, seq: nil, shabads: nil) }
         items += map.raags.map { Item(movement: .raags, name: $0.name, english: GranthNames.raag($0.name, roman: $0.roman),
                                       first: $0.firstAng, last: $0.lastAng, seq: $0.seq, shabads: $0.nShabads) }
-        items += map.closing.map { Item(movement: .closing, name: $0.name, english: GranthNames.section($0.name),
+        items += map.closing.map { Item(movement: .closing, name: $0.name,
+                                        english: GranthNames.section($0.name, firstAng: $0.firstAng, lastAng: $0.lastAng),
                                         first: $0.firstAng, last: $0.lastAng, seq: nil, shabads: nil) }
         items = items.filter { $0.first >= 1 && $0.last >= $0.first }
 

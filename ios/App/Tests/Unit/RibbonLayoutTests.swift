@@ -70,6 +70,17 @@ final class RibbonLayoutTests: XCTestCase {
         XCTAssertNil(RibbonLayout(map: GranthMap(raags: [], sections: [])).segment(at: 3))
     }
 
+    func testScrubIgnoresScrollsAndLiftsOffTheStrip() {
+        XCTAssertTrue(SaroopRibbon.isScrub(.zero), "a tap is a scrub")
+        XCTAssertTrue(SaroopRibbon.isScrub(CGSize(width: 120, height: 30)))
+        XCTAssertTrue(SaroopRibbon.isScrub(CGSize(width: 4, height: 20)), "a little wobble is still a scrub")
+        XCTAssertFalse(SaroopRibbon.isScrub(CGSize(width: 10, height: 80)), "a vertical swipe scrolls the page")
+        XCTAssertTrue(SaroopRibbon.liftsOnStrip(y: 20, height: 38))
+        XCTAssertTrue(SaroopRibbon.liftsOnStrip(y: -20, height: 38))
+        XCTAssertFalse(SaroopRibbon.liftsOnStrip(y: 140, height: 38), "lifting well below cancels")
+        XCTAssertFalse(SaroopRibbon.liftsOnStrip(y: -90, height: 38), "lifting well above cancels")
+    }
+
     func testSpokenLabelsNameTheWorkAndItsPlace() throws {
         let (l, map) = try layout()
         let gauri = try XCTUnwrap(l.segments.first { $0.name == "ਗਉੜੀ" })

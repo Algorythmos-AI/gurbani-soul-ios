@@ -27,6 +27,7 @@ struct SaroopRibbon: View {
     @State private var focusIndex: Int?
 
     private let barHeight: CGFloat = 24
+    private var stripHeight: CGFloat { barHeight + 14 }
     /// Grows with Dynamic Type so the loupe's Gurmukhi and caption never clip.
     @ScaledMetric(relativeTo: .caption) private var loupeHeight: CGFloat = 52
 
@@ -45,25 +46,15 @@ struct SaroopRibbon: View {
                 VStack(spacing: 4) {
                     loupe(width: w)
                         .frame(height: loupeHeight)
+                    // Only the strip takes the finger: the loupe and hint above it are not targets.
                     strip(width: w)
-                        .frame(height: barHeight + 14)   // pins above, here-marker below
+                        .frame(height: stripHeight)   // pins above, here-marker below
+                        .contentShape(Rectangle())
+                        .gesture(scrub(width: w))
+                        .sensoryFeedback(.selection, trigger: scrubSegment?.id)
                 }
-                .contentShape(Rectangle())
-                .gesture(
-                    DragGesture(minimumDistance: 0)
-                        .updating($scrubX) { g, state, _ in
-                            guard w > 0 else { return }
-                            state = min(max(Double(g.location.x / w) * layout.length, 0), layout.length)
-                        }
-                        .onEnded { g in
-                            guard w > 0 else { return }
-                            let x = min(max(Double(g.location.x / w) * layout.length, 0), layout.length)
-                            if let s = layout.segment(at: x) { open(s, s.ang(at: x)) }
-                        }
-                )
-                .sensoryFeedback(.selection, trigger: scrubSegment?.id)
             }
-            .frame(height: loupeHeight + 4 + barHeight + 14)
+            .frame(height: loupeHeight + 4 + stripHeight)
             legend
         }
         .padding(Theme.Space.l)
@@ -76,17 +67,42 @@ struct SaroopRibbon: View {
         .accessibilityAdjustableAction { dir in
             let i = currentFocus
             switch dir {
-            case .increment: focusIndex = min(i + 1, layout.segments.count - 1)
+            case .increment: focusIndex = max(0, min(i + 1, layout.segments.count - 1))
             case .decrement: focusIndex = max(i - 1, 0)
             @unknown default: break
             }
         }
         .accessibilityAction {
+            guard layout.segments.indices.contains(currentFocus) else { return }
             let s = layout.segments[currentFocus]
             open(s, s.firstAng)
         }
         .accessibilityIdentifier("index_ribbon")
     }
+
+    // MARK: scrubbing
+
+    /// Slide to look, lift to open. A mostly-vertical drag is a page scroll, not a scrub (no loupe,
+    /// nothing opens), and lifting well off the strip cancels.
+    private func scrub(width w: CGFloat) -> some Gesture {
+        DragGesture(minimumDistance: 0)
+            .updating($scrubX) { g, state, _ in
+                guard w > 0, Self.isScrub(g.translation) else { state = nil; return }
+                state = min(max(Double(g.location.x / w) * layout.length, 0), layout.length)
+            }
+            .onEnded { g in
+                guard w > 0, Self.isScrub(g.translation),
+                      Self.liftsOnStrip(y: g.location.y, height: stripHeight) else { return }
+                let x = min(max(Double(g.location.x / w) * layout.length, 0), layout.length)
+                if let s = layout.segment(at: x) { open(s, s.ang(at: x)) }
+            }
+    }
+
+    /// Horizontal enough to be a scrub: vertical travel within 24 pt, or less than the horizontal.
+    static func isScrub(_ t: CGSize) -> Bool { abs(t.height) <= max(24, abs(t.width)) }
+
+    /// The finger lifted on, or close to, the strip (32 pt of slack above and below).
+    static func liftsOnStrip(y: CGFloat, height: CGFloat) -> Bool { y >= -32 && y <= height + 32 }
 
     // MARK: VoiceOver
 
