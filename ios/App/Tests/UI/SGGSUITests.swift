@@ -805,8 +805,12 @@ final class SGGSUITests: XCTestCase {
         app.navigationBars["Constellation"].buttons["See the whole sky"].tap()
         XCTAssertTrue(app.navigationBars["The whole sky"].waitForExistence(timeout: 12), "the Sky did not open")
         app.navigationBars["The whole sky"].buttons["View as list"].tap()
+        // Kaam sits in the third family (the Five Vices), below the first screen of the lazy list
         let kaam = app.buttons.containing(NSPredicate(format: "label BEGINSWITH %@", "Kaam,")).firstMatch
-        XCTAssertTrue(kaam.waitForExistence(timeout: 12), "the Sky's list twin has no Kaam row")
+        XCTAssertTrue(app.buttons.containing(NSPredicate(format: "label ENDSWITH %@", " verses")).firstMatch
+            .waitForExistence(timeout: 12), "the Sky's list twin did not load")
+        for _ in 0..<8 where !(kaam.exists && kaam.isHittable) { app.swipeUp() }
+        XCTAssertTrue(kaam.waitForExistence(timeout: 4), "the Sky's list twin has no Kaam row")
         kaam.tap()
         let kaamCaption = app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "verses carry Kaam")).firstMatch
         XCTAssertTrue(kaamCaption.waitForExistence(timeout: 12), "a Sky star did not focus its theme")
