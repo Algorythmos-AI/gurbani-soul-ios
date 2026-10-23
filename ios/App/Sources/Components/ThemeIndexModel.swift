@@ -31,9 +31,12 @@ enum ThemeIndexModel {
         s.unicodeScalars.contains { (0x0A00...0x0A7F).contains($0.value) }
     }
 
-    /// Themes matching a query, best first: name starts with it, then name contains it, then one of
-    /// its Gurmukhi words contains it, then the description does. Stable within each tier (the
+    /// Themes matching a query, best first: name starts with it, then name contains it; for a
+    /// Gurmukhi word, the theme whose headword it is, then themes that list it as one of their
+    /// words, then words that contain it; then the description. Stable within each tier (the
     /// incoming order). An empty query matches nothing (the caller shows the full index instead).
+    /// (A word can belong to several themes — ਹਉਮੈ is one of Garab's words too — so the theme it
+    /// heads comes first.)
     static func search(_ rows: [ThemeIndexRow], _ query: String) -> [ThemeIndexRow] {
         let q = fold(query)
         guard !q.isEmpty else { return [] }
@@ -45,8 +48,10 @@ enum ThemeIndexModel {
                 if name.hasPrefix(q) || slug.hasPrefix(q) { return 0 }
                 if name.contains(q) || slug.contains(q) { return 1 }
             }
-            if r.terms.contains(where: { fold($0).contains(q) }) { return 2 }
-            if fold(r.description).contains(q) { return 3 }
+            if let head = r.headword, fold(head) == q { return 2 }
+            if r.terms.contains(where: { fold($0) == q }) { return 3 }
+            if r.terms.contains(where: { fold($0).contains(q) }) { return 4 }
+            if fold(r.description).contains(q) { return 5 }
             return nil
         }
         return rows.enumerated()

@@ -52,7 +52,9 @@ struct ThemesScreen: View {
         }
         .background(Ink.canvas)
         .navigationTitle("Themes")
-        .searchable(text: $query, prompt: "Name, meaning or Gurmukhi word")
+        // always shown (not a pull-down drawer): the family bar and the jump scroll the page, and a
+        // drawer that hides on scroll left search out of reach
+        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Name, meaning or Gurmukhi word")
         .toolbar { ToolbarItem(placement: .topBarTrailing) { arrangeMenu } }
         .task { await load() }
     }
