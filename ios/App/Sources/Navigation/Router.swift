@@ -18,7 +18,7 @@ enum Route: Hashable {
     /// One Vaar's weave, by `vaars.vaar_id` (1…22).
     case vaar(Int)
     /// A Vaar read straight through (or its pauris only), optionally from a line.
-    case vaarReader(id: Int, paurisOnly: Bool, line: Int?)
+    case vaarReader(id: Int, paurisOnly: Bool, line: Int?, pauri: Int? = nil)
     case clock
     case nitnemJourney
     case theme(String)
@@ -137,6 +137,27 @@ final class Router {
             .replacingOccurrences(of: "_", with: " ")]
     }
 
+    /// The Vaars live under Explore. `id` must be a vaar id (1…22, `vaars.vaar_id`); `read` opens
+    /// the reader on top of the weave, at `pauri` or `line` when given (each range-checked).
+    func openVaar(_ id: Int?, read: Bool = false, pauri: Int? = nil, line: Int? = nil) {
+        guard let id else {
+            selectedTab = .explore
+            explorePath = NavigationPath([Route.vaars])
+            return
+        }
+        guard Router.vaarIds.contains(id) else { return }
+        selectedTab = .explore
+        var path: [Route] = [.vaars, .vaar(id)]
+        let p = pauri.flatMap { (1...36).contains($0) ? $0 : nil }
+        if read || p != nil || line != nil {
+            path.append(.vaarReader(id: id, paurisOnly: false, line: line, pauri: p))
+        }
+        explorePath = NavigationPath(path)
+    }
+
+    /// The 22 Vaars' ids in `vaars` (pinned by VaarTextTests on the shipped DB).
+    nonisolated static let vaarIds = 1...22
+
     /// Same allowlist as the API: lowercase ascii, digits, underscore, 1–32 chars.
     static func isValidBaniKey(_ key: String) -> Bool {
         !key.isEmpty && key.count <= 32 && key.allSatisfy { ("a"..."z").contains($0) || ("0"..."9").contains($0) || $0 == "_" }
@@ -152,7 +173,8 @@ final class Router {
     ///   sggs://bani/<key>[?variant=] · sggs://composition/<key>[?variant=] ·
     ///   sggs://raag/<slug> (gauri, nat-narayan, or the corpus roman) ·
     ///   sggs://constellation[?theme=naam&with=haumai | &alone=1] ·
-    ///   sggs://hukam (a fresh draw) · sggs://hukam/today (the Hukam of the day)
+    ///   sggs://hukam (a fresh draw) · sggs://hukam/today (the Hukam of the day) ·
+    ///   sggs://vaars · sggs://vaar/<1–22>[/read][?pauri=N | ?line=Y]
     /// `line` lands on that verse (scrolled + highlighted). Out-of-range/malformed values are
     /// ignored (never crash on a hostile URL).
     func handle(_ url: URL, container: AppContainer) {
@@ -184,6 +206,16 @@ final class Router {
             } else {
                 openBani(key: value)
             }
+        case "vaars":
+            container.dismissSheetForNavigation()
+            openVaar(nil)
+        case "vaar":
+            // sggs://vaar/5 · sggs://vaar/5/read · sggs://vaar/5?pauri=12 · sggs://vaar/5?line=20900
+            guard let id = Int(value), Router.vaarIds.contains(id) else { break }
+            let pauri = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+                .queryItems?.first(where: { $0.name == "pauri" })?.value.flatMap(Int.init)
+            container.dismissSheetForNavigation()
+            openVaar(id, read: url.pathComponents.dropFirst().dropFirst().first == "read", pauri: pauri, line: line)
         case "composition":
             openComposition(key: value, variant: variant ?? "")
         case "raag":

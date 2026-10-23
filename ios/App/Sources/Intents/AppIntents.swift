@@ -71,6 +71,39 @@ enum BaniChoice: String, AppEnum {
     ]
 }
 
+struct OpenVaarIntent: AppIntent {
+    static let title: LocalizedStringResource = "Read a Vaar"
+    static let description = IntentDescription("Open one of the 22 Vaars of Sri Guru Granth Sahib Ji, woven by voice, or read it straight through.")
+    static let openAppWhenRun = true
+
+    @Parameter(title: "Vaar", default: .asa) var vaar: VaarChoice
+    @Parameter(title: "Start reading", default: false) var read: Bool
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        await UIApplication.shared.open(URL(string: "sggs://vaar/\(vaar.rawValue)\(read ? "/read" : "")")!)
+        return .result()
+    }
+}
+
+/// The 22 Vaars by `vaars.vaar_id` (Granth order). Names follow the Vaar's raag and pauri voice;
+/// pinned to the shipped DB by VaarLinkTests.
+enum VaarChoice: Int, AppEnum, CaseIterable {
+    case sriRaag = 1, majh, gauriM4, gauriM5, asa, gujariM3, gujariM5, bihagara, vadhans, sorath, jaitsari,
+         suhi, bilaval, ramkaliM3, ramkaliM5, ramkaliSattaBalwand, maruM3, maruM5, basant, sarang, malar, kanara
+    static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Vaar")
+    static let caseDisplayRepresentations: [VaarChoice: DisplayRepresentation] = [
+        .sriRaag: "Sri Raag Ki Vaar (M4)", .majh: "Majh Ki Vaar (M1)", .gauriM4: "Gauri Ki Vaar (M4)",
+        .gauriM5: "Gauri Ki Vaar (M5)", .asa: "Asa Ki Vaar (M1)", .gujariM3: "Gujari Ki Vaar (M3)",
+        .gujariM5: "Gujari Ki Vaar (M5)", .bihagara: "Bihagara Ki Vaar (M4)", .vadhans: "Vadhans Ki Vaar (M4)",
+        .sorath: "Sorath Ki Vaar (M4)", .jaitsari: "Jaitsari Ki Vaar (M5)", .suhi: "Suhi Ki Vaar (M3)",
+        .bilaval: "Bilaval Ki Vaar (M4)", .ramkaliM3: "Ramkali Ki Vaar (M3)", .ramkaliM5: "Ramkali Ki Vaar (M5)",
+        .ramkaliSattaBalwand: "Ramkali Ki Vaar (Satta & Balwand)", .maruM3: "Maru Ki Vaar (M3)",
+        .maruM5: "Maru Ki Vaar (M5)", .basant: "Basant Ki Vaar (M5)", .sarang: "Sarang Ki Vaar (M4)",
+        .malar: "Malar Ki Vaar (M1)", .kanara: "Kanara Ki Vaar (M4)",
+    ]
+}
+
 struct SearchGurbaniIntent: AppIntent {
     static let title: LocalizedStringResource = "Search Gurbani"
     static let description = IntentDescription("Search the Granth by word, sound, first letters or theme.")
@@ -135,6 +168,10 @@ struct SGGSShortcuts: AppShortcutsProvider {
                     phrases: ["Read a bani in \(.applicationName)",
                               "Open Nitnem in \(.applicationName)"],
                     shortTitle: "Read a bani", systemImageName: "sun.horizon")
+        AppShortcut(intent: OpenVaarIntent(),
+                    phrases: ["Read a Vaar in \(.applicationName)",
+                              "Open the Vaars in \(.applicationName)"],
+                    shortTitle: "Read a Vaar", systemImageName: "list.number")
         AppShortcut(intent: SearchGurbaniIntent(),
                     phrases: ["Search Gurbani in \(.applicationName)"],
                     shortTitle: "Search Gurbani", systemImageName: "magnifyingglass")
