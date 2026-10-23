@@ -79,6 +79,17 @@ final class Router {
     /// A raag the Clock should focus when opened via deep link / Reader timing chip.
     var pendingClockRaag: String?
 
+    /// A deep-linked Constellation (sggs://constellation?theme=&with=); ConstellationScreen
+    /// consumes and clears it.
+    var pendingConstellation: ConstellationLink?
+
+    /// The Constellation lives under Explore: select the tab and put it on top of its stack.
+    func openConstellation(_ link: ConstellationLink) {
+        pendingConstellation = link
+        selectedTab = .explore
+        explorePath = NavigationPath([Route.constellation])
+    }
+
     /// The Raag Clock lives under Explore: select the tab and put the clock on top of its stack.
     func openClock(raag: String? = nil) {
         pendingClockRaag = raag
@@ -113,7 +124,8 @@ final class Router {
     /// The sggs:// deep-link table (widgets/App Intents/Spotlight route through here):
     ///   sggs://ang/1430[?line=Y] · sggs://theme/naam · sggs://shabad/123[?line=Y] ·
     ///   sggs://search?q=mercy · sggs://clock (optional /<raag-roman>) · sggs://nitnem ·
-    ///   sggs://bani/<key>[?variant=] · sggs://composition/<key>[?variant=]
+    ///   sggs://bani/<key>[?variant=] · sggs://composition/<key>[?variant=] ·
+    ///   sggs://constellation[?theme=naam&with=haumai | &alone=1]
     /// `line` lands on that verse (scrolled + highlighted). Out-of-range/malformed values are
     /// ignored (never crash on a hostile URL).
     func handle(_ url: URL, container: AppContainer) {
@@ -158,6 +170,12 @@ final class Router {
             }
         case "hukam":
             container.present(.hukam)
+        case "constellation":
+            let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+            func q(_ k: String) -> String? { items.first(where: { $0.name == k })?.value.flatMap(ConstellationLink.slug) }
+            container.dismissSheetForNavigation()
+            openConstellation(ConstellationLink(theme: q("theme") ?? "naam", with: q("with"),
+                                                alone: items.first(where: { $0.name == "alone" })?.value == "1"))
         case "search":
             let q = URLComponents(url: url, resolvingAgainstBaseURL: false)?
                 .queryItems?.first(where: { $0.name == "q" })?.value ?? ""
@@ -167,5 +185,19 @@ final class Router {
             }
         default: break
         }
+    }
+}
+
+/// A Constellation to land on: the centre theme, and optionally a pair (or its alone verses) to open.
+struct ConstellationLink: Hashable {
+    let theme: String
+    let with: String?
+    let alone: Bool
+
+    /// A theme key as the corpus spells them: lowercase ascii and underscores, 1–32 chars (a
+    /// hostile or malformed value is ignored, never queried).
+    static func slug(_ raw: String) -> String? {
+        let k = raw.lowercased()
+        return !k.isEmpty && k.count <= 32 && k.allSatisfy({ ("a"..."z").contains($0) || $0 == "_" }) ? k : nil
     }
 }

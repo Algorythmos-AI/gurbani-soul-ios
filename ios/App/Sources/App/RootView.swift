@@ -60,6 +60,7 @@ struct RootView: View {
                     case .shabad, .hukam: ShabadSheet(presentation: p.composition ?? .hukam)
                     case .trail(let start): TrailScreen(start: start)
                     case .pair(let request): PairSheet(request: request)
+                    case .themeCard(let concept): ThemeCardSheet(concept: concept)
                     case .baniContents(let r): BaniContentsSheet(request: r)
                     case .readingSettings: ReadingSettingsSheet()
                     }

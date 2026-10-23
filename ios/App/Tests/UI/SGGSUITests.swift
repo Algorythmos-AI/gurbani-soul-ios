@@ -801,6 +801,38 @@ final class SGGSUITests: XCTestCase {
         let count = app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "1,952 verses")).firstMatch
         XCTAssertTrue(count.waitForExistence(timeout: 8), "the alone sheet's count is wrong")
         app.navigationBars["Naam alone"].buttons["Done"].tap()
+        // the whole sky: every theme, and a star (here via the list twin) returns to Focus on it
+        app.navigationBars["Constellation"].buttons["See the whole sky"].tap()
+        XCTAssertTrue(app.navigationBars["The whole sky"].waitForExistence(timeout: 12), "the Sky did not open")
+        app.navigationBars["The whole sky"].buttons["View as list"].tap()
+        // Kaam sits in the third family (the Five Vices), below the first screen of the lazy list
+        let kaam = app.buttons.containing(NSPredicate(format: "label BEGINSWITH %@", "Kaam,")).firstMatch
+        XCTAssertTrue(app.buttons.containing(NSPredicate(format: "label ENDSWITH %@", " verses")).firstMatch
+            .waitForExistence(timeout: 12), "the Sky's list twin did not load")
+        for _ in 0..<8 where !(kaam.exists && kaam.isHittable) { app.swipeUp() }
+        XCTAssertTrue(kaam.waitForExistence(timeout: 4), "the Sky's list twin has no Kaam row")
+        kaam.tap()
+        let kaamCaption = app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "verses carry Kaam")).firstMatch
+        XCTAssertTrue(kaamCaption.waitForExistence(timeout: 12), "a Sky star did not focus its theme")
+        // the theme card: the centre star opens the description, the words and where it concentrates
+        app.navigationBars["Constellation"].buttons["View as map"].tap()
+        let centre = app.buttons["Kaam: about this theme"]
+        XCTAssertTrue(centre.waitForExistence(timeout: 12), "the centre star is not a button")
+        centre.tap()
+        XCTAssertTrue(app.navigationBars["Kaam"].waitForExistence(timeout: 12), "the theme card did not open")
+        let terms = app.staticTexts.containing(NSPredicate(format: "label CONTAINS[c] %@", "gurmukhi words that tag it")).firstMatch
+        XCTAssertTrue(terms.waitForExistence(timeout: 8), "the theme card has no terms section")
+        app.navigationBars["Kaam"].buttons["Done"].tap()
+    }
+
+    /// sggs://constellation?theme=&with= lands on Focus for the theme and opens the pair sheet.
+    func testConstellationDeepLink() {
+        let app = launchApp()
+        XCUIDevice.shared.system.open(URL(string: "sggs://constellation?theme=kaam&with=krodh")!)
+        XCTAssertTrue(app.navigationBars["Kaam ✦ Krodh"].waitForExistence(timeout: 15), "the pair sheet did not open from the link")
+        app.navigationBars["Kaam ✦ Krodh"].buttons["Done"].tap()
+        let caption = app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "verses carry Kaam")).firstMatch
+        XCTAssertTrue(caption.waitForExistence(timeout: 12), "the link did not land on Focus for Kaam")
     }
 
     /// English layer (personal profile): the English mode pill exists and returns results,
@@ -1473,6 +1505,28 @@ final class SGGSUITests: XCTestCase {
                 return true   // record, never fail
             }
         }
+        // Constellation v2: Focus and the Sky (report-only, like the tabs above)
+        openTab(app, "Explore", expectingNavBar: "Explore")
+        let cons = app.buttons["Constellation"].firstMatch
+        if cons.waitForExistence(timeout: 8) {
+            cons.tap()
+            _ = app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "verses carry Naam")).firstMatch.waitForExistence(timeout: 12)
+            try app.performAccessibilityAudit { @Sendable issue in
+                let el = issue.element.map { "\($0.elementType.rawValue) '\($0.label.prefix(40))'" } ?? "-"
+                log.add("Constellation\t\(issue.auditType.rawValue)\t\(issue.compactDescription)\t\(el)")
+                return true
+            }
+            let sky = app.navigationBars["Constellation"].buttons["See the whole sky"]
+            if sky.waitForExistence(timeout: 8) {
+                sky.tap()
+                _ = app.navigationBars["The whole sky"].waitForExistence(timeout: 12)
+                try app.performAccessibilityAudit { @Sendable issue in
+                    let el = issue.element.map { "\($0.elementType.rawValue) '\($0.label.prefix(40))'" } ?? "-"
+                    log.add("Sky\t\(issue.auditType.rawValue)\t\(issue.compactDescription)\t\(el)")
+                    return true
+                }
+            }
+        }
         let text = (["tab\tauditType\tissue\telement"] + log.all).joined(separator: "\n") + "\n"
         try text.write(toFile: "\(dir)/a11y-audit.txt", atomically: true, encoding: .utf8)
     }
@@ -1617,6 +1671,35 @@ final class SGGSUITests: XCTestCase {
         _ = app.navigationBars["Constellation"].waitForExistence(timeout: 8)
         _ = app.staticTexts["Naam"].waitForExistence(timeout: 8)   // centre bubble rendered
         shot("constellation")
+        shot("constellation-focus")
+        let consCentre = app.buttons["Naam: about this theme"]
+        if consCentre.waitForExistence(timeout: 8) {
+            consCentre.tap()
+            _ = app.navigationBars["Naam"].waitForExistence(timeout: 12)
+            shot("constellation-card")
+            app.navigationBars["Naam"].buttons["Done"].tap()
+        }
+        let consList = app.navigationBars["Constellation"].buttons["View as list"]
+        if consList.waitForExistence(timeout: 8) {
+            consList.tap()
+            let first = app.buttons.containing(NSPredicate(format: "label CONTAINS %@", "verses shared")).firstMatch
+            if first.waitForExistence(timeout: 8) {
+                first.tap()
+                _ = app.buttons.containing(NSPredicate(format: "label BEGINSWITH %@", "Show ")).firstMatch.waitForExistence(timeout: 12)
+                shot("constellation-pair")
+                app.buttons["Done"].firstMatch.tap()
+            }
+            app.navigationBars["Constellation"].buttons["View as map"].tap()
+        }
+        let sky = app.navigationBars["Constellation"].buttons["See the whole sky"]
+        if sky.waitForExistence(timeout: 8) {
+            sky.tap()
+            _ = app.navigationBars["The whole sky"].waitForExistence(timeout: 12)
+            _ = app.buttons.containing(NSPredicate(format: "label BEGINSWITH %@", "Naam:")).firstMatch.waitForExistence(timeout: 12)
+            shot("constellation-sky")
+            app.navigationBars.buttons.firstMatch.tap()   // back to Focus
+            _ = app.navigationBars["Constellation"].waitForExistence(timeout: 8)
+        }
         app.navigationBars.buttons.firstMatch.tap()   // back to the hub
         let lineage = app.buttons["Lineage"].firstMatch
         if lineage.waitForExistence(timeout: 8) { lineage.tap() }
