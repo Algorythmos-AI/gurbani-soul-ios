@@ -700,6 +700,11 @@ final class SGGSUITests: XCTestCase {
         openIndex(app)
         let japji = app.buttons["composition_japji"].firstMatch
         XCTAssertTrue(japji.waitForExistence(timeout: 12), "Japji Sahib must lead the composition rail")
+        // The Ribbon: one adjustable element that speaks the work it is on.
+        let ribbon = app.descendants(matching: .any)["index_ribbon"].firstMatch
+        XCTAssertTrue(ribbon.waitForExistence(timeout: 8), "the Granth Ribbon is missing")
+        XCTAssertTrue((ribbon.value as? String)?.contains("Raag") ?? false,
+                      "the Ribbon should start on a raag: \(String(describing: ribbon.value))")
         attachShot(app, "index_compositions")
 
         app.buttons["index_raags"].firstMatch.tap()
