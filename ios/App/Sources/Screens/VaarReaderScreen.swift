@@ -139,7 +139,7 @@ struct VaarReaderScreen: View {
         HStack(spacing: Theme.Space.s) {
             Circle().fill(VoiceInk.color(for: u.author)).frame(width: 8, height: 8)
             if let label = u.label {
-                GurmukhiText(verbatim: label.gurmukhi, size: 16).foregroundStyle(.secondary)
+                GurmukhiText(verbatim: label.gurmukhi, size: 16)
             } else {
                 Text(u.kind == .pauri ? "Pauri" : "Salok").font(.subheadline).foregroundStyle(.secondary)
             }
