@@ -95,9 +95,14 @@ public struct VoiceVerse: Sendable, Equatable, Identifiable {
 public struct RahaoDeck: Sendable, Equatable {
     /// Every rahao verse by this voice (a shabad can carry more than one).
     public let totalLines: Int
+    /// Shabads carrying a rahao verse, counted in the DB — `verses` may be capped, this never is.
+    public let shabads: Int
+    /// The first rahao verse of each shabad, up to the reader's limit.
     public let verses: [VoiceVerse]
-    public static let empty = RahaoDeck(totalLines: 0, verses: [])
-    public init(totalLines: Int, verses: [VoiceVerse]) { self.totalLines = totalLines; self.verses = verses }
+    public static let empty = RahaoDeck(totalLines: 0, shabads: 0, verses: [])
+    public init(totalLines: Int, shabads: Int, verses: [VoiceVerse]) {
+        self.totalLines = totalLines; self.shabads = shabads; self.verses = verses
+    }
 }
 
 /// One composition by a voice: where it opens and its first verse, verbatim.

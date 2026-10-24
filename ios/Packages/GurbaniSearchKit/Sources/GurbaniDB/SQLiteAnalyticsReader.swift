@@ -368,12 +368,13 @@ extension SQLiteCandidateSource {
     /// plus the total number of rahao verses.
     public func authorRahao(_ author: String, limit: Int = 80) -> RahaoDeck {
         var failed = false
-        var total = 0
+        var total = 0, shabads = 0
         var cs: OpaquePointer?
-        if sqlite3_prepare_v2(handle, "SELECT COUNT(*) FROM lines WHERE author=? AND is_rahao=1 AND is_header=0",
+        if sqlite3_prepare_v2(handle,
+            "SELECT COUNT(*), COUNT(DISTINCT comp_id) FROM lines WHERE author=? AND is_rahao=1 AND is_header=0",
                               -1, &cs, nil) == SQLITE_OK {
             sqlite3_bind_text(cs, 1, author, -1, Self.transientDtor)
-            if stepRow(cs, failed: &failed) { total = aInt(cs, 0) ?? 0 }
+            if stepRow(cs, failed: &failed) { total = aInt(cs, 0) ?? 0; shabads = aInt(cs, 1) ?? 0 }
         }
         sqlite3_finalize(cs)
         var verses: [VoiceVerse] = []
@@ -387,7 +388,7 @@ extension SQLiteCandidateSource {
             while stepRow(stmt, failed: &failed) { verses.append(verse(stmt)) }
         }
         sqlite3_finalize(stmt)
-        return failed ? .empty : RahaoDeck(totalLines: total, verses: verses)
+        return failed ? .empty : RahaoDeck(totalLines: total, shabads: shabads, verses: verses)
     }
 
     /// A voice's compositions in Granth order (optionally one raag only), each with its opening

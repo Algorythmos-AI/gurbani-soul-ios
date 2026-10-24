@@ -256,7 +256,12 @@ struct VoicePage: View {
         if !d.rahao.verses.isEmpty {
             VStack(alignment: .leading, spacing: Theme.Space.s) {
                 SectionEyebrow(text: "The heart of each shabad · Rahao")
-                Text("The rahao verse holds a shabad's centre. \(d.rahao.verses.count) of their shabads carry one; tap a verse to read the whole shabad.")
+                // Interpretation waits for the scholar (G3); the count is a structural fact.
+                if EditorialGate.aboutCopy {
+                    Text("The rahao verse holds a shabad's centre.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                Text("\(d.rahao.shabads.formatted()) of their shabads carry a rahao verse; tap one to read the whole shabad.")
                     .font(.caption).foregroundStyle(.secondary)
                 if typeSize.isAccessibilitySize {
                     VStack(spacing: Theme.Space.s) {
@@ -339,10 +344,12 @@ struct VoicePage: View {
         if !d.signatureVerses.isEmpty {
             VStack(alignment: .leading, spacing: Theme.Space.s) {
                 SectionEyebrow(text: "How they sign")
-                Text(contributor.mahala != nil
-                     ? "Every Guru signs the Bani with the name Nanak; the Mahala number in each heading tells the Gurus apart."
-                     : "This voice signs the Bani with their own name, usually in a shabad's closing verse.")
-                    .font(.callout)
+                if EditorialGate.aboutCopy {
+                    Text(contributor.mahala != nil
+                         ? "Every Guru signs the Bani with the name Nanak; the Mahala number in each heading tells the Gurus apart."
+                         : "This voice signs the Bani with their own name, usually in a shabad's closing verse.")
+                        .font(.callout)
+                }
                 if let n = d.facts?.chhapCount, n > 0 {
                     Text("\(n.formatted()) of their verses carry the signature.")
                         .font(.caption).foregroundStyle(.secondary)
@@ -389,8 +396,10 @@ struct VoicePage: View {
         if !d.dialogues.isEmpty {
             VStack(alignment: .leading, spacing: Theme.Space.m) {
                 SectionEyebrow(text: "In dialogue")
-                Text("In the salok collections, saloks of the Gurus are set beside saloks of the Bhagats.")
-                    .font(.caption).foregroundStyle(.secondary)
+                if EditorialGate.aboutCopy {
+                    Text("In the salok collections, saloks of the Gurus are set beside saloks of the Bhagats.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
                 ForEach(d.dialogues.prefix(6)) { pair in
                     VStack(alignment: .leading, spacing: Theme.Space.s) {
                         Text(name(of: pair.bhagatAuthor)).font(.subheadline.weight(.semibold))
@@ -452,7 +461,7 @@ struct VoicePage: View {
         if !list.isEmpty {
             VStack(alignment: .leading, spacing: Theme.Space.s) {
                 SectionEyebrow(text: "Lived alongside")
-                Text("From approximate dates — an overlap of lifetimes, not a record of meeting.")
+                Text("From circa dates — an overlap of lifetimes, not a record of meeting.")
                     .font(.caption).foregroundStyle(.secondary)
                 ForEach(list) { o in
                     Button {
