@@ -97,6 +97,49 @@ final class ThemePageTests: XCTestCase {
         XCTAssertEqual(Array(p.lines.prefix(50)).map(\.id), legacy)
     }
 
+    /// What the list shows is the DB row itself: Gurmukhi, Ang and shabad byte for byte.
+    func testListedVersesAreTheDatabaseRowsByteForByte() throws {
+        let path = try dbPath()
+        let db = try SQLiteCandidateSource(path: path)
+        var raw: OpaquePointer?
+        guard sqlite3_open_v2(path, &raw, SQLITE_OPEN_READONLY, nil) == SQLITE_OK else { throw XCTSkip("cannot open DB") }
+        defer { sqlite3_close(raw) }
+        for c in ["naam", "sahaj", "akal", "ik_onkar"] {
+            for line in try db.themePage(concept: c, limit: 200).lines {
+                var st: OpaquePointer?
+                XCTAssertEqual(sqlite3_prepare_v2(raw, "SELECT gurmukhi, ang, comp_id FROM lines WHERE id=?", -1, &st, nil), SQLITE_OK)
+                sqlite3_bind_int64(st, 1, Int64(line.id))
+                XCTAssertEqual(sqlite3_step(st), SQLITE_ROW)
+                let bytes = Array(UnsafeBufferPointer(start: sqlite3_column_blob(st, 0)?.assumingMemoryBound(to: UInt8.self),
+                                                      count: Int(sqlite3_column_bytes(st, 0))))
+                XCTAssertEqual(Array(line.gurmukhi.utf8), bytes, "\(c) line \(line.id): Gurmukhi differs from the DB")
+                XCTAssertEqual(line.ang, Int(sqlite3_column_int64(st, 1)))
+                XCTAssertEqual(line.compId, Int(sqlite3_column_int64(st, 2)))
+                sqlite3_finalize(st)
+            }
+        }
+    }
+
+    /// Filtered totals equal a brute-force SQL count written independently of the reader.
+    func testFilteredTotalsEqualABruteForceCount() throws {
+        let path = try dbPath()
+        let db = try SQLiteCandidateSource(path: path)
+        let cases: [(String, ThemeFilter, String, [String])] = [
+            ("sahaj", ThemeFilter(term: "ਸਹਜੇ"), "cl.term=?", ["ਸਹਜੇ"]),
+            ("naam", ThemeFilter(lens: ConstellationLens(rahaoOnly: true)), "l.is_rahao=1", []),
+            ("naam", ThemeFilter(lens: ConstellationLens(author: "Bhagat Kabir Ji")), "l.author=?", ["Bhagat Kabir Ji"]),
+            ("haumai", ThemeFilter(lens: ConstellationLens(angMin: 1, angMax: 100)), "l.ang BETWEEN 1 AND 100", []),
+            ("naam", ThemeFilter(term: "ਨਾਮੁ", lens: ConstellationLens(rahaoOnly: true, angMin: 500, angMax: 900)),
+             "cl.term=? AND l.is_rahao=1 AND l.ang BETWEEN 500 AND 900", ["ਨਾਮੁ"]),
+        ]
+        for (c, f, extra, binds) in cases {
+            let truth = try ints(path, "SELECT COUNT(DISTINCT cl.line_id) FROM concept_lines cl JOIN lines l ON l.id=cl.line_id "
+                                 + "WHERE cl.concept=? AND \(extra)", [c] + binds)
+            XCTAssertEqual([try db.themeCount(concept: c, filter: f)], truth, "\(c) \(extra)")
+            XCTAssertGreaterThan(truth.first ?? 0, 0, "\(c) \(extra): pick a case with verses")
+        }
+    }
+
     func testWordFormsPartitionTheTheme() throws {
         let path = try dbPath()
         let db = try SQLiteCandidateSource(path: path)

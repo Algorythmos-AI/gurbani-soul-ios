@@ -151,8 +151,12 @@ struct ThemeResultsScreen: View {
             if let m = feed.matched[line.id], !m.isEmpty {
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text("contains").font(.caption2).foregroundStyle(Ink.muted)
-                    GurmukhiText(verbatim: m.joined(separator: " · "), size: 15).foregroundStyle(palette.accentText)
+                    // Gurmukhi is always ink; the accent is the chip's border, never the letters
+                    GurmukhiText(verbatim: m.joined(separator: " · "), size: 15).foregroundStyle(.primary)
                 }
+                .padding(.horizontal, Theme.Space.s).padding(.vertical, 2)
+                .background(Ink.raised, in: RoundedRectangle(cornerRadius: Theme.Radius.chip))
+                .overlay(RoundedRectangle(cornerRadius: Theme.Radius.chip).strokeBorder(palette.accent.opacity(0.6)))
                 .accessibilityElement(children: .combine)
                 .accessibilityIdentifier("themes.verse.contains")
             }

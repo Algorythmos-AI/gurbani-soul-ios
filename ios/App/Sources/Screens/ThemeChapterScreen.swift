@@ -88,8 +88,10 @@ struct ThemeChapterScreen: View {
     private func wordFamily(_ b: ThemeBase) -> some View {
         VStack(alignment: .leading, spacing: Theme.Space.s) {
             SectionEyebrow(text: "The word family")
-            Text("The forms of its words as they appear in the text. Tap one to narrow this page to it.")
-                .font(.caption).foregroundStyle(Ink.muted)
+            if EditorialGate.aboutCopy {            // explanatory copy waits for the scholar review (G3)
+                Text("The forms of its words as they appear in the text. Tap one to narrow this page to it.")
+                    .font(.caption).foregroundStyle(Ink.muted)
+            }
             let cols = [GridItem(.adaptive(minimum: 96), spacing: Theme.Space.s, alignment: .leading)]
             LazyVGrid(columns: cols, alignment: .leading, spacing: Theme.Space.s) {
                 ForEach(b.words) { w in
@@ -129,9 +131,11 @@ struct ThemeChapterScreen: View {
     private func heartLines(_ d: ThemeDetail) -> some View {
         VStack(alignment: .leading, spacing: Theme.Space.s) {
             SectionEyebrow(text: "Heart-lines")
-            Text("Explanation: Rahao (pause) is the line a shabad returns to; it is traditionally read as the shabad's central thought. These Rahao lines carry \(name).")
-                .font(.caption).foregroundStyle(Ink.muted)
-                .fixedSize(horizontal: false, vertical: true)
+            if EditorialGate.aboutCopy {            // explanatory copy waits for the scholar review (G3)
+                Text("Explanation: Rahao (pause) is the line a shabad returns to; it is traditionally read as the shabad's central thought. These Rahao lines carry \(name).")
+                    .font(.caption).foregroundStyle(Ink.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             ForEach(d.heart.prefix(4)) { g in
                 verseCard(g.lines, compId: g.compId)
             }
@@ -146,7 +150,7 @@ struct ThemeChapterScreen: View {
 
     private func steeped(_ d: ThemeDetail) -> some View {
         VStack(alignment: .leading, spacing: Theme.Space.s) {
-            SectionEyebrow(text: "Shabads steeped in it")
+            SectionEyebrow(text: "Shabads where it fills half the verses")
             Text("Shabads of \(SteepedShabad.minLines) or more verses where at least half carry \(name), in reading order.")
                 .font(.caption).foregroundStyle(Ink.muted)
                 .fixedSize(horizontal: false, vertical: true)
@@ -210,9 +214,11 @@ struct ThemeChapterScreen: View {
                     concentration("Voices that carry it at a higher rate",
                                   card.authors.prefix(4).map { ($0, $0.entityId.replacingOccurrences(of: " Ji", with: "")) })
                 }
-                Text("A rate is the share of that raag's or voice's tagged verses that carry \(name), beside its share across the whole Granth; shown only where the sample is large enough to be reliable.")
-                    .font(.caption2).foregroundStyle(Ink.muted)
-                    .fixedSize(horizontal: false, vertical: true)
+                if EditorialGate.aboutCopy {        // explanatory copy waits for the scholar review (G3)
+                    Text("A rate is the share of that raag's or voice's tagged verses that carry \(name), beside its share across the whole Granth; shown only where the sample is large enough to be reliable.")
+                        .font(.caption2).foregroundStyle(Ink.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
         }
     }

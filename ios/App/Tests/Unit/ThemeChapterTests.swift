@@ -68,4 +68,10 @@ final class ThemeChapterTests: XCTestCase {
         r.handle(URL(string: "sggs://theme/")!, container: c)
         XCTAssertEqual(r.explorePath.count, 0)
     }
+
+    /// The theme page's explanatory copy (what Rahao is, the word-family note, the "higher rate"
+    /// explanation) waits for the scholar review: off until G3 signs it off.
+    func testExplanatoryCopyIsGatedOffUntilScholarReview() {
+        XCTAssertFalse(EditorialGate.aboutCopy)
+    }
 }
