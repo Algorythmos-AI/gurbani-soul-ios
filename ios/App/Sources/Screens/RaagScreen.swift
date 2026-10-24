@@ -360,14 +360,34 @@ struct PaharStrip: View {
     let primary: [Int]
     let variant: [Int]
     @Environment(\.palette) private var palette
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            row("Day", symbol: "sun.max", pahars: 1...4)
-            row("Night", symbol: "moon.stars", pahars: 5...8)
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                // Eight fixed cells cannot hold accessibility-size text: list the hours instead.
+                VStack(alignment: .leading, spacing: Theme.Space.xs) {
+                    ForEach(primary, id: \.self) { p in hourLine(p, kind: "Traditional") }
+                    ForEach(variant.filter { !primary.contains($0) }, id: \.self) { p in hourLine(p, kind: "Some charts") }
+                }
+            } else {
+                VStack(alignment: .leading, spacing: 6) {
+                    row("Day", symbol: "sun.max", pahars: 1...4)
+                    row("Night", symbol: "moon.stars", pahars: 5...8)
+                }
+            }
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(spoken)
+    }
+
+    private func hourLine(_ p: Int, kind: String) -> some View {
+        Label {
+            Text("\(kind): \(Pahar.label(p)), \(Pahar.range(p))").font(.subheadline)
+                .fixedSize(horizontal: false, vertical: true)
+        } icon: {
+            Image(systemName: p <= 4 ? "sun.max" : "moon.stars").foregroundStyle(palette.accent)
+        }
     }
 
     private var spoken: String {

@@ -644,9 +644,7 @@ final class SGGSUITests: XCTestCase {
         let app = launchApp(selectSearch: false)
         openIndex(app)
 
-        let card = app.buttons["composition_sukhmani"].firstMatch
-        XCTAssertTrue(card.waitForExistence(timeout: 12), "Sukhmani card missing from the Index")
-        card.tap()
+        compositionCard(app, "sukhmani").tap()
         XCTAssertTrue(app.navigationBars["Sukhmani Sahib"].waitForExistence(timeout: 15),
                       "the composition did not open its own reader")
         XCTAssertFalse(app.navigationBars["Ang 262"].exists, "must NOT drop into the Ang reader")
@@ -763,6 +761,51 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Index"].waitForExistence(timeout: 10), "a raag link sits on top of the Index")
         XCUIDevice.shared.system.open(URL(string: "sggs://raag/maalee-gaurhaa")!)
         XCTAssertTrue(app.navigationBars["Raag Mali Gaura"].waitForExistence(timeout: 15), "the corpus roman did not resolve")
+    }
+
+    /// A composition left part-way surfaces as "Continue reading" at the top of the Index and
+    /// resumes in one tap; its card shows where the reader is in its printed rhythm.
+    func testIndexContinueCardResumes() {
+        let app = launchApp(selectSearch: false)   // SGGS_UITEST starts with no progress
+        openIndex(app)
+        XCTAssertFalse(app.buttons["index_continue"].exists, "nothing is in progress yet")
+        compositionCard(app, "sukhmani").tap()
+        XCTAssertTrue(app.navigationBars["Sukhmani Sahib"].waitForExistence(timeout: 15))
+        app.buttons["Next ashtapadi"].firstMatch.tap()
+        app.buttons["Next ashtapadi"].firstMatch.tap()
+        app.navigationBars["Sukhmani Sahib"].buttons.element(boundBy: 0).tap()
+        let resume = app.buttons["index_continue"].firstMatch
+        XCTAssertTrue(resume.waitForExistence(timeout: 10), "the Continue card did not appear")
+        XCTAssertTrue(resume.label.contains("Sukhmani Sahib"), resume.label)
+        XCTAssertTrue(resume.label.contains("Ashtapadi 3 of 24"), "the card names the step: \(resume.label)")
+        attachShot(app, "index_continue")
+        resume.tap()
+        XCTAssertTrue(app.navigationBars["Sukhmani Sahib"].waitForExistence(timeout: 15), "Continue did not resume")
+    }
+
+    /// Find in Index: a familiar name, the corpus roman and Gurmukhi all find the raag.
+    func testFindInIndex() {
+        let app = launchApp(selectSearch: false)
+        openIndex(app)
+        let field = app.searchFields.firstMatch
+        if !field.waitForExistence(timeout: 4) { app.swipeDown() }
+        XCTAssertTrue(field.waitForExistence(timeout: 8), "the Index has no find field")
+        field.tap()
+        field.typeText("raamakalee")
+        let hit = app.buttons.containing(NSPredicate(format: "label BEGINSWITH %@", "Raag Ramkali")).firstMatch
+        XCTAssertTrue(hit.waitForExistence(timeout: 8), "the corpus roman did not find Ramkali")
+        attachShot(app, "index_find")
+        hit.tap()
+        XCTAssertTrue(app.navigationBars["Raag Ramkali"].waitForExistence(timeout: 12))
+    }
+
+    /// A hero card once the bani registry has resolved it. Before that the same identifier sits on
+    /// the no-registry fallback, which opens the Reader at the first Ang instead of the reader.
+    private func compositionCard(_ app: XCUIApplication, _ key: String) -> XCUIElement {
+        let card = app.buttons.matching(NSPredicate(format: "identifier == %@ AND label CONTAINS %@",
+                                                    "composition_\(key)", "read the composition")).firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 15), "\(key) card never resolved from the registry")
+        return card
     }
 
     /// Explore hub → Index, waiting for each step (the glass tab bar can swallow a first tap).
