@@ -40,6 +40,25 @@ final class IndexContinueAndHourTests: XCTestCase {
                      "a stale position alone never makes a card")
     }
 
+    /// The synchronous rule agrees with `resumeSeq` wherever it answers, and defers (nil) only
+    /// when the line count changed and the anchor must be checked against the loaded lines.
+    func testResumesWithoutLinesMatchesResumeSeq() {
+        let store = NitnemProgressStore(url: FileManager.default.temporaryDirectory
+            .appendingPathComponent("np-\(UUID().uuidString).json"))
+        let lines = (1...50).map { line($0, lineId: 1000 + $0) }
+        store.setPosition("same", seq: 20, anchor: 1020, nLines: 50)
+        store.setPosition("top", seq: 1, anchor: 1001, nLines: 50)
+        store.setPosition("legacy", seq: 30)
+        store.setPosition("changed", seq: 40, anchor: 999_999, nLines: 100)
+        for id in ["same", "top", "legacy"] {
+            XCTAssertEqual(ContinueReading.resumesWithoutLines(store.progress(for: id), nLines: 50),
+                           store.resumeSeq(for: id, lines: lines) != nil, id)
+        }
+        XCTAssertNil(ContinueReading.resumesWithoutLines(store.progress(for: "changed"), nLines: 50),
+                     "a changed line count defers to the anchor check")
+        XCTAssertEqual(ContinueReading.resumesWithoutLines(nil, nLines: 50), false)
+    }
+
     /// "In this hour" reckons through `RaagNowTimeline` (the widget's math); the Raag Clock
     /// reckons the same instant as `Pahar.paharSolar` over `PaharFormat.usableSun(sunTimes)`,
     /// else `Pahar.paharFromMinutes`. Both must agree for every hour, fixed and solar.
