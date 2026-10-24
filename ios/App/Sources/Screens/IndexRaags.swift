@@ -217,6 +217,9 @@ struct IndexRaagsTab: View {
         }
         .background(Ink.card, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
         .overlay(RoundedRectangle(cornerRadius: Theme.Radius.card).strokeBorder(Ink.hairline))
+        // A container element keeps its rows' own identifiers; an identifier on a bare stack
+        // is pushed down onto every row and would hide theirs from UI tests and automation.
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(id)
     }
 

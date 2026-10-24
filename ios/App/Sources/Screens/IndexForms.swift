@@ -80,6 +80,9 @@ struct IndexFormsTab: View {
             }
             ForEach(groups) { g in group(g) }
         }
+        // A container element keeps its rows' own identifiers; an identifier on a bare stack
+        // is pushed down onto every row and would hide theirs from UI tests and automation.
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("index_forms_list")
     }
 
