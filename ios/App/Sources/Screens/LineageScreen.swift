@@ -74,8 +74,9 @@ struct LineageScreen: View {
                                 bandView(band.title, band.members)
                             }
                         case .river:
+                            // River taps follow the same rule as cards: in compare mode they pick.
                             VoiceRiverView(voices: contributors.filter { kindFilter == "all" || $0.kind == kindFilter }) { c in
-                                open(c)
+                                select(c)
                             }
                         }
                     }
@@ -113,6 +114,11 @@ struct LineageScreen: View {
         }
         .sheet(item: $comparePair) { pair in
             CompareVoicesSheet(a: pair.a, b: pair.b, summaryA: summaries[pair.a.name], summaryB: summaries[pair.b.name])
+        }
+        // The Voice of the day turns over at the reader's midnight even if Lineage stays open.
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in refreshVoiceOfTheDay() }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+            refreshVoiceOfTheDay()
         }
         .task {
             if contributors == nil { contributors = ContributorsStore.load() }
@@ -203,20 +209,36 @@ struct LineageScreen: View {
         container.router.explorePath.append(VoiceLink(name: c.name))
     }
 
+    /// A tap on a voice (card or River lifespan): picks it in compare mode, else opens it.
+    private func select(_ c: Contributor) {
+        guard compareMode else { return open(c) }
+        if comparePicks.contains(c) { comparePicks.removeAll { $0 == c }; return }
+        comparePicks.append(c)
+        if comparePicks.count == 2 {
+            comparePair = ComparePair(a: comparePicks[0], b: comparePicks[1])
+            compareMode = false
+            comparePicks = []
+        }
+    }
+
     // MARK: voice of the day — one voice and one of its rahao verses, the same all day
+
+    private func refreshVoiceOfTheDay() {
+        guard let corpus = container.corpus else { return }
+        Task { voiceOfTheDay = await pickVoiceOfTheDay(corpus) }
+    }
 
     private func pickVoiceOfTheDay(_ corpus: CorpusActor) async -> VoiceOfTheDay? {
         let candidates = (contributors ?? []).filter { summaries[$0.name] != nil }.sorted { $0.name < $1.name }
-        guard !candidates.isEmpty else { return nil }
-        let day = max(0, HukamOfTheDay.dayNumber(of: Date()))
-        let c = candidates[day % candidates.count]
+        let day = HukamOfTheDay.dayNumber(of: Date())
+        guard let i = VoiceOfTheDayPick.voiceIndex(day: day, count: candidates.count) else { return nil }
+        let c = candidates[i]
         let deck = await corpus.authorRahao(c.name)
-        if !deck.verses.isEmpty {
-            return VoiceOfTheDay(contributor: c, verse: deck.verses[(day / candidates.count) % deck.verses.count])
-        }
-        guard let first = await corpus.authorCompositions(c.name).first else { return nil }
-        return VoiceOfTheDay(contributor: c, verse: VoiceVerse(id: first.firstLineId, ang: first.ang,
-                                                               compId: first.compId, gurmukhi: first.opening))
+        let fallback = deck.verses.isEmpty ? await corpus.authorCompositions(c.name).first.map {
+            VoiceVerse(id: $0.firstLineId, ang: $0.ang, compId: $0.compId, gurmukhi: $0.opening)
+        } : nil
+        return VoiceOfTheDayPick.verse(day: day, voiceCount: candidates.count, rahao: deck.verses, fallback: fallback)
+            .map { VoiceOfTheDay(contributor: c, verse: $0) }
     }
 
     private func voiceOfTheDayCard(_ v: VoiceOfTheDay) -> some View {
@@ -247,17 +269,18 @@ struct LineageScreen: View {
 
     @ViewBuilder private var didYouKnow: some View {
         let bhatts = summaries.values.filter { $0.author.hasPrefix("Bhatt ") }
-        let facts = didYouKnowFacts(bhatts: bhatts)
+        let facts = LineageFacts.build(signatureRaags: signatureRaags, dialogue: dialogueSpan,
+                                       bhatts: bhatts, name: displayName)
         if !facts.isEmpty {
             VStack(alignment: .leading, spacing: Theme.Space.s) {
                 SectionEyebrow(text: "Did you know")
                 ForEach(facts, id: \.id) { f in
-                    Button { if let c = f.voice { open(c) } } label: {
+                    Button { if let c = f.author.flatMap(voice) { open(c) } } label: {
                         HStack(alignment: .top, spacing: Theme.Space.s) {
                             if let g = f.gurmukhi { GurmukhiText(verbatim: g, size: 20) }
                             Text(f.text).font(.callout)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            if f.voice != nil {
+                            if f.author != nil {
                                 Image(systemName: "chevron.right").font(.caption2).foregroundStyle(.tertiary)
                             }
                         }
@@ -267,39 +290,16 @@ struct LineageScreen: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .disabled(f.voice == nil)
+                    .disabled(f.author == nil)
                     .accessibilityElement(children: .combine)
                 }
             }
         }
     }
 
-    struct Fact { let id: String; let gurmukhi: String?; let text: String; let voice: Contributor? }
-
     private func voice(_ author: String) -> Contributor? { contributors?.first { $0.name == author } }
     private func displayName(_ author: String) -> String { voice(author)?.displayName ?? AuthorName(author).english }
 
-    private func didYouKnowFacts(bhatts: [VoiceSummary]) -> [Fact] {
-        var out: [Fact] = []
-        for r in signatureRaags.prefix(2) {
-            out.append(Fact(id: "raag-\(r.raag)", gurmukhi: r.raag,
-                            text: "appears in the Granth only in \(displayName(r.author))'s Bani, from Ang \(r.firstAng).",
-                            voice: voice(r.author)))
-        }
-        if let d = dialogueSpan {
-            let gurus = d.gurus.map(displayName).joined(separator: " and ")
-            let bhagats = d.bhagats.map(displayName).joined(separator: " and ")
-            out.append(Fact(id: "dialogues", gurmukhi: nil,
-                            text: "Saloks of \(gurus) are set beside saloks of \(bhagats), Angs \(d.firstAng)–\(d.lastAng).",
-                            voice: nil))
-        }
-        if bhatts.count > 1, let first = bhatts.map(\.firstAng).min(), let last = bhatts.map(\.lastAng).max() {
-            out.append(Fact(id: "bhatts", gurmukhi: nil,
-                            text: "\(bhatts.count) Bhatts each have Swaiyye in the Granth, Angs \(first)–\(last).",
-                            voice: nil))
-        }
-        return out
-    }
 
     // MARK: bands (time / kind / volume)
 
@@ -355,21 +355,7 @@ struct LineageScreen: View {
         let summary = summaries[c.name]
         let picked = comparePicks.contains(c)
         let k = c.kindColor
-        return Button {
-            if compareMode {
-                if picked { comparePicks.removeAll { $0 == c } }
-                else {
-                    comparePicks.append(c)
-                    if comparePicks.count == 2 {
-                        comparePair = ComparePair(a: comparePicks[0], b: comparePicks[1])
-                        compareMode = false
-                        comparePicks = []
-                    }
-                }
-            } else {
-                container.router.explorePath.append(VoiceLink(name: c.name))
-            }
-        } label: {
+        return Button { select(c) } label: {
             HStack(alignment: .top, spacing: Theme.Space.s) {
                 // year column
                 Text(c.timelineYear == 9999 ? "—" : (c.circa ? "c. " : "") + String(c.timelineYear))

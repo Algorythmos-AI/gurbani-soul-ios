@@ -16,12 +16,16 @@ struct VoiceRiverView: View {
 
     static let startYear = 1160
     static let endYear = 1720
-    /// Milestones of the Granth itself (widely documented dates).
-    static let milestones: [(year: Int, title: String)] = [
-        (1604, "The Adi Granth is compiled"),
-        (1706, "The Damdama Sahib Bir adds Guru Tegh Bahadur Ji's Bani"),
-        (1708, "Guruship passes to the Granth"),
+    /// Milestones of the Granth itself. Historical claims without a reviewed source yet, so they
+    /// wait for the scholar (G3) behind `EditorialGate.aboutCopy`; dates follow the circa rule.
+    static let milestones: [(year: Int, label: String, title: String)] = [
+        (1604, "1604", "The Adi Granth is compiled"),
+        (1706, "c. 1705–06", "The Damdama Sahib Bir adds Guru Tegh Bahadur Ji's Bani"),
+        (1708, "1708", "Guruship passes to the Granth"),
     ]
+    static var shownMilestones: [(year: Int, label: String, title: String)] {
+        EditorialGate.aboutCopy ? milestones : []
+    }
 
     private var dated: [Contributor] {
         voices.filter { $0.born != nil || $0.died != nil }
@@ -36,7 +40,7 @@ struct VoiceRiverView: View {
             } else {
                 chart
                 scrubber
-                milestoneLegend
+                if !Self.shownMilestones.isEmpty { milestoneLegend }
             }
             Text("Lifespans are approximate. A faded end marks a date scholars give only as \u{201C}c.\u{201D}")
                 .font(.caption).foregroundStyle(.secondary)
@@ -62,8 +66,7 @@ struct VoiceRiverView: View {
                     .frame(width: width, height: height)
                     .contentShape(Rectangle())
                     .onTapGesture { location in
-                        let lane = Int((location.y - Self.axisHeight) / Self.laneHeight)
-                        if lanes.indices.contains(lane) { onOpen(lanes[lane]) }
+                        if let lane = Self.lane(atY: location.y), lanes.indices.contains(lane) { onOpen(lanes[lane]) }
                     }
             }
         }
@@ -74,6 +77,13 @@ struct VoiceRiverView: View {
                 .onEnded { value in zoom = min(4, max(1, zoom * value.magnification)) }
         )
         .accessibilityHidden(true)   // the list twin is the VoiceOver path
+    }
+
+    /// The lifespan row under a tap; nil on the year-label strip above the first row (`Int()`
+    /// would truncate a small negative offset to row 0).
+    static func lane(atY y: CGFloat) -> Int? {
+        guard y >= axisHeight else { return nil }
+        return Int(floor((y - axisHeight) / laneHeight))
     }
 
     private func x(_ year: Double, _ width: CGFloat) -> CGFloat {
@@ -90,7 +100,7 @@ struct VoiceRiverView: View {
                      at: CGPoint(x: gx, y: 8), anchor: .center)
         }
         // milestones: dashed lines
-        for m in Self.milestones {
+        for m in Self.shownMilestones {
             var p = Path()
             let mx = x(Double(m.year), w)
             p.move(to: CGPoint(x: mx, y: Self.axisHeight - 4)); p.addLine(to: CGPoint(x: mx, y: size.height))
@@ -99,7 +109,8 @@ struct VoiceRiverView: View {
         // lifespans
         for (i, c) in lanes.enumerated() {
             let y = Self.axisHeight + CGFloat(i) * Self.laneHeight
-            let born = Double(c.born ?? (c.died ?? 0) - 40), died = Double(c.died ?? (c.born ?? 0) + 40)
+            guard let span = LifespanLogic.bounds(c) else { continue }
+            let born = Double(span.lowerBound), died = Double(span.upperBound)
             let x0 = x(born, w), x1 = max(x0 + 3, x(died, w))
             let rect = CGRect(x: x0, y: y + 6, width: x1 - x0, height: Self.laneHeight - 14)
             let alive = scrubYear.map { Double($0) >= born && Double($0) <= died } ?? true
@@ -148,7 +159,7 @@ struct VoiceRiverView: View {
                 })
             }
             .frame(height: 28)
-            .sensoryFeedback(.selection, trigger: scrubYear)
+            .sensoryFeedback(.selection, trigger: scrubYear.map { $0 / 10 })   // a tick per decade
             .accessibilityElement()
             .accessibilityLabel("Year")
             .accessibilityValue(scrubYear.map(String.init) ?? "none")
@@ -162,20 +173,12 @@ struct VoiceRiverView: View {
         }
     }
 
-    private var readout: String {
-        guard let y = scrubYear else { return "Drag along the years to see who was alive." }
-        let alive = dated.filter { c in
-            guard let b = c.born ?? c.died.map({ $0 - 40 }), let d = c.died ?? c.born.map({ $0 + 40 }) else { return false }
-            return b <= y && y <= d
-        }
-        return alive.isEmpty ? "c. \(y): none of these voices by the dates given"
-            : "c. \(y): " + alive.map(\.displayName).joined(separator: ", ")
-    }
+    private var readout: String { LifespanLogic.readout(year: scrubYear, voices: dated) }
 
     private var milestoneLegend: some View {
         VStack(alignment: .leading, spacing: 2) {
-            ForEach(Self.milestones, id: \.year) { m in
-                Label { Text("\(String(m.year)) · \(m.title)") } icon: {
+            ForEach(Self.shownMilestones, id: \.year) { m in
+                Label { Text("\(m.label) · \(m.title)") } icon: {
                     Image(systemName: "line.diagonal").rotationEffect(.degrees(45))
                 }
                 .font(.caption).foregroundStyle(.secondary)
@@ -189,15 +192,15 @@ struct VoiceRiverView: View {
         // Voices and milestones in one chronological list.
         enum Row: Identifiable {
             case voice(Contributor)
-            case milestone(Int, String)
+            case milestone(Int, String, String)
             var id: String {
-                switch self { case .voice(let c): return c.name; case .milestone(let y, _): return "m\(y)" }
+                switch self { case .voice(let c): return c.name; case .milestone(let y, _, _): return "m\(y)" }
             }
             var year: Int {
-                switch self { case .voice(let c): return c.timelineYear; case .milestone(let y, _): return y }
+                switch self { case .voice(let c): return c.timelineYear; case .milestone(let y, _, _): return y }
             }
         }
-        let rows = (dated.map(Row.voice) + Self.milestones.map { Row.milestone($0.year, $0.title) })
+        let rows = (dated.map(Row.voice) + Self.shownMilestones.map { Row.milestone($0.year, $0.label, $0.title) })
             .sorted { $0.year < $1.year }
         return VStack(alignment: .leading, spacing: 0) {
             ForEach(rows) { row in
@@ -215,8 +218,8 @@ struct VoiceRiverView: View {
                     .buttonStyle(.plain)
                     .accessibilityElement(children: .combine)
                     .accessibilityHint("Opens their page")
-                case .milestone(let y, let title):
-                    Label("\(String(y)) · \(title)", systemImage: "flag")
+                case .milestone(_, let label, let title):
+                    Label("\(label) · \(title)", systemImage: "flag")
                         .font(.callout.weight(.semibold))
                         .padding(.vertical, Theme.Space.s)
                 }
