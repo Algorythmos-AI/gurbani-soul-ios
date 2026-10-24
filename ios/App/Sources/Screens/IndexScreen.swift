@@ -33,8 +33,13 @@ struct IndexScreen: View {
     /// True once the forms read has returned (with rows, or none on a build without the layer).
     @State private var formsLoaded = false
 
-    private let tabs: [(id: String, label: String)] =
-        [("compositions", "Compositions"), ("raags", "Raags"), ("forms", "Forms"), ("authors", "Voices")]
+    /// The pills. Forms appears only once the DB has shown it carries the heading-genre layer: a
+    /// build without it gets no Forms pill rather than an empty tab.
+    private var tabs: [(id: String, label: String)] {
+        [("compositions", "Compositions"), ("raags", "Raags")]
+            + (forms.isEmpty ? [] : [("forms", "Forms")])
+            + [("authors", "Voices")]
+    }
 
     private var columns: [GridItem] {
         let n = dynamicTypeSize.isAccessibilitySize ? 1 : 2
@@ -67,7 +72,7 @@ struct IndexScreen: View {
                                           openRaag: { openRaag($0, at: $0.firstAng) },
                                           openSection: { container.router.openAng($0.firstAng) },
                                           openClock: { container.router.explorePath.append(Route.clock) })
-                        case "forms":
+                        case "forms" where !forms.isEmpty || !formsLoaded:
                             IndexFormsTab(forms: forms, loaded: formsLoaded) { container.present(.shabad(compId: $0)) }
                         case "authors": authorsList(meta)
                         default: compositionsGrid
