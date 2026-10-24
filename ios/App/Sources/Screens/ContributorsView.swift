@@ -14,7 +14,8 @@ struct ContributorsView: View {
         var id: String { rawValue }
     }
     @State private var order: Order = .granth
-    @ScaledMetric(relativeTo: .caption) private var barRow: CGFloat = 22
+    @ScaledMetric(relativeTo: .caption) private var barRow: CGFloat = 24
+    @ScaledMetric(relativeTo: .caption) private var axisAllowance: CGFloat = 40   // x-axis ticks + title
 
     private var ordered: [AuthorStat] {
         Self.ordered(authors, by: order, firstAngs: rows.mapValues(\.firstAng))
@@ -41,12 +42,16 @@ struct ContributorsView: View {
                 .accessibilityIdentifier("contributorsOrder")
                 Chart(ordered) { a in
                     BarMark(x: .value("Lines", a.nLines),
-                            y: .value("Voice", AuthorName(a.author).compact))
+                            y: .value("Voice", AuthorName(a.author).compact),
+                            height: .ratio(0.7))
                         .foregroundStyle(AccentPalette.soul.accentFill)   // brand gold, as fill only
                 }
                 .chartXAxisLabel("Lines")
                 .chartYScale(domain: ordered.map { AuthorName($0.author).compact })
-                .frame(height: CGFloat(max(ordered.count, 1)) * barRow)
+                // Names in a leading column: the default draws each label inside its band,
+                // above the bar, which squeezes a 24-pt row's bar to a hairline.
+                .chartYAxis { AxisMarks(preset: .aligned, position: .leading) { _ in AxisValueLabel() } }
+                .frame(height: CGFloat(max(ordered.count, 1)) * barRow + axisAllowance)
                 .accessibilityChartDescriptor(ContributorsChartDescriptor(authors: ordered, order: order))
             } footer: {
                 Text(order == .granth
