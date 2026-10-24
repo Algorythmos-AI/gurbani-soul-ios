@@ -76,7 +76,7 @@ struct LineageScreen: View {
             AuthorProfileSheet(contributor: c, summary: summaries[c.name])
         }
         .sheet(item: $comparePair) { pair in
-            CompareVoicesSheet(a: pair.a, b: pair.b)
+            CompareVoicesSheet(a: pair.a, b: pair.b, summaryA: summaries[pair.a.name], summaryB: summaries[pair.b.name])
         }
         .task {
             if contributors == nil { contributors = ContributorsStore.load() }
@@ -519,6 +519,9 @@ struct FlowChipsRow: View {
 struct CompareVoicesSheet: View {
     let a: Contributor
     let b: Contributor
+    /// Canonical counts (`lines`, headers excluded) — the same numbers as the cards.
+    var summaryA: VoiceSummary? = nil
+    var summaryB: VoiceSummary? = nil
     @Environment(AppContainer.self) private var container
     @Environment(\.dismiss) private var dismiss
     @State private var pa: AuthorProfile?
@@ -596,20 +599,33 @@ struct CompareVoicesSheet: View {
         Grid(alignment: .leading, horizontalSpacing: Theme.Space.m, verticalSpacing: Theme.Space.xs) {
             GridRow {
                 Text("").font(.caption)
-                Text(a.displayName).font(.caption.weight(.semibold)).foregroundStyle(Theme.accent)
-                Text(b.displayName).font(.caption.weight(.semibold)).foregroundStyle(Ink.info)
+                Text(a.displayName).font(.caption.weight(.semibold))
+                Text(b.displayName).font(.caption.weight(.semibold))
             }
-            statRow("Lines", pa.stylometry?.nLines, pb.stylometry?.nLines)
-            statRow("Compositions", pa.stylometry?.nShabads, pb.stylometry?.nShabads)
-            statRow("Raags", pa.stylometry?.nRaags, pb.stylometry?.nRaags)
+            statRow("Verses", summaryA?.nVerses, summaryB?.nVerses)
+            statRow("Compositions", summaryA?.nCompositions, summaryB?.nCompositions)
+            GridRow {
+                Text("Raags").font(.caption)
+                raagCell(summaryA)
+                raagCell(summaryB)
+            }
         }
     }
 
     private func statRow(_ label: String, _ va: Int?, _ vb: Int?) -> some View {
         GridRow {
             Text(label).font(.caption)
-            Text(String(va ?? 0)).font(.caption).monospacedDigit()
-            Text(String(vb ?? 0)).font(.caption).monospacedDigit()
+            Text(va.map { $0.formatted() } ?? "—").font(.caption).monospacedDigit()
+            Text(vb.map { $0.formatted() } ?? "—").font(.caption).monospacedDigit()
+        }
+    }
+
+    /// "Outside the raag sections" for a voice with no raag (the Bhatts), never "0".
+    @ViewBuilder private func raagCell(_ s: VoiceSummary?) -> some View {
+        if let s, s.nRaags == 0 {
+            Text(VoiceCopy.outsideRaags).font(.caption)
+        } else {
+            Text(s.map { $0.nRaags.formatted() } ?? "—").font(.caption).monospacedDigit()
         }
     }
 }

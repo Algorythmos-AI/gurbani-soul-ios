@@ -43,9 +43,8 @@ final class VoiceReaderTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(voices.count, 29)   // 29 today (Baba Sundar Ji's Sadu awaits the sggs-data fix)
         for v in voices {
             let analytics = scalar(db, "SELECT n_lines FROM author_analytics WHERE author=?", v.author)
-            if analytics >= 0 {
-                XCTAssertEqual(v.nVerses, analytics, "\(v.author): card and page must show the same count")
-            }
+            XCTAssertGreaterThanOrEqual(analytics, 0, "\(v.author): no author_analytics row")
+            XCTAssertEqual(v.nVerses, analytics, "\(v.author): card and page must show the same count")
             XCTAssertEqual(v.angs.count,
                            scalar(db, "SELECT COUNT(DISTINCT ang) FROM lines WHERE is_header=0 AND author=?", v.author),
                            "\(v.author): barcode bits = distinct Angs")
