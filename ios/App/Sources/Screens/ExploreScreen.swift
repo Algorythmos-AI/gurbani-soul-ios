@@ -35,7 +35,7 @@ struct ExploreScreen: View {
             .init(route: .constellation, title: "Constellation",
                   caption: "Which other themes a theme's verses carry", icon: "circle.hexagongrid"),
             .init(route: .vaars, title: "Vaars",
-                  caption: "\(vaars) — pauri & salok anatomy", icon: "list.number"),
+                  caption: "\(vaars) — their voices, woven", icon: "list.number"),
             .init(route: .clock, title: "Raag Clock",
                   caption: "Which raags are sung in this watch", icon: "clock"),
         ]
@@ -113,6 +113,7 @@ struct RouteDestination: View {
         case .insights: InsightsScreen()
         case .constellation: ConstellationScreen()
         case .vaars: VaarsScreen()
+        case .vaar(let id): VaarWeaveScreen(vaarId: id)
         case .clock: ClockScreen()
         case .nitnemJourney: NitnemJourneyScreen()
         case .theme(let name): ThemeResultsScreen(concept: name)
