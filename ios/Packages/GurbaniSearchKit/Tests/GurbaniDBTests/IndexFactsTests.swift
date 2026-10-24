@@ -47,6 +47,8 @@ final class IndexFactsTests: XCTestCase {
             XCTAssertEqual(Set(byName.ghars).count, byName.ghars.count)
             let attributed = try scalar(db, "SELECT COUNT(*) FROM lines WHERE raag=? AND is_header=0 AND author IS NOT NULL", r.name)
             XCTAssertEqual(byName.voices.reduce(0) { $0 + $1.nLines }, attributed, "\(r.name) voice total")
+            XCTAssertEqual(byName.nVerses, try scalar(db, "SELECT COUNT(*) FROM lines WHERE raag=? AND is_header=0", r.name))
+            XCTAssertLessThanOrEqual(attributed, byName.nVerses)
             XCTAssertEqual(byName.voices.map(\.nLines), byName.voices.map(\.nLines).sorted(by: >))
             for g in byName.genres { XCTAssertTrue((r.firstAng...r.lastAng).contains(g.firstAng), "\(g.genre) outside \(r.name)") }
             for f in byName.forms { XCTAssertTrue((r.firstAng...r.lastAng).contains(f.firstAng), "\(f.form) outside \(r.name)") }

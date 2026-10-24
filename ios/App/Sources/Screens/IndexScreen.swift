@@ -49,7 +49,8 @@ struct IndexScreen: View {
                         case "raags":
                             IndexRaagsTab(map: GranthMap(meta: meta), pahars: pahars,
                                           openRaag: { openRaag($0, at: $0.firstAng) },
-                                          openSection: { container.router.openAng($0.firstAng) })
+                                          openSection: { container.router.openAng($0.firstAng) },
+                                          openClock: { container.router.explorePath.append(Route.clock) })
                         case "authors": authorsList(meta)
                         default: compositionsGrid
                         }
@@ -89,9 +90,9 @@ struct IndexScreen: View {
         }
     }
 
-    /// Where a raag opens. The Reader at `ang` for now; the Raag page takes over in the next step.
+    /// A raag opens its own page, pushed on this Explore stack (back returns to the Index).
     private func openRaag(_ r: RaagRow, at ang: Int) {
-        container.router.openAng(ang)
+        container.router.explorePath.append(Route.raag(r.name))
     }
 
     private func loadRegistry() async {

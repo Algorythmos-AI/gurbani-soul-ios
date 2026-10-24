@@ -20,6 +20,18 @@ enum GranthNames {
         "ਕਾਨੜਾ": "Kanra", "ਕਲਿਆਨੁ": "Kalyan", "ਪ੍ਰਭਾਤੀ": "Prabhati", "ਜੈਜਾਵੰਤੀ": "Jaijavanti",
     ]
 
+    /// The corpus `roman` of each raag → its Gurmukhi name. Lets a deep link that uses the corpus
+    /// spelling (the Raag Clock's form) resolve before the DB opens; a unit test pins it to the DB.
+    static let romanToRaag: [String: String] = [
+        "sireeraag": "ਸਿਰੀਰਾਗੁ", "maajh": "ਮਾਝ", "gaurhee": "ਗਉੜੀ", "aasaa": "ਆਸਾ", "goojaree": "ਗੂਜਰੀ",
+        "devagandhaaree": "ਦੇਵਗੰਧਾਰੀ", "bihaagarhaa": "ਬਿਹਾਗੜਾ", "vadahans": "ਵਡਹੰਸੁ", "sorath": "ਸੋਰਠਿ",
+        "dhanaasaree": "ਧਨਾਸਰੀ", "jaitasaree": "ਜੈਤਸਰੀ", "todee": "ਟੋਡੀ", "bairaarhee": "ਬੈਰਾੜੀ",
+        "tilang": "ਤਿਲੰਗ", "soohee": "ਸੂਹੀ", "bilaaval": "ਬਿਲਾਵਲੁ", "gond": "ਗੋਂਡ", "raamakalee": "ਰਾਮਕਲੀ",
+        "nat": "ਨਟ", "maalee gaurhaa": "ਮਾਲੀ ਗਉੜਾ", "maaroo": "ਮਾਰੂ", "tukhaaree": "ਤੁਖਾਰੀ",
+        "kedaaraa": "ਕੇਦਾਰਾ", "bhairau": "ਭੈਰਉ", "basant": "ਬਸੰਤੁ", "saarang": "ਸਾਰੰਗ", "malaar": "ਮਲਾਰ",
+        "kaanarhaa": "ਕਾਨੜਾ", "kaliaan": "ਕਲਿਆਨੁ", "prabhaatee": "ਪ੍ਰਭਾਤੀ", "jaijaavantee": "ਜੈਜਾਵੰਤੀ",
+    ]
+
     /// The banis before and after the raags, by their corpus Gurmukhi section name. The two
     /// salok collections are listed ahead of the sggs-data section fix that will name them.
     static let sections: [String: String] = [

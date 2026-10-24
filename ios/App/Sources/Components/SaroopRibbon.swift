@@ -193,7 +193,10 @@ struct SaroopRibbon: View {
                     HStack(alignment: .firstTextBaseline, spacing: Theme.Space.s) {
                         GurmukhiText(verbatim: s.name, size: 17).lineLimit(1)
                         Spacer(minLength: 0)
-                        Text("Ang \(String(ang))").font(.caption.weight(.semibold)).monospacedDigit()
+                        // A raag opens its page (its span is the useful fact); a bani opens the
+                        // Reader at exactly the Ang under the finger.
+                        Text(s.movement == .raags ? (s.firstAng...s.lastAng).angLabel : "Ang \(String(ang))")
+                            .font(.caption.weight(.semibold)).monospacedDigit()
                     }
                     Text(s.english ?? (s.movement == .raags ? "Raag" : " "))
                         .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
