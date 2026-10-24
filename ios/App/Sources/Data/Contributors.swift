@@ -102,11 +102,15 @@ struct Contributor: Decodable, Identifiable, Sendable, Hashable {
     /// The Mahala number for the Gurus, read from the stored name ("(M9)") or the roster `seq`.
     var mahala: Int? { kind == "guru" ? (AuthorName(name).mahala ?? seq) : nil }
 
-    /// The biographical paragraph: reviewed `context` when the roster has it, else `blurb`.
-    var lifeText: String { context ?? blurb }
+    /// The biographical paragraph: the roster `context` once approved, else `blurb`.
+    var lifeText: String { reviewedContext ?? blurb }
 
-    /// True when roster v2 marks this entry's prose as not yet approved by the scholar.
-    var awaitingReview: Bool { review.map { !$0.isApproved } ?? false }
+    /// Roster v2 `context`, only once the scholar has approved it (brand gate G3). Draft or
+    /// pending prose — or context with no review record at all — is never shown as biography.
+    var reviewedContext: String? { (review?.isApproved ?? false) ? context : nil }
+
+    /// True when the entry carries roster `context` the scholar has not approved (it is gated).
+    var awaitingReview: Bool { context != nil && !(review?.isApproved ?? false) }
 }
 
 /// The medallion on a voice's card and page. A Guru shows the Mahala in Gurmukhi ("ਮ: ੯"),

@@ -356,6 +356,10 @@ struct AuthorProfileSheet: View {
                                          contributor.region,
                                          contributor.tradition].compactMap { $0 })
                     Text(contributor.lifeText).font(.callout)
+                    if contributor.awaitingReview {
+                        Label("Context pending scholarly review", systemImage: "hourglass")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
                     if let summary {
                         LazyVGrid(columns: [GridItem(.adaptive(minimum: 104))], spacing: Theme.Space.s) {
                             StatTile(value: summary.nVerses.formatted(), caption: summary.nVerses == 1 ? "verse" : "verses")

@@ -42,7 +42,26 @@ final class ContributorsTests: XCTestCase {
         XCTAssertEqual(c.sources?.first?.ref, "Encyclopaedia of Sikhism")
         XCTAssertEqual(c.notable?.first?.compId, 7)
         XCTAssertTrue(c.awaitingReview)
-        XCTAssertEqual(c.lifeText, "c", "reviewed context replaces the v1 blurb")
+        XCTAssertNil(c.reviewedContext)
+        XCTAssertEqual(c.lifeText, "b", "pending context is gated: the v1 blurb shows instead (G3)")
+    }
+
+    /// G3: roster context is shown only once approved; draft, pending or unreviewed context is gated.
+    func testContextIsGatedOnItsReviewStatus() throws {
+        func entry(_ review: String) throws -> Contributor {
+            try XCTUnwrap(decode(String(v1.dropLast(1) + #", "context": "reviewed prose"\#(review)}"#))?.first)
+        }
+        let approved = try entry(#", "review": {"status": "approved", "reviewer": "scholar"}"#)
+        XCTAssertEqual(approved.lifeText, "reviewed prose")
+        XCTAssertFalse(approved.awaitingReview)
+        for status in ["draft", "pending", "Rejected"] {
+            let gated = try entry(#", "review": {"status": "\#(status)"}"#)
+            XCTAssertEqual(gated.lifeText, "b", "\(status) context must not show")
+            XCTAssertTrue(gated.awaitingReview, status)
+        }
+        let unreviewed = try entry("")
+        XCTAssertEqual(unreviewed.lifeText, "b", "context with no review record is not shown")
+        XCTAssertTrue(unreviewed.awaitingReview)
     }
 
     /// A v2 field of an unexpected shape drops that field only — never the roster.
