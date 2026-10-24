@@ -157,12 +157,19 @@ final class ThemePageTests: XCTestCase {
             XCTAssertFalse(row.terms.isEmpty, "\(row.concept): no Gurmukhi words")
             let head = try XCTUnwrap(row.headword, "\(row.concept): no headword")
             XCTAssertTrue(row.terms.contains(head), "\(row.concept): headword \(head) is not one of its words")
-            let headN = try db.themeCount(concept: row.concept, filter: ThemeFilter(term: head))
-            for t in row.terms { XCTAssertLessThanOrEqual(try db.themeCount(concept: row.concept, filter: ThemeFilter(term: t)), headN) }
+            XCTAssertGreaterThan(try db.themeCount(concept: row.concept, filter: ThemeFilter(term: head)), 0)
+            let earlier = row.terms.prefix { $0 != head }
+            for t in earlier { XCTAssertEqual(try db.themeCount(concept: row.concept, filter: ThemeFilter(term: t)), 0,
+                                              "\(row.concept): \(t) comes first and tags verses, so it is the lead word") }
         }
         let byKey = Dictionary(uniqueKeysWithValues: index.map { ($0.concept, $0) })
-        XCTAssertEqual(byKey["sahaj"]?.headword, "ਸਹਜਿ")
+        XCTAssertEqual(byKey["sahaj"]?.headword, "ਸਹਜ")
         XCTAssertEqual(byKey["haumai"]?.headword, "ਹਉਮੈ")
+        XCTAssertEqual(byKey["garab"]?.headword, "ਗਰਬੁ", "Garab's own word, not its most frequent (ਹਉਮੈ)")
+        XCTAssertEqual(byKey["shabad"]?.headword, "ਸਬਦੁ")
+        let heads = index.compactMap(\.headword)
+        XCTAssertEqual(heads.count, 54)
+        XCTAssertEqual(Set(heads).count, heads.count, "no two themes share a headword")
         XCTAssertEqual(byKey["naam"]?.nShabads, 2472)
         XCTAssertEqual(byKey["akal"]?.nRahao, 0)
     }

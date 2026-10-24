@@ -81,11 +81,12 @@ extension SQLiteCandidateSource {
         }
         return meta.map { concept, description, terms in
             let a = acc[concept] ?? Acc()
-            // most verses wins; ties go to the earlier word in the printed list; a tagged word
-            // missing from the list (never expected) still counts, after the listed ones
-            let ordered = terms + a.terms.keys.filter { !terms.contains($0) }.sorted()
-            var headword: String?, best = 0
-            for t in ordered where (a.terms[t]?.count ?? 0) > best { headword = t; best = a.terms[t]?.count ?? 0 }
+            // the theme's own lead word: the first word of its printed list that tags a verse
+            // (the most frequent word is NOT used — ਹਉਮੈ is Garab's most frequent word as well as
+            // Haumai's, so two cards would carry one headword); a tagged word missing from the
+            // list (never expected) is the fallback
+            let headword = terms.first { (a.terms[$0]?.count ?? 0) > 0 }
+                ?? a.terms.max { $0.value.count != $1.value.count ? $0.value.count < $1.value.count : $0.key > $1.key }?.key
             return ThemeIndexRow(concept: concept, description: description, terms: terms, headword: headword,
                                  nVerses: a.lines.count, nShabads: a.comps.count, nRahao: a.rahao.count, angBins: a.bins)
         }

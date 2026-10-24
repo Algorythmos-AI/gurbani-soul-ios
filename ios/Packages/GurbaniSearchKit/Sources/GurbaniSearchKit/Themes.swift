@@ -31,7 +31,7 @@ public struct ThemeIndexRow: Sendable, Equatable, Identifiable {
     public let description: String
     /// The theme's words in `concepts.gurmukhi_terms` order, verbatim.
     public let terms: [String]
-    /// The word that tags the most verses (ties: the earlier word in `terms`); nil if untagged.
+    /// The theme's lead word: the first word of its printed list that tags a verse; nil if untagged.
     public let headword: String?
     public let nVerses: Int
     public let nShabads: Int
