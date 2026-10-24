@@ -1132,6 +1132,56 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(basant.label.contains("Ang 1193") && !basant.label.contains("1193–1193"), basant.label)
     }
 
+    /// Lineage › the Gurus › Guru Tegh Bahadur Ji: the card's canonical count, then the Voice page
+    /// showing the SAME count, then back and Compare v2 between two Gurus.
+    func testVoicesNavigationAndCountAgreement() {
+        let app = launchApp()
+        openTab(app, "Explore", expectingNavBar: "Explore")
+        let lineage = app.buttons["Lineage"].firstMatch
+        XCTAssertTrue(lineage.waitForExistence(timeout: 15)); lineage.tap()
+        let gurus = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Gurus")).firstMatch
+        XCTAssertTrue(gurus.waitForExistence(timeout: 12), "kind filter missing"); gurus.tap()
+        let m9 = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Guru Tegh Bahadur Ji,")).firstMatch
+        XCTAssertTrue(m9.waitForExistence(timeout: 12), "M9 card missing")
+        for _ in 0..<6 where !m9.isHittable { app.swipeUp() }
+        // card label: "Guru Tegh Bahadur Ji, guru, 1621, 536 verses · 61 compositions · Angs …"
+        let label = m9.label
+        guard let r = label.range(of: #"[0-9][0-9,]* verses"#, options: .regularExpression) else {
+            return XCTFail("the card carries no verse count: \(label)")
+        }
+        let cardCount = String(label[r].dropLast(" verses".count))
+        m9.tap()
+        XCTAssertTrue(app.buttons["voiceBeginFirst"].waitForExistence(timeout: 12), "voice page did not load")
+        XCTAssertTrue(app.staticTexts["verses"].exists, "the verses tile is missing")
+        XCTAssertTrue(app.staticTexts[cardCount].exists,
+                      "the Voice page must show the card's count (\(cardCount)) — one canonical count")
+        app.navigationBars.buttons.element(boundBy: 0).tap()   // back to Lineage
+        // Compare v2: M9 and Guru Nanak Dev Ji (the first Guru card)
+        app.buttons["compareVoices"].tap()
+        XCTAssertTrue(m9.waitForExistence(timeout: 8)); m9.tap()
+        let m1 = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Guru Nanak Dev Ji,")).firstMatch
+        for _ in 0..<6 where !(m1.exists && m1.isHittable) { app.swipeDown() }
+        XCTAssertTrue(m1.waitForExistence(timeout: 8), "M1 card missing"); m1.tap()
+        XCTAssertTrue(app.staticTexts["ACROSS THE GRANTH"].waitForExistence(timeout: 12), "compare: barcodes missing")
+        XCTAssertTrue(app.staticTexts["THEME EMPHASIS"].waitForExistence(timeout: 12), "compare: theme bars missing")
+        XCTAssertTrue(app.staticTexts["LIFETIMES"].exists, "compare: lifetimes missing")
+        app.buttons["Done"].tap()
+    }
+
+    /// sggs://voice/<slug> lands on Explore › Lineage › the voice; a malformed slug is ignored.
+    func testVoiceDeepLink() {
+        let app = launchApp()
+        XCUIDevice.shared.system.open(URL(string: "sggs://voice/Not--A-Voice")!)
+        XCTAssertFalse(app.buttons["voiceBeginFirst"].waitForExistence(timeout: 4), "a malformed slug must not open a page")
+        XCTAssertFalse(app.staticTexts["Voice not found"].exists, "a malformed slug must not even route")
+        XCUIDevice.shared.system.open(URL(string: "sggs://voice/guru-tegh-bahadur-ji")!)
+        XCTAssertTrue(app.navigationBars["Guru Tegh Bahadur Ji"].waitForExistence(timeout: 15), "deep link did not open the voice")
+        XCTAssertTrue(app.buttons["voiceBeginFirst"].waitForExistence(timeout: 12), "voice page did not load")
+        app.navigationBars.buttons.element(boundBy: 0).tap()   // back lands on Lineage
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label MATCHES %@", "[0-9]+ voices · 12th–17th century"))
+            .firstMatch.waitForExistence(timeout: 8), "back from a deep-linked voice should be Lineage")
+    }
+
     /// Insights completions: network + resonance + flow views render their content.
     func testInsightsVisualizations() {
         let app = launchApp()
@@ -2354,6 +2404,13 @@ final class SGGSUITests: XCTestCase {
         _ = app.staticTexts.matching(NSPredicate(format: "label MATCHES %@", "[0-9]+ voices · 12th–17th century"))
             .firstMatch.waitForExistence(timeout: 8)
         shot("lineage")
+        if app.segmentedControls.buttons["Roll"].exists { app.segmentedControls.buttons["Roll"].tap() }
+        shot("lineage-roll")
+        let votd = app.buttons["voiceOfTheDay"]
+        if votd.waitForExistence(timeout: 8) {
+            if !votd.isHittable { app.swipeUp() }
+            shot("voice-of-the-day")
+        }
         let river = app.segmentedControls.buttons["River"]
         if river.waitForExistence(timeout: 5) {
             river.tap()
@@ -2372,6 +2429,20 @@ final class SGGSUITests: XCTestCase {
             _ = app.buttons["voiceBeginFirst"].waitForExistence(timeout: 12)
             shot("voice-m9")
             app.navigationBars.buttons.element(boundBy: 0).tap()
+        }
+        // Compare v2: Guru Tegh Bahadur Ji ⇄ Guru Nanak Dev Ji
+        let compare = app.buttons["compareVoices"]
+        if compare.waitForExistence(timeout: 5), m9.waitForExistence(timeout: 5) {
+            compare.tap()
+            m9.tap()
+            let m1 = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Guru Nanak Dev Ji,")).firstMatch
+            for _ in 0..<6 where !(m1.exists && m1.isHittable) { app.swipeDown() }
+            if m1.waitForExistence(timeout: 5) {
+                m1.tap()
+                _ = app.staticTexts["THEME EMPHASIS"].waitForExistence(timeout: 12)
+                shot("compare-v2")
+                app.buttons["Done"].tap()
+            }
         }
         openTab(app, "More", expectingNavBar: "More")
         _ = app.staticTexts["Accent"].waitForExistence(timeout: 8)
