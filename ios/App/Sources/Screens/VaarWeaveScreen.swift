@@ -224,7 +224,7 @@ private struct WeaveGroupRow: View {
                 HStack(spacing: 6) {
                     Circle().fill(VoiceInk.color(for: u.author)).frame(width: 8, height: 8)
                     if let label = u.label {
-                        GurmukhiText(verbatim: label.gurmukhi, size: 14).foregroundStyle(.secondary)
+                        GurmukhiText(verbatim: label.gurmukhi, size: 14)
                     } else {
                         Text(u.kind == .pauri ? "Pauri" : "Salok").font(.caption).foregroundStyle(.secondary)
                     }
@@ -277,7 +277,7 @@ struct VaarUnitSheet: View {
                             .font(.subheadline.weight(.medium))
                     }
                     if let label = unit.label {
-                        GurmukhiText(verbatim: label.gurmukhi, size: 17).foregroundStyle(.secondary)
+                        GurmukhiText(verbatim: label.gurmukhi, size: 17)
                     }
                     ForEach(unit.verse) { line in
                         LineRow(gurmukhi: line.gurmukhi, translit: line.translit, meta: "",

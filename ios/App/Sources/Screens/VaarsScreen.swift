@@ -96,7 +96,7 @@ struct VaarsScreen: View {
         return Card {
             VStack(alignment: .leading, spacing: Theme.Space.m) {
                 SectionEyebrow(text: "Sri Guru Granth Sahib Ji")
-                Text("Twenty-two ballads, many voices")
+                Text("Many voices, woven")
                     .font(Brand.heading(.title3))
                     .accessibilityAddTraits(.isHeader)
                 HStack(spacing: Theme.Space.s) {
@@ -150,14 +150,14 @@ private struct VaarCard: View {
                             .padding(.horizontal, Theme.Space.m).frame(minHeight: 30)
                             .background(Capsule().fill(Ink.raised))
                             .overlay(Capsule().strokeBorder(palette.accent.opacity(0.6)))
-                            .foregroundStyle(palette.accentText)
+                            .foregroundStyle(.primary)          // Gurmukhi is always ink; the border carries the accent
                             .frame(minWidth: 44, minHeight: 44)
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .padding(.trailing, Theme.Space.l + 14)
                     .padding(.bottom, Theme.Space.l - 7)
-                    .accessibilityLabel("Dhuni: the tune this Vaar is set to")
+                    .accessibilityLabel("Dhuni line, as printed")
                     .accessibilityIdentifier("vaar.dhuni.\(summary.vaarId)")
                 }
             }
@@ -222,13 +222,15 @@ private struct DhuniSheet: View {
     @Environment(\.dismiss) private var dismiss
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Space.m) {
-            SectionEyebrow(text: "ਧੁਨੀ · as printed")
+            SectionEyebrow(text: "As printed")
             GurmukhiText(verbatim: item.line.gurmukhi, size: 22)
             Text("Sri Guru Granth Sahib Ji · Ang \(item.line.ang)")
                 .font(.footnote).foregroundStyle(.secondary)
-            Text("The heading names the tune (ਧੁਨੀ) the Vaar is to be sung to — nine of the twenty-two carry one.")
-                .font(.footnote).foregroundStyle(.secondary)
-                .accessibilityLabel("About: The heading names the tune the Vaar is to be sung to. Nine of the twenty-two carry one.")
+            if EditorialGate.aboutCopy {
+                // About (explanation, not scripture) — shown only after scholar review G3
+                Text("About: the heading names the tune (ਧੁਨੀ) the Vaar is to be sung to.")
+                    .font(.footnote).foregroundStyle(.secondary)
+            }
             Spacer(minLength: 0)
         }
         .padding(Theme.Space.xl)

@@ -55,10 +55,10 @@ struct VoiceStrip: View {
     static func summary(_ t: VaarText) -> String {
         let pauriVoices = Set(t.pauris.compactMap(\.author))
         let salokVoices = Set(t.units.filter { $0.kind == .salok }.compactMap(\.author))
-        var parts = ["\(t.nPauris) pauris by " + (pauriVoices.count == 1 ? pauriVoices.first! : "\(pauriVoices.count) voices")]
-        if t.nSaloks > 0 {
-            parts.append("\(t.nSaloks) saloks by " + (salokVoices.count == 1 ? salokVoices.first! : "\(salokVoices.count) voices"))
-        }
+        func n(_ k: Int, _ word: String) -> String { "\(k) \(word)\(k == 1 ? "" : "s")" }
+        func by(_ v: Set<String>) -> String { v.count == 1 ? v.first! : n(v.count, "voice") }
+        var parts = [n(t.nPauris, "pauri") + " by " + by(pauriVoices)]
+        if t.nSaloks > 0 { parts.append(n(t.nSaloks, "salok") + " by " + by(salokVoices)) }
         return parts.joined(separator: "; ")
     }
 }

@@ -51,6 +51,7 @@ struct VaarSpanRibbon: View {
         .accessibilityValue(selected.flatMap { id in marks.first { $0.id == id } }.map(\.label) ?? "None selected")
         .accessibilityAdjustableAction { dir in
             let ids = marks.map(\.id)
+            guard !ids.isEmpty else { return }
             let at = selected.flatMap { ids.firstIndex(of: $0) }
             switch dir {
             case .increment: selected = ids[min((at ?? -1) + 1, ids.count - 1)]

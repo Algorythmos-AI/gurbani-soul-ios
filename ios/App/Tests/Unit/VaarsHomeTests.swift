@@ -26,20 +26,20 @@ final class VaarsHomeTests: XCTestCase {
             for (a, b) in zip(segs, segs.dropFirst()) { XCTAssertLessThanOrEqual(a.x + a.width, b.x + 0.001) }
         }
         XCTAssertTrue(VoiceStrip.layout(t, width: 0).isEmpty)
-        XCTAssertEqual(VoiceStrip.summary(t), "1 pauris by Guru Nanak Dev Ji (M1); 2 saloks by 2 voices")
+        XCTAssertEqual(VoiceStrip.summary(t), "1 pauri by Guru Nanak Dev Ji (M1); 2 saloks by 2 voices")
     }
 
     func testRibbonSpansAndHitTesting() {
-        let m = [GranthRibbon.Mark(id: 1, firstAng: 83, lastAng: 91, author: nil, label: "a"),
-                 GranthRibbon.Mark(id: 19, firstAng: 1193, lastAng: 1193, author: nil, label: "b"),
-                 GranthRibbon.Mark(id: 22, firstAng: 1312, lastAng: 1318, author: nil, label: "c")]
+        let m = [VaarSpanRibbon.Mark(id: 1, firstAng: 83, lastAng: 91, author: nil, label: "a"),
+                 VaarSpanRibbon.Mark(id: 19, firstAng: 1193, lastAng: 1193, author: nil, label: "b"),
+                 VaarSpanRibbon.Mark(id: 22, firstAng: 1312, lastAng: 1318, author: nil, label: "c")]
         let w: CGFloat = 343
-        XCTAssertGreaterThanOrEqual(GranthRibbon.span(m[1], width: w).width, 3, "a one-Ang Vaar stays visible")
-        XCTAssertLessThanOrEqual(GranthRibbon.span(m[2], width: w).maxX, w + 0.001)
-        XCTAssertEqual(GranthRibbon.nearest(to: 0, width: w, in: m), 1)
-        XCTAssertEqual(GranthRibbon.nearest(to: GranthRibbon.span(m[1], width: w).midX, width: w, in: m), 19)
-        XCTAssertEqual(GranthRibbon.nearest(to: w, width: w, in: m), 22)
-        XCTAssertNil(GranthRibbon.nearest(to: 10, width: w, in: []))
+        XCTAssertGreaterThanOrEqual(VaarSpanRibbon.span(m[1], width: w).width, 3, "a one-Ang Vaar stays visible")
+        XCTAssertLessThanOrEqual(VaarSpanRibbon.span(m[2], width: w).maxX, w + 0.001)
+        XCTAssertEqual(VaarSpanRibbon.nearest(to: 0, width: w, in: m), 1)
+        XCTAssertEqual(VaarSpanRibbon.nearest(to: VaarSpanRibbon.span(m[1], width: w).midX, width: w, in: m), 19)
+        XCTAssertEqual(VaarSpanRibbon.nearest(to: w, width: w, in: m), 22)
+        XCTAssertNil(VaarSpanRibbon.nearest(to: 10, width: w, in: []))
     }
 
     func testAngSpanReadsSingleAngs() {
@@ -70,5 +70,10 @@ final class VaarsHomeTests: XCTestCase {
         XCTAssertEqual(g.map { $0.saloks.map(\.index) }, [[0, 1], [], [4]])
         XCTAssertEqual(g.map { $0.pauri?.pauriNo }, [1, 2, nil])
         XCTAssertEqual(Set(g.map(\.id)).count, g.count, "group ids are unique")
+    }
+
+    /// Explanation about scripture stays hidden until scholar review G3 signs it off.
+    func testExplanatoryCopyIsOffUntilG3() {
+        XCTAssertFalse(EditorialGate.aboutCopy)
     }
 }
