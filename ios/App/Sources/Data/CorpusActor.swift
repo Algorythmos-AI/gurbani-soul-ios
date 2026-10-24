@@ -87,6 +87,7 @@ actor CorpusActor {
     func authorMentions(_ author: String) -> VoiceMentions { db.authorMentions(author) }
     func authorDialogues(_ author: String) -> [VoiceDialogue] { db.authorDialogues(author) }
     func authorEchoes(_ author: String) -> [VoiceEcho] { db.authorEchoes(author) }
+    func conceptHeadTerms() -> [String: String] { db.conceptHeadTerms() }
     func resonance(minLines: Int = 250, minLift: Double = 1.0, minEdges: Int = 8) -> ResonanceGraph {
         db.resonance(minLines: minLines, minLift: minLift, minEdges: minEdges)
     }

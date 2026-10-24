@@ -15,7 +15,8 @@ struct LineageScreen: View {
     @State private var summaries: [String: VoiceSummary] = [:]
     @State private var kindFilter: String = "all"
     @State private var groupMode = "time"                      // time | kind | volume (web parity)
-    @State private var profile: Contributor?
+    /// The card → voice page zoom (iOS 18+).
+    @Namespace private var voiceZoom
     @State private var compareMode = false
     @State private var comparePicks: [Contributor] = []
     @State private var comparePair: ComparePair?
@@ -72,8 +73,13 @@ struct LineageScreen: View {
                 .accessibilityIdentifier("compareVoices")
             }
         }
-        .sheet(item: $profile) { c in
-            AuthorProfileSheet(contributor: c, summary: summaries[c.name])
+        .navigationDestination(for: VoiceLink.self) { link in
+            if let c = contributors?.first(where: { $0.name == link.name }) {
+                VoicePage(contributor: c, summary: summaries[c.name], roster: contributors ?? [])
+                    .modifier(VoiceZoomDestination(id: c.name, namespace: voiceZoom))
+            } else {
+                ContentUnavailableView("Voice not found", systemImage: "person.slash")
+            }
         }
         .sheet(item: $comparePair) { pair in
             CompareVoicesSheet(a: pair.a, b: pair.b, summaryA: summaries[pair.a.name], summaryB: summaries[pair.b.name])
@@ -107,7 +113,7 @@ struct LineageScreen: View {
             // With the bundled roster this renders "30 voices · 12th–17th century" —
             // the exact header string testLineageAndVaars asserts.
             Text("\(String(list.count)) voices · \(span) century").font(.headline)
-            Text("Five centuries of voices gathered into one Granth — the Gurus, the Bhagats of the Bhakti and Sufi traditions, the court Bhatts, and the Gursikh companions. Tap any voice for a full profile"
+            Text("Five centuries of voices gathered into one Granth — the Gurus, the Bhagats of the Bhakti and Sufi traditions, the court Bhatts, and the Gursikh companions. Tap any voice for their page"
                  + (compareMode ? " — compare mode: pick two." : "; ⇄ compares two."))
                 .font(.caption).foregroundStyle(.secondary)
             Text("Dates are historical approximations. Each strip marks the Angs that carry a voice's Bani — how much is preserved here, never its importance.")
@@ -222,7 +228,7 @@ struct LineageScreen: View {
                     }
                 }
             } else {
-                profile = c
+                container.router.explorePath.append(VoiceLink(name: c.name))
             }
         } label: {
             HStack(alignment: .top, spacing: Theme.Space.s) {
@@ -278,6 +284,7 @@ struct LineageScreen: View {
                 .padding(Theme.Space.m)
                 .background(Ink.card, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
                 .overlay(RoundedRectangle(cornerRadius: Theme.Radius.card).strokeBorder(Ink.hairline))
+                .modifier(VoiceZoomSource(id: c.name, namespace: voiceZoom))
                 .padding(.vertical, Theme.Space.xs)
             }
             .contentShape(Rectangle())
@@ -287,7 +294,7 @@ struct LineageScreen: View {
         .accessibilityAddTraits(.isButton)
         .accessibilityLabel("\(c.displayName), \(c.kind), \(c.era.isEmpty ? "undated" : c.era), "
                             + (summary.map { Self.countLine($0) } ?? "attribution under review"))
-        .accessibilityHint(compareMode ? "Selects for comparison" : "Opens the full profile")
+        .accessibilityHint(compareMode ? "Selects for comparison" : "Opens their page")
     }
 
     /// "536 verses · 61 compositions · Angs 219–1429" — the one canonical count.
@@ -327,111 +334,13 @@ extension Contributor {
     }
 }
 
-/// One voice in full: life, the canonical counts, signature themes (lift) and — once the
-/// Gurmukhi layer ships — distinctive words.
-struct AuthorProfileSheet: View {
-    let contributor: Contributor
-    /// Counts from `lines` (headers excluded) — the same numbers as the card.
-    let summary: VoiceSummary?
-    @Environment(AppContainer.self) private var container
-    @Environment(\.dismiss) private var dismiss
-    @State private var profile: AuthorProfile?
-    @State private var facts: AuthorFacts?
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: Theme.Space.l) {
-                    HStack(spacing: Theme.Space.m) {
-                        VoiceMedallionView(contributor: contributor, diameter: 56)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(contributor.displayName).font(.title3.weight(.semibold))
-                                .accessibilityAddTraits(.isHeader)
-                            if let g = contributor.gurmukhi { GurmukhiText(verbatim: g, size: 20) }
-                        }
-                    }
-                    // life chips: kind · lifespan · region · tradition
-                    FlowChipsRow(chips: [contributor.kindTag.capitalized,
-                                         contributor.lifespan,
-                                         contributor.region,
-                                         contributor.tradition].compactMap { $0 })
-                    Text(contributor.lifeText).font(.callout)
-                    if contributor.awaitingReview {
-                        Label("Context pending scholarly review", systemImage: "hourglass")
-                            .font(.caption).foregroundStyle(.secondary)
-                    }
-                    if let summary {
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 104))], spacing: Theme.Space.s) {
-                            StatTile(value: summary.nVerses.formatted(), caption: summary.nVerses == 1 ? "verse" : "verses")
-                            StatTile(value: summary.nCompositions.formatted(),
-                                     caption: summary.nCompositions == 1 ? "composition" : "compositions")
-                            if summary.nRaags == 0 {
-                                StatTile(value: "—", caption: VoiceCopy.outsideRaags)
-                            } else {
-                                StatTile(value: summary.nRaags.formatted(), caption: summary.nRaags == 1 ? "raag" : "raags")
-                            }
-                            // Measured on the Gurmukhi (author_facts). The English-translation
-                            // figures in author_analytics are never shown as the style of the Bani.
-                            if let m = facts?.mattr100 {
-                                StatTile(value: String(format: "%.2f", m), caption: "vocabulary range")
-                            }
-                        }
-                    }
-                    if let themes = profile?.stylometry?.topThemes, !themes.isEmpty {
-                        SignatureThemesList(themes: themes, color: contributor.kindColor,
-                                            descriptions: conceptDescriptions)
-                    }
-                    if let terms = profile?.distinctiveTerms, Self.isGurmukhi(terms) {
-                        VStack(alignment: .leading, spacing: Theme.Space.s) {
-                            Text("Distinctive words").font(.headline)
-                            Text("Words this voice uses far more than the rest of the Granth.")
-                                .font(.caption2).foregroundStyle(.secondary)
-                            FlowTermChips(terms: terms)
-                        }
-                    }
-                    if let firstAng = summary?.firstAng {
-                        Button {
-                            dismiss()
-                            container.router.openAng(firstAng)
-                        } label: {
-                            Label("Read their first composition · Ang \(String(firstAng))",
-                                  systemImage: "book")
-                        }
-                        .buttonStyle(.prominentPill)
-                    }
-                }
-                .padding()
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
-        }
-        .task {
-            if container.meta == nil { await container.loadMeta() }
-            guard profile == nil, let corpus = container.corpus else { return }
-            profile = await corpus.authorProfile(contributor.name, full: false)
-            facts = await corpus.authorFacts(contributor.name)
-        }
-    }
-
-    private var conceptDescriptions: [String: String] {
-        Dictionary((container.meta?.concepts ?? []).map { ($0.concept, $0.description) }, uniquingKeysWith: { a, _ in a })
-    }
-
-    /// Distinctive terms are shown only when they are Gurmukhi tokens. Today's table is built on
-    /// the English translation — an unlicensed layer — so it stays hidden until sggs-data ships
-    /// the Gurmukhi rebuild.
-    static func isGurmukhi(_ terms: [DistinctiveTerm]) -> Bool {
-        !terms.isEmpty && terms.allSatisfy { t in
-            t.term.unicodeScalars.contains { (0x0A00...0x0A7F).contains($0.value) }
-        }
-    }
-}
-
 /// Signature themes: the theme's English label (from `concepts`), its lift as a gradient track.
 struct SignatureThemesList: View {
     let themes: [TopTheme]
     let color: Color
     let descriptions: [String: String]
+    /// concept → its head Gurmukhi term (`concepts.gurmukhi_terms[0]`), drawn in Sant Lipi.
+    var terms: [String: String] = [:]
     var onOpen: ((String) -> Void)? = nil
 
     var body: some View {
@@ -444,7 +353,8 @@ struct SignatureThemesList: View {
                 let label = ConceptName.label(t.concept, description: descriptions[t.concept])
                 Button { onOpen?(t.concept) } label: {
                     VStack(alignment: .leading, spacing: 4) {
-                        HStack(alignment: .firstTextBaseline) {
+                        HStack(alignment: .firstTextBaseline, spacing: Theme.Space.s) {
+                            if let g = terms[t.concept] { GurmukhiText(verbatim: g, size: 19) }
                             Text(label).font(.subheadline)
                             Spacer(minLength: Theme.Space.s)
                             Text(String(format: "%.1f×", t.lift)).font(.caption).monospacedDigit()
@@ -471,6 +381,7 @@ struct SignatureThemesList: View {
                 .disabled(onOpen == nil)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("\(label), \(String(format: "%.1f", t.lift)) times the corpus baseline")
+                .accessibilityHint(onOpen == nil ? "" : "Opens this theme")
                 .accessibilityAddTraits(onOpen == nil ? [] : .isButton)
             }
         }

@@ -73,6 +73,69 @@ final class VoiceReaderTests: XCTestCase {
         let jai = db.authorCompositions(m9.author, raag: "ਜੈਜਾਵੰਤੀ")
         XCTAssertEqual(jai.count, raags.first { $0.raag == "ਜੈਜਾਵੰਤੀ" }?.nCompositions)
         XCTAssertFalse(db.authorVerses(m9.author, containing: "ਨਾਨਕ").isEmpty)
+        XCTAssertEqual(db.conceptHeadTerms()["naam"], "ਨਾਮੁ")
+    }
+
+    /// Comp 2749 (Ang 695) holds several voices: each voice's entry opens on its OWN first line,
+    /// so "a shabad by them" never lands on another voice's verse.
+    func testSharedCompositionOpensOnEachVoicesOwnLine() throws {
+        let db = try shippedDB()
+        var s: OpaquePointer?
+        defer { sqlite3_finalize(s) }
+        XCTAssertEqual(sqlite3_prepare_v2(db.handle,
+            "SELECT DISTINCT author FROM lines WHERE comp_id=2749 AND is_header=0 AND author IS NOT NULL", -1, &s, nil), SQLITE_OK)
+        var authors: [String] = []
+        while try stepRow(s) { authors.append(String(cString: sqlite3_column_text(s, 0))) }
+        guard authors.count > 1 else { throw XCTSkip("comp 2749 holds one voice in this DB build") }
+        XCTAssertEqual(scalar(db, "SELECT MIN(ang) FROM lines WHERE comp_id=2749 AND is_header=0"), 695)
+        for a in authors {
+            let comp = try XCTUnwrap(db.authorCompositions(a).first { $0.compId == 2749 }, a)
+            var ls: OpaquePointer?
+            defer { sqlite3_finalize(ls) }
+            XCTAssertEqual(sqlite3_prepare_v2(db.handle, "SELECT author FROM lines WHERE id=?", -1, &ls, nil), SQLITE_OK)
+            sqlite3_bind_int64(ls, 1, Int64(comp.firstLineId))
+            XCTAssertTrue(try stepRow(ls))
+            XCTAssertEqual(String(cString: sqlite3_column_text(ls, 0)), a, "\(a) must open on their own line in comp 2749")
+        }
+    }
+
+    /// Every composition shared by several voices (Vaars with saloks of other Gurus, today; comp
+    /// 2749 too once the attribution data lands): each voice opens on a line that is its own.
+    func testEverySharedCompositionOpensOnTheVoicesOwnLine() throws {
+        let db = try shippedDB()
+        var s: OpaquePointer?
+        defer { sqlite3_finalize(s) }
+        XCTAssertEqual(sqlite3_prepare_v2(db.handle,
+            "SELECT comp_id, author FROM lines WHERE is_header=0 AND author IS NOT NULL AND comp_id IN ("
+            + "SELECT comp_id FROM lines WHERE is_header=0 AND author IS NOT NULL GROUP BY comp_id "
+            + "HAVING COUNT(DISTINCT author) > 1) GROUP BY comp_id, author", -1, &s, nil), SQLITE_OK)
+        var pairs: [(Int, String)] = []
+        while try stepRow(s) { pairs.append((Int(sqlite3_column_int64(s, 0)), String(cString: sqlite3_column_text(s, 1)))) }
+        XCTAssertFalse(pairs.isEmpty, "the Granth has compositions shared by several voices")
+        var compsByAuthor: [String: [Int: Int]] = [:]   // author → comp → firstLineId
+        for (_, a) in pairs where compsByAuthor[a] == nil {
+            compsByAuthor[a] = Dictionary(db.authorCompositions(a).map { ($0.compId, $0.firstLineId) }, uniquingKeysWith: { x, _ in x })
+        }
+        var ls: OpaquePointer?
+        defer { sqlite3_finalize(ls) }
+        XCTAssertEqual(sqlite3_prepare_v2(db.handle, "SELECT author FROM lines WHERE id=?", -1, &ls, nil), SQLITE_OK)
+        for (comp, a) in pairs {
+            let first = try XCTUnwrap(compsByAuthor[a]?[comp], "\(a) lacks comp \(comp)")
+            sqlite3_reset(ls)
+            sqlite3_bind_int64(ls, 1, Int64(first))
+            XCTAssertTrue(try stepRow(ls))
+            XCTAssertEqual(String(cString: sqlite3_column_text(ls, 0)), a, "comp \(comp): \(a) must open on their own line")
+        }
+    }
+
+    func testRahaoShabadCountIsNotCapped() throws {
+        let db = try shippedDB()
+        let m5 = "Guru Arjan Dev Ji (M5)"
+        let deck = db.authorRahao(m5, limit: 10)
+        XCTAssertEqual(deck.verses.count, 10)
+        XCTAssertEqual(deck.shabads,
+                       scalar(db, "SELECT COUNT(DISTINCT comp_id) FROM lines WHERE author=? AND is_rahao=1 AND is_header=0", m5))
+        XCTAssertGreaterThan(deck.shabads, 80, "the count must come from the DB, never the capped list")
     }
 
     func testBhattsSitOutsideTheRaagSections() throws {
@@ -127,6 +190,7 @@ final class VoiceReaderTests: XCTestCase {
         XCTAssertTrue(db.authorMentions("Bhagat Kabir Ji").isEmpty)
         XCTAssertTrue(db.authorDialogues("Bhagat Kabir Ji").isEmpty)
         XCTAssertTrue(db.authorEchoes("Bhagat Kabir Ji").isEmpty)
+        XCTAssertEqual(db.conceptHeadTerms(), [:], "no concepts table: no head terms, no error")
         // …while everything computed from `lines` still works.
         let kabir = try XCTUnwrap(db.voiceSummaries().first { $0.author == "Bhagat Kabir Ji" })
         XCTAssertEqual(kabir.nVerses, 3, "the header row is not a verse")
