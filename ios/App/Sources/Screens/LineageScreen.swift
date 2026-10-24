@@ -56,10 +56,11 @@ struct LineageScreen: View {
 
     var body: some View {
         Group {
-            if let contributors {
+            if contributors != nil {
+                let voices = split.voices
                 ScrollView {
                     VStack(alignment: .leading, spacing: Theme.Space.l) {
-                        hero(contributors)
+                        hero(voices)
                         if let voiceOfTheDay { voiceOfTheDayCard(voiceOfTheDay) }
                         didYouKnow
                         Picker("Lens", selection: $lens) {
@@ -70,14 +71,18 @@ struct LineageScreen: View {
                         controls
                         switch lens {
                         case .roll:
-                            ForEach(bands(contributors), id: \.title) { band in
+                            ForEach(bands(voices), id: \.title) { band in
                                 bandView(band.title, band.members)
                             }
                         case .river:
                             // River taps follow the same rule as cards: in compare mode they pick.
-                            VoiceRiverView(voices: contributors.filter { kindFilter == "all" || $0.kind == kindFilter }) { c in
+                            VoiceRiverView(voices: voices.filter { kindFilter == "all" || $0.kind == kindFilter }) { c in
                                 select(c)
                             }
+                        }
+                        if !split.withoutBani.isEmpty {
+                            Text("Not counted: \(LineageFacts.join(split.withoutBani.map(\.displayName), .current)). No verses carry this attribution in this edition of the data; it is under review.")
+                                .font(.caption).foregroundStyle(.secondary)
                         }
                     }
                     .padding(Theme.Space.l)
@@ -185,8 +190,8 @@ struct LineageScreen: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: Theme.Space.s) {
                     ForEach(Self.kinds, id: \.id) { k in
-                        let count = k.id == "all" ? (contributors?.count ?? 0)
-                            : (contributors?.filter { $0.kind == k.id }.count ?? 0)
+                        let voices = split.voices
+                        let count = k.id == "all" ? voices.count : voices.filter { $0.kind == k.id }.count
                         ModePill(title: "\(k.label) · \(count)",
                                  dot: k.id == "all" ? nil : Contributor.kindColor(k.id),
                                  isSelected: kindFilter == k.id) { kindFilter = k.id }
@@ -203,6 +208,11 @@ struct LineageScreen: View {
                 }
             }
         }
+    }
+
+    /// Voices with Bani in the loaded DB (counted, listed) and roster entries without (a note).
+    private var split: (voices: [Contributor], withoutBani: [Contributor]) {
+        LineageCount.split(contributors ?? [], withBani: Set(summaries.keys))
     }
 
     private func open(_ c: Contributor) {
