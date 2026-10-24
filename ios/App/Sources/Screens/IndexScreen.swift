@@ -28,9 +28,18 @@ struct IndexScreen: View {
     @State private var query = ""
     /// `resumeKey` → whether that saved position resumes (filled by `checkResumable`).
     @State private var resumable: [String: Bool] = [:]
+    /// The compositions whose printed headings name a poetic form (empty without the form layer).
+    @State private var forms: [PoeticFormEntry] = []
+    /// True once the forms read has returned (with rows, or none on a build without the layer).
+    @State private var formsLoaded = false
 
-    private let tabs: [(id: String, label: String)] =
-        [("compositions", "Compositions"), ("raags", "Raags"), ("authors", "Voices")]
+    /// The pills. Forms appears only once the DB has shown it carries the heading-genre layer: a
+    /// build without it gets no Forms pill rather than an empty tab.
+    private var tabs: [(id: String, label: String)] {
+        [("compositions", "Compositions"), ("raags", "Raags")]
+            + (forms.isEmpty ? [] : [("forms", "Forms")])
+            + [("authors", "Voices")]
+    }
 
     private var columns: [GridItem] {
         let n = dynamicTypeSize.isAccessibilitySize ? 1 : 2
@@ -43,9 +52,10 @@ struct IndexScreen: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: Theme.Space.l) {
                       if !query.trimmingCharacters(in: .whitespaces).isEmpty {
-                        IndexFindResults(query: query, meta: meta, registry: registry,
+                        IndexFindResults(query: query, meta: meta, registry: registry, forms: forms,
                                          openRaag: { openRaag($0, at: $0.firstAng) },
-                                         openAng: { container.router.openAng($0) })
+                                         openAng: { container.router.openAng($0) },
+                                         openComposition: { container.present(.shabad(compId: $0)) })
                       } else {
                         ribbon(meta)
                         ScrollView(.horizontal, showsIndicators: false) {
@@ -62,6 +72,8 @@ struct IndexScreen: View {
                                           openRaag: { openRaag($0, at: $0.firstAng) },
                                           openSection: { container.router.openAng($0.firstAng) },
                                           openClock: { container.router.explorePath.append(Route.clock) })
+                        case "forms" where !forms.isEmpty || !formsLoaded:
+                            IndexFormsTab(forms: forms, loaded: formsLoaded) { container.present(.shabad(compId: $0)) }
                         case "authors": authorsList(meta)
                         default: compositionsGrid
                         }
@@ -87,6 +99,7 @@ struct IndexScreen: View {
             await container.loadMeta()
             await loadRegistry()
             await loadPahars()
+            await loadForms()
             await loadShapes()
         }
     }
@@ -127,6 +140,12 @@ struct IndexScreen: View {
             }
         }
         shapes = out
+    }
+
+    private func loadForms() async {
+        guard !formsLoaded, let corpus = container.corpus else { return }
+        forms = await corpus.poeticForms()
+        formsLoaded = true
     }
 
     private func loadPahars() async {
@@ -271,8 +290,18 @@ struct IndexScreen: View {
     private var continueTarget: BaniSummary? {
         ContinueReading.target(offered: offered, isCompleted: { container.nitnem.isCompleted($0) },
                                fraction: { container.nitnem.fraction(for: $0.id, total: $0.nLines) },
-                               resumes: { resumable[resumeKey($0)] == true },
+                               resumes: { id in resumes(id) },
                                lastReadAt: { container.nitnem.progress(for: $0)?.lastReadAt })
+    }
+
+    /// Synchronous in the common case (same line count as when saved); only a changed bani
+    /// waits for `checkResumable`'s anchor check against its loaded lines.
+    private func resumes(_ id: String) -> Bool {
+        let total = offered.first { $0.id == id }?.nLines ?? 0
+        if let known = ContinueReading.resumesWithoutLines(container.nitnem.progress(for: id), nLines: total) {
+            return known
+        }
+        return resumable[resumeKey(id)] == true
     }
 
     /// A composition's id with its saved position, so a new save re-checks resumability.
@@ -280,11 +309,13 @@ struct IndexScreen: View {
         "\(id)@\(container.nitnem.progress(for: id)?.lastSeq ?? 0)"
     }
 
-    /// Whether each in-progress composition's saved position resumes against its current lines.
-    /// One bani read per newly saved position; nothing is read when nothing is in progress.
+    /// For a composition whose line count changed since its position was saved, whether the
+    /// anchor still resumes against its current lines. One bani read per such position; none in
+    /// the common case.
     private func checkResumable() async {
         guard let corpus = container.corpus else { return }
-        for b in inProgress where resumable[resumeKey(b.id)] == nil {
+        for b in inProgress where resumable[resumeKey(b.id)] == nil
+            && ContinueReading.resumesWithoutLines(container.nitnem.progress(for: b.id), nLines: b.nLines) == nil {
             let key = resumeKey(b.id)
             let variant = CompositionCatalog.heroes.first { CompositionCatalog.resolve($0, in: registry)?.id == b.id }?
                 .variant ?? b.variant

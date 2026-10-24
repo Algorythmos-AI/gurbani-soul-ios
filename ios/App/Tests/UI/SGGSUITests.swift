@@ -808,6 +808,26 @@ final class SGGSUITests: XCTestCase {
         return card
     }
 
+    /// The Forms tab lists the forms the printed headings name, each row its verbatim heading,
+    /// and a row opens its composition.
+    func testIndexFormsOpenTheirComposition() {
+        let app = launchApp(selectSearch: false)
+        openIndex(app)
+        let formsPill = app.buttons["index_forms"].firstMatch
+        XCTAssertTrue(formsPill.waitForExistence(timeout: 12), "the Forms pill appears once the form layer has loaded")
+        formsPill.tap()
+        let pahare = app.buttons["form_pahare_74"].firstMatch
+        XCTAssertTrue(pahare.waitForExistence(timeout: 10), "Sri Raag's Pahare (Ang 74) should lead the forms")
+        attachShot(app, "index_forms")
+        let barah = app.buttons["form_barah_maha_1107"].firstMatch
+        for _ in 0..<8 where !(barah.exists && barah.isHittable) { app.swipeUp() }
+        XCTAssertTrue(barah.waitForExistence(timeout: 8), "Tukhari Barah Maha missing")
+        XCTAssertTrue(barah.label.contains("Raag Tukhari"), barah.label)
+        barah.tap()
+        XCTAssertTrue(app.navigationBars["Ang 1107"].waitForExistence(timeout: 12), "the composition did not open")
+        attachShot(app, "index_forms_open")
+    }
+
     /// Explore hub → Index, waiting for each step (the glass tab bar can swallow a first tap).
     private func openIndex(_ app: XCUIApplication) {
         openTab(app, "Explore", expectingNavBar: "Explore")
@@ -1996,6 +2016,30 @@ final class SGGSUITests: XCTestCase {
                 }
             }
         }
+        // Index 2.0: the Index (Ribbon + compositions), its Raags tab, and a Raag page.
+        let exploreTab = tab(app, "Explore")
+        if exploreTab.waitForExistence(timeout: 8) {
+            exploreTab.tap()
+            if exploreTab.isHittable { exploreTab.tap() }   // re-selecting the tab pops to its root
+        }
+        _ = app.navigationBars["Explore"].waitForExistence(timeout: 8)
+        let indexCard = app.buttons["Index"].firstMatch
+        if indexCard.waitForExistence(timeout: 8) {
+            indexCard.tap()
+            _ = app.navigationBars["Index"].waitForExistence(timeout: 10)
+            try audit("Index")
+            if app.buttons["index_raags"].firstMatch.waitForExistence(timeout: 5) {
+                app.buttons["index_raags"].firstMatch.tap()
+                _ = app.staticTexts["BEFORE THE RAAGS"].waitForExistence(timeout: 8)
+                try audit("Index Raags")
+                let gauri = app.buttons["raag_gauri"].firstMatch
+                for _ in 0..<6 where !(gauri.exists && gauri.isHittable) { app.swipeUp() }
+                if gauri.waitForExistence(timeout: 5) && gauri.isHittable {
+                    gauri.tap()
+                    if app.navigationBars["Raag Gauri"].waitForExistence(timeout: 12) { try audit("Raag page") }
+                }
+            }
+        }
         let text = (["tab\tauditType\tissue\telement"] + log.all).joined(separator: "\n") + "\n"
         try text.write(toFile: "\(dir)/a11y-audit.txt", atomically: true, encoding: .utf8)
     }
@@ -2128,6 +2172,53 @@ final class SGGSUITests: XCTestCase {
             shot("composition_reader")
             app.navigationBars.buttons.firstMatch.tap()   // back to the Index
             _ = app.navigationBars["Index"].waitForExistence(timeout: 8)
+        }
+        // Index 2.0: Compositions with the Continue card + structure strips (Sukhmani was just
+        // opened), the Raags tab with "In this hour", a Raag page, Forms and Find in Index. The
+        // Ribbon at rest is in the "index" shot; its loupe only shows under a live finger.
+        _ = app.buttons["index_continue"].firstMatch.waitForExistence(timeout: 8)
+        shot("index_compositions_continue")
+        if app.buttons["index_raags"].firstMatch.waitForExistence(timeout: 5) {
+            app.buttons["index_raags"].firstMatch.tap()
+            _ = app.staticTexts["BEFORE THE RAAGS"].waitForExistence(timeout: 8)
+            shot("index_raags")
+            let gauri = app.buttons["raag_gauri"].firstMatch
+            for _ in 0..<6 where !(gauri.exists && gauri.isHittable) { app.swipeUp() }
+            shot("index_raags_hour_and_grid")
+            if gauri.waitForExistence(timeout: 5) && gauri.isHittable {
+                gauri.tap()
+                let bar = app.navigationBars["Raag Gauri"]
+                if bar.waitForExistence(timeout: 12) {
+                    _ = app.buttons["raagBegin"].firstMatch.waitForExistence(timeout: 8)
+                    shot("raag_gauri")
+                    app.swipeUp(); app.swipeUp()
+                    shot("raag_gauri_forms_time")
+                    bar.buttons.element(boundBy: 0).tap()
+                    _ = app.navigationBars["Index"].waitForExistence(timeout: 8)
+                }
+            }
+        }
+        if app.buttons["index_forms"].firstMatch.waitForExistence(timeout: 5) {
+            app.buttons["index_forms"].firstMatch.tap()
+            _ = app.buttons["form_pahare_74"].firstMatch.waitForExistence(timeout: 10)
+            shot("index_forms")
+        }
+        let find = app.searchFields.firstMatch
+        if !find.waitForExistence(timeout: 3) { app.swipeDown() }
+        // Never fail the capture run on focus: type only once the keyboard is really up.
+        if find.waitForExistence(timeout: 5), find.isHittable {
+            find.tap()
+        }
+        if app.keyboards.firstMatch.waitForExistence(timeout: 4) {
+            find.typeText("gauri")
+            _ = app.buttons.containing(NSPredicate(format: "label BEGINSWITH %@", "Raag Gauri")).firstMatch
+                .waitForExistence(timeout: 8)
+            shot("index_find")
+            let cancel = app.buttons["Cancel"].firstMatch
+            if cancel.exists { cancel.tap() }
+        }
+        if app.buttons["index_compositions"].firstMatch.waitForExistence(timeout: 5) {
+            app.buttons["index_compositions"].firstMatch.tap()   // leave the Index as found
         }
         app.navigationBars.buttons.firstMatch.tap()   // back to the hub
         let themes = app.buttons["Themes"].firstMatch
