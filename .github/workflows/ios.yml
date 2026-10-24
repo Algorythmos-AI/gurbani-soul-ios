@@ -104,8 +104,14 @@ jobs:
             -test-timeouts-enabled YES -resultBundlePath "$RUNNER_TEMP/unit.xcresult" \
             CODE_SIGNING_ALLOWED=NO | tail -60
       # Runs even when the unit tests failed, so one run reports every failure (the job still fails).
+      # The UI step does not fail the job by itself: the "Failing tests" step below is the gate. It
+      # fails on any failure recorded in either bundle, and on a missing or unreadable bundle, so a
+      # real failure still fails the job. This lets a flaky-only failure that passes its one retry
+      # finish green, which is what the retry step is for.
       - name: UI tests (SGGSUITests)
+        id: ui
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        continue-on-error: true
         run: |
           xcodebuild test-without-building -project ios/App/SGGS.xcodeproj -scheme SGGS \
             -destination "id=$SIM_UDID" -only-testing:SGGSUITests \
@@ -147,6 +153,11 @@ jobs:
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: |
           bad=0
+          if [ -d "$RUNNER_TEMP/uitests-first.xcresult" ]; then
+            echo "first UI attempt (before the one retry):"
+            xcrun xcresulttool get test-results summary --path "$RUNNER_TEMP/uitests-first.xcresult" --compact \
+              | python3 -c 'import json,sys;s=json.load(sys.stdin);print(f"  {s.get(\"result\")} — passed {s.get(\"passedTests\")}, failed {s.get(\"failedTests\")}")' || true
+          fi
           for b in unit uitests; do
             f="$RUNNER_TEMP/$b.xcresult"
             if [ ! -d "$f" ]; then echo "::error title=$b::no result bundle — the test step did not finish"; bad=1; continue; fi
