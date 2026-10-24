@@ -65,7 +65,7 @@ struct ThemesScreen: View {
                                         .lineLimit(3, reservesSpace: true)
                                         .multilineTextAlignment(.leading)
                                 }
-                                Text("Explore \(c.nLines.formatted()) lines →")
+                                Text("Explore \(c.nLines.formatted()) \(c.nLines == 1 ? "verse" : "verses") →")
                                     .font(.caption2.weight(.medium))
                                     .foregroundStyle(palette.accentText)
                             }
@@ -73,38 +73,9 @@ struct ThemesScreen: View {
                     }
                     .buttonStyle(.pressableCard)
                     .accessibilityElement(children: .combine)
-                    .accessibilityLabel("\(ConceptName.display(c.concept)) — explore \(c.nLines) lines")
+                    .accessibilityLabel("\(ConceptName.display(c.concept)) — explore \(c.nLines) verses")
                 }
             }
         }
-    }
-}
-
-struct ThemeResultsScreen: View {
-    let concept: String
-    @Environment(AppContainer.self) private var container
-    @State private var state: LoadState<[SearchLine]> = .loading
-
-    var body: some View {
-        LoadStateView(state: state, onRetry: { Task { await load() } }) { lines in
-            List(lines, id: \.id) { line in
-                LineRow(gurmukhi: line.gurmukhi, translit: line.translit, meta: line.metaLine,
-                        en: line.en, lineId: line.id, ang: line.ang, compId: line.compId) {
-                    container.present(.shabad(compId: line.compId, focusLineId: line.id))
-                }
-                .listRowSeparator(.hidden)
-            }
-            .listStyle(.plain)
-        }
-        .navigationTitle(ConceptName.display(concept))
-        .navigationBarTitleDisplayMode(.inline)
-        .task(id: concept) { await load() }
-    }
-
-    private func load() async {
-        guard let corpus = container.corpus else { state = .failed("No database"); return }
-        state = .loading
-        do { let t = try await corpus.theme(concept); state = t.lines.isEmpty ? .empty : .loaded(t.lines) }
-        catch { state = .failed(UserMessage.load(error)) }
     }
 }

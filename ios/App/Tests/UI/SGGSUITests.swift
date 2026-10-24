@@ -1222,6 +1222,31 @@ final class SGGSUITests: XCTestCase {
         }
     }
 
+    /// A theme lists every verse it counts: the list states the card's own total and pages to the
+    /// end (it used to stop silently at 200 while the card promised thousands).
+    func testThemeListStatesItsTrueTotal() {
+        let app = launchApp(selectSearch: false)
+        openTab(app, "Explore", expectingNavBar: "Explore")
+        let hub = app.buttons["Themes"].firstMatch
+        XCTAssertTrue(hub.waitForExistence(timeout: 12), "Themes card missing")
+        hub.tap()
+        XCTAssertTrue(app.navigationBars["Themes"].waitForExistence(timeout: 12))
+        let naam = app.buttons.containing(NSPredicate(format: "label BEGINSWITH %@", "Naam —")).firstMatch
+        XCTAssertTrue(naam.waitForExistence(timeout: 12), "Naam card missing")
+        naam.tap()
+        XCTAssertTrue(app.navigationBars["Naam"].waitForExistence(timeout: 12))
+        let header = app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH %@", "5,672 verses carry Naam")).firstMatch
+        XCTAssertTrue(header.waitForExistence(timeout: 15), "the list does not state the theme's true total")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        let akal = app.buttons.containing(NSPredicate(format: "label BEGINSWITH %@", "Akal —")).firstMatch
+        XCTAssertTrue(akal.waitForExistence(timeout: 12), "Akal card missing")
+        akal.tap()
+        let footer = app.staticTexts["themes.verses.footer"]
+        for _ in 0..<6 where !(footer.exists && footer.isHittable) { app.swipeUp() }
+        XCTAssertTrue(footer.waitForExistence(timeout: 10))
+        XCTAssertEqual(footer.label, "All 15 verses shown")
+    }
+
     /// Regression for the consolidated single root sheet: opening a shabad from INSIDE the Trail must
     /// swap the one sheet (not drop it, as two competing `.sheet(item:)` modifiers did).
     func testTrailOpenSwapsToShabad() {

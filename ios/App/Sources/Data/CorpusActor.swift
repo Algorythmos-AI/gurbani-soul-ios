@@ -88,8 +88,10 @@ actor CorpusActor {
     func banis() -> BaniList { db.fetchBanis() }
     func bani(key: String, variant: String = "") -> Bani? { db.fetchBani(key: key, variant: variant) }
 
-    func theme(_ name: String) throws -> ThemeSearchResult {
-        let t = try db.themeSearch(name, limit: 200, offset: 0)
-        return ThemeSearchResult(concept: t.concept, lines: db.attachTranslations(t.lines))
+    /// One keyset page of a theme's verses in reading order, with the true total under the same
+    /// filter (the card's count and the list's end always agree).
+    func themePage(_ concept: String, filter: ThemeFilter = .none, afterId: Int = 0, limit: Int = 50) throws -> ThemePage {
+        let p = try db.themePage(concept: concept, filter: filter, afterId: afterId, limit: limit)
+        return ThemePage(concept: p.concept, total: p.total, lines: db.attachTranslations(p.lines), nextAfterId: p.nextAfterId)
     }
 }
