@@ -211,6 +211,7 @@ struct ResonanceSection: View {
                         .accessibilityElement(children: .combine)
                         .accessibilityLabel(EchoCopy.sentence(e))
                         .accessibilityHint("Shows verses where the two voices echo each other")
+                        .accessibilityIdentifier("echoRow")
                     }
                 } header: {
                     Text("Echoes between voices")
@@ -310,6 +311,7 @@ struct EchoPairsSheet: View {
         }
         .buttonStyle(.plain)
         .accessibilityHint("Opens Ang \(String(v.ang)) in the Reader")
+        .accessibilityIdentifier("echoVerse")
     }
 }
 
