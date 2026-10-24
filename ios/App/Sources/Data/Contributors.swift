@@ -102,6 +102,16 @@ struct Contributor: Decodable, Identifiable, Sendable, Hashable {
     /// The Mahala number for the Gurus, read from the stored name ("(M9)") or the roster `seq`.
     var mahala: Int? { kind == "guru" ? (AuthorName(name).mahala ?? seq) : nil }
 
+    /// The stable key in `sggs://voice/<slug>`: the English name without its "(M9)" suffix,
+    /// lowercased, every run of other characters a single "-" ("guru-tegh-bahadur-ji").
+    var slug: String { Self.slug(for: name) }
+
+    static func slug(for author: String) -> String {
+        AuthorName(author).english.lowercased()
+            .split { !(("a"..."z").contains($0) || ("0"..."9").contains($0)) }
+            .joined(separator: "-")
+    }
+
     /// The biographical paragraph: the roster `context` once approved, else `blurb`.
     var lifeText: String { reviewedContext ?? blurb }
 

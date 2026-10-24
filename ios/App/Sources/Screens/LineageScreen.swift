@@ -3,10 +3,10 @@ import GurbaniSearchKit
 
 /// The Contributors: the voices across five centuries gathered into one Granth — the Gurus,
 /// the Bhagats of the Bhakti and Sufi traditions, the court Bhatts, the Gursikh companions.
-/// Native parity with the web /lineage: timeline (grouped by century, sized by preserved
-/// Bani volume), kind filters, full profiles (life + stylometry + signature themes +
-/// distinctive terms), and ⇄ compare two voices. A voice's size reflects how much of its
-/// Bani is preserved here — NEVER its importance (stated on-screen, as on the web).
+/// Lenses: Roll (cards by century, tradition or Bani preserved, each with an Ang barcode),
+/// River (lifespans on one timeline) and, once the roster carries places, Map. A card pushes
+/// the voice's page; ⇄ compares two voices. Counts are canonical (`lines`, headers excluded)
+/// and describe how much Bani is preserved here — NEVER a voice's importance.
 struct LineageScreen: View {
     @Environment(AppContainer.self) private var container
     @Environment(\.palette) private var palette
@@ -56,10 +56,11 @@ struct LineageScreen: View {
 
     var body: some View {
         Group {
-            if let contributors {
+            if contributors != nil {
+                let voices = split.voices
                 ScrollView {
                     VStack(alignment: .leading, spacing: Theme.Space.l) {
-                        hero(contributors)
+                        hero(voices)
                         if let voiceOfTheDay { voiceOfTheDayCard(voiceOfTheDay) }
                         didYouKnow
                         Picker("Lens", selection: $lens) {
@@ -70,14 +71,18 @@ struct LineageScreen: View {
                         controls
                         switch lens {
                         case .roll:
-                            ForEach(bands(contributors), id: \.title) { band in
+                            ForEach(bands(voices), id: \.title) { band in
                                 bandView(band.title, band.members)
                             }
                         case .river:
                             // River taps follow the same rule as cards: in compare mode they pick.
-                            VoiceRiverView(voices: contributors.filter { kindFilter == "all" || $0.kind == kindFilter }) { c in
+                            VoiceRiverView(voices: voices.filter { kindFilter == "all" || $0.kind == kindFilter }) { c in
                                 select(c)
                             }
+                        }
+                        if !split.withoutBani.isEmpty {
+                            Text("Not counted: \(LineageFacts.join(split.withoutBani.map(\.displayName), .current)). No verses carry this attribution in this edition of the data; it is under review.")
+                                .font(.caption).foregroundStyle(.secondary)
                         }
                     }
                     .padding(Theme.Space.l)
@@ -185,8 +190,8 @@ struct LineageScreen: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: Theme.Space.s) {
                     ForEach(Self.kinds, id: \.id) { k in
-                        let count = k.id == "all" ? (contributors?.count ?? 0)
-                            : (contributors?.filter { $0.kind == k.id }.count ?? 0)
+                        let voices = split.voices
+                        let count = k.id == "all" ? voices.count : voices.filter { $0.kind == k.id }.count
                         ModePill(title: "\(k.label) · \(count)",
                                  dot: k.id == "all" ? nil : Contributor.kindColor(k.id),
                                  isSelected: kindFilter == k.id) { kindFilter = k.id }
@@ -203,6 +208,11 @@ struct LineageScreen: View {
                 }
             }
         }
+    }
+
+    /// Voices with Bani in the loaded DB (counted, listed) and roster entries without (a note).
+    private var split: (voices: [Contributor], withoutBani: [Contributor]) {
+        LineageCount.split(contributors ?? [], withBani: Set(summaries.keys))
     }
 
     private func open(_ c: Contributor) {
@@ -383,9 +393,11 @@ struct LineageScreen: View {
                         VStack(alignment: .leading, spacing: 1) {
                             Text(c.displayName).font(.subheadline.weight(.semibold))
                             if let g = c.gurmukhi { GurmukhiText(verbatim: g, size: 17) }
+                            // Ink, not the tradition colour: the Gurus' colour is brand gold, which
+                            // is never text (brand book); the rail dot and medallion ring carry it.
                             Text(c.kindTag)
                                 .font(.caption2.weight(.semibold)).kerning(0.5)
-                                .foregroundStyle(k)
+                                .foregroundStyle(.secondary)
                         }
                         Spacer(minLength: 0)
                         if compareMode {
@@ -415,11 +427,13 @@ struct LineageScreen: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.pressableCard)
-        .accessibilityElement(children: .ignore)
-        .accessibilityAddTraits(.isButton)
+        // One element per card: the label goes on the Button itself. Wrapping the Button in
+        // `.accessibilityElement(children: .ignore)` made a second element with the same frame —
+        // VoiceOver read each card twice and a UI-test tap could land on the wrong one.
         .accessibilityLabel("\(c.displayName), \(c.kind), \(c.era.isEmpty ? "undated" : c.era), "
                             + (summary.map { Self.countLine($0) } ?? "attribution under review"))
         .accessibilityHint(compareMode ? "Selects for comparison" : "Opens their page")
+        .accessibilityIdentifier("voiceCard_\(c.slug)")
     }
 
     /// "536 verses · 61 compositions · Angs 219–1429" — the one canonical count.
@@ -504,10 +518,8 @@ struct SignatureThemesList: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(onOpen == nil)
-                .accessibilityElement(children: .ignore)
                 .accessibilityLabel("\(label), \(String(format: "%.1f", t.lift)) times the corpus baseline")
                 .accessibilityHint(onOpen == nil ? "" : "Opens this theme")
-                .accessibilityAddTraits(onOpen == nil ? [] : .isButton)
             }
         }
     }
@@ -548,184 +560,5 @@ struct FlowChipsRow: View {
             }
         }
         .accessibilityElement(children: .combine)
-    }
-}
-
-/// ⇄ Compare two voices: radar overlay of their 12-axis theme fingerprints + stat columns.
-struct CompareVoicesSheet: View {
-    let a: Contributor
-    let b: Contributor
-    /// Canonical counts (`lines`, headers excluded) — the same numbers as the cards.
-    var summaryA: VoiceSummary? = nil
-    var summaryB: VoiceSummary? = nil
-    @Environment(AppContainer.self) private var container
-    @Environment(\.dismiss) private var dismiss
-    @State private var pa: AuthorProfile?
-    @State private var pb: AuthorProfile?
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: Theme.Space.l) {
-                    HStack {
-                        legendDot(Theme.accent, a.displayName)
-                        Spacer()
-                        legendDot(Ink.info, b.displayName)
-                    }
-                    if let pa, let pb {
-                        RadarCompareView(a: pa, b: pb, colorA: Theme.accent, colorB: Ink.info)
-                            .frame(height: 280)
-                            .accessibilityHidden(true)   // the table below is the a11y path
-                        radarTable(pa, pb)
-                        statColumns(pa, pb)
-                    } else {
-                        ProgressView().frame(maxWidth: .infinity)
-                    }
-                    Text("Theme emphasis = lift vs the corpus baseline; stylometry on the English translation. Descriptive only — never a ranking of scripture.")
-                        .font(.caption2).foregroundStyle(.tertiary)
-                }
-                .padding()
-            }
-            .navigationTitle("\(a.displayName) ⇄ \(b.displayName)")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
-        }
-        .task {
-            if container.meta == nil { await container.loadMeta() }
-            guard pa == nil, let corpus = container.corpus else { return }
-            pa = await corpus.authorProfile(a.name, full: false)
-            pb = await corpus.authorProfile(b.name, full: false)
-        }
-    }
-
-    private func legendDot(_ color: Color, _ label: String) -> some View {
-        HStack(spacing: 4) {
-            Circle().fill(color).frame(width: 8, height: 8)
-            Text(label).font(.caption.weight(.medium))
-        }
-    }
-
-    private var descriptions: [String: String] {
-        Dictionary((container.meta?.concepts ?? []).map { ($0.concept, $0.description) }, uniquingKeysWith: { a, _ in a })
-    }
-
-    /// Accessible/table alternative for the radar (also the exact numbers).
-    private func radarTable(_ pa: AuthorProfile, _ pb: AuthorProfile) -> some View {
-        let axes = RadarCompareView.axes(pa, pb)
-        return VStack(alignment: .leading, spacing: Theme.Space.xs) {
-            Text("Theme emphasis (lift)").font(.headline)
-            Grid(alignment: .leading, horizontalSpacing: Theme.Space.m, verticalSpacing: Theme.Space.xs) {
-                GridRow {
-                    Text("Theme").font(.caption.weight(.semibold))
-                    Text(a.displayName).font(.caption.weight(.semibold)).foregroundStyle(Theme.accent)
-                    Text(b.displayName).font(.caption.weight(.semibold)).foregroundStyle(Ink.info)
-                }
-                ForEach(axes, id: \.self) { axis in
-                    GridRow {
-                        Text(ConceptName.label(axis, description: descriptions[axis])).font(.caption)
-                        Text(String(format: "%.2f", RadarCompareView.lift(pa, axis))).font(.caption).monospacedDigit()
-                        Text(String(format: "%.2f", RadarCompareView.lift(pb, axis))).font(.caption).monospacedDigit()
-                    }
-                }
-            }
-        }
-    }
-
-    private func statColumns(_ pa: AuthorProfile, _ pb: AuthorProfile) -> some View {
-        Grid(alignment: .leading, horizontalSpacing: Theme.Space.m, verticalSpacing: Theme.Space.xs) {
-            GridRow {
-                Text("").font(.caption)
-                Text(a.displayName).font(.caption.weight(.semibold))
-                Text(b.displayName).font(.caption.weight(.semibold))
-            }
-            statRow("Verses", summaryA?.nVerses, summaryB?.nVerses)
-            statRow("Compositions", summaryA?.nCompositions, summaryB?.nCompositions)
-            GridRow {
-                Text("Raags").font(.caption)
-                raagCell(summaryA)
-                raagCell(summaryB)
-            }
-        }
-    }
-
-    private func statRow(_ label: String, _ va: Int?, _ vb: Int?) -> some View {
-        GridRow {
-            Text(label).font(.caption)
-            Text(va.map { $0.formatted() } ?? "—").font(.caption).monospacedDigit()
-            Text(vb.map { $0.formatted() } ?? "—").font(.caption).monospacedDigit()
-        }
-    }
-
-    /// "Outside the raag sections" for a voice with no raag (the Bhatts), never "0".
-    @ViewBuilder private func raagCell(_ s: VoiceSummary?) -> some View {
-        if let s, s.nRaags == 0 {
-            Text(VoiceCopy.outsideRaags).font(.caption)
-        } else {
-            Text(s.map { $0.nRaags.formatted() } ?? "—").font(.caption).monospacedDigit()
-        }
-    }
-}
-
-/// Canvas polar radar: the union of both authors' top themes as axes, lift as radius.
-/// Decorative — CompareVoicesSheet renders the numbers as a Grid for accessibility.
-struct RadarCompareView: View {
-    let a: AuthorProfile
-    let b: AuthorProfile
-    let colorA: Color
-    let colorB: Color
-
-    /// Up to 12 shared axes: union of both fingerprints ranked by combined lift.
-    static func axes(_ a: AuthorProfile, _ b: AuthorProfile) -> [String] {
-        var combined: [String: Double] = [:]
-        for ax in a.fingerprint { combined[ax.concept, default: 0] += ax.lift }
-        for ax in b.fingerprint { combined[ax.concept, default: 0] += ax.lift }
-        return combined.sorted { $0.value != $1.value ? $0.value > $1.value : $0.key < $1.key }
-            .prefix(12).map { $0.key }
-    }
-
-    static func lift(_ p: AuthorProfile, _ concept: String) -> Double {
-        p.fingerprint.first { $0.concept == concept }?.lift ?? 0
-    }
-
-    var body: some View {
-        Canvas { ctx, size in
-            let axes = Self.axes(a, b)
-            guard axes.count >= 3 else { return }
-            let center = CGPoint(x: size.width / 2, y: size.height / 2)
-            let radius = min(size.width, size.height) / 2 - 36
-            let maxLift = max(axes.map { max(Self.lift(a, $0), Self.lift(b, $0)) }.max() ?? 1, 0.001)
-
-            func point(_ i: Int, _ value: Double) -> CGPoint {
-                let angle = -Double.pi / 2 + 2 * .pi * Double(i) / Double(axes.count)
-                let r = radius * CGFloat(value / maxLift)
-                return CGPoint(x: center.x + cos(angle) * r, y: center.y + sin(angle) * r)
-            }
-            // rings + spokes
-            for ring in [0.25, 0.5, 0.75, 1.0] {
-                var path = Path()
-                for i in 0...axes.count {
-                    let pt = point(i % axes.count, maxLift * ring)
-                    i == 0 ? path.move(to: pt) : path.addLine(to: pt)
-                }
-                ctx.stroke(path, with: .color(.secondary.opacity(0.2)), lineWidth: 0.5)
-            }
-            for (i, axis) in axes.enumerated() {
-                var spoke = Path(); spoke.move(to: center); spoke.addLine(to: point(i, maxLift))
-                ctx.stroke(spoke, with: .color(.secondary.opacity(0.15)), lineWidth: 0.5)
-                let labelPt = point(i, maxLift * 1.16)
-                ctx.draw(Text(ConceptName.display(axis)).font(.system(size: 8)).foregroundStyle(.secondary), at: labelPt)
-            }
-            // polygons
-            for (profile, color) in [(a, colorA), (b, colorB)] {
-                var poly = Path()
-                for (i, axis) in axes.enumerated() {
-                    let pt = point(i, Self.lift(profile, axis))
-                    i == 0 ? poly.move(to: pt) : poly.addLine(to: pt)
-                }
-                poly.closeSubpath()
-                ctx.fill(poly, with: .color(color.opacity(0.18)))
-                ctx.stroke(poly, with: .color(color), lineWidth: 1.5)
-            }
-        }
     }
 }
