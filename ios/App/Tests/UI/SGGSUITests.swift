@@ -1137,9 +1137,7 @@ final class SGGSUITests: XCTestCase {
     /// drags the card to mid-screen (clear of the floating tab bar), and retries the tap once.
     @discardableResult
     private func openVoice(_ app: XCUIApplication, _ card: XCUIElement, file: StaticString = #filePath, line: UInt = #line) -> Bool {
-        let counted = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", " verses · ")).firstMatch
-        _ = counted.waitForExistence(timeout: 20)
-        guard card.waitForExistence(timeout: 12) else {
+        guard scrollToCard(app, card) else {
             XCTFail("voice card missing", file: file, line: line); return false
         }
         let window = app.windows.firstMatch.frame
@@ -1159,6 +1157,20 @@ final class SGGSUITests: XCTestCase {
         return false
     }
 
+    /// Lineage is a lazy list: a card below the fold does not exist until scrolled to. Waits until
+    /// the cards carry their counts, then drags up a third of the window at a time until `card`
+    /// exists (at most 12 drags).
+    @discardableResult
+    private func scrollToCard(_ app: XCUIApplication, _ card: XCUIElement) -> Bool {
+        _ = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", " verses · ")).firstMatch.waitForExistence(timeout: 20)
+        let window = app.windows.firstMatch
+        for _ in 0..<12 where !card.exists {
+            let from = window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
+            from.press(forDuration: 0.05, thenDragTo: window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.35)))
+        }
+        return card.waitForExistence(timeout: 2)
+    }
+
     /// Lineage › the Gurus › Guru Tegh Bahadur Ji: the card's canonical count, then the Voice page
     /// showing the SAME count, then back and Compare v2 between two Gurus.
     func testVoicesNavigationAndCountAgreement() {
@@ -1169,10 +1181,8 @@ final class SGGSUITests: XCTestCase {
         let gurus = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Gurus")).firstMatch
         XCTAssertTrue(gurus.waitForExistence(timeout: 12), "kind filter missing"); gurus.tap()
         let m9 = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Guru Tegh Bahadur Ji,")).firstMatch
-        XCTAssertTrue(m9.waitForExistence(timeout: 12), "M9 card missing")
-        for _ in 0..<6 where !m9.isHittable { app.swipeUp() }
+        XCTAssertTrue(scrollToCard(app, m9), "M9 card missing")
         // card label: "Guru Tegh Bahadur Ji, guru, 1621, 536 verses · 61 compositions · Angs …"
-        _ = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", " verses · ")).firstMatch.waitForExistence(timeout: 20)
         let label = m9.label
         guard let r = label.range(of: #"[0-9][0-9,]* verses"#, options: .regularExpression) else {
             return XCTFail("the card carries no verse count: \(label)")
@@ -1186,7 +1196,7 @@ final class SGGSUITests: XCTestCase {
         app.navigationBars.buttons.element(boundBy: 0).tap()   // back to Lineage
         // Compare v2: M9 and Guru Nanak Dev Ji (the first Guru card)
         app.buttons["compareVoices"].tap()
-        XCTAssertTrue(m9.waitForExistence(timeout: 8)); m9.tap()
+        XCTAssertTrue(scrollToCard(app, m9), "M9 card missing after Back"); m9.tap()
         let m1 = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Guru Nanak Dev Ji,")).firstMatch
         for _ in 0..<6 where !(m1.exists && m1.isHittable) { app.swipeDown() }
         XCTAssertTrue(m1.waitForExistence(timeout: 8), "M1 card missing"); m1.tap()
@@ -2186,7 +2196,7 @@ final class SGGSUITests: XCTestCase {
                 return true
             }
             let farid = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Sheikh Farid")).firstMatch
-            if farid.waitForExistence(timeout: 8), openVoice(app, farid) {
+            if openVoice(app, farid) {
                 _ = app.buttons["voiceBeginFirst"].waitForExistence(timeout: 12)
                 try app.performAccessibilityAudit { @Sendable issue in
                     let el = issue.element.map { "\($0.elementType.rawValue) '\($0.label.prefix(40))'" } ?? "-"
@@ -2450,8 +2460,7 @@ final class SGGSUITests: XCTestCase {
         let gurus = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Gurus")).firstMatch
         if gurus.waitForExistence(timeout: 5) { gurus.tap() }
         let m9 = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Guru Tegh Bahadur Ji,")).firstMatch
-        for _ in 0..<6 where !m9.isHittable { app.swipeUp() }
-        if m9.waitForExistence(timeout: 5), openVoice(app, m9) {
+        if openVoice(app, m9) {
             _ = app.buttons["voiceBeginFirst"].waitForExistence(timeout: 12)
             shot("voice-m9")
             app.navigationBars.buttons.element(boundBy: 0).tap()
