@@ -241,7 +241,7 @@ final class ThemePageTests: XCTestCase {
             let words = try db.themeWords(concept: c)
             XCTAssertTrue(words.allSatisfy { $0.n > 0 }, c)
             XCTAssertEqual(words.map(\.n).reduce(0, +), row.nVerses, "\(c): the family adds up to the theme")
-            XCTAssertEqual(words.max { $0.n < $1.n }?.n, words.first { $0.term == row.headword }?.n, "\(c): headword")
+            XCTAssertEqual(words.first?.term, row.headword, "\(c): the headword is the family's first tagged word")
         }
         XCTAssertEqual(try db.themeWords(concept: "no_such_theme"), [])
     }
