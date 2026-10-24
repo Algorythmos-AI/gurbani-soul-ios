@@ -68,6 +68,27 @@ final class VoicesAtlasTests: XCTestCase {
         }
     }
 
+    func testVersePairsAreVerbatimEchoesBetweenTheTwoVoices() throws {
+        let db = try source()
+        let graph = db.resonance()
+        let e = try XCTUnwrap(graph.edges.first, "no resonance edges in this build")
+        let pairs = db.versePairs(from: e.source, to: e.target, limit: 3)
+        XCTAssertFalse(pairs.isEmpty, "\(e.source) → \(e.target): resonance edge without a single verse pair")
+        XCTAssertLessThanOrEqual(pairs.count, 3)
+        XCTAssertEqual(pairs.map(\.score), pairs.map(\.score).sorted(by: >), "strongest first")
+        XCTAssertEqual(Set(pairs.map(\.a.id)).count, pairs.count, "one pair per verse of the source voice")
+        for p in pairs {
+            let la = try XCTUnwrap(try db.fetchAng(p.a.ang).lines.first(where: { $0.id == p.a.id }))
+            let lb = try XCTUnwrap(try db.fetchAng(p.b.ang).lines.first(where: { $0.id == p.b.id }))
+            XCTAssertEqual(la.author, e.source); XCTAssertEqual(lb.author, e.target)
+            XCTAssertEqual(la.gurmukhi, p.a.gurmukhi, "verse text must be the corpus text, verbatim")
+            XCTAssertEqual(lb.gurmukhi, p.b.gurmukhi)
+            XCTAssertFalse(la.isHeader || lb.isHeader)
+        }
+        XCTAssertTrue(db.versePairs(from: e.source, to: e.source).isEmpty)
+        XCTAssertTrue(db.versePairs(from: "No Such Voice", to: e.target).isEmpty)
+    }
+
     func testBucketsCoverTheGranthExactly() {
         XCTAssertEqual(VoicesAtlas.bucket(forAng: 1), 0)
         XCTAssertEqual(VoicesAtlas.bucket(forAng: 10), 0)

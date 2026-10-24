@@ -167,3 +167,19 @@ public struct VaarAnatomy: Sendable, Equatable {
     public let units: [VaarUnit]
     public init(vaar: VaarSummary?, units: [VaarUnit]) { self.vaar = vaar; self.units = units }
 }
+
+/// One echo between two voices: a verse of `a` and, by meaning, its nearest verse of `b`
+/// (line_neighbors cosine). Both lines verbatim, each with its Ang — never paraphrased.
+public struct VersePair: Sendable, Equatable, Identifiable {
+    public struct Verse: Sendable, Equatable {
+        public let id: Int
+        public let ang: Int
+        public let gurmukhi: String
+        public init(id: Int, ang: Int, gurmukhi: String) { self.id = id; self.ang = ang; self.gurmukhi = gurmukhi }
+    }
+    public let a: Verse
+    public let b: Verse
+    public let score: Double
+    public var id: String { "\(a.id)~\(b.id)" }
+    public init(a: Verse, b: Verse, score: Double) { self.a = a; self.b = b; self.score = score }
+}

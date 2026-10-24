@@ -15,6 +15,8 @@ struct ContributorsView: View {
     @State private var grouping: DotFieldLayout.Grouping = .voice
     @State private var selected: String?
     private let roster = Self.rosterIndex
+    /// Voices with a cited place in the bundled roster (roster v2), read once.
+    private static let mapVoices = MapVoice.loadBundled()
     /// The bundled roster by name, read once (it never changes at runtime).
     private static let rosterIndex: [String: Contributor] =
         Dictionary((ContributorsStore.load() ?? []).map { ($0.name, $0) }, uniquingKeysWith: { a, _ in a })
@@ -90,6 +92,14 @@ struct ContributorsView: View {
                 Text("One dot ≈ \(DotFieldLayout.linesPerDot) verse lines; every voice keeps at least one. Size shows how much Bani is preserved here — never importance.")
             }
             .inkRow()
+            if VoicesFeatures.mapEnabled, !Self.mapVoices.isEmpty {
+                Section {
+                    VoicesMap(voices: Self.mapVoices, selected: $selected)
+                } header: {
+                    Text("From Multan to Banaras")
+                }
+                .inkRow()
+            }
             if let atlas {
                 Section {
                     GranthRibbon(model: RibbonModel(atlas: atlas, roster: roster), selected: selected) { ang in
