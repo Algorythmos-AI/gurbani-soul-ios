@@ -43,6 +43,31 @@ final class VoicesAtlasTests: XCTestCase {
         }
     }
 
+    func testRandomVerseIsByThatVoiceAtItsOwnFirstLine() throws {
+        let db = try source()
+        for s in try db.authorAnalytics().prefix(12) {
+            for _ in 0..<5 {
+                let v = try XCTUnwrap(try db.randomVerse(by: s.author), "\(s.author): no verse")
+                let page = try db.fetchAng(v.ang)
+                let line = try XCTUnwrap(page.lines.first(where: { $0.id == v.lineId }))
+                XCTAssertEqual(line.author, s.author, "random verse is by someone else")
+                XCTAssertFalse(line.isHeader)
+                XCTAssertEqual(line.compId, v.compId)
+                // nothing earlier in the same composition is by this voice
+                XCTAssertFalse(page.lines.contains { $0.compId == v.compId && $0.id < v.lineId
+                                                     && $0.author == s.author && !$0.isHeader })
+            }
+        }
+        XCTAssertNil(try db.randomVerse(by: "No Such Voice"))
+        // Ang 695: one composition id holds Trilochan, Sain, Pipa and Dhanna — Sain's entry
+        // must be Sain's own first line, not the composition's opening (Trilochan's).
+        if try db.authorAnalytics().contains(where: { $0.author == "Bhagat Sain Ji" }) {
+            let v = try XCTUnwrap(try db.randomVerse(by: "Bhagat Sain Ji"))
+            let line = try XCTUnwrap(try db.fetchAng(v.ang).lines.first(where: { $0.id == v.lineId }))
+            XCTAssertEqual(line.author, "Bhagat Sain Ji")
+        }
+    }
+
     func testBucketsCoverTheGranthExactly() {
         XCTAssertEqual(VoicesAtlas.bucket(forAng: 1), 0)
         XCTAssertEqual(VoicesAtlas.bucket(forAng: 10), 0)
