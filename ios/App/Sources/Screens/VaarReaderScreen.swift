@@ -8,6 +8,8 @@ struct VaarReaderScreen: View {
     let vaarId: Int
     var paurisOnly = false
     var startLineId: Int? = nil
+    /// Open at this pauri (a deep link); ignored when out of range for the Vaar.
+    var startPauri: Int? = nil
 
     @Environment(AppContainer.self) private var container
     @Environment(\.palette) private var palette
@@ -175,7 +177,7 @@ struct VaarReaderScreen: View {
                 Button {
                     // the next Vaar with its own weave underneath, never a stack of readers
                     container.router.explorePath = NavigationPath(
-                        [Route.vaars, Route.vaar(next), Route.vaarReader(id: next, paurisOnly: onlyPauris, line: nil)])
+                        [Route.vaars, Route.vaar(next), Route.vaarReader(id: next, paurisOnly: onlyPauris, line: nil, pauri: nil)])
                 } label: {
                     Label("Next Vaar", systemImage: "arrow.right")
                         .font(.subheadline.weight(.semibold))
@@ -300,13 +302,15 @@ struct VaarReaderScreen: View {
         Haptics.success()
     }
 
-    /// Where the reader opens: an explicit line, else the saved position (unless the Vaar was
+    /// Where the reader opens: an explicit line, else a deep-linked pauri, else the saved position (unless the Vaar was
     /// finished since), else the heading (nil). A line outside this Vaar is ignored. In the
     /// pauris-only view a salok line lands on the pauri it leads into; a label line lands on its
     /// unit's row. Pure, so the precedence is unit-tested.
-    static func landing(in t: VaarText, startLineId: Int?, saved: VaarPosition?, paurisOnly: Bool) -> Int? {
+    static func landing(in t: VaarText, startLineId: Int?, startPauri: Int? = nil,
+                        saved: VaarPosition?, paurisOnly: Bool) -> Int? {
         let resumable = saved.flatMap { p in (p.completedAt.map { $0 < p.lastReadAt } ?? true) ? p.lineId : nil }
-        let wanted = [startLineId, resumable].compactMap { $0 }.first { t.unitIndex(containing: $0) != nil }
+        let fromPauri = startPauri.flatMap { n in t.pauris.first { $0.pauriNo == n }?.firstVerse?.id }
+        let wanted = [startLineId, fromPauri, resumable].compactMap { $0 }.first { t.unitIndex(containing: $0) != nil }
         guard let want = wanted, let idx = t.unitIndex(containing: want) else { return nil }
         let unit = t.units[idx]
         if paurisOnly && unit.kind != .pauri {
@@ -323,7 +327,7 @@ struct VaarReaderScreen: View {
         summary = s; text = t; loaded = true
         if container.vaarOrder == nil { container.vaarOrder = await corpus.vaars().map(\.vaarId) }
         guard let t else { return }
-        positionId = Self.landing(in: t, startLineId: startLineId,
+        positionId = Self.landing(in: t, startLineId: startLineId, startPauri: startPauri,
                                   saved: container.vaarProgress.position(for: vaarId), paurisOnly: onlyPauris)
         markProgrammatic()
         try? await Task.sleep(for: .milliseconds(400))   // let the landing settle before tracking

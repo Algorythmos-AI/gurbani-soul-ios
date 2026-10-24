@@ -112,6 +112,13 @@ final class VaarReaderLandingTests: XCTestCase {
                      "a finished Vaar opens at its heading")
     }
 
+    func testADeepLinkedPauriComesAfterAnExplicitLine() {
+        XCTAssertEqual(VaarReaderScreen.landing(in: t, startLineId: nil, startPauri: 1, saved: saved(103), paurisOnly: false), 108)
+        XCTAssertEqual(VaarReaderScreen.landing(in: t, startLineId: 104, startPauri: 1, saved: nil, paurisOnly: false), 104)
+        XCTAssertEqual(VaarReaderScreen.landing(in: t, startLineId: nil, startPauri: 9, saved: saved(103), paurisOnly: false), 103,
+                       "a pauri the Vaar doesn't have falls back to the saved position")
+    }
+
     func testLabelLinesLandOnTheirUnitRow() {
         XCTAssertEqual(VaarReaderScreen.landing(in: t, startLineId: 105, saved: nil, paurisOnly: false),
                        VaarReaderScreen.unitRowId(1))

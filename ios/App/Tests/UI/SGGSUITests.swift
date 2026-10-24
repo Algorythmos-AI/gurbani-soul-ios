@@ -1959,6 +1959,36 @@ final class SGGSUITests: XCTestCase {
                 }
             }
         }
+        // Vaars v2: home, one Vaar's weave, and its reader (report-only, like the tabs above)
+        func audit(_ screen: String) throws {
+            try app.performAccessibilityAudit { @Sendable issue in
+                let el = issue.element.map { "\($0.elementType.rawValue) '\($0.label.prefix(40))'" } ?? "-"
+                log.add("\(screen)\t\(issue.auditType.rawValue)\t\(issue.compactDescription)\t\(el)")
+                return true
+            }
+        }
+        openTab(app, "Explore", expectingNavBar: "Explore")
+        for _ in 0..<4 where app.navigationBars.buttons.count > 0 && !app.navigationBars["Explore"].exists {
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+        }
+        let vaars = app.buttons["Vaars"].firstMatch
+        if vaars.waitForExistence(timeout: 8) {
+            vaars.tap()
+            if app.buttons["vaar.card.2"].firstMatch.waitForExistence(timeout: 15) {
+                try audit("Vaars")
+                app.buttons["vaar.card.2"].firstMatch.tap()
+                if app.descendants(matching: .any)["vaar.weave"].waitForExistence(timeout: 12) {
+                    try audit("Vaar weave")
+                    let read = app.buttons["vaar.read"].firstMatch
+                    if read.waitForExistence(timeout: 5) {
+                        read.tap()
+                        if app.descendants(matching: .any)["vaarReader.position"].firstMatch.waitForExistence(timeout: 10) {
+                            try audit("Vaar reader")
+                        }
+                    }
+                }
+            }
+        }
         let text = (["tab\tauditType\tissue\telement"] + log.all).joined(separator: "\n") + "\n"
         try text.write(toFile: "\(dir)/a11y-audit.txt", atomically: true, encoding: .utf8)
     }
