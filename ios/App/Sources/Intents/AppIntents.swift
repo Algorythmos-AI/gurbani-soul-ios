@@ -162,7 +162,8 @@ struct OpenThemeIntent: AppIntent {
     func perform() async throws -> some IntentResult {
         let key = (theme ?? "").trimmingCharacters(in: .whitespaces).replacingOccurrences(of: " ", with: "_")
         // an unknown or malformed name opens the Themes index rather than querying it
-        let url = ConstellationLink.slug(key).map { URL(string: "sggs://theme/\($0)")! } ?? URL(string: "sggs://themes")!
+        guard let url = ConstellationLink.slug(key).flatMap({ URL(string: "sggs://theme/\($0)") }) ?? URL(string: "sggs://themes")
+        else { return .result() }
         await UIApplication.shared.open(url)
         return .result()
     }

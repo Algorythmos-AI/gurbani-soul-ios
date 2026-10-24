@@ -7,7 +7,7 @@ import GurbaniSearchKit
 /// themes (names, headwords and counts only — no verse text). Verbatim Gurmukhi + Ang citation;
 /// tapping a result deep-links to the composition or the theme page.
 enum SpotlightIndex {
-    private static let domain = "org.sggs.saved"
+    static let domain = "org.sggs.saved"
 
     static func identifier(lineId: Int, compId: Int) -> String { "saved-\(lineId)-comp-\(compId)" }
 
@@ -52,7 +52,7 @@ enum SpotlightIndex {
 
     // MARK: themes
 
-    private static let themeDomain = "org.sggs.themes"
+    static let themeDomain = "org.sggs.themes"
 
     static func themeIdentifier(_ concept: String) -> String { "theme-\(concept)" }
 

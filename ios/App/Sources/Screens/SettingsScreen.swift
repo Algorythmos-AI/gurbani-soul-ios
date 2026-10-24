@@ -61,7 +61,6 @@ struct MoreScreen: View {
                     Toggle("Show transliteration", isOn: $showTranslit)
                         .accessibilityIdentifier("translitToggle")
 
-
                     if container.corpus?.capabilities.hasEnglish == true {
                         Toggle(isOn: $showEnglish) {
                             VStack(alignment: .leading) {

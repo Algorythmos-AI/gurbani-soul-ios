@@ -80,7 +80,7 @@ struct ThemesScreen: View {
             .font(.caption).foregroundStyle(Ink.muted)
             .fixedSize(horizontal: false, vertical: true)
         if let today { TodayHero(today: today) }
-        if yoursOn, let yours { YourThemesCard(summary: yours) }
+        if yoursOn, let yours { YourThemesCard(summary: yours) { Task { await loadYours() } } }
         switch arrangement {
         case .family:
             ForEach(ThemeIndexModel.grouped(rows), id: \.group?.key) { section in
@@ -231,11 +231,20 @@ struct ThemesScreen: View {
         // only from the app's own saved store: with no store at all (even the in-memory fallback
         // failed) there is nothing to read, and the default context must never be fetched
         guard yoursOn, let corpus = container.corpus, let store = container.modelContainer else { yours = nil; return }
-        let saved = ((try? store.mainContext.fetch(FetchDescriptor<SavedLine>())) ?? []).map {
-            YourThemes.Verse(lineId: $0.lineId, compId: $0.compId, ang: $0.ang, gurmukhi: $0.gurmukhi, translit: $0.translit)
+        let saved: [YourThemes.Verse]
+        do {
+            saved = try store.mainContext.fetch(FetchDescriptor<SavedLine>()).map {
+                YourThemes.Verse(lineId: $0.lineId, compId: $0.compId, ang: $0.ang, gurmukhi: $0.gurmukhi, translit: $0.translit)
+            }
+        } catch { yours = .unavailable(savedCount: 0); return }
+        guard let rows = try? await corpus.themeIndex() else { yours = .unavailable(savedCount: saved.count); return }
+        var members: [String: Set<Int>] = [:]
+        if saved.count >= YourThemes.minimumSaved {
+            // a failed lookup must not read as "none of your saved verses carries a theme"
+            do { members = try await corpus.themeMembers(lineIds: saved.map(\.lineId)) }
+            catch is CancellationError { return }
+            catch { yours = .unavailable(savedCount: saved.count); return }
         }
-        guard let rows = try? await corpus.themeIndex() else { yours = nil; return }
-        let members = saved.count >= YourThemes.minimumSaved ? ((try? await corpus.themeMembers(lineIds: saved.map(\.lineId))) ?? [:]) : [:]
         guard !Task.isCancelled, yoursOn else { return }
         yours = YourThemes.summarize(saved: saved, members: members, themes: rows,
                                      day: HukamOfTheDay.dayNumber(of: Date(), calendar: .current))

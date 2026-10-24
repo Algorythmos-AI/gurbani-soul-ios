@@ -23,9 +23,16 @@ enum YourThemes {
         let carried: [(concept: String, verses: [Verse])]
         /// A few themes none of the saved verses carry yet (rotating by day), as an invitation.
         let notYet: [String]
+        /// The saved store or the theme lookup failed: say nothing about what the verses carry
+        /// (an empty result would read as a fact), only that it could not be counted.
+        var unavailable = false
+
+        static func unavailable(savedCount: Int) -> Summary {
+            Summary(savedCount: savedCount, carried: [], notYet: [], unavailable: true)
+        }
 
         static func == (a: Summary, b: Summary) -> Bool {
-            a.savedCount == b.savedCount && a.notYet == b.notYet
+            a.savedCount == b.savedCount && a.notYet == b.notYet && a.unavailable == b.unavailable
                 && a.carried.map { "\($0.concept):\($0.verses.map(\.lineId))" } == b.carried.map { "\($0.concept):\($0.verses.map(\.lineId))" }
         }
     }
@@ -52,6 +59,7 @@ enum YourThemes {
 /// The Your-themes card on the Themes index.
 struct YourThemesCard: View {
     let summary: YourThemes.Summary
+    var onRetry: () -> Void = {}
     @Environment(\.palette) private var palette
 
     var body: some View {
@@ -62,7 +70,13 @@ struct YourThemesCard: View {
                 Image(systemName: "lock").font(.caption).foregroundStyle(Ink.muted)
                     .accessibilityLabel("Worked out on this device")
             }
-            if summary.savedCount < YourThemes.minimumSaved {
+            if summary.unavailable {
+                Text("Your themes could not be counted just now.")
+                    .font(.callout).foregroundStyle(Ink.muted)
+                Button("Try again") { Haptics.tap(); onRetry() }
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(palette.accentText)
+            } else if summary.savedCount < YourThemes.minimumSaved {
                 Text("Save verses as you read, and this shows the themes they carry. It is worked out on this device; nothing leaves it.")
                     .font(.callout).foregroundStyle(Ink.muted)
                     .fixedSize(horizontal: false, vertical: true)
@@ -120,8 +134,20 @@ struct YourThemeVersesScreen: View {
     let concept: String
     @Environment(AppContainer.self) private var container
     @State private var verses: [YourThemes.Verse] = []
+    @State private var failed = false
 
     var body: some View {
+        if failed {
+            EmptyStateView(title: "Something went wrong", message: "Your saved verses for this theme could not be read just now.",
+                           isError: true, actionTitle: "Try again") { Task { await load() } }
+                .navigationTitle("Your \(ConceptName.display(concept))")
+                .navigationBarTitleDisplayMode(.inline)
+        } else {
+            list
+        }
+    }
+
+    private var list: some View {
         List {
             Section {
                 ForEach(verses) { v in
@@ -152,11 +178,17 @@ struct YourThemeVersesScreen: View {
 
     private func load() async {
         guard let corpus = container.corpus, let store = container.modelContainer else { verses = []; return }
-        let saved = ((try? store.mainContext.fetch(FetchDescriptor<SavedLine>())) ?? []).map {
-            YourThemes.Verse(lineId: $0.lineId, compId: $0.compId, ang: $0.ang, gurmukhi: $0.gurmukhi, translit: $0.translit)
+        do {
+            let saved = try store.mainContext.fetch(FetchDescriptor<SavedLine>()).map {
+                YourThemes.Verse(lineId: $0.lineId, compId: $0.compId, ang: $0.ang, gurmukhi: $0.gurmukhi, translit: $0.translit)
+            }
+            let ids = try await corpus.themeMembers(lineIds: saved.map(\.lineId))[concept] ?? []
+            guard !Task.isCancelled else { return }
+            failed = false
+            verses = saved.filter { ids.contains($0.lineId) }.sorted { $0.lineId < $1.lineId }
+        } catch is CancellationError {
+        } catch {
+            failed = true          // never show an empty list as if none of the verses carried it
         }
-        let ids = (try? await corpus.themeMembers(lineIds: saved.map(\.lineId)))?[concept] ?? []
-        guard !Task.isCancelled else { return }
-        verses = saved.filter { ids.contains($0.lineId) }.sorted { $0.lineId < $1.lineId }
     }
 }

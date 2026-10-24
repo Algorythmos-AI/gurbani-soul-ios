@@ -70,4 +70,22 @@ final class YourThemesTests: XCTestCase {
         r.handle(URL(string: "sggs://theme/sahaj")!, container: c)
         XCTAssertEqual(r.explorePath.count, 2, "a real theme → its page")
     }
+
+    /// Clearing the saved store (reconcile / removeAll on the saved domain) cannot touch the theme
+    /// entries: Spotlight deletes a domain and its sub-domains, so neither may contain the other.
+    func testThemeSpotlightDomainSurvivesASavedStoreReset() {
+        XCTAssertNotEqual(SpotlightIndex.domain, SpotlightIndex.themeDomain)
+        XCTAssertFalse(SpotlightIndex.themeDomain.hasPrefix(SpotlightIndex.domain + "."))
+        XCTAssertFalse(SpotlightIndex.domain.hasPrefix(SpotlightIndex.themeDomain + "."))
+    }
+
+    /// A failed lookup is reported as "could not be counted", never as a tally of nothing.
+    func testUnavailableIsNotAnEmptyTally() {
+        let u = YourThemes.Summary.unavailable(savedCount: 5)
+        XCTAssertTrue(u.unavailable)
+        XCTAssertTrue(u.carried.isEmpty && u.notYet.isEmpty)
+        let real = YourThemes.summarize(saved: [verse(1), verse(2), verse(3)], members: [:], themes: [row("naam")], day: 0)
+        XCTAssertFalse(real.unavailable, "summarize only ever describes a lookup that succeeded")
+        XCTAssertNotEqual(u, YourThemes.summarize(saved: [], members: [:], themes: [], day: 0))
+    }
 }
