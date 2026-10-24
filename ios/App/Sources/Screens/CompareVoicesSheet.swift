@@ -80,7 +80,7 @@ struct CompareVoicesSheet: View {
 
     @ViewBuilder private var angsSection: some View {
         if let sa = summaryA, let sb = summaryB {
-            let shared = sa.angs.angs.filter(sb.angs.contains).count
+            let shared = Self.sharedAngs(sa.angs, sb.angs)
             VStack(alignment: .leading, spacing: Theme.Space.s) {
                 SectionEyebrow(text: "Across the Granth")
                 AngBarcode(angs: sa.angs, color: colorA, height: 14, marksRaagEnd: true)
@@ -104,8 +104,16 @@ struct CompareVoicesSheet: View {
         return combined.sorted { $0.value != $1.value ? $0.value > $1.value : $0.key < $1.key }.prefix(10).map(\.key)
     }
 
-    private func lift(_ p: AuthorProfile?, _ concept: String) -> Double {
-        p?.fingerprint.first { $0.concept == concept }?.lift ?? 0
+    /// Nil when the theme is not in this voice's fingerprint — never shown as a measured 0.
+    private func lift(_ p: AuthorProfile?, _ concept: String) -> Double? {
+        p?.fingerprint.first { $0.concept == concept }?.lift
+    }
+
+    /// "1.6×", or "—" for a theme outside this voice's top set.
+    static func liftText(_ v: Double?) -> String { v.map { String(format: "%.1f×", $0) } ?? "—" }
+
+    static func liftSpoken(_ v: Double?) -> String {
+        v.map { "\(String(format: "%.1f", $0)) times" } ?? "not in this voice's top themes"
     }
 
     private var descriptions: [String: String] {
@@ -115,7 +123,7 @@ struct CompareVoicesSheet: View {
     @ViewBuilder private var themesSection: some View {
         let axes = self.axes
         if !axes.isEmpty {
-            let maxLift = max(axes.map { max(lift(pa, $0), lift(pb, $0)) }.max() ?? 1, 0.001)
+            let maxLift = max(axes.map { max(lift(pa, $0) ?? 0, lift(pb, $0) ?? 0) }.max() ?? 1, 0.001)
             VStack(alignment: .leading, spacing: Theme.Space.s) {
                 SectionEyebrow(text: "Theme emphasis")
                 Text("How much more (or less) each voice dwells on a theme than the Granth as a whole (lift; 1× = the Granth's own rate).")
@@ -140,21 +148,23 @@ struct CompareVoicesSheet: View {
                         }
                     }
                     .accessibilityElement(children: .ignore)
-                    .accessibilityLabel("\(label): \(a.displayName) \(String(format: "%.1f", la)) times, \(b.displayName) \(String(format: "%.1f", lb)) times")
+                    .accessibilityLabel("\(label): \(a.displayName) \(Self.liftSpoken(la)), \(b.displayName) \(Self.liftSpoken(lb))")
                 }
             }
         }
     }
 
     /// One side of the diverging chart: grows away from the centre label.
-    private func bar(_ value: Double, _ maxLift: Double, _ color: Color, leading: Bool) -> some View {
+    private func bar(_ value: Double?, _ maxLift: Double, _ color: Color, leading: Bool) -> some View {
         GeometryReader { geo in
-            let w = max(2, geo.size.width * CGFloat(value / maxLift))
+            let w = max(2, geo.size.width * CGFloat((value ?? 0) / maxLift))
             HStack(spacing: 4) {
                 if !leading { Spacer(minLength: 0) }
-                if !leading { Text(String(format: "%.1f×", value)).font(.caption2).monospacedDigit().foregroundStyle(.secondary) }
-                Capsule().fill(color).frame(width: min(w, max(2, geo.size.width - 34)), height: 10)
-                if leading { Text(String(format: "%.1f×", value)).font(.caption2).monospacedDigit().foregroundStyle(.secondary) }
+                if !leading { Text(Self.liftText(value)).font(.caption2).monospacedDigit().foregroundStyle(.secondary) }
+                if value != nil {
+                    Capsule().fill(color).frame(width: min(w, max(2, geo.size.width - 34)), height: 10)
+                }
+                if leading { Text(Self.liftText(value)).font(.caption2).monospacedDigit().foregroundStyle(.secondary) }
                 if leading { Spacer(minLength: 0) }
             }
             .frame(maxHeight: .infinity)
@@ -162,13 +172,15 @@ struct CompareVoicesSheet: View {
         .frame(height: 22)
     }
 
-    private func barRow(_ name: String, _ value: Double, _ maxLift: Double, _ color: Color) -> some View {
+    private func barRow(_ name: String, _ value: Double?, _ maxLift: Double, _ color: Color) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text("\(name) · \(String(format: "%.1f×", value))").font(.caption)
-            GeometryReader { geo in
-                Capsule().fill(color).frame(width: max(2, geo.size.width * CGFloat(value / maxLift)), height: 10)
+            Text("\(name) · \(Self.liftText(value))").font(.caption)
+            if let value {
+                GeometryReader { geo in
+                    Capsule().fill(color).frame(width: max(2, geo.size.width * CGFloat(value / maxLift)), height: 10)
+                }
+                .frame(height: 10)
             }
-            .frame(height: 10)
         }
     }
 
@@ -200,6 +212,14 @@ struct CompareVoicesSheet: View {
 
     // MARK: lifetimes
 
+    static func sharedAngs(_ a: AngSet, _ b: AngSet) -> Int { a.angs.filter(b.contains).count }
+
+    /// "about a year" for a span of 0–1 years, else "about N years".
+    static func overlapDuration(_ o: ClosedRange<Int>) -> String {
+        let years = o.upperBound - o.lowerBound
+        return years <= 1 ? "about a year" : "about \(years) years"
+    }
+
     static func overlap(_ a: Contributor, _ b: Contributor) -> ClosedRange<Int>? {
         guard let ab = a.born, let ad = a.died, let bb = b.born, let bd = b.died else { return nil }
         let lo = max(ab, bb), hi = min(ad, bd)
@@ -212,7 +232,7 @@ struct CompareVoicesSheet: View {
             if a.born == nil || a.died == nil || b.born == nil || b.died == nil {
                 Text("Dates for at least one of them are not known closely enough to compare.").font(.callout)
             } else if let o = Self.overlap(a, b) {
-                Text("By approximate dates their lifetimes overlap, c. \(String(o.lowerBound))–\(String(o.upperBound)) (about \(o.upperBound - o.lowerBound) years) — an overlap, not a record of meeting.")
+                Text("By approximate dates their lifetimes overlap, c. \(String(o.lowerBound))–\(String(o.upperBound)) (\(Self.overlapDuration(o))) — an overlap, not a record of meeting.")
                     .font(.callout)
             } else {
                 Text("By approximate dates their lifetimes do not overlap.").font(.callout)

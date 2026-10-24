@@ -3,10 +3,10 @@ import GurbaniSearchKit
 
 /// The Contributors: the voices across five centuries gathered into one Granth — the Gurus,
 /// the Bhagats of the Bhakti and Sufi traditions, the court Bhatts, the Gursikh companions.
-/// Native parity with the web /lineage: timeline (grouped by century, sized by preserved
-/// Bani volume), kind filters, full profiles (life + stylometry + signature themes +
-/// distinctive terms), and ⇄ compare two voices. A voice's size reflects how much of its
-/// Bani is preserved here — NEVER its importance (stated on-screen, as on the web).
+/// Lenses: Roll (cards by century, tradition or Bani preserved, each with an Ang barcode),
+/// River (lifespans on one timeline) and, once the roster carries places, Map. A card pushes
+/// the voice's page; ⇄ compares two voices. Counts are canonical (`lines`, headers excluded)
+/// and describe how much Bani is preserved here — NEVER a voice's importance.
 struct LineageScreen: View {
     @Environment(AppContainer.self) private var container
     @Environment(\.palette) private var palette
