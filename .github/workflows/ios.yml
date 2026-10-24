@@ -134,9 +134,10 @@ jobs:
           [ -n "$only" ] || { echo "no flaky-only failure set; nothing to retry"; exit 0; }
           echo "::warning::retrying known-flaky UI tests once: $only"
           mv "$f" "$RUNNER_TEMP/uitests-first.xcresult"
-          args=""; for t in $only; do args="$args -only-testing:SGGSUITests/SGGSUITests/$t"; done
+          read -ra names <<<"$only"; args=()
+          for t in "${names[@]}"; do args+=("-only-testing:SGGSUITests/SGGSUITests/$t"); done
           xcodebuild test-without-building -project ios/App/SGGS.xcodeproj -scheme SGGS \
-            -destination "id=$SIM_UDID" $args \
+            -destination "id=$SIM_UDID" "${args[@]}" \
             -test-timeouts-enabled YES -resultBundlePath "$f" \
             CODE_SIGNING_ALLOWED=NO | tail -40 || true
       # The log above keeps only its last lines; name every failing test from the result bundles.
