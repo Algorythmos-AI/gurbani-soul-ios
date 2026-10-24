@@ -930,7 +930,7 @@ final class SGGSUITests: XCTestCase {
         app.buttons["insights_Network"].tap()
         XCTAssertTrue(app.staticTexts["Strongest pairs"].waitForExistence(timeout: 15), "network list missing")
         app.buttons["insights_Resonance"].tap()
-        XCTAssertTrue(app.staticTexts["Strongest resonances"].waitForExistence(timeout: 15), "resonance missing")
+        XCTAssertTrue(app.staticTexts["Echoes between voices"].waitForExistence(timeout: 15), "resonance missing")
         // Flow is the last pill in a horizontal row — on narrow widths it sits off-screen
         // (an off-screen XCUIElement has no hit point). Drag the row left first.
         // (`isHittable` itself throws for an off-screen element, so always drag — harmless
@@ -944,6 +944,68 @@ final class SGGSUITests: XCTestCase {
                       || app.buttons["progressionRaagPicker"].firstMatch.exists
                       || app.staticTexts["Raag"].firstMatch.waitForExistence(timeout: 5),
                       "progression picker missing")
+    }
+
+    /// Voices of the Granth (Insights › Contributors): the dot field regroups, the legend names
+    /// the traditions, and the Granth ribbon is one adjustable element that speaks Ang ranges.
+    func testVoicesContributors() {
+        let app = launchApp()
+        openTab(app, "Explore", expectingNavBar: "Explore")
+        let insights = app.buttons["Insights"].firstMatch
+        XCTAssertTrue(insights.waitForExistence(timeout: 15)); insights.tap()
+        let field = app.descendants(matching: .any)["voicesDotField"].firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 15), "dot field missing")
+        XCTAssertTrue(field.label.contains("one dot for about"), "dot field must say what a dot is")
+        for grouping in ["Traditions", "Centuries", "Voices"] {
+            let seg = app.buttons[grouping].firstMatch
+            XCTAssertTrue(seg.waitForExistence(timeout: 5), "\(grouping) segment missing"); seg.tap()
+            XCTAssertTrue(field.exists, "dot field vanished after regrouping to \(grouping)")
+        }
+        // the legend is one combined element: "Gurus, Bhagats, Bhatts, Gursikhs"
+        XCTAssertTrue(app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "Bhagats"))
+                        .firstMatch.exists, "tradition legend missing")
+        let ribbon = app.descendants(matching: .any)["granthRibbon"].firstMatch
+        for _ in 0..<6 where !ribbon.exists { app.swipeUp() }
+        XCTAssertTrue(ribbon.waitForExistence(timeout: 10), "Granth ribbon missing")
+        XCTAssertTrue((ribbon.value as? String)?.hasPrefix("Angs 1 to 10") == true,
+                      "ribbon value should start at Angs 1 to 10, got \(String(describing: ribbon.value))")
+    }
+
+    /// Echoes: Insights › Resonance → a pair of voices → verbatim verse pairs, each cited
+    /// "Sri Guru Granth Sahib Ji · Ang N" → opening one lands in the Reader.
+    func testEchoesShowCitedVerses() {
+        let app = launchApp()
+        openTab(app, "Explore", expectingNavBar: "Explore")
+        let insights = app.buttons["Insights"].firstMatch
+        XCTAssertTrue(insights.waitForExistence(timeout: 15)); insights.tap()
+        app.buttons["insights_Resonance"].tap()
+        let row = app.buttons["echoRow"].firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 15), "no resonance pair to open")
+        row.tap()
+        XCTAssertTrue(app.navigationBars["Echoes"].waitForExistence(timeout: 10), "Echoes sheet missing")
+        let verse = app.buttons["echoVerse"].firstMatch
+        XCTAssertTrue(verse.waitForExistence(timeout: 15), "no verse pair")
+        XCTAssertTrue(verse.label.contains("Sri Guru Granth Sahib Ji · Ang"), "verse must carry its citation: \(verse.label)")
+        verse.tap()
+        XCTAssertTrue(app.buttons["jumpToAng"].firstMatch.waitForExistence(timeout: 15), "verse did not open the Reader")
+    }
+
+    /// The Voices map behind its scholar gate (G3): captured only, with -sggs_voices_map YES.
+    func testCaptureVoicesMap() throws {
+        let env = ProcessInfo.processInfo.environment
+        guard let dir = env["SGGS_SHOT_DIR"] else { throw XCTSkip("capture-only: set TEST_RUNNER_SGGS_SHOT_DIR") }
+        let app = launchApp(arguments: ["-sggs_voices_map", "YES"], forwardCaptureEnv: true)
+        openTab(app, "Explore", expectingNavBar: "Explore")
+        let insights = app.buttons["Insights"].firstMatch
+        XCTAssertTrue(insights.waitForExistence(timeout: 15)); insights.tap()
+        let year = app.sliders["voicesMapYear"].firstMatch
+        for _ in 0..<4 where !year.exists { app.swipeUp() }
+        guard year.waitForExistence(timeout: 8) else {
+            throw XCTSkip("the bundled roster has no `place` yet (roster v2 not vendored)")
+        }
+        try? app.screenshot().pngRepresentation.write(to: URL(fileURLWithPath: "\(dir)/voices_map_1680.png"))
+        year.adjust(toNormalizedSliderPosition: 0.45)   // ≈ 1400
+        try? app.screenshot().pngRepresentation.write(to: URL(fileURLWithPath: "\(dir)/voices_map_1400.png"))
     }
 
     /// Reader parity: jump-to-Ang (boundary 1430, next disabled), swipe page-turn back.
@@ -1642,6 +1704,22 @@ final class SGGSUITests: XCTestCase {
                 }
             }
         }
+        // Voices of the Granth: Insights › Contributors (dot field + ribbon) and Resonance (Echoes list)
+        openTab(app, "Explore", expectingNavBar: "Explore")
+        let ins = app.buttons["Insights"].firstMatch
+        if ins.waitForExistence(timeout: 8) {
+            ins.tap()
+            _ = app.descendants(matching: .any)["voicesDotField"].firstMatch.waitForExistence(timeout: 12)
+            for (name, pill) in [("Contributors", "insights_Contributors"), ("Resonance", "insights_Resonance")] {
+                app.buttons[pill].firstMatch.tap()
+                _ = app.buttons["echoRow"].firstMatch.waitForExistence(timeout: name == "Resonance" ? 12 : 1)
+                try app.performAccessibilityAudit { @Sendable issue in
+                    let el = issue.element.map { "\($0.elementType.rawValue) '\($0.label.prefix(40))'" } ?? "-"
+                    log.add("\(name)\t\(issue.auditType.rawValue)\t\(issue.compactDescription)\t\(el)")
+                    return true
+                }
+            }
+        }
         let text = (["tab\tauditType\tissue\telement"] + log.all).joined(separator: "\n") + "\n"
         try text.write(toFile: "\(dir)/a11y-audit.txt", atomically: true, encoding: .utf8)
     }
@@ -1822,6 +1900,22 @@ final class SGGSUITests: XCTestCase {
             _ = app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH %@", "Guru Nanak Dev Ji"))
                 .firstMatch.waitForExistence(timeout: 12)
             shot("insights_contributors")
+            for (seg, name) in [("Traditions", "voices_dots_traditions"), ("Centuries", "voices_dots_centuries"),
+                                ("Voices", "voices_dots_voices")] {
+                let b = app.buttons[seg].firstMatch
+                if b.waitForExistence(timeout: 5) { b.tap(); shot(name) }
+            }
+            let ribbon = app.descendants(matching: .any)["granthRibbon"].firstMatch
+            for _ in 0..<6 where !ribbon.exists { app.swipeUp() }
+            if ribbon.waitForExistence(timeout: 8) { shot("voices_ribbon") }
+            app.buttons["insights_Resonance"].tap()
+            if app.buttons["echoRow"].firstMatch.waitForExistence(timeout: 12) {
+                shot("voices_resonance_chord_and_list")
+                app.buttons["echoRow"].firstMatch.tap()
+                if app.buttons["echoVerse"].firstMatch.waitForExistence(timeout: 12) { shot("voices_echoes") }
+                let done = app.navigationBars["Echoes"].buttons["Done"]
+                if done.waitForExistence(timeout: 5) { done.tap() }
+            }
             app.navigationBars.buttons.firstMatch.tap()   // back to the hub
             _ = app.navigationBars["Explore"].waitForExistence(timeout: 8)
         }

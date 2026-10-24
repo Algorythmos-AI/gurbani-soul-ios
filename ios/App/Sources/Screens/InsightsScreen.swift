@@ -6,6 +6,8 @@ import GurbaniSearchKit
 final class InsightsModel {
     var authors: [AuthorStat] = []
     var raags: [RaagStat] = []
+    /// Voices of the Granth, computed from the verse lines; nil only if the read fails.
+    var atlas: VoicesAtlas?
     var loaded = false
     private let corpus: CorpusActor?
     init(corpus: CorpusActor?) { self.corpus = corpus }
@@ -14,6 +16,7 @@ final class InsightsModel {
         guard let corpus else { loaded = true; return }   // no DB → show empty, never an endless spinner
         authors = (try? await corpus.authorAnalytics()) ?? []
         raags = (try? await corpus.raagAnalytics()) ?? []
+        atlas = await corpus.voicesAtlas()
         loaded = true
     }
 }
@@ -44,7 +47,7 @@ struct InsightsScreen: View {
 
             if let model, model.loaded {
                 switch tab {
-                case 0: ContributorsView(authors: model.authors, rows: authorRows)
+                case 0: ContributorsView(authors: model.authors, rows: authorRows, atlas: model.atlas)
                 case 1: RaagsView(raags: model.raags)
                 case 2: ThemeNetworkSection()
                 case 3: ResonanceSection()

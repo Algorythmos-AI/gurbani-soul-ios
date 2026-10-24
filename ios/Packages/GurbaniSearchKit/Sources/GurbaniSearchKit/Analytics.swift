@@ -76,3 +76,50 @@ public protocol AnalyticsSource: Sendable {
     /// A concept's verses grouped by their most-shared co-theme (top-9 clusters). serve.py constellation.
     func constellation(concept: String, author: String?, raag: String?) throws -> ConstellationResult
 }
+
+// MARK: Voices of the Granth (computed from `lines` by SQLiteCandidateSource.voicesAtlas())
+
+/// Where one voice sings: a raag, or — after Ang 1353, where the Granth leaves the raag
+/// framework — the section (`isRaag == false`, e.g. ਸਵਈਏ). Counts are verse lines.
+public struct VoicePlace: Sendable, Equatable, Identifiable {
+    public let name: String
+    public let isRaag: Bool
+    public let nLines: Int
+    public let nShabads: Int
+    public var id: String { name }
+    public init(name: String, isRaag: Bool, nLines: Int, nShabads: Int) {
+        self.name = name; self.isRaag = isRaag; self.nLines = nLines; self.nShabads = nShabads
+    }
+}
+
+/// A voice's first verse line in Granth order ("begin with") — never a heading.
+public struct VoiceEntry: Sendable, Equatable {
+    public let compId: Int
+    public let ang: Int
+    public let lineId: Int
+    public init(compId: Int, ang: Int, lineId: Int) { self.compId = compId; self.ang = ang; self.lineId = lineId }
+}
+
+/// The Granth as a ribbon: verse lines per voice in 143 buckets of 10 Angs, plus each voice's
+/// places and entry point.
+public struct VoicesAtlas: Sendable, Equatable {
+    public static let bucketSize = 10
+    public static let bucketCount = 143                  // 1,430 Angs / 10
+    /// author → 143 verse-line counts (bucket b covers Angs 10b+1 … 10b+10).
+    public let histogram: [String: [Int]]
+    /// author → places, most lines first.
+    public let places: [String: [VoicePlace]]
+    public let entries: [String: VoiceEntry]
+
+    public init(histogram: [String: [Int]], places: [String: [VoicePlace]], entries: [String: VoiceEntry]) {
+        self.histogram = histogram; self.places = places; self.entries = entries
+    }
+
+    public static func bucket(forAng ang: Int) -> Int { min(max((ang - 1) / bucketSize, 0), bucketCount - 1) }
+    public static func angs(inBucket b: Int) -> ClosedRange<Int> {
+        let lo = b * bucketSize + 1
+        return lo...min(lo + bucketSize - 1, 1430)
+    }
+    /// Verse lines in one bucket, over every voice.
+    public func total(inBucket b: Int) -> Int { histogram.values.reduce(0) { $0 + ($1.indices.contains(b) ? $1[b] : 0) } }
+}

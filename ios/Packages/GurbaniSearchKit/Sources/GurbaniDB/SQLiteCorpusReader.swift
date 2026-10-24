@@ -292,6 +292,54 @@ extension SQLiteCandidateSource: CorpusReader, AnalyticsSource {
         return out
     }
 
+    /// Voices of the Granth, computed from `lines` (verse lines only): per voice, verse lines in
+    /// each 10-Ang bucket, places (a raag, or after Ang 1353 the section, e.g. the Swaiyye), and the
+    /// first verse line. Three grouped reads over ~60k rows (author is indexed) — no extra tables,
+    /// so every dataset can answer. nil only if a read fails.
+    public func voicesAtlas() throws -> VoicesAtlas? {
+        var hist: [String: [Int]] = [:]
+        try prepareEach("SELECT author, (ang - 1) / \(VoicesAtlas.bucketSize), count(*) FROM lines "
+                        + "WHERE is_header = 0 AND author IS NOT NULL GROUP BY 1, 2") { s in
+            let b = int(s, 1)
+            guard let a = col(s, 0), (0..<VoicesAtlas.bucketCount).contains(b) else { return }
+            hist[a, default: Array(repeating: 0, count: VoicesAtlas.bucketCount)][b] = int(s, 2)
+        }
+        var places: [String: [VoicePlace]] = [:]
+        try prepareEach("SELECT author, COALESCE(raag, section) AS place, raag IS NOT NULL, count(*), "
+                        + "count(DISTINCT comp_id) FROM lines WHERE is_header = 0 AND author IS NOT NULL "
+                        + "AND COALESCE(raag, section) IS NOT NULL GROUP BY 1, 2, 3 ORDER BY 1, 4 DESC, 2") { s in
+            guard let a = col(s, 0), let r = col(s, 1) else { return }
+            places[a, default: []].append(VoicePlace(name: r, isRaag: int(s, 2) != 0,
+                                                     nLines: int(s, 3), nShabads: int(s, 4)))
+        }
+        var entries: [String: VoiceEntry] = [:]
+        try prepareEach("SELECT l.author, l.comp_id, l.ang, l.id FROM lines l JOIN ("
+                        + "SELECT author, min(id) AS id FROM lines WHERE is_header = 0 AND author IS NOT NULL "
+                        + "GROUP BY author) f ON f.id = l.id") { s in
+            guard let a = col(s, 0) else { return }
+            entries[a] = VoiceEntry(compId: int(s, 1), ang: int(s, 2), lineId: int(s, 3))
+        }
+        return hist.isEmpty ? nil : VoicesAtlas(histogram: hist, places: places, entries: entries)
+    }
+
+    /// A random composition by one voice, entered at that voice's own first verse line in it —
+    /// a composition id can hold several voices (e.g. four Bhagats share one at Ang 695), so the
+    /// entry is the first line *by this author*, never the composition's opening line. nil if
+    /// the voice has no verse lines.
+    public func randomVerse(by author: String) throws -> VoiceEntry? {
+        var stmt: OpaquePointer?
+        let sql = "SELECT l.comp_id, l.ang, l.id FROM lines l WHERE l.id = ("
+            + "SELECT min(id) FROM lines WHERE author = ?1 AND is_header = 0 AND comp_id = ("
+            + "SELECT comp_id FROM lines WHERE author = ?1 AND is_header = 0 ORDER BY RANDOM() LIMIT 1))"
+        guard sqlite3_prepare_v2(handle, sql, -1, &stmt, nil) == SQLITE_OK else {
+            throw DBError.prepare(String(cString: sqlite3_errmsg(handle)))
+        }
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_text(stmt, 1, author, -1, Self.transientDtor)
+        guard try stepRow(stmt) else { return nil }
+        return VoiceEntry(compId: int(stmt, 0), ang: int(stmt, 1), lineId: int(stmt, 2))
+    }
+
     public func raagAnalytics() throws -> [RaagStat] {
         var out: [RaagStat] = []
         try prepareEach("SELECT raag, n_lines, n_shabads, n_authors, dominant_author, dominant_author_pct, n_themes "
