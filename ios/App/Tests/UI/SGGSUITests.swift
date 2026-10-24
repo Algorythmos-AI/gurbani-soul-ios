@@ -1613,6 +1613,61 @@ final class SGGSUITests: XCTestCase {
         attachShot(app, "theme-verses-filtered")
     }
 
+    /// Your themes: under 3 saved verses it invites; after saving three Naam verses it counts them,
+    /// and a chip lists exactly those verses. Leaves the saved store empty (testSavedVerseRoundTrip
+    /// expects an empty list after its own delete).
+    func testYourThemesCountsSavedVerses() {
+        let app = launchApp()
+        clearSaved(app)
+        openTab(app, "Explore", expectingNavBar: "Explore")
+        app.buttons["Themes"].firstMatch.tap()
+        XCTAssertTrue(app.navigationBars["Themes"].waitForExistence(timeout: 12))
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH %@", "Save verses as you read")).firstMatch
+                        .waitForExistence(timeout: 10), "with no saved verses Your themes must invite, not count")
+        openTab(app, "Search", expectingNavBar: "Search")       // Themes has its own search field
+        let field = focusSearch(app)
+        field.typeText("naam")
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 20))
+        for i in 0..<3 {
+            let cell = app.cells.element(boundBy: i)
+            XCTAssertTrue(cell.waitForExistence(timeout: 10))
+            contextAction(app, on: cell, "Save").tap()
+        }
+        field.typeText("\n")
+        openTab(app, "Explore", expectingNavBar: "Themes")
+        let summary = app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH %@", "Your 3 saved verses carry")).firstMatch
+        XCTAssertTrue(summary.waitForExistence(timeout: 12), "Your themes did not count the three saved verses")
+        let chip = app.buttons.containing(NSPredicate(format: "label CONTAINS %@", "of your saved verses")).firstMatch
+        XCTAssertTrue(chip.waitForExistence(timeout: 8), "no theme chip for the saved verses")
+        attachShot(app, "your-themes-counted")
+        chip.tap()
+        XCTAssertTrue(app.navigationBars.matching(NSPredicate(format: "identifier BEGINSWITH %@", "Your ")).firstMatch
+                        .waitForExistence(timeout: 10), "the chip did not open your verses for that theme")
+        XCTAssertTrue(app.cells.firstMatch.waitForExistence(timeout: 10), "your verses for the theme are not listed")
+        clearSaved(app)
+    }
+
+    /// More → Saved verses → swipe-delete until the list says it is empty.
+    private func clearSaved(_ app: XCUIApplication) {
+        openTab(app, "More", expectingNavBar: "More")
+        let saved = app.buttons["Saved verses"].firstMatch
+        for _ in 0..<3 where !saved.exists { app.swipeUp() }
+        guard saved.waitForExistence(timeout: 10) else { return XCTFail("no Saved verses link") }
+        for _ in 0..<3 where !app.navigationBars["Saved"].exists {
+            app.swipeUp(); saved.tap()
+            _ = app.navigationBars["Saved"].waitForExistence(timeout: 4)
+        }
+        for _ in 0..<12 where !app.staticTexts["No saved verses"].exists {
+            let row = app.cells.firstMatch
+            guard row.waitForExistence(timeout: 4) else { break }
+            row.swipeLeft()
+            let del = app.buttons["Delete"].firstMatch
+            if del.waitForExistence(timeout: 4) { del.tap() }
+        }
+        XCTAssertTrue(app.staticTexts["No saved verses"].waitForExistence(timeout: 8), "could not empty the saved store")
+        app.navigationBars.buttons.firstMatch.tap()
+    }
+
     private func openThemes(_ app: XCUIApplication) {
         openTab(app, "Explore", expectingNavBar: "Explore")
         let hub = app.buttons["Themes"].firstMatch
@@ -1998,6 +2053,31 @@ final class SGGSUITests: XCTestCase {
                 }
             }
         }
+        // Themes v2: the index and one theme page (report-only)
+        openTab(app, "Explore", expectingNavBar: "Explore")
+        for _ in 0..<3 where app.navigationBars.buttons.firstMatch.exists && !app.navigationBars["Explore"].exists {
+            app.navigationBars.buttons.firstMatch.tap()
+        }
+        let themesHub = app.buttons["Themes"].firstMatch
+        if themesHub.waitForExistence(timeout: 8) {
+            themesHub.tap()
+            _ = app.buttons["theme_naam"].firstMatch.waitForExistence(timeout: 12)
+            try app.performAccessibilityAudit { @Sendable issue in
+                let el = issue.element.map { "\($0.elementType.rawValue) '\($0.label.prefix(40))'" } ?? "-"
+                log.add("Themes\t\(issue.auditType.rawValue)\t\(issue.compactDescription)\t\(el)")
+                return true
+            }
+            let naam = app.buttons["theme_naam"].firstMatch
+            if naam.exists {
+                naam.tap()
+                _ = app.descendants(matching: .any)["themes.page.headword"].firstMatch.waitForExistence(timeout: 12)
+                try app.performAccessibilityAudit { @Sendable issue in
+                    let el = issue.element.map { "\($0.elementType.rawValue) '\($0.label.prefix(40))'" } ?? "-"
+                    log.add("Theme page\t\(issue.auditType.rawValue)\t\(issue.compactDescription)\t\(el)")
+                    return true
+                }
+            }
+        }
         let text = (["tab\tauditType\tissue\telement"] + log.all).joined(separator: "\n") + "\n"
         try text.write(toFile: "\(dir)/a11y-audit.txt", atomically: true, encoding: .utf8)
     }
@@ -2136,6 +2216,38 @@ final class SGGSUITests: XCTestCase {
         if themes.waitForExistence(timeout: 8) { themes.tap() }
         _ = app.navigationBars["Themes"].waitForExistence(timeout: 8)
         shot("themes")
+        _ = app.buttons["theme_naam"].firstMatch.waitForExistence(timeout: 8)
+        shot("themes-index")
+        let yours = app.descendants(matching: .any)["themes.yours"].firstMatch
+        if yours.waitForExistence(timeout: 5) {
+            for _ in 0..<3 where !yours.isHittable { app.swipeUp() }
+            shot("your-themes")
+            for _ in 0..<3 { app.swipeDown() }
+        }
+        let naamCard = app.buttons["theme_naam"].firstMatch
+        if naamCard.waitForExistence(timeout: 8) {
+            naamCard.tap()
+            if app.descendants(matching: .any)["themes.page.headword"].firstMatch.waitForExistence(timeout: 12) {
+                shot("theme-page")
+                let all = app.buttons["themes.page.all"].firstMatch
+                for _ in 0..<8 where all.exists && !all.isHittable { app.swipeUp() }
+                if all.waitForExistence(timeout: 6) {
+                    all.tap()
+                    _ = app.staticTexts["themes.verses.total"].waitForExistence(timeout: 12)
+                    shot("theme-verses")
+                    app.navigationBars.buttons.firstMatch.tap()   // the theme page
+                }
+            }
+            app.navigationBars.buttons.firstMatch.tap()           // the index
+        }
+        let themeSearch = app.searchFields.firstMatch
+        if themeSearch.waitForExistence(timeout: 8) {
+            themeSearch.tap()
+            themeSearch.typeText("ਹਉਮੈ")
+            _ = app.buttons["theme_haumai"].firstMatch.waitForExistence(timeout: 8)
+            shot("themes-search-gurmukhi")
+            if app.buttons["Cancel"].firstMatch.exists { app.buttons["Cancel"].firstMatch.tap() }
+        }
         app.navigationBars.buttons.firstMatch.tap()   // back to the hub
         let constellation = app.buttons["Constellation"].firstMatch
         if constellation.waitForExistence(timeout: 8) { constellation.tap() }
