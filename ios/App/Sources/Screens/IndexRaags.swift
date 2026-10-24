@@ -177,9 +177,13 @@ struct IndexRaagsTab: View {
                     }
                     AngSliceBar(first: r.firstAng, last: r.lastAng)
                         .padding(.vertical, 2)
-                    Text("\((r.firstAng...r.lastAng).angLabel) · \(String(r.nShabads)) shabads")
-                        .font(.caption2).foregroundStyle(.secondary).monospacedDigit()
-                        .fixedSize(horizontal: false, vertical: true)
+                    // Two fixed lines, so every card in a row is the same height.
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text((r.firstAng...r.lastAng).angLabel)
+                        Text("\(String(r.nShabads)) shabads")
+                    }
+                    .font(.caption2).foregroundStyle(.secondary).monospacedDigit()
+                    .lineLimit(1).minimumScaleFactor(0.85)
                 }
             }
         }
@@ -213,6 +217,9 @@ struct IndexRaagsTab: View {
         }
         .background(Ink.card, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
         .overlay(RoundedRectangle(cornerRadius: Theme.Radius.card).strokeBorder(Ink.hairline))
+        // A container element keeps its rows' own identifiers; an identifier on a bare stack
+        // is pushed down onto every row and would hide theirs from UI tests and automation.
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(id)
     }
 

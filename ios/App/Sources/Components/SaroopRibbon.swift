@@ -29,18 +29,12 @@ struct SaroopRibbon: View {
     private let barHeight: CGFloat = 24
     private var stripHeight: CGFloat { barHeight + 14 }
     /// Grows with Dynamic Type so the loupe's Gurmukhi and caption never clip.
-    @ScaledMetric(relativeTo: .caption) private var loupeHeight: CGFloat = 52
+    @ScaledMetric(relativeTo: .caption) private var loupeHeight: CGFloat = 48
 
     private var scrubSegment: RibbonLayout.Segment? { scrubX.flatMap { layout.segment(at: $0) } }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Space.s) {
-            HStack(alignment: .firstTextBaseline) {
-                SectionEyebrow(text: "The saroop", symbol: "book.pages")
-                Spacer(minLength: Theme.Space.s)
-                Text("\(GranthMap.totalAngs.formatted()) Angs")
-                    .font(.caption2).foregroundStyle(.secondary).monospacedDigit()
-            }
             GeometryReader { geo in
                 let w = geo.size.width
                 VStack(spacing: 4) {
@@ -208,14 +202,24 @@ struct SaroopRibbon: View {
                 .offset(x: left)
                 .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale(scale: 0.96, anchor: .bottom)))
             } else {
-                HStack(spacing: Theme.Space.xs) {
-                    Image(systemName: "hand.draw").font(.caption)
-                    Text(hereAng.map { "Slide along the Granth · you last read Ang \(String($0))" }
-                         ?? "Slide along the Granth to find any raag or bani")
-                        .font(.caption)
-                        .lineLimit(2)
+                // At rest the loupe's space holds the title and the hint; a finger on the strip
+                // swaps them for the loupe, so the card carries no empty band.
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(alignment: .firstTextBaseline) {
+                        SectionEyebrow(text: "The saroop", symbol: "book.pages")
+                        Spacer(minLength: Theme.Space.s)
+                        Text("\(GranthMap.totalAngs.formatted()) Angs")
+                            .font(.caption2).foregroundStyle(.secondary).monospacedDigit()
+                    }
+                    HStack(spacing: Theme.Space.xs) {
+                        Image(systemName: "hand.draw").font(.caption)
+                        Text(hereAng.map { "Slide along the Granth · you last read Ang \(String($0))" }
+                             ?? "Slide along the Granth to find any raag or bani")
+                            .font(.caption)
+                            .lineLimit(1).minimumScaleFactor(0.85)
+                    }
+                    .foregroundStyle(.secondary)
                 }
-                .foregroundStyle(.secondary)
                 .frame(width: w, height: loupeHeight, alignment: .bottomLeading)
                 .transition(.opacity)
             }

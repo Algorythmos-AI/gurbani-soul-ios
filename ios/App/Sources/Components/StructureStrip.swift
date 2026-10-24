@@ -11,6 +11,9 @@ struct StructureStrip: View {
     let completed: Bool
     var height: CGFloat = 6
     @Environment(\.palette) private var palette
+    /// Unread steps: an ink tint that reads on the white card in light and on warm ink in dark
+    /// (`Ink.raised` all but vanished on a light-mode card).
+    static let unread = Color.primary.opacity(0.12)
 
     var body: some View {
         Canvas { ctx, size in
@@ -37,7 +40,7 @@ struct StructureStrip: View {
             // Exactly proportional, so the steps sum to `usable` and never pass the edge.
             let w = usable * CGFloat(s.length) / max(total, 1)
             let r = CGRect(x: x, y: 0, width: w, height: size.height)
-            ctx.fill(Path(roundedRect: r, cornerRadius: min(2, w / 2)), with: .color(Ink.raised))
+            ctx.fill(Path(roundedRect: r, cornerRadius: min(2, w / 2)), with: .color(Self.unread))
             let f = fills[i]
             if f > 0 {
                 let fr = CGRect(x: x, y: 0, width: w * CGFloat(f), height: size.height)
@@ -49,7 +52,7 @@ struct StructureStrip: View {
 
     private func drawBar(_ ctx: GraphicsContext, _ size: CGSize) {
         let track = Path(roundedRect: CGRect(origin: .zero, size: size), cornerRadius: size.height / 2)
-        ctx.fill(track, with: .color(Ink.raised))
+        ctx.fill(track, with: .color(Self.unread))
         let span = max(1, shape.lastSeq - shape.firstSeq + 1)
         let f: Double = completed ? 1 : seq.map { min(1, max(0, Double($0 - shape.firstSeq + 1) / Double(span))) } ?? 0
         if f > 0 {

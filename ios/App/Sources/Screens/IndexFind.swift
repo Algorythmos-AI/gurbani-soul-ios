@@ -11,7 +11,9 @@ enum IndexFind {
         var sections: [SectionRow] = []
         var compositions: [BaniSummary] = []
         var voices: [AuthorRow] = []
-        var isEmpty: Bool { raags.isEmpty && sections.isEmpty && compositions.isEmpty && voices.isEmpty }
+        /// Poetic forms by genre key, each with the first place it appears.
+        var forms: [PoeticFormEntry] = []
+        var isEmpty: Bool { raags.isEmpty && sections.isEmpty && compositions.isEmpty && voices.isEmpty && forms.isEmpty }
     }
 
     static func matches(_ query: String, _ fields: [String?]) -> Bool {
@@ -26,7 +28,8 @@ enum IndexFind {
         return false
     }
 
-    static func run(_ query: String, meta: CorpusMeta, compositions: [BaniSummary]) -> Results {
+    static func run(_ query: String, meta: CorpusMeta, compositions: [BaniSummary],
+                    forms: [PoeticFormEntry] = []) -> Results {
         var r = Results()
         r.raags = GranthMap(meta: meta).raags.filter {
             matches(query, [$0.name, $0.roman, GranthNames.raag($0.name, roman: $0.roman)])
@@ -36,6 +39,14 @@ enum IndexFind {
         var seen = Set<String>()
         r.compositions = compositions.filter { matches(query, [$0.titleEn, $0.titleGm]) && seen.insert($0.id).inserted }
         r.voices = meta.authors.filter { matches(query, [$0.name]) }
+        // A form matches by its name, its key, or the verbatim Gurmukhi heading it was read from.
+        // One row per form, deliberately: the FIRST place whose name or heading matches, so a
+        // name search lands where the Granth first meets the form and a heading search lands on
+        // that heading's own place.
+        var genres = Set<String>()
+        r.forms = forms.sorted { ($0.firstAng, $0.compId) < ($1.firstAng, $1.compId) }
+            .filter { matches(query, [PoeticForms.genre($0.genre), $0.genre, $0.sourceLabel])
+                      && genres.insert($0.genre).inserted }
         return r
     }
 }
@@ -45,8 +56,10 @@ struct IndexFindResults: View {
     let query: String
     let meta: CorpusMeta
     let registry: [BaniSummary]
+    var forms: [PoeticFormEntry] = []
     let openRaag: (RaagRow) -> Void
     let openAng: (Int) -> Void
+    var openComposition: (Int) -> Void = { _ in }
 
     @Environment(\.palette) private var palette
 
@@ -57,7 +70,7 @@ struct IndexFindResults: View {
     }
 
     var body: some View {
-        let r = IndexFind.run(query, meta: meta, compositions: offered)
+        let r = IndexFind.run(query, meta: meta, compositions: offered, forms: forms)
         VStack(alignment: .leading, spacing: Theme.Space.l) {
             if r.isEmpty {
                 ContentUnavailableView.search(text: query)
@@ -87,8 +100,16 @@ struct IndexFindResults: View {
             if !r.sections.isEmpty {
                 group("Banis", symbol: "book.pages") {
                     ForEach(r.sections) { s in
-                        row(title: GranthNames.section(s.name) ?? s.name, gurmukhi: s.name,
+                        row(title: GranthNames.section(s.name, firstAng: s.firstAng, lastAng: s.lastAng) ?? s.name, gurmukhi: s.name,
                             detail: (s.firstAng...s.lastAng).angLabel) { openAng(s.firstAng) }
+                    }
+                }
+            }
+            if !r.forms.isEmpty {
+                group("Forms", symbol: "text.word.spacing") {
+                    ForEach(r.forms) { f in
+                        row(title: PoeticForms.genre(f.genre), gurmukhi: f.sourceLabel,
+                            detail: "Ang \(String(f.firstAng))") { openComposition(f.compId) }
                     }
                 }
             }
@@ -100,6 +121,9 @@ struct IndexFindResults: View {
                 }
             }
         }
+        // A container element keeps its rows' own identifiers; an identifier on a bare stack
+        // is pushed down onto every row and would hide theirs from UI tests and automation.
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("index_find")
     }
 
