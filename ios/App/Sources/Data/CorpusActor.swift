@@ -17,6 +17,7 @@ actor CorpusActor {
     /// sqlite_master at init, immutable, Sendable → safe to read off-actor. UI surfaces gate
     /// on these bits so the public (Gurmukhi-only) profile degrades to today's behavior.
     nonisolated let capabilities: CorpusCapabilities
+    private var vaarTextCache: [Int: VaarText]?
 
     enum CorpusError: LocalizedError {
         case databaseMissing
@@ -76,6 +77,16 @@ actor CorpusActor {
     }
     func vaars() -> [VaarSummary] { db.vaars() }
     func vaar(id: Int) -> VaarAnatomy { db.vaar(id: id) }
+    /// The 22 Vaars' printed text (heading, saloks and pauris), built once and kept: ~9k lines,
+    /// read by the Vaars home (voice strips) and every Vaar screen. A Vaar whose structure cannot
+    /// be proven is absent — its screens fall back to opening the Ang.
+    func vaarTexts() -> [Int: VaarText] {
+        if let vaarTextCache { return vaarTextCache }
+        let built = db.vaarTexts()
+        vaarTextCache = built
+        return built
+    }
+    func vaarText(id: Int) -> VaarText? { vaarTexts()[id] }
 
     // Raag-Timing layer (v2.12.0) — attributed claims with citations, never facts.
     func timingClock() -> TimingClock { db.timingClock() }
