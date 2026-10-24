@@ -13,6 +13,10 @@ struct ThemesScreen: View {
     @Environment(\.palette) private var palette
     @State private var state: LoadState<[ThemeIndexRow]> = .loading
     @State private var today: ThemesToday?
+    /// The local calendar day the Today hero belongs to; a new day (midnight, a time-zone or
+    /// clock change, or coming back to the app on a later day) reloads it.
+    @State private var day = ThemeIndexModel.dayNumber(Date())
+    @Environment(\.scenePhase) private var scenePhase
     @State private var query = ""
     /// Families whose header has scrolled under the bar; the last of them is the current chip.
     /// Updated only when a header crosses the line, never on every scroll frame.
@@ -57,6 +61,10 @@ struct ThemesScreen: View {
         .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Name, meaning or Gurmukhi word")
         .toolbar { ToolbarItem(placement: .topBarTrailing) { arrangeMenu } }
         .task { await load() }
+        .task(id: day) { await loadToday() }
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in refreshDay() }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in refreshDay() }
+        .onChange(of: scenePhase) { _, phase in if phase == .active { refreshDay() } }
     }
 
     // MARK: the index
@@ -211,20 +219,34 @@ struct ThemesScreen: View {
         if case .loaded = state {} else { state = .loading }
         do {
             let rows = try await corpus.themeIndex()
-            state = rows.isEmpty ? .empty : .loaded(rows)
-            let day = HukamOfTheDay.dayNumber(of: Date(), calendar: .current)
-            // today's row is a gift, not a dependency: if it fails the index still stands
-            if let theme = try? await corpus.themeOfTheDay(day: day) {
-                let hukam = (try? await corpus.hukamThemes(day: day)) ?? []
-                today = ThemesToday(theme: theme, hukam: hukam,
-                                    row: rows.first { $0.concept == theme.concept })
-            }
+            state = rows.isEmpty ? .empty : .loaded(rows)        // the hero loads on its own task (keyed on the day)
         } catch is CancellationError {
         } catch { state = .failed(UserMessage.load(error)) }
+    }
+
+    private func refreshDay() {
+        let now = ThemeIndexModel.dayNumber(Date())
+        if now != day { day = now }
+    }
+
+    /// Today's theme and today's Hukam themes for `day`. A gift, not a dependency: if it fails
+    /// the index still stands (and yesterday's hero is cleared rather than shown as today's).
+    private func loadToday() async {
+        guard let corpus = container.corpus, let rows = try? await corpus.themeIndex() else { return }
+        let asked = day
+        guard let theme = try? await corpus.themeOfTheDay(day: asked) else {
+            if today?.day != asked { today = nil }
+            return
+        }
+        let hukam = (try? await corpus.hukamThemes(day: asked)) ?? []
+        guard asked == day, !Task.isCancelled else { return }
+        today = ThemesToday(day: asked, theme: theme, hukam: hukam, row: rows.first { $0.concept == theme.concept })
     }
 }
 
 struct ThemesToday: Equatable {
+    /// The local day number (`HukamOfTheDay.dayNumber`) this hero was drawn for.
+    let day: Int
     let theme: ThemeOfTheDay
     let hukam: [ThemeTally]
     let row: ThemeIndexRow?

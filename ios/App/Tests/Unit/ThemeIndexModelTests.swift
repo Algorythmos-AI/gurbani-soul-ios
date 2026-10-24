@@ -80,4 +80,22 @@ final class ThemeIndexModelTests: XCTestCase {
         XCTAssertTrue(ThemeIndexModel.accessibilitySummary(naam).hasPrefix("Naam, \(head), 5,672 verses in 2,472 shabads, most in Angs "),
                       "VoiceOver hears the name, the Gurmukhi headword, then the counts")
     }
+
+    /// The Today hero turns over at local midnight, in the reader's own time zone.
+    func testTodayTurnsOverAtLocalMidnight() throws {
+        for zone in ["Australia/Sydney", "Asia/Kolkata", "America/Los_Angeles"] {
+            var cal = Calendar(identifier: .gregorian)
+            cal.timeZone = try XCTUnwrap(TimeZone(identifier: zone))
+            let before = try XCTUnwrap(cal.date(from: DateComponents(year: 2026, month: 10, day: 24, hour: 23, minute: 59, second: 59)))
+            let after = before.addingTimeInterval(2)
+            let noon = try XCTUnwrap(cal.date(from: DateComponents(year: 2026, month: 10, day: 24, hour: 12)))
+            XCTAssertEqual(ThemeIndexModel.dayNumber(after, calendar: cal), ThemeIndexModel.dayNumber(before, calendar: cal) + 1,
+                           "\(zone): midnight must start a new day")
+            XCTAssertEqual(ThemeIndexModel.dayNumber(noon, calendar: cal), ThemeIndexModel.dayNumber(before, calendar: cal),
+                           "\(zone): the same local date is one day")
+            XCTAssertNotEqual(ThemeOfTheDay.index(day: ThemeIndexModel.dayNumber(after, calendar: cal), count: 54),
+                              ThemeOfTheDay.index(day: ThemeIndexModel.dayNumber(before, calendar: cal), count: 54),
+                              "\(zone): a new day shows a new theme")
+        }
+    }
 }

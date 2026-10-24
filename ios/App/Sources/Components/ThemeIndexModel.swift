@@ -17,6 +17,12 @@ enum ThemeIndexModel {
         }
     }
 
+    /// The local calendar day number the Today hero is drawn for — the same day the Hukam of the
+    /// day uses, so the two always agree and both turn over at local midnight.
+    static func dayNumber(_ date: Date, calendar: Calendar = .current) -> Int {
+        HukamOfTheDay.dayNumber(of: date, calendar: calendar)
+    }
+
     // MARK: search
 
     /// Case-, diacritic- and width-insensitive fold for Roman text ("Kāl" == "kal"), NFC first so
