@@ -290,8 +290,18 @@ struct IndexScreen: View {
     private var continueTarget: BaniSummary? {
         ContinueReading.target(offered: offered, isCompleted: { container.nitnem.isCompleted($0) },
                                fraction: { container.nitnem.fraction(for: $0.id, total: $0.nLines) },
-                               resumes: { resumable[resumeKey($0)] == true },
+                               resumes: { id in resumes(id) },
                                lastReadAt: { container.nitnem.progress(for: $0)?.lastReadAt })
+    }
+
+    /// Synchronous in the common case (same line count as when saved); only a changed bani
+    /// waits for `checkResumable`'s anchor check against its loaded lines.
+    private func resumes(_ id: String) -> Bool {
+        let total = offered.first { $0.id == id }?.nLines ?? 0
+        if let known = ContinueReading.resumesWithoutLines(container.nitnem.progress(for: id), nLines: total) {
+            return known
+        }
+        return resumable[resumeKey(id)] == true
     }
 
     /// A composition's id with its saved position, so a new save re-checks resumability.
@@ -299,11 +309,13 @@ struct IndexScreen: View {
         "\(id)@\(container.nitnem.progress(for: id)?.lastSeq ?? 0)"
     }
 
-    /// Whether each in-progress composition's saved position resumes against its current lines.
-    /// One bani read per newly saved position; nothing is read when nothing is in progress.
+    /// For a composition whose line count changed since its position was saved, whether the
+    /// anchor still resumes against its current lines. One bani read per such position; none in
+    /// the common case.
     private func checkResumable() async {
         guard let corpus = container.corpus else { return }
-        for b in inProgress where resumable[resumeKey(b.id)] == nil {
+        for b in inProgress where resumable[resumeKey(b.id)] == nil
+            && ContinueReading.resumesWithoutLines(container.nitnem.progress(for: b.id), nLines: b.nLines) == nil {
             let key = resumeKey(b.id)
             let variant = CompositionCatalog.heroes.first { CompositionCatalog.resolve($0, in: registry)?.id == b.id }?
                 .variant ?? b.variant
