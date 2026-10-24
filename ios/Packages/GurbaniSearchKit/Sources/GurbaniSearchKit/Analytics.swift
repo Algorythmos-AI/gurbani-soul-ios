@@ -77,7 +77,7 @@ public protocol AnalyticsSource: Sendable {
     func constellation(concept: String, author: String?, raag: String?) throws -> ConstellationResult
 }
 
-// MARK: Voices of the Granth (sggs-data build_voices.py: author_raag, author_ang_hist, author_entry)
+// MARK: Voices of the Granth (computed from `lines` by SQLiteCandidateSource.voicesAtlas())
 
 /// Where one voice sings: a raag, or — after Ang 1353, where the Granth leaves the raag
 /// framework — the section (`isRaag == false`, e.g. ਸਵਈਏ). Counts are verse lines.
@@ -101,8 +101,7 @@ public struct VoiceEntry: Sendable, Equatable {
 }
 
 /// The Granth as a ribbon: verse lines per voice in 143 buckets of 10 Angs, plus each voice's
-/// places and entry point. Present only when the DB carries the voices tables
-/// (`CorpusCapabilities.hasVoices`); a client hides what needs it otherwise.
+/// places and entry point.
 public struct VoicesAtlas: Sendable, Equatable {
     public static let bucketSize = 10
     public static let bucketCount = 143                  // 1,430 Angs / 10

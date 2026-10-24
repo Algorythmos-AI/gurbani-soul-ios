@@ -6,7 +6,7 @@ import GurbaniSearchKit
 final class InsightsModel {
     var authors: [AuthorStat] = []
     var raags: [RaagStat] = []
-    /// nil when the dataset predates the voices tables — the ribbon then simply isn't shown.
+    /// Voices of the Granth, computed from the verse lines; nil only if the read fails.
     var atlas: VoicesAtlas?
     var loaded = false
     private let corpus: CorpusActor?

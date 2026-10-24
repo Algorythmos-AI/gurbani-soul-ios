@@ -155,12 +155,8 @@ public struct CorpusCapabilities: Sendable, Equatable {
     public let hasTiming: Bool
     /// The v1.2.0 Nitnem bani registry (banis/bani_lines/extra_lines) — gates the Nitnem tab.
     public let hasBanis: Bool
-    /// The Voices-of-the-Granth read models (author_raag/author_ang_hist/author_entry) — gates
-    /// the Granth ribbon and per-voice places; older datasets simply lack them.
-    public let hasVoices: Bool
-    public init(hasEnglish: Bool, hasTiming: Bool, hasBanis: Bool = false, hasVoices: Bool = false) {
+    public init(hasEnglish: Bool, hasTiming: Bool, hasBanis: Bool = false) {
         self.hasEnglish = hasEnglish; self.hasTiming = hasTiming; self.hasBanis = hasBanis
-        self.hasVoices = hasVoices
     }
 }
 

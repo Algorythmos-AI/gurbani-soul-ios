@@ -53,7 +53,7 @@ actor CorpusActor {
     func neighbors(lineId: Int, limit: Int = 12) throws -> NeighborsResult { try db.neighbors(lineId: lineId, limit: limit) }
     func authorAnalytics() throws -> [AuthorStat] { try db.authorAnalytics() }
     func raagAnalytics() throws -> [RaagStat] { try db.raagAnalytics() }
-    /// Voices of the Granth (ribbon, places, entry points); nil on a dataset without the voices tables.
+    /// Voices of the Granth (ribbon, places, entry points), computed from the verse lines.
     func voicesAtlas() -> VoicesAtlas? { (try? db.voicesAtlas()) ?? nil }
     func themeNetwork(minPPMI: Double = 0.7, limit: Int = 40) throws -> [ThemeEdge] { try db.themeNetwork(minPPMI: minPPMI, limit: limit) }
     func constellation(concept: String, author: String? = nil, raag: String? = nil) throws -> ConstellationResult {

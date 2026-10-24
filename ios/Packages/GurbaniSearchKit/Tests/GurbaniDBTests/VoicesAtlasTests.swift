@@ -2,9 +2,8 @@ import XCTest
 @testable import GurbaniDB
 @testable import GurbaniSearchKit
 
-/// Voices of the Granth on the shipped iOS DB. A dataset without the voices tables must read
-/// as "absent" (nil, capability off) — never zeros; a dataset with them must reconcile with
-/// author_analytics line for line.
+/// Voices of the Granth on the shipped iOS DB: computed from `lines`, so every dataset answers,
+/// and it must reconcile with author_analytics line for line.
 final class VoicesAtlasTests: XCTestCase {
 
     private func source() throws -> SQLiteCandidateSource {
@@ -20,18 +19,13 @@ final class VoicesAtlasTests: XCTestCase {
         return try SQLiteCandidateSource(path: dbPath)
     }
 
-    func testAtlasIsAbsentExactlyWhenTheTablesAre() throws {
-        let db = try source()
-        let atlas = try db.voicesAtlas()
-        XCTAssertEqual(atlas == nil, !db.detectCapabilities().hasVoices,
-                       "voicesAtlas() must be nil iff the voices tables are missing")
+    func testAtlasIsAvailableOnEveryDataset() throws {
+        XCTAssertNotNil(try source().voicesAtlas(), "the atlas is computed from lines — never absent")
     }
 
     func testAtlasReconcilesWithAuthorAnalytics() throws {
         let db = try source()
-        guard let atlas = try db.voicesAtlas() else {
-            throw XCTSkip("this dataset predates the voices tables (sggs-data build_voices.py)")
-        }
+        let atlas = try XCTUnwrap(try db.voicesAtlas())
         let stats = try db.authorAnalytics()
         XCTAssertEqual(Set(atlas.histogram.keys), Set(stats.map(\.author)), "ribbon voices != analytics voices")
         for s in stats {

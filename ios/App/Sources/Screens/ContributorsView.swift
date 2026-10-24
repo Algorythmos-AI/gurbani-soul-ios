@@ -9,7 +9,7 @@ struct ContributorsView: View {
     let authors: [AuthorStat]
     /// author → `authors` row (first/last Ang), for Granth order and each voice's Ang range.
     let rows: [String: AuthorRow]
-    /// Voices of the Granth (ribbon); nil on a dataset without the voices tables.
+    /// Voices of the Granth (ribbon); nil only if the read failed.
     var atlas: VoicesAtlas? = nil
 
     @State private var grouping: DotFieldLayout.Grouping = .voice
@@ -24,7 +24,6 @@ struct ContributorsView: View {
         var id: String { rawValue }
     }
     @State private var order: Order = .granth
-    @ScaledMetric(relativeTo: .caption) private var barRow: CGFloat = 22
 
     private var ordered: [AuthorStat] {
         Self.ordered(authors, by: order, firstAngs: rows.mapValues(\.firstAng))
