@@ -97,6 +97,49 @@ final class ThemePageTests: XCTestCase {
         XCTAssertEqual(Array(p.lines.prefix(50)).map(\.id), legacy)
     }
 
+    /// What the list shows is the DB row itself: Gurmukhi, Ang and shabad byte for byte.
+    func testListedVersesAreTheDatabaseRowsByteForByte() throws {
+        let path = try dbPath()
+        let db = try SQLiteCandidateSource(path: path)
+        var raw: OpaquePointer?
+        guard sqlite3_open_v2(path, &raw, SQLITE_OPEN_READONLY, nil) == SQLITE_OK else { throw XCTSkip("cannot open DB") }
+        defer { sqlite3_close(raw) }
+        for c in ["naam", "sahaj", "akal", "ik_onkar"] {
+            for line in try db.themePage(concept: c, limit: 200).lines {
+                var st: OpaquePointer?
+                XCTAssertEqual(sqlite3_prepare_v2(raw, "SELECT gurmukhi, ang, comp_id FROM lines WHERE id=?", -1, &st, nil), SQLITE_OK)
+                sqlite3_bind_int64(st, 1, Int64(line.id))
+                XCTAssertEqual(sqlite3_step(st), SQLITE_ROW)
+                let bytes = Array(UnsafeBufferPointer(start: sqlite3_column_blob(st, 0)?.assumingMemoryBound(to: UInt8.self),
+                                                      count: Int(sqlite3_column_bytes(st, 0))))
+                XCTAssertEqual(Array(line.gurmukhi.utf8), bytes, "\(c) line \(line.id): Gurmukhi differs from the DB")
+                XCTAssertEqual(line.ang, Int(sqlite3_column_int64(st, 1)))
+                XCTAssertEqual(line.compId, Int(sqlite3_column_int64(st, 2)))
+                sqlite3_finalize(st)
+            }
+        }
+    }
+
+    /// Filtered totals equal a brute-force SQL count written independently of the reader.
+    func testFilteredTotalsEqualABruteForceCount() throws {
+        let path = try dbPath()
+        let db = try SQLiteCandidateSource(path: path)
+        let cases: [(String, ThemeFilter, String, [String])] = [
+            ("sahaj", ThemeFilter(term: "ਸਹਜੇ"), "cl.term=?", ["ਸਹਜੇ"]),
+            ("naam", ThemeFilter(lens: ConstellationLens(rahaoOnly: true)), "l.is_rahao=1", []),
+            ("naam", ThemeFilter(lens: ConstellationLens(author: "Bhagat Kabir Ji")), "l.author=?", ["Bhagat Kabir Ji"]),
+            ("haumai", ThemeFilter(lens: ConstellationLens(angMin: 1, angMax: 100)), "l.ang BETWEEN 1 AND 100", []),
+            ("naam", ThemeFilter(term: "ਨਾਮੁ", lens: ConstellationLens(rahaoOnly: true, angMin: 500, angMax: 900)),
+             "cl.term=? AND l.is_rahao=1 AND l.ang BETWEEN 500 AND 900", ["ਨਾਮੁ"]),
+        ]
+        for (c, f, extra, binds) in cases {
+            let truth = try ints(path, "SELECT COUNT(DISTINCT cl.line_id) FROM concept_lines cl JOIN lines l ON l.id=cl.line_id "
+                                 + "WHERE cl.concept=? AND \(extra)", [c] + binds)
+            XCTAssertEqual([try db.themeCount(concept: c, filter: f)], truth, "\(c) \(extra)")
+            XCTAssertGreaterThan(truth.first ?? 0, 0, "\(c) \(extra): pick a case with verses")
+        }
+    }
+
     func testWordFormsPartitionTheTheme() throws {
         let path = try dbPath()
         let db = try SQLiteCandidateSource(path: path)
@@ -206,5 +249,78 @@ final class ThemePageTests: XCTestCase {
             XCTAssertEqual([t.n], truth, t.concept)
         }
         XCTAssertEqual(tally.map(\.n), tally.map(\.n).sorted(by: >))
+    }
+
+    // MARK: the theme page
+
+    func testEveryListedVerseSaysWhichWordPutItThere() throws {
+        let path = try dbPath()
+        let db = try SQLiteCandidateSource(path: path)
+        for c in ["naam", "sahaj", "karam_nadar", "akal"] {
+            let p = try db.themePage(concept: c, limit: 300)
+            let words = Set(try db.themeWords(concept: c).map(\.term))
+            for line in p.lines {
+                let m = try XCTUnwrap(p.matched[line.id], "\(c) line \(line.id): no matched word")
+                XCTAssertFalse(m.isEmpty)
+                for t in m {
+                    XCTAssertTrue(words.contains(t), "\(c): \(t) is not one of the theme's words")
+                    XCTAssertTrue(line.gurmukhi.contains(t), "\(c) line \(line.id): \(t) does not occur verbatim")
+                }
+            }
+            XCTAssertEqual(Set(p.matched.keys), Set(p.lines.map(\.id)), "\(c): matches only for listed verses")
+        }
+        // under a word filter, that word is among each verse's matches
+        let f = try db.themePage(concept: "sahaj", filter: ThemeFilter(term: "ਸਹਜੇ"), limit: 100)
+        for line in f.lines { XCTAssertTrue(f.matched[line.id]?.contains("ਸਹਜੇ") == true) }
+    }
+
+    func testWordFamilyIsPrintedOrderWithTrueCounts() throws {
+        let db = try SQLiteCandidateSource(path: try dbPath())
+        let sahaj = try db.themeWords(concept: "sahaj")
+        XCTAssertEqual(sahaj.map(\.term), ["ਸਹਜ", "ਸਹਜੁ", "ਸਹਜਿ", "ਸਹਜੈ", "ਸਹਜੇ", "ਸਹਜਾ"].filter { t in sahaj.contains { $0.term == t } })
+        XCTAssertEqual(Dictionary(uniqueKeysWithValues: sahaj.map { ($0.term, $0.n) })["ਸਹਜਿ"], 375)
+        let index = Dictionary(uniqueKeysWithValues: try db.themeIndex().map { ($0.concept, $0) })
+        for (c, row) in index {
+            let words = try db.themeWords(concept: c)
+            XCTAssertTrue(words.allSatisfy { $0.n > 0 }, c)
+            XCTAssertEqual(words.map(\.n).reduce(0, +), row.nVerses, "\(c): the family adds up to the theme")
+            XCTAssertEqual(words.first?.term, row.headword, "\(c): the headword is the family's first tagged word")
+        }
+        XCTAssertEqual(try db.themeWords(concept: "no_such_theme"), [])
+    }
+
+    func testFilteredAngBinsCountTheFilteredVerses() throws {
+        let db = try SQLiteCandidateSource(path: try dbPath())
+        let index = Dictionary(uniqueKeysWithValues: try db.themeIndex().map { ($0.concept, $0) })
+        XCTAssertEqual(try db.themeAngBins(concept: "naam"), index["naam"]?.angBins)
+        let f = ThemeFilter(term: "ਸਹਜਿ")
+        let bins = try db.themeAngBins(concept: "sahaj", filter: f)
+        XCTAssertEqual(bins.reduce(0, +), 375)
+        for i in 0..<bins.count {
+            let r = ConstellationFocus.angRange(bin: i)
+            let lensed = ThemeFilter(term: "ਸਹਜਿ", lens: ConstellationLens(angMin: r.lowerBound, angMax: r.upperBound))
+            XCTAssertEqual(bins[i], try db.themeCount(concept: "sahaj", filter: lensed), "bin \(i): the strip and the list it opens must agree")
+        }
+    }
+
+    func testSteepedShabadsFollowTheRule() throws {
+        let path = try dbPath()
+        let db = try SQLiteCandidateSource(path: path)
+        let naam = try db.themeSteeped(concept: "naam")
+        XCTAssertEqual(naam.count, 51)
+        XCTAssertEqual(naam.map(\.firstLineId), naam.map(\.firstLineId).sorted(), "reading order")
+        for s in naam {
+            XCTAssertTrue(SteepedShabad.qualifies(n: s.n, total: s.total), "comp \(s.compId)")
+            let truthTotal = try ints(path, "SELECT COUNT(*) FROM lines WHERE comp_id=? AND is_header=0", [String(s.compId)])
+            XCTAssertEqual([s.total], truthTotal)
+            XCTAssertFalse(s.firstVerse.isEmpty)
+            XCTAssertTrue((1...1430).contains(s.ang))
+        }
+        XCTAssertTrue(naam.contains { $0.n == 28 && $0.total == 34 && $0.ang == 1155 }, "the Ang 1155 shabad, 28 of 34 lines")
+        XCTAssertEqual(try db.themeSteeped(concept: "akal"), [])
+        XCTAssertEqual(try db.themeSteeped(concept: "satguru").count, 94)
+        XCTAssertFalse(SteepedShabad.qualifies(n: 3, total: 5), "too short")
+        XCTAssertTrue(SteepedShabad.qualifies(n: 3, total: 6))
+        XCTAssertFalse(SteepedShabad.qualifies(n: 2, total: 6))
     }
 }

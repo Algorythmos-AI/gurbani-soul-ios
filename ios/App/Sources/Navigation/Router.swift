@@ -1,4 +1,5 @@
 import SwiftUI
+import GurbaniSearchKit
 
 /// The five-tab shell: Nitnem · Reader · Search · Explore · More.
 /// Nitnem (the daily reading) and Reader keep the prime positions; Explore is the hub for the
@@ -22,6 +23,8 @@ enum Route: Hashable {
     case clock
     case nitnemJourney
     case theme(String)
+    /// Every verse of a theme, optionally narrowed (a word form, refrains, a voice/raag, Angs).
+    case themeVerses(String, ThemeFilter)
     /// A bani from the Nitnem registry, by its stable key (variant is a user setting).
     case bani(String)
     /// The same registry bani read as a standalone composition from Explore → Index. Carries the
@@ -147,7 +150,7 @@ final class Router {
     static func isValidBaniVariant(_ v: String) -> Bool { baniVariants.contains(v) }
 
     /// The sggs:// deep-link table (widgets/App Intents/Spotlight route through here):
-    ///   sggs://ang/1430[?line=Y] · sggs://theme/naam · sggs://shabad/123[?line=Y] ·
+    ///   sggs://ang/1430[?line=Y] · sggs://theme/naam[?term=ਸਹਜਿ&rahao=1] · sggs://shabad/123[?line=Y] ·
     ///   sggs://search?q=mercy · sggs://clock (optional /<raag-roman>) · sggs://nitnem ·
     ///   sggs://bani/<key>[?variant=] · sggs://composition/<key>[?variant=] ·
     ///   sggs://raag/<slug> (gauri, nat-narayan, or the corpus roman) ·
@@ -193,9 +196,22 @@ final class Router {
                 openRaag(value)
             }
         case "theme":
-            if !value.isEmpty {
+            // sggs://theme/<slug>[?term=<Gurmukhi word>&rahao=1]: the theme page, or its verse list
+            // when narrowed. A malformed slug is ignored, never queried.
+            if let slug = ConstellationLink.slug(value) {
+                let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+                let term = items.first(where: { $0.name == "term" })?.value
+                    .map { $0.trimmingCharacters(in: .whitespaces) }
+                    .flatMap { $0.isEmpty || $0.count > 40 ? nil : $0 }
+                let rahao = items.first(where: { $0.name == "rahao" })?.value == "1"
+                container.dismissSheetForNavigation()      // never land behind an open shabad sheet
                 selectedTab = .explore
-                explorePath = NavigationPath([Route.themes, Route.theme(value)])
+                if term != nil || rahao {
+                    let f = ThemeFilter(term: term, lens: ConstellationLens(rahaoOnly: rahao))
+                    explorePath = NavigationPath([Route.themes, Route.theme(slug), Route.themeVerses(slug, f)])
+                } else {
+                    explorePath = NavigationPath([Route.themes, Route.theme(slug)])
+                }
             }
         case "shabad":
             if let c = Int(value), (1...Int(Int32.max)).contains(c) {

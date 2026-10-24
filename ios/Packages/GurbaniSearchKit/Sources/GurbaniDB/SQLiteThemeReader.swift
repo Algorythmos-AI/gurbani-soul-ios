@@ -48,7 +48,80 @@ extension SQLiteCandidateSource {
         }
         let more = lines.count > size
         if more { lines.removeLast() }
-        return ThemePage(concept: concept, total: total, lines: lines, nextAfterId: more ? lines.last?.id : nil)
+        return ThemePage(concept: concept, total: total, lines: lines, nextAfterId: more ? lines.last?.id : nil,
+                         matched: try matchedWords(concept: concept, lineIds: lines.map(\.id)))
+    }
+
+    /// Where the theme's verses (under the filter) fall in reading order: the Constellation's 15
+    /// bins of 100 Angs.
+    public func themeAngBins(concept: String, filter: ThemeFilter = .none) throws -> [Int] {
+        let (w, b) = themeWhere(concept, filter)
+        var bins = Array(repeating: 0, count: ConstellationFocus.binCount)
+        try query("SELECT l.ang, COUNT(DISTINCT cl.line_id) FROM concept_lines cl JOIN lines l ON l.id=cl.line_id WHERE \(w) GROUP BY l.ang", b) { s in
+            bins[max(0, min(ConstellationFocus.binCount - 1, (cInt(s, 0) - 1) / ConstellationFocus.binWidth))] += cInt(s, 1)
+        }
+        return bins
+    }
+
+    /// The theme's words in its printed order (`concepts.gurmukhi_terms`), verbatim.
+    private func printedTerms(_ concept: String) throws -> [String] {
+        var json = "[]"
+        try query("SELECT COALESCE(gurmukhi_terms,'[]') FROM concepts WHERE concept=?", [.text(concept)]) { json = cText($0, 0) ?? "[]" }
+        return (try? JSONDecoder().decode([String].self, from: Data(json.utf8))) ?? []
+    }
+
+    /// Which of the theme's words each verse contains, in printed order (unlisted words last).
+    private func matchedWords(concept: String, lineIds: [Int]) throws -> [Int: [String]] {
+        guard !lineIds.isEmpty else { return [:] }
+        let order = try printedTerms(concept)
+        func rank(_ t: String) -> Int { order.firstIndex(of: t) ?? Int.max }
+        var out: [Int: [String]] = [:]
+        var start = 0
+        while start < lineIds.count {
+            let chunk = Array(lineIds[start..<min(start + 500, lineIds.count)])
+            start += chunk.count
+            let marks = Array(repeating: "?", count: chunk.count).joined(separator: ",")
+            try query("SELECT line_id, term FROM concept_lines WHERE concept=? AND line_id IN (\(marks))",
+                      [.text(concept)] + chunk.map { .int($0) }) { s in
+                out[cInt(s, 0), default: []].append(cText(s, 1) ?? "")
+            }
+        }
+        return out.mapValues { Array(Set($0)).sorted { rank($0) != rank($1) ? rank($0) < rank($1) : $0 < $1 } }
+    }
+
+    /// The theme's words with the verses each tags, in printed order; words that tag nothing are
+    /// left out, and a tagged word missing from the printed list (never expected) comes last.
+    public func themeWords(concept: String) throws -> [ThemeWord] {
+        var counts: [String: Int] = [:]
+        try query("SELECT term, COUNT(DISTINCT line_id) FROM concept_lines WHERE concept=? GROUP BY term", [.text(concept)]) { s in
+            counts[cText(s, 0) ?? ""] = cInt(s, 1)
+        }
+        let printed = try printedTerms(concept)
+        let ordered = printed + counts.keys.filter { !printed.contains($0) }.sorted()
+        return ordered.compactMap { t in counts[t].map { ThemeWord(term: t, n: $0) } }
+    }
+
+    /// Shabads steeped in the theme (under the filter's word, if any): `SteepedShabad.minLines`+
+    /// verses, half or more of which carry it — in reading order, never ranked.
+    public func themeSteeped(concept: String, filter: ThemeFilter = .none) throws -> [SteepedShabad] {
+        let (w, b) = themeWhere(concept, filter)
+        let sql = """
+        WITH t AS (SELECT l.comp_id AS k, COUNT(DISTINCT cl.line_id) AS n FROM concept_lines cl JOIN lines l ON l.id=cl.line_id
+                   WHERE \(w) GROUP BY l.comp_id),
+             s AS (SELECT comp_id AS k, COUNT(*) AS tot, MIN(id) AS first FROM lines
+                   WHERE is_header=0 AND comp_id IN (SELECT k FROM t) GROUP BY comp_id)
+        SELECT t.k, t.n, s.tot, s.first, f.ang, f.gurmukhi,
+               (SELECT raag FROM lines WHERE comp_id=t.k AND raag IS NOT NULL ORDER BY id LIMIT 1),
+               (SELECT author FROM lines WHERE comp_id=t.k AND author IS NOT NULL ORDER BY id LIMIT 1)
+        FROM t JOIN s ON s.k=t.k JOIN lines f ON f.id=s.first
+        WHERE s.tot>=? AND 2*t.n>=s.tot ORDER BY s.first
+        """
+        var out: [SteepedShabad] = []
+        try query(sql, b + [.int(SteepedShabad.minLines)]) { r in
+            out.append(SteepedShabad(compId: cInt(r, 0), ang: cInt(r, 4), raag: cText(r, 6), author: cText(r, 7),
+                                     n: cInt(r, 1), total: cInt(r, 2), firstLineId: cInt(r, 3), firstVerse: cText(r, 5) ?? ""))
+        }
+        return out
     }
 
     /// Every theme (including any with no tagged verse) with its words, headword, counts and

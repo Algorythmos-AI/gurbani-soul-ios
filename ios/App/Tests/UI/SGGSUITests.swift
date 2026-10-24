@@ -1514,13 +1514,19 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(naam.waitForExistence(timeout: 12), "Naam card missing")
         naam.tap()
         XCTAssertTrue(app.navigationBars["Naam"].waitForExistence(timeout: 12))
+        openAllVerses(app)
         let header = app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH %@", "5,672 verses carry Naam")).firstMatch
         XCTAssertTrue(header.waitForExistence(timeout: 15), "the list does not state the theme's true total")
+        XCTAssertTrue(app.descendants(matching: .any)["themes.verse.contains"].firstMatch.waitForExistence(timeout: 8),
+                      "a verse does not say which word put it here")
         attachShot(app, "theme-verses")
-        app.navigationBars.buttons.element(boundBy: 0).tap()
+        app.navigationBars.buttons.element(boundBy: 0).tap()       // the theme page
+        app.navigationBars.buttons.element(boundBy: 0).tap()       // the index
         let akal = app.buttons["theme_akal"].firstMatch
         XCTAssertTrue(akal.waitForExistence(timeout: 12), "Akal card missing")
         akal.tap()
+        XCTAssertTrue(app.navigationBars["Akal"].waitForExistence(timeout: 12))
+        openAllVerses(app)
         let footer = app.staticTexts["themes.verses.footer"]
         for _ in 0..<6 where !(footer.exists && footer.isHittable) { app.swipeUp() }
         XCTAssertTrue(footer.waitForExistence(timeout: 10))
@@ -1558,6 +1564,44 @@ final class SGGSUITests: XCTestCase {
         field.typeText("zzzz")
         XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH %@", "No theme matches")).firstMatch
                         .waitForExistence(timeout: 8), "no empty state")
+    }
+
+    /// The theme page → its "All N verses" button (scrolling to it if needed).
+    private func openAllVerses(_ app: XCUIApplication) {
+        let all = app.buttons["themes.page.all"].firstMatch
+        XCTAssertTrue(all.waitForExistence(timeout: 15), "no All verses button")
+        for _ in 0..<8 where !all.isHittable { app.swipeUp() }
+        all.tap()
+    }
+
+    /// A theme page: the headword, the word family narrows the page, Rahao lines and steeped
+    /// shabads, and the filtered verse list states its own total.
+    func testThemePageWordFamilyNarrowsEverything() {
+        let app = launchApp(selectSearch: false)
+        openThemes(app)
+        // reach the card by search, not by scrolling (the index grows above it: Today, Your themes)
+        let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 12), "no search field")
+        field.tap()
+        field.typeText("sahaj")
+        let sahaj = app.buttons["theme_sahaj"].firstMatch
+        XCTAssertTrue(sahaj.waitForExistence(timeout: 12), "Sahaj card missing")
+        sahaj.tap()
+        XCTAssertTrue(app.navigationBars["Sahaj"].waitForExistence(timeout: 12))
+        XCTAssertTrue(app.descendants(matching: .any)["themes.page.headword"].firstMatch.waitForExistence(timeout: 12))
+        XCTAssertTrue(app.staticTexts["HEART-LINES"].waitForExistence(timeout: 12), "no Rahao lines section")
+        attachShot(app, "theme-page")
+        let word = app.buttons.matching(identifier: "themes.word").element(boundBy: 2)
+        XCTAssertTrue(word.waitForExistence(timeout: 8), "no word chips")
+        word.tap()
+        XCTAssertTrue(app.buttons["Show every form"].waitForExistence(timeout: 8), "the word did not narrow the page")
+        attachShot(app, "theme-page-word")
+        openAllVerses(app)
+        let total = app.staticTexts["themes.verses.total"]
+        XCTAssertTrue(total.waitForExistence(timeout: 12))
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH %@", "Filtered:")).firstMatch.exists,
+                      "the narrowed list does not say it is filtered")
+        attachShot(app, "theme-verses-filtered")
     }
 
     private func openThemes(_ app: XCUIApplication) {
@@ -1605,7 +1649,8 @@ final class SGGSUITests: XCTestCase {
         let app = launchApp()
         openTab(app, "More", expectingNavBar: "More")
         let indigo = app.buttons["Indigo accent"]
-        if !indigo.waitForExistence(timeout: 8) { app.swipeUp() }
+        // scroll until the swatch is on screen (one swipe under- or over-shot on CI simulators)
+        for _ in 0..<5 where !(indigo.exists && indigo.isHittable) { app.swipeUp() }
         XCTAssertTrue(indigo.waitForExistence(timeout: 8))
         indigo.tap()
         XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label == %@ AND selected == 1", "Indigo accent"))
@@ -1614,8 +1659,10 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["More"].waitForExistence(timeout: 4))
         app.terminate(); app.launch()
         openTab(app, "More", expectingNavBar: "More")
-        if !app.buttons["Indigo accent"].waitForExistence(timeout: 8) { app.swipeUp() }
-        XCTAssertTrue(app.buttons["Indigo accent"].isSelected, "accent choice must persist")
+        let again = app.buttons["Indigo accent"]
+        for _ in 0..<5 where !(again.exists && again.isHittable) { app.swipeUp() }
+        XCTAssertTrue(again.waitForExistence(timeout: 8), "Indigo swatch missing after relaunch")
+        XCTAssertTrue(again.isSelected, "accent choice must persist")
         // restore the default for subsequent tests/captures
         app.buttons["Saffron accent"].tap()
     }

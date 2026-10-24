@@ -8,9 +8,43 @@ public struct ThemePage: Sendable, Equatable {
     public let total: Int
     public let lines: [SearchLine]
     public let nextAfterId: Int?
-    public init(concept: String, total: Int, lines: [SearchLine], nextAfterId: Int?) {
+    /// For each listed verse, the theme's words it contains (verbatim, printed order) — the
+    /// reason it is listed. Every verse listed has at least one.
+    public let matched: [Int: [String]]
+    public init(concept: String, total: Int, lines: [SearchLine], nextAfterId: Int?, matched: [Int: [String]] = [:]) {
         self.concept = concept; self.total = total; self.lines = lines; self.nextAfterId = nextAfterId
+        self.matched = matched
     }
+}
+
+/// One of a theme's Gurmukhi words with how many verses it tags (as printed, verbatim).
+public struct ThemeWord: Sendable, Equatable, Identifiable {
+    public let term: String
+    public let n: Int
+    public var id: String { term }
+    public init(term: String, n: Int) { self.term = term; self.n = n }
+}
+
+/// A shabad steeped in a theme: at least `minLines` verses, at least half of which carry it.
+public struct SteepedShabad: Sendable, Equatable, Identifiable {
+    public let compId: Int
+    public let ang: Int
+    public let raag: String?
+    public let author: String?
+    /// Verses of the shabad that carry the theme, and its verses in all (headings excluded).
+    public let n: Int
+    public let total: Int
+    /// The shabad's first verse, verbatim, and its line id (to open the shabad there).
+    public let firstLineId: Int
+    public let firstVerse: String
+    public var id: Int { compId }
+    public init(compId: Int, ang: Int, raag: String?, author: String?, n: Int, total: Int, firstLineId: Int, firstVerse: String) {
+        self.compId = compId; self.ang = ang; self.raag = raag; self.author = author
+        self.n = n; self.total = total; self.firstLineId = firstLineId; self.firstVerse = firstVerse
+    }
+    /// The rule, in one place: a shabad of `minLines`+ verses where half or more carry the theme.
+    public static let minLines = 6
+    public static func qualifies(n: Int, total: Int) -> Bool { total >= minLines && 2 * n >= total }
 }
 
 /// What narrows a theme's verses: one of its Gurmukhi words (as printed) and/or a Constellation

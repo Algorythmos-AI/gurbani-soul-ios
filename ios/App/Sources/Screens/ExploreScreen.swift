@@ -118,7 +118,8 @@ struct RouteDestination: View {
             VaarReaderScreen(vaarId: id, paurisOnly: paurisOnly, startLineId: line)
         case .clock: ClockScreen()
         case .nitnemJourney: NitnemJourneyScreen()
-        case .theme(let name): ThemeResultsScreen(concept: name)
+        case .theme(let name): ThemeChapterScreen(concept: name)
+        case .themeVerses(let name, let filter): ThemeResultsScreen(concept: name, filter: filter)
         case .bani(let key): BaniReaderScreen(key: key)
         case .composition(let key, let variant):
             BaniReaderScreen(key: key, variantOverride: variant.isEmpty ? nil : variant, context: .explore)
