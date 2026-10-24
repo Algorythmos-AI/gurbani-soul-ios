@@ -53,5 +53,10 @@ final class PoeticFormGroupsTests: XCTestCase {
         let r = IndexFind.run("barah maha", meta: meta, compositions: [], forms: all)
         XCTAssertEqual(r.forms.map(\.genre), ["barah_maha"], "one row per form")
         XCTAssertEqual(r.forms.first?.firstAng, 133)
+        // The verbatim Gurmukhi heading finds its own place: Tukhari's Barah Maha, not Majh's.
+        let byHeading = IndexFind.run("ਤੁਖਾਰੀ ਛੰਤ ਮਹਲਾ ੧ ਬਾਰਹ ਮਾਹਾ", meta: meta, compositions: [], forms: all)
+        XCTAssertEqual(byHeading.forms.map(\.firstAng), [1107])
+        XCTAssertEqual(IndexFind.run("ਪਹਰੇ", meta: meta, compositions: [], forms: all).forms.first?.genre, "pahare",
+                       "a Gurmukhi substring of a heading finds the form")
     }
 }

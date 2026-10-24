@@ -813,7 +813,9 @@ final class SGGSUITests: XCTestCase {
     func testIndexFormsOpenTheirComposition() {
         let app = launchApp(selectSearch: false)
         openIndex(app)
-        app.buttons["index_forms"].firstMatch.tap()
+        let formsPill = app.buttons["index_forms"].firstMatch
+        XCTAssertTrue(formsPill.waitForExistence(timeout: 12), "the Forms pill appears once the form layer has loaded")
+        formsPill.tap()
         let pahare = app.buttons["form_pahare_74"].firstMatch
         XCTAssertTrue(pahare.waitForExistence(timeout: 10), "Sri Raag's Pahare (Ang 74) should lead the forms")
         attachShot(app, "index_forms")
@@ -2015,7 +2017,11 @@ final class SGGSUITests: XCTestCase {
             }
         }
         // Index 2.0: the Index (Ribbon + compositions), its Raags tab, and a Raag page.
-        tab(app, "Explore").tap(); tab(app, "Explore").tap()   // re-selecting the tab pops to its root
+        let exploreTab = tab(app, "Explore")
+        if exploreTab.waitForExistence(timeout: 8) {
+            exploreTab.tap()
+            if exploreTab.isHittable { exploreTab.tap() }   // re-selecting the tab pops to its root
+        }
         _ = app.navigationBars["Explore"].waitForExistence(timeout: 8)
         let indexCard = app.buttons["Index"].firstMatch
         if indexCard.waitForExistence(timeout: 8) {

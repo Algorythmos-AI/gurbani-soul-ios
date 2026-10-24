@@ -39,9 +39,14 @@ enum IndexFind {
         var seen = Set<String>()
         r.compositions = compositions.filter { matches(query, [$0.titleEn, $0.titleGm]) && seen.insert($0.id).inserted }
         r.voices = meta.authors.filter { matches(query, [$0.name]) }
+        // A form matches by its name, its key, or the verbatim Gurmukhi heading it was read from.
+        // One row per form, deliberately: the FIRST place whose name or heading matches, so a
+        // name search lands where the Granth first meets the form and a heading search lands on
+        // that heading's own place.
         var genres = Set<String>()
         r.forms = forms.sorted { ($0.firstAng, $0.compId) < ($1.firstAng, $1.compId) }
-            .filter { matches(query, [PoeticForms.genre($0.genre), $0.genre]) && genres.insert($0.genre).inserted }
+            .filter { matches(query, [PoeticForms.genre($0.genre), $0.genre, $0.sourceLabel])
+                      && genres.insert($0.genre).inserted }
         return r
     }
 }

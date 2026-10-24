@@ -7,8 +7,8 @@ import GurbaniSearchKit
 /// interpretation, and it waits for scholarly review.
 enum PoeticFormGroups {
 
-    /// One place a form appears. Consecutive continuation headings of one run (the twenty
-    /// "ਡਖਣੇ ਮਃ ੫" labels inside Maru Vaar Mahalla 5) collapse into the run that opens them.
+    /// One place a form appears. Consecutive continuation headings of one run (the 22 Dakhne
+    /// headings inside Maru Vaar Mahalla 5, opened by its own ਮਹਲਾ ੫ heading) collapse into one.
     struct Entry: Equatable, Identifiable {
         let first: PoeticFormEntry
         let lastAng: Int
@@ -127,7 +127,7 @@ struct IndexFormsTab: View {
         .contentShape(Rectangle())
     }
 
-    /// "Raag Majh · Ang 133", "After the raags · Ang 1360", "Raag Maru · Angs 1094–1102 · 21 headings".
+    /// "Raag Majh · Ang 133", "After the raags · Ang 1360", "Raag Maru · Angs 1094–1102 · 22 headings".
     private func place(_ e: PoeticFormGroups.Entry) -> String {
         let raag = e.first.raag.map { r in GranthNames.raag(r, roman: e.first.raagRoman).map { "Raag \($0)" } ?? r }
             ?? "After the raags"
