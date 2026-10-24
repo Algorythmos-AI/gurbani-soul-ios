@@ -79,6 +79,8 @@ actor CorpusActor {
     func progression(raag: String, bins: Int = 36, top: Int = 7) -> Progression? {
         db.progression(raag: raag, bins: bins, top: top)
     }
+    /// Verbatim echoes from one voice to another (line_neighbors), strongest first.
+    func versePairs(from a: String, to b: String, limit: Int = 3) -> [VersePair] { db.versePairs(from: a, to: b, limit: limit) }
     func vaars() -> [VaarSummary] { db.vaars() }
     func vaar(id: Int) -> VaarAnatomy { db.vaar(id: id) }
     /// The 22 Vaars' printed text (heading, saloks and pauris), built once and kept: ~9k lines,
