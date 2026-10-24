@@ -1021,7 +1021,7 @@ final class SGGSUITests: XCTestCase {
                       "river scrubber missing")
         app.segmentedControls.buttons["Roll"].tap()
         // open a voice page (pushed, with a zoom from the card on iOS 18+)
-        let farid = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Sheikh Farid")).firstMatch
+        let farid = app.buttons["voiceCard_sheikh-farid-ji"].firstMatch
         XCTAssertTrue(openVoice(app, farid), "voice page did not open")
         // the "verses" stat tile (the canonical count, same as the card) always renders once the
         // profile loads (some voices, like Farid, legitimately have no signature-themes section)
@@ -1034,7 +1034,7 @@ final class SGGSUITests: XCTestCase {
         farid.tap()
         // Jaidev sits in the same top century group as Farid (List rows are lazy — a
         // far-scrolled voice wouldn't exist in the hierarchy yet)
-        let jaidev = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Bhagat Jaidev Ji,")).firstMatch
+        let jaidev = app.buttons["voiceCard_bhagat-jaidev-ji"].firstMatch
         XCTAssertTrue(jaidev.waitForExistence(timeout: 8)); jaidev.tap()
         XCTAssertTrue(app.staticTexts["ACROSS THE GRANTH"].waitForExistence(timeout: 12),
                       "compare sheet missing")
@@ -1200,7 +1200,7 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(lineage.waitForExistence(timeout: 15)); lineage.tap()
         let gurus = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Gurus")).firstMatch
         XCTAssertTrue(gurus.waitForExistence(timeout: 12), "kind filter missing"); gurus.tap()
-        let m9 = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Guru Tegh Bahadur Ji,")).firstMatch
+        let m9 = app.buttons["voiceCard_guru-tegh-bahadur-ji"].firstMatch
         XCTAssertTrue(scrollToCard(app, m9), "M9 card missing")
         // card label: "Guru Tegh Bahadur Ji, guru, 1621, 536 verses · 61 compositions · Angs …"
         let label = m9.label
@@ -1217,7 +1217,7 @@ final class SGGSUITests: XCTestCase {
         // Compare v2: M9 and Guru Nanak Dev Ji (the first Guru card)
         app.buttons["compareVoices"].tap()
         XCTAssertTrue(scrollToCard(app, m9), "M9 card missing after Back"); m9.tap()
-        let m1 = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Guru Nanak Dev Ji,")).firstMatch
+        let m1 = app.buttons["voiceCard_guru-nanak-dev-ji"].firstMatch
         for _ in 0..<6 where !(m1.exists && m1.isHittable) { app.swipeDown() }
         XCTAssertTrue(m1.waitForExistence(timeout: 8), "M1 card missing"); m1.tap()
         XCTAssertTrue(app.staticTexts["ACROSS THE GRANTH"].waitForExistence(timeout: 12), "compare: barcodes missing")
@@ -2239,7 +2239,7 @@ final class SGGSUITests: XCTestCase {
                 log.add("Lineage\t\(issue.auditType.rawValue)\t\(issue.compactDescription)\t\(el)")
                 return true
             }
-            let farid = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Sheikh Farid")).firstMatch
+            let farid = app.buttons["voiceCard_sheikh-farid-ji"].firstMatch
             if openVoice(app, farid) {
                 _ = app.buttons["voiceBeginFirst"].waitForExistence(timeout: 12)
                 try app.performAccessibilityAudit { @Sendable issue in
@@ -2550,7 +2550,7 @@ final class SGGSUITests: XCTestCase {
         // Guru Tegh Bahadur Ji's page: Gurus only, then scroll to the card (the list is lazy).
         let gurus = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Gurus")).firstMatch
         if gurus.waitForExistence(timeout: 5) { gurus.tap() }
-        let m9 = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Guru Tegh Bahadur Ji,")).firstMatch
+        let m9 = app.buttons["voiceCard_guru-tegh-bahadur-ji"].firstMatch
         if openVoice(app, m9) {
             _ = app.buttons["voiceBeginFirst"].waitForExistence(timeout: 12)
             shot("voice-m9")
@@ -2561,7 +2561,7 @@ final class SGGSUITests: XCTestCase {
         if compare.waitForExistence(timeout: 5), m9.waitForExistence(timeout: 5) {
             compare.tap()
             m9.tap()
-            let m1 = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Guru Nanak Dev Ji,")).firstMatch
+            let m1 = app.buttons["voiceCard_guru-nanak-dev-ji"].firstMatch
             for _ in 0..<6 where !(m1.exists && m1.isHittable) { app.swipeDown() }
             if m1.waitForExistence(timeout: 5) {
                 m1.tap()

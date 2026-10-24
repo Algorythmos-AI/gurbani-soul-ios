@@ -427,11 +427,13 @@ struct LineageScreen: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.pressableCard)
-        .accessibilityElement(children: .ignore)
-        .accessibilityAddTraits(.isButton)
+        // One element per card: the label goes on the Button itself. Wrapping the Button in
+        // `.accessibilityElement(children: .ignore)` made a second element with the same frame —
+        // VoiceOver read each card twice and a UI-test tap could land on the wrong one.
         .accessibilityLabel("\(c.displayName), \(c.kind), \(c.era.isEmpty ? "undated" : c.era), "
                             + (summary.map { Self.countLine($0) } ?? "attribution under review"))
         .accessibilityHint(compareMode ? "Selects for comparison" : "Opens their page")
+        .accessibilityIdentifier("voiceCard_\(c.slug)")
     }
 
     /// "536 verses · 61 compositions · Angs 219–1429" — the one canonical count.
@@ -516,10 +518,8 @@ struct SignatureThemesList: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(onOpen == nil)
-                .accessibilityElement(children: .ignore)
                 .accessibilityLabel("\(label), \(String(format: "%.1f", t.lift)) times the corpus baseline")
                 .accessibilityHint(onOpen == nil ? "" : "Opens this theme")
-                .accessibilityAddTraits(onOpen == nil ? [] : .isButton)
             }
         }
     }
