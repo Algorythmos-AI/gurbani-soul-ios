@@ -50,6 +50,9 @@ struct AngBarcode: View {
             }
         }
         .frame(height: height)
+        // A decorative strip (no `onOpen`, e.g. on a Lineage card) must not take touches: its tap
+        // gesture swallowed taps meant for the card's Button, so a tap on the strip opened nothing.
+        .allowsHitTesting(onOpen != nil)
         .modifier(BarcodeAccessibility(angs: angs, onOpen: onOpen, focusAng: $focusAng))
     }
 }

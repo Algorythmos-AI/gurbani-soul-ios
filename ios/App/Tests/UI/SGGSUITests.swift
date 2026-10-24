@@ -1141,9 +1141,14 @@ final class SGGSUITests: XCTestCase {
             XCTFail("voice card missing", file: file, line: line); return false
         }
         let window = app.windows.firstMatch.frame
+        var lastMid = CGFloat.nan
         for _ in 0..<8 {
             let mid = card.frame.midY
+            // In the middle band, or the list cannot move it further (its end): stop, so the tap
+            // never follows an overscroll bounce.
             if mid > window.height * 0.3 && mid < window.height * 0.6 { break }
+            if abs(mid - lastMid) < 2 { break }
+            lastMid = mid
             let from = app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.55))
             let dy = (window.height * 0.45 - mid) / window.height
             from.press(forDuration: 0.05, thenDragTo: from.withOffset(CGVector(dx: 0, dy: max(-0.35, min(0.35, dy)) * window.height)))
