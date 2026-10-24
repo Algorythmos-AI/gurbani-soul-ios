@@ -38,6 +38,23 @@ final class VoicesLayoutTests: XCTestCase {
         XCTAssertEqual(a.dots, c.dots)
     }
 
+    func testRegroupingMidFlightStartsFromTheDisplayedPositions() {
+        let a = DotFieldLayout.make(voices: voices, roster: [:], grouping: .voice, width: 320).positions
+        let b = DotFieldLayout.make(voices: voices, roster: [:], grouping: .tradition, width: 320).positions
+        let t0 = Date(timeIntervalSince1970: 1_000)
+        // morph a → b, interrupted halfway
+        let mid = t0.addingTimeInterval(DotMorph.duration / 2)
+        let p = DotMorph.progress(start: t0, now: mid)
+        XCTAssertGreaterThan(p, 0); XCTAssertLessThan(p, 1)
+        let displayed = DotMorph.interpolate(a, b, p)
+        // the next morph begins from `displayed`: at its first instant nothing moves
+        let next = DotMorph.interpolate(displayed, a, DotMorph.progress(start: mid, now: mid))
+        XCTAssertEqual(next, displayed, "regrouping must not jump the dots back to a layout's target")
+        // and it lands exactly on the new layout
+        XCTAssertEqual(DotMorph.interpolate(displayed, a, DotMorph.progress(start: mid, now: mid.addingTimeInterval(1))), a)
+        XCTAssertEqual(DotMorph.progress(start: nil, now: mid), 1, "no morph running: final positions")
+    }
+
     func testTraditionFallsBackToTheNameForVoicesTheRosterDoesNotListYet() {
         XCTAssertEqual(VoiceKind.of("Guru Tegh Bahadur Ji (M9)", roster: [:]), .guru)
         XCTAssertEqual(VoiceKind.of("Bhagat Surdas Ji", roster: [:]), .bhagat)

@@ -97,6 +97,26 @@ struct DotFieldLayout: Equatable {
 }
 
 /// Draws a `DotFieldLayout`, morphing every dot from its previous position to the current one.
+/// The dot field's morph, driven by a clock the view owns (not SwiftUI's animatable data, which
+/// a parent cannot read): the displayed position of every dot is computable at any instant, so
+/// regrouping again mid-flight starts from where the dots are actually drawn.
+enum DotMorph {
+    static let duration: TimeInterval = 0.45
+
+    /// Eased progress (smoothstep) of a morph that began at `start`; 1 when none is running.
+    static func progress(start: Date?, now: Date, duration: TimeInterval = duration) -> Double {
+        guard let start, duration > 0 else { return 1 }
+        let t = min(max(now.timeIntervalSince(start) / duration, 0), 1)
+        return t * t * (3 - 2 * t)
+    }
+
+    /// Positions part-way from `from` to `to`; `to` when the two do not describe the same dots.
+    static func interpolate(_ from: [CGPoint], _ to: [CGPoint], _ p: Double) -> [CGPoint] {
+        guard from.count == to.count, p < 1 else { return to }
+        return zip(from, to).map { a, b in CGPoint(x: a.x + (b.x - a.x) * p, y: a.y + (b.y - a.y) * p) }
+    }
+}
+
 struct VoicesDotField: View {
     let voices: [(author: String, lines: Int)]
     let roster: [String: Contributor]
@@ -104,8 +124,9 @@ struct VoicesDotField: View {
     @Binding var selected: String?
 
     @State private var width: CGFloat = 0
+    /// Where the running morph started from (displayed positions at that instant).
     @State private var from: [CGPoint] = []
-    @State private var progress: Double = 1
+    @State private var morphStart: Date?
     @State private var shown: DotFieldLayout?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -117,15 +138,19 @@ struct VoicesDotField: View {
         let current = layout
         ZStack(alignment: .topLeading) {
             if let current {
-                DotCanvas(layout: current, from: from.count == current.positions.count ? from : current.positions,
-                          progress: progress, selected: selected)
-                    .frame(height: current.size.height)
-                    .contentShape(Rectangle())
-                    .onTapGesture { p in
-                        let v = current.voice(at: p)
-                        MotionGate.run(Motion.gentle) { selected = (v == selected) ? nil : v }
-                        if v != nil { Haptics.tap() }
-                    }
+                TimelineView(.animation(paused: morphStart == nil)) { tl in
+                    let p = DotMorph.progress(start: morphStart, now: tl.date)
+                    DotCanvas(layout: current,
+                              positions: DotMorph.interpolate(from, current.positions, p),
+                              selected: selected)
+                }
+                .frame(height: current.size.height)
+                .contentShape(Rectangle())
+                .onTapGesture { p in
+                    let v = current.voice(at: p)
+                    MotionGate.run(Motion.gentle) { selected = (v == selected) ? nil : v }
+                    if v != nil { Haptics.tap() }
+                }
                 ForEach(Array(current.labels.enumerated()), id: \.offset) { _, l in
                     Text(l.text).font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                         .offset(x: l.origin.x, y: l.origin.y)
@@ -136,40 +161,36 @@ struct VoicesDotField: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .onChange(of: grouping) { _, _ in morph() }
-        .onChange(of: width) { _, _ in from = []; progress = 1; shown = layout }
+        .onChange(of: width) { _, _ in from = []; morphStart = nil; shown = layout }
         .onAppear { shown = layout }
     }
 
     private func morph() {
-        guard let old = shown ?? layout else { shown = layout; return }
-        // start from wherever each dot is drawn right now (mid-flight morphs stay continuous)
-        let now = zip(from.count == old.positions.count ? from : old.positions, old.positions)
-            .map { a, b in CGPoint(x: a.x + (b.x - a.x) * progress, y: a.y + (b.y - a.y) * progress) }
-        shown = layout
-        guard !reduceMotion, now.count == layout?.positions.count else { from = []; progress = 1; return }
-        from = now
-        progress = 0
-        MotionGate.run(Motion.spring) { progress = 1 }
+        let now = Date()
+        guard let old = shown, let next = layout else { shown = layout; return }
+        // the positions on screen right now — mid-flight included
+        let displayed = DotMorph.interpolate(from, old.positions, DotMorph.progress(start: morphStart, now: now))
+        shown = next
+        guard !reduceMotion, displayed.count == next.positions.count else { from = []; morphStart = nil; return }
+        from = displayed
+        morphStart = now
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(DotMorph.duration))
+            if morphStart == now { morphStart = nil; from = [] }   // settle, unless a newer morph began
+        }
     }
 }
 
-private struct DotCanvas: View, @MainActor Animatable {   // SwiftUI animates on the main actor
+private struct DotCanvas: View {
     let layout: DotFieldLayout
-    let from: [CGPoint]
-    var progress: Double
+    let positions: [CGPoint]
     let selected: String?
-
-    var animatableData: Double {
-        get { progress }
-        set { progress = newValue }
-    }
 
     var body: some View {
         Canvas { ctx, _ in
             let r: CGFloat = 3
-            for (i, d) in layout.dots.enumerated() {
-                let a = from[i], b = layout.positions[i]
-                let p = CGPoint(x: a.x + (b.x - a.x) * progress, y: a.y + (b.y - a.y) * progress)
+            for (i, d) in layout.dots.enumerated() where i < positions.count {
+                let p = positions[i]
                 let dim = selected != nil && selected != d.voice
                 ctx.fill(Path(ellipseIn: CGRect(x: p.x - r, y: p.y - r, width: 2 * r, height: 2 * r)),
                          with: .color(d.kind.color.opacity(dim ? 0.18 : 1)))
