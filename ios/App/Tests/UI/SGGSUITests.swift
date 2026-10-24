@@ -1773,6 +1773,15 @@ final class SGGSUITests: XCTestCase {
             _ = app.navigationBars["Constellation"].waitForExistence(timeout: 8)
         }
         app.navigationBars.buttons.firstMatch.tap()   // back to the hub
+        let insights = app.buttons["Insights"].firstMatch
+        if insights.waitForExistence(timeout: 8) {
+            insights.tap()
+            _ = app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH %@", "Guru Nanak Dev Ji"))
+                .firstMatch.waitForExistence(timeout: 12)
+            shot("insights_contributors")
+            app.navigationBars.buttons.firstMatch.tap()   // back to the hub
+            _ = app.navigationBars["Explore"].waitForExistence(timeout: 8)
+        }
         let lineage = app.buttons["Lineage"].firstMatch
         if lineage.waitForExistence(timeout: 8) { lineage.tap() }
         _ = app.staticTexts["30 voices · 12th–17th century"].waitForExistence(timeout: 8)

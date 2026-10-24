@@ -22,6 +22,7 @@ struct InsightsScreen: View {
     @Environment(AppContainer.self) private var container
     @State private var model: InsightsModel?
     @State private var tab = 0
+    @State private var authorRows: [String: AuthorRow] = [:]
 
     private static let views: [(id: Int, label: String)] = [
         (0, "Contributors"), (1, "Raags"), (2, "Network"), (3, "Resonance"), (4, "Flow"),
@@ -43,7 +44,7 @@ struct InsightsScreen: View {
 
             if let model, model.loaded {
                 switch tab {
-                case 0: ContributorsView(authors: model.authors)
+                case 0: ContributorsView(authors: model.authors, rows: authorRows)
                 case 1: RaagsView(raags: model.raags)
                 case 2: ThemeNetworkSection()
                 case 3: ResonanceSection()
@@ -59,44 +60,11 @@ struct InsightsScreen: View {
         .task {
             if model == nil { model = InsightsModel(corpus: container.corpus) }
             await model?.load()
+            // first/last Ang per voice (authors) — Granth order and each voice's Ang range
+            if container.meta == nil { await container.loadMeta() }
+            authorRows = Dictionary((container.meta?.authors ?? []).map { ($0.name, $0) },
+                                    uniquingKeysWith: { a, _ in a })
         }
-    }
-
-    static func shortAuthor(_ s: String) -> String {
-        if let r = s.range(of: #"\(M\d+\)"#, options: .regularExpression) { return String(s[r]) }
-        return s.replacingOccurrences(of: " Ji", with: "").replacingOccurrences(of: "Bhagat ", with: "")
-    }
-}
-
-private struct ContributorsView: View {
-    let authors: [AuthorStat]
-    var body: some View {
-        List {
-            Section {
-                Chart(authors.prefix(12)) { a in
-                    BarMark(x: .value("Lines", a.nLines),
-                            y: .value("Author", InsightsScreen.shortAuthor(a.author)))
-                        .foregroundStyle(Brand.primary.gradient)
-                }
-                .chartXAxisLabel("Lines")
-                .frame(height: 300)
-                .accessibilityLabel("Lines contributed per author")
-            } footer: {
-                Text("Lines contributed to the Granth, per author. Descriptive — never a ranking of merit.")
-            }
-            .inkRow()
-            Section("Stylometry") {
-                ForEach(authors) { a in
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(a.author).font(.subheadline)
-                        Text("\(a.nLines) lines · \(a.nShabads) shabads · \(a.nRaags) raags · lexical diversity \(a.mattr100, format: .number.precision(.fractionLength(2)))")
-                            .font(.caption).foregroundStyle(.secondary)
-                    }
-                }
-            }
-            .inkRow()
-        }
-        .inkGroupedList()
     }
 }
 
