@@ -13,7 +13,7 @@ struct AngSliceBar: View {
     var body: some View {
         Canvas { ctx, size in
             let track = Path(roundedRect: CGRect(origin: .zero, size: size), cornerRadius: size.height / 2)
-            ctx.fill(track, with: .color(Ink.raised))
+            ctx.fill(track, with: .color(StructureStrip.unread))
             let r = Self.sliceRect(first: first, last: last, total: total, width: size.width, height: size.height)
             ctx.fill(Path(roundedRect: r, cornerRadius: size.height / 2), with: .color(palette.accent))
         }
