@@ -17,6 +17,8 @@ struct VoicePage: View {
     @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.colorScheme) private var scheme
     @State private var data: VoiceData?
+    /// The summary read here when the card was tapped before Lineage had its counts.
+    @State private var loadedSummary: VoiceSummary?
     @State private var raagSheet: RaagShare?
     @State private var shareImage: Image?
 
@@ -40,7 +42,7 @@ struct VoicePage: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Space.xl) {
                 hero
-                if let summary { baniSection(summary) }
+                if let summary = summary ?? loadedSummary { baniSection(summary) }
                 if let data {
                     raagSection(data)
                     rahaoSection(data)
@@ -61,6 +63,7 @@ struct VoicePage: View {
             .frame(maxWidth: 720)
             .frame(maxWidth: .infinity)
         }
+        .accessibilityIdentifier("voicePage")
         .background(Ink.canvas)
         .contentMargins(.bottom, Theme.Space.xl, for: .scrollContent)
         .navigationTitle(contributor.displayName)
@@ -85,6 +88,9 @@ struct VoicePage: View {
 
     private func load() async {
         guard data == nil, let corpus = container.corpus else { return }
+        if summary == nil {
+            loadedSummary = await corpus.voiceSummaries().first { $0.author == contributor.name }
+        }
         if container.meta == nil { await container.loadMeta() }
         let name = contributor.name
         var d = VoiceData()

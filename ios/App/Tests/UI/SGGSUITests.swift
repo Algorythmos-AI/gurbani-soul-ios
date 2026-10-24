@@ -1002,7 +1002,7 @@ final class SGGSUITests: XCTestCase {
         app.segmentedControls.buttons["Roll"].tap()
         // open a voice page (pushed, with a zoom from the card on iOS 18+)
         let farid = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Sheikh Farid")).firstMatch
-        XCTAssertTrue(farid.waitForExistence(timeout: 8)); farid.tap()
+        XCTAssertTrue(openVoice(app, farid), "voice page did not open")
         // the "verses" stat tile (the canonical count, same as the card) always renders once the
         // profile loads (some voices, like Farid, legitimately have no signature-themes section)
         XCTAssertTrue(app.staticTexts["verses"].waitForExistence(timeout: 12), "voice page did not load")
@@ -1132,6 +1132,33 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(basant.label.contains("Ang 1193") && !basant.label.contains("1193–1193"), basant.label)
     }
 
+    /// Taps a Lineage card and waits for its Voice page. Robust on a device: waits until the cards
+    /// carry their counts (they grow when the counts load, which moves them under a pending tap),
+    /// drags the card to mid-screen (clear of the floating tab bar), and retries the tap once.
+    @discardableResult
+    private func openVoice(_ app: XCUIApplication, _ card: XCUIElement, file: StaticString = #filePath, line: UInt = #line) -> Bool {
+        let counted = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", " verses · ")).firstMatch
+        _ = counted.waitForExistence(timeout: 20)
+        guard card.waitForExistence(timeout: 12) else {
+            XCTFail("voice card missing", file: file, line: line); return false
+        }
+        let window = app.windows.firstMatch.frame
+        for _ in 0..<8 {
+            let mid = card.frame.midY
+            if mid > window.height * 0.3 && mid < window.height * 0.6 { break }
+            let from = app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.55))
+            let dy = (window.height * 0.45 - mid) / window.height
+            from.press(forDuration: 0.05, thenDragTo: from.withOffset(CGVector(dx: 0, dy: max(-0.35, min(0.35, dy)) * window.height)))
+        }
+        let page = app.descendants(matching: .any)["voicePage"].firstMatch
+        for _ in 0..<2 {
+            card.tap()
+            if page.waitForExistence(timeout: 12) { return true }
+        }
+        XCTFail("voice page did not open", file: file, line: line)
+        return false
+    }
+
     /// Lineage › the Gurus › Guru Tegh Bahadur Ji: the card's canonical count, then the Voice page
     /// showing the SAME count, then back and Compare v2 between two Gurus.
     func testVoicesNavigationAndCountAgreement() {
@@ -1145,12 +1172,13 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(m9.waitForExistence(timeout: 12), "M9 card missing")
         for _ in 0..<6 where !m9.isHittable { app.swipeUp() }
         // card label: "Guru Tegh Bahadur Ji, guru, 1621, 536 verses · 61 compositions · Angs …"
+        _ = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", " verses · ")).firstMatch.waitForExistence(timeout: 20)
         let label = m9.label
         guard let r = label.range(of: #"[0-9][0-9,]* verses"#, options: .regularExpression) else {
             return XCTFail("the card carries no verse count: \(label)")
         }
         let cardCount = String(label[r].dropLast(" verses".count))
-        m9.tap()
+        XCTAssertTrue(openVoice(app, m9), "voice page did not open")
         XCTAssertTrue(app.buttons["voiceBeginFirst"].waitForExistence(timeout: 12), "voice page did not load")
         XCTAssertTrue(app.staticTexts["verses"].exists, "the verses tile is missing")
         XCTAssertTrue(app.staticTexts[cardCount].exists,
@@ -2158,8 +2186,7 @@ final class SGGSUITests: XCTestCase {
                 return true
             }
             let farid = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Sheikh Farid")).firstMatch
-            if farid.waitForExistence(timeout: 8) {
-                farid.tap()
+            if farid.waitForExistence(timeout: 8), openVoice(app, farid) {
                 _ = app.buttons["voiceBeginFirst"].waitForExistence(timeout: 12)
                 try app.performAccessibilityAudit { @Sendable issue in
                     let el = issue.element.map { "\($0.elementType.rawValue) '\($0.label.prefix(40))'" } ?? "-"
@@ -2424,8 +2451,7 @@ final class SGGSUITests: XCTestCase {
         if gurus.waitForExistence(timeout: 5) { gurus.tap() }
         let m9 = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Guru Tegh Bahadur Ji,")).firstMatch
         for _ in 0..<6 where !m9.isHittable { app.swipeUp() }
-        if m9.waitForExistence(timeout: 5) {
-            m9.tap()
+        if m9.waitForExistence(timeout: 5), openVoice(app, m9) {
             _ = app.buttons["voiceBeginFirst"].waitForExistence(timeout: 12)
             shot("voice-m9")
             app.navigationBars.buttons.element(boundBy: 0).tap()
