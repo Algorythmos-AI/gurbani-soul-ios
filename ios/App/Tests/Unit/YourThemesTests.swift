@@ -88,4 +88,12 @@ final class YourThemesTests: XCTestCase {
         XCTAssertFalse(real.unavailable, "summarize only ever describes a lookup that succeeded")
         XCTAssertNotEqual(u, YourThemes.summarize(saved: [], members: [:], themes: [], day: 0))
     }
+
+    /// Themes are indexed once per build: the stamp names the build, so a new build re-indexes and
+    /// the same build does not.
+    func testThemesIndexStampNamesTheBuild() {
+        let stamp = SpotlightIndex.themesIndexStamp(bundle: .main)
+        XCTAssertFalse(stamp.contains("?"), "the app bundle carries its version and build: \(stamp)")
+        XCTAssertEqual(stamp, SpotlightIndex.themesIndexStamp(bundle: .main))
+    }
 }

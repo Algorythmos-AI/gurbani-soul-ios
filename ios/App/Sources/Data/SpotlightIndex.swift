@@ -56,6 +56,13 @@ enum SpotlightIndex {
 
     static func themeIdentifier(_ concept: String) -> String { "theme-\(concept)" }
 
+    /// The build whose themes are in system search (themes change only with the bundled DB).
+    static let themesIndexedKey = "sggs_spotlight_themes_build"
+    static func themesIndexStamp(bundle: Bundle) -> String {
+        let info = bundle.infoDictionary ?? [:]
+        return "\(info["CFBundleShortVersionString"] as? String ?? "?")+\(info["CFBundleVersion"] as? String ?? "?")"
+    }
+
     /// The theme slug of a theme result (nil for any other identifier, or a malformed slug).
     static func themeSlug(fromIdentifier id: String) -> String? {
         guard id.hasPrefix("theme-") else { return nil }

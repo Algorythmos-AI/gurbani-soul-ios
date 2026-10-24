@@ -59,7 +59,7 @@ struct SGGSApp: App {
                 await container.loadMeta()
                 await container.refreshWidgetSnapshot()
                 await container.refreshReminders()
-                await container.indexThemesForSpotlight()   // also warms the Themes index
+                await container.indexThemesForSpotlight()   // once per build, after launch settles
             }
             .onOpenURL { url in container.router.handle(url, container: container) }
             .onChange(of: scenePhase) { _, phase in
