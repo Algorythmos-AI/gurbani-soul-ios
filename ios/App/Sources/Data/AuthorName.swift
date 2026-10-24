@@ -73,11 +73,11 @@ enum VoiceCopy {
         AttributedString(localized: "\(n) raags", locale: locale)
     }
 
-    /// The Bhatts' Swaiyye sit after the raag sections, outside the raag framework — so a
-    /// voice with no raag says that instead of "0 raags".
-    static let outsideRaags = "Swaiyye · outside the raag framework"
+    /// From Ang 1353 the Granth leaves the raag framework (Saloks, Swaiyye…). A voice whose Bani
+    /// is all there (the Bhatts) says so instead of "0 raags".
+    static let outsideRaags = "Outside the raag sections"
 
-    /// "1,204 lines · 61 shabads · 15 raags", or "… · Swaiyye · outside the raag framework".
+    /// "1,204 lines · 61 shabads · 15 raags", or "… · Outside the raag sections".
     static func summary(lines n: Int, shabads s: Int, raags r: Int, locale: Locale = .current) -> AttributedString {
         var out = lines(n, locale: locale)
         out += AttributedString(" · ")

@@ -265,3 +265,283 @@ extension SQLiteCandidateSource {
         return VaarAnatomy(vaar: head, units: units)
     }
 }
+
+// MARK: - Voices of the Granth (Lineage)
+//
+// Counts, raags, Angs and rahao verses are computed from `lines` (headers excluded), so they are
+// right on every DB build. The pipeline tables (`author_facts`, `author_mentions`,
+// `author_dialogues`) are optional: each reader checks sqlite_master (and the columns it needs)
+// first and returns its empty value when they are absent, so the screen section hides instead
+// of failing on an older DB.
+extension SQLiteCandidateSource {
+
+    /// True when `name` is a table or view in this DB.
+    func hasTable(_ name: String) -> Bool {
+        var stmt: OpaquePointer?
+        defer { sqlite3_finalize(stmt) }
+        guard sqlite3_prepare_v2(handle, "SELECT 1 FROM sqlite_master WHERE type IN ('table','view') AND name=?",
+                                 -1, &stmt, nil) == SQLITE_OK else { return false }
+        sqlite3_bind_text(stmt, 1, name, -1, Self.transientDtor)
+        var failed = false
+        return stepRow(stmt, failed: &failed) && !failed
+    }
+
+    /// The column names of `table` (empty when it does not exist). `table` must be a literal
+    /// identifier from this file — it is spliced into a PRAGMA, never taken from input.
+    func columns(of table: String) -> Set<String> {
+        guard hasTable(table), table.allSatisfy({ $0.isLetter || $0.isNumber || $0 == "_" }) else { return [] }
+        var stmt: OpaquePointer?
+        defer { sqlite3_finalize(stmt) }
+        guard sqlite3_prepare_v2(handle, "PRAGMA table_info(\(table))", -1, &stmt, nil) == SQLITE_OK else { return [] }
+        var out: Set<String> = []
+        var failed = false
+        while stepRow(stmt, failed: &failed) { if let n = aText(stmt, 1) { out.insert(n) } }
+        return failed ? [] : out
+    }
+
+    /// Every voice with at least one verse: the canonical verse count, compositions, raags and
+    /// the Angs they appear on. One count for the card, the page and the hero.
+    public func voiceSummaries() -> [VoiceSummary] {
+        var failed = false
+        struct Row { var n = 0, comps = 0, raags = 0, first = 0, last = 0 }
+        var rows: [String: Row] = [:]
+        var order: [String] = []
+        var stmt: OpaquePointer?
+        if sqlite3_prepare_v2(handle,
+            "SELECT author, COUNT(*), COUNT(DISTINCT comp_id), COUNT(DISTINCT NULLIF(raag,'')), MIN(ang), MAX(ang) "
+            + "FROM lines WHERE is_header=0 AND author IS NOT NULL AND author<>'' "
+            + "GROUP BY author ORDER BY MIN(ang), author", -1, &stmt, nil) == SQLITE_OK {
+            while stepRow(stmt, failed: &failed) {
+                let a = aText(stmt, 0) ?? ""
+                order.append(a)
+                rows[a] = Row(n: aInt(stmt, 1) ?? 0, comps: aInt(stmt, 2) ?? 0, raags: aInt(stmt, 3) ?? 0,
+                              first: aInt(stmt, 4) ?? 0, last: aInt(stmt, 5) ?? 0)
+            }
+        }
+        sqlite3_finalize(stmt)
+
+        var angs: [String: [Int]] = [:]
+        var ast: OpaquePointer?
+        if sqlite3_prepare_v2(handle,
+            "SELECT DISTINCT author, ang FROM lines WHERE is_header=0 AND author IS NOT NULL AND author<>''",
+            -1, &ast, nil) == SQLITE_OK {
+            while stepRow(ast, failed: &failed) {
+                angs[aText(ast, 0) ?? "", default: []].append(aInt(ast, 1) ?? 0)
+            }
+        }
+        sqlite3_finalize(ast)
+        if failed { return [] }
+        return order.compactMap { a in
+            guard let r = rows[a] else { return nil }
+            return VoiceSummary(author: a, nVerses: r.n, nCompositions: r.comps, nRaags: r.raags,
+                                firstAng: r.first, lastAng: r.last, angs: AngSet(angs[a] ?? []))
+        }
+    }
+
+    /// A voice's verses per raag, in the Granth's raag order. A raag is a signature raag when no
+    /// other voice has a verse in it.
+    public func authorRaags(_ author: String) -> [RaagShare] {
+        var failed = false
+        var out: [RaagShare] = []
+        var stmt: OpaquePointer?
+        defer { sqlite3_finalize(stmt) }
+        let hasRaags = hasTable("raags")
+        let sql = hasRaags
+            ? "SELECT l.raag, COUNT(*), COUNT(DISTINCT l.comp_id), COALESCE(r.roman,''), "
+              + "(SELECT COUNT(DISTINCT l2.author) FROM lines l2 WHERE l2.raag=l.raag AND l2.is_header=0) "
+              + "FROM lines l LEFT JOIN raags r ON r.name=l.raag "
+              + "WHERE l.author=? AND l.is_header=0 AND l.raag<>'' GROUP BY l.raag ORDER BY MIN(l.ang)"
+            : "SELECT l.raag, COUNT(*), COUNT(DISTINCT l.comp_id), '', "
+              + "(SELECT COUNT(DISTINCT l2.author) FROM lines l2 WHERE l2.raag=l.raag AND l2.is_header=0) "
+              + "FROM lines l WHERE l.author=? AND l.is_header=0 AND l.raag<>'' GROUP BY l.raag ORDER BY MIN(l.ang)"
+        guard sqlite3_prepare_v2(handle, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
+        sqlite3_bind_text(stmt, 1, author, -1, Self.transientDtor)
+        while stepRow(stmt, failed: &failed) {
+            out.append(RaagShare(raag: aText(stmt, 0) ?? "", roman: aText(stmt, 3) ?? "",
+                                 nVerses: aInt(stmt, 1) ?? 0, nCompositions: aInt(stmt, 2) ?? 0,
+                                 isSignature: (aInt(stmt, 4) ?? 0) == 1))
+        }
+        return failed ? [] : out
+    }
+
+    /// The rahao verse of each of a voice's shabads (the first per composition, in Granth order),
+    /// plus the total number of rahao verses.
+    public func authorRahao(_ author: String, limit: Int = 80) -> RahaoDeck {
+        var failed = false
+        var total = 0
+        var cs: OpaquePointer?
+        if sqlite3_prepare_v2(handle, "SELECT COUNT(*) FROM lines WHERE author=? AND is_rahao=1 AND is_header=0",
+                              -1, &cs, nil) == SQLITE_OK {
+            sqlite3_bind_text(cs, 1, author, -1, Self.transientDtor)
+            if stepRow(cs, failed: &failed) { total = aInt(cs, 0) ?? 0 }
+        }
+        sqlite3_finalize(cs)
+        var verses: [VoiceVerse] = []
+        var stmt: OpaquePointer?
+        if sqlite3_prepare_v2(handle,
+            "SELECT id, ang, comp_id, gurmukhi FROM lines WHERE id IN ("
+            + "SELECT MIN(id) FROM lines WHERE author=? AND is_rahao=1 AND is_header=0 GROUP BY comp_id"
+            + ") ORDER BY id LIMIT ?", -1, &stmt, nil) == SQLITE_OK {
+            sqlite3_bind_text(stmt, 1, author, -1, Self.transientDtor)
+            sqlite3_bind_int(stmt, 2, Int32(clamping: max(1, limit)))
+            while stepRow(stmt, failed: &failed) { verses.append(verse(stmt)) }
+        }
+        sqlite3_finalize(stmt)
+        return failed ? .empty : RahaoDeck(totalLines: total, verses: verses)
+    }
+
+    /// A voice's compositions in Granth order (optionally one raag only), each with its opening
+    /// verse verbatim.
+    public func authorCompositions(_ author: String, raag: String? = nil) -> [VoiceComposition] {
+        var failed = false
+        var out: [VoiceComposition] = []
+        var stmt: OpaquePointer?
+        defer { sqlite3_finalize(stmt) }
+        let sql = "SELECT c.comp_id, c.ang, c.fid, c.n, l.raag, l.gurmukhi FROM ("
+            + "SELECT comp_id, MIN(ang) ang, MIN(id) fid, COUNT(*) n FROM lines "
+            + "WHERE author=? AND is_header=0" + (raag == nil ? "" : " AND raag=?")
+            + " GROUP BY comp_id) c JOIN lines l ON l.id=c.fid ORDER BY c.fid"
+        guard sqlite3_prepare_v2(handle, sql, -1, &stmt, nil) == SQLITE_OK else { return [] }
+        sqlite3_bind_text(stmt, 1, author, -1, Self.transientDtor)
+        if let raag { sqlite3_bind_text(stmt, 2, raag, -1, Self.transientDtor) }
+        while stepRow(stmt, failed: &failed) {
+            let r = aText(stmt, 4)
+            out.append(VoiceComposition(compId: aInt(stmt, 0) ?? 0, ang: aInt(stmt, 1) ?? 0,
+                                        firstLineId: aInt(stmt, 2) ?? 0, nVerses: aInt(stmt, 3) ?? 0,
+                                        raag: (r?.isEmpty ?? true) ? nil : r, opening: aText(stmt, 5) ?? ""))
+        }
+        return failed ? [] : out
+    }
+
+    /// Up to `limit` verses by a voice containing `token` verbatim (how a voice signs its Bani).
+    public func authorVerses(_ author: String, containing token: String, limit: Int = 3) -> [VoiceVerse] {
+        guard !token.isEmpty else { return [] }
+        var failed = false
+        var out: [VoiceVerse] = []
+        var stmt: OpaquePointer?
+        defer { sqlite3_finalize(stmt) }
+        guard sqlite3_prepare_v2(handle,
+            "SELECT id, ang, comp_id, gurmukhi FROM lines WHERE author=? AND is_header=0 "
+            + "AND instr(gurmukhi, ?) > 0 ORDER BY id LIMIT ?", -1, &stmt, nil) == SQLITE_OK else { return [] }
+        sqlite3_bind_text(stmt, 1, author, -1, Self.transientDtor)
+        sqlite3_bind_text(stmt, 2, token, -1, Self.transientDtor)
+        sqlite3_bind_int(stmt, 3, Int32(clamping: max(1, limit)))
+        while stepRow(stmt, failed: &failed) { out.append(verse(stmt)) }
+        return failed ? [] : out
+    }
+
+    /// `author_facts` (sggs-data, optional). Nil when the table or this voice's row is absent;
+    /// a column the table lacks reads as nil.
+    public func authorFacts(_ author: String) -> AuthorFacts? {
+        let cols = columns(of: "author_facts")
+        guard cols.contains("author") else { return nil }
+        let wanted = ["n_verses", "outside_raag_verses", "chhap_count", "n_tokens", "mattr_100", "words_per_verse"]
+        let select = wanted.map { cols.contains($0) ? $0 : "NULL" }.joined(separator: ", ")
+        var failed = false
+        var stmt: OpaquePointer?
+        defer { sqlite3_finalize(stmt) }
+        guard sqlite3_prepare_v2(handle, "SELECT \(select) FROM author_facts WHERE author=?",
+                                 -1, &stmt, nil) == SQLITE_OK else { return nil }
+        sqlite3_bind_text(stmt, 1, author, -1, Self.transientDtor)
+        guard stepRow(stmt, failed: &failed), !failed else { return nil }
+        func dbl(_ c: Int32) -> Double? { sqlite3_column_type(stmt, c) == SQLITE_NULL ? nil : sqlite3_column_double(stmt, c) }
+        return AuthorFacts(nVerses: aInt(stmt, 0), outsideRaagVerses: aInt(stmt, 1), chhapCount: aInt(stmt, 2),
+                           nTokens: aInt(stmt, 3), mattr100: dbl(4), wordsPerVerse: dbl(5))
+    }
+
+    /// `author_mentions(line_id, ang, src_author, mentioned, form)` (sggs-data, optional): verses
+    /// naming this voice, and verses by it naming others — verbatim from `lines`.
+    public func authorMentions(_ author: String, limit: Int = 40) -> VoiceMentions {
+        let cols = columns(of: "author_mentions")
+        guard cols.isSuperset(of: ["src_author", "mentioned", "line_id"]) else { return .empty }
+        let form = cols.contains("form") ? "m.form" : "NULL"
+        var failed = false
+        func read(_ keyColumn: String) -> [VoiceMention] {
+            var out: [VoiceMention] = []
+            var stmt: OpaquePointer?
+            defer { sqlite3_finalize(stmt) }
+            guard sqlite3_prepare_v2(handle,
+                "SELECT m.src_author, m.mentioned, \(form), l.id, l.ang, l.comp_id, l.gurmukhi FROM author_mentions m "
+                + "JOIN lines l ON l.id=m.line_id WHERE m.\(keyColumn)=? AND m.src_author<>m.mentioned "
+                + "ORDER BY l.id LIMIT ?", -1, &stmt, nil) == SQLITE_OK else { return [] }
+            sqlite3_bind_text(stmt, 1, author, -1, Self.transientDtor)
+            sqlite3_bind_int(stmt, 2, Int32(clamping: max(1, limit)))
+            while stepRow(stmt, failed: &failed) {
+                out.append(VoiceMention(speaker: aText(stmt, 0) ?? "", named: aText(stmt, 1) ?? "", form: aText(stmt, 2),
+                                        verse: VoiceVerse(id: aInt(stmt, 3) ?? 0, ang: aInt(stmt, 4) ?? 0,
+                                                          compId: aInt(stmt, 5) ?? 0, gurmukhi: aText(stmt, 6) ?? "")))
+            }
+            return out
+        }
+        let namedBy = read("mentioned"), names = read("src_author")
+        return failed ? .empty : VoiceMentions(namedBy: namedBy, names: names)
+    }
+
+    /// `author_dialogues(seq, bhagat, guru, ang, bhagat_first_id, bhagat_last_id, guru_first_id,
+    /// guru_last_id)` (sggs-data, optional): a Bhagat's salok and the Guru's salok set beside it,
+    /// each read verbatim from `lines` by id range (headers excluded, at most 12 verses a side).
+    public func authorDialogues(_ author: String, limit: Int = 30) -> [VoiceDialogue] {
+        let need: Set<String> = ["seq", "bhagat", "guru", "bhagat_first_id", "bhagat_last_id", "guru_first_id", "guru_last_id"]
+        guard columns(of: "author_dialogues").isSuperset(of: need) else { return [] }
+        var failed = false
+        struct Pair { let seq: Int; let ba: String; let b0, b1: Int; let ga: String; let g0, g1: Int }
+        var pairs: [Pair] = []
+        var stmt: OpaquePointer?
+        if sqlite3_prepare_v2(handle,
+            "SELECT seq, bhagat, bhagat_first_id, bhagat_last_id, guru, guru_first_id, guru_last_id "
+            + "FROM author_dialogues WHERE bhagat=? OR guru=? ORDER BY seq LIMIT ?", -1, &stmt, nil) == SQLITE_OK {
+            sqlite3_bind_text(stmt, 1, author, -1, Self.transientDtor)
+            sqlite3_bind_text(stmt, 2, author, -1, Self.transientDtor)
+            sqlite3_bind_int(stmt, 3, Int32(clamping: max(1, limit)))
+            while stepRow(stmt, failed: &failed) {
+                pairs.append(Pair(seq: aInt(stmt, 0) ?? 0, ba: aText(stmt, 1) ?? "",
+                                  b0: aInt(stmt, 2) ?? 0, b1: aInt(stmt, 3) ?? 0, ga: aText(stmt, 4) ?? "",
+                                  g0: aInt(stmt, 5) ?? 0, g1: aInt(stmt, 6) ?? 0))
+            }
+        }
+        sqlite3_finalize(stmt)
+        func verses(_ from: Int, _ to: Int) -> [VoiceVerse] {
+            var out: [VoiceVerse] = []
+            var vs: OpaquePointer?
+            defer { sqlite3_finalize(vs) }
+            guard from > 0, to >= from, sqlite3_prepare_v2(handle,
+                "SELECT id, ang, comp_id, gurmukhi FROM lines WHERE id BETWEEN ? AND ? AND is_header=0 ORDER BY id LIMIT 12",
+                -1, &vs, nil) == SQLITE_OK else { return [] }
+            sqlite3_bind_int64(vs, 1, Int64(from))
+            sqlite3_bind_int64(vs, 2, Int64(to))
+            while stepRow(vs, failed: &failed) { out.append(verse(vs)) }
+            return out
+        }
+        let out = pairs.compactMap { p -> VoiceDialogue? in
+            let b = verses(p.b0, p.b1), g = verses(p.g0, p.g1)
+            return b.isEmpty || g.isEmpty ? nil
+                : VoiceDialogue(seq: p.seq, bhagatAuthor: p.ba, bhagat: b, guruAuthor: p.ga, guru: g)
+        }
+        return failed ? [] : out
+    }
+
+    /// The voices whose verses resonate most with this one's (`author_resonance`, by lift).
+    public func authorEchoes(_ author: String, limit: Int = 5, minEdges: Int = 8) -> [VoiceEcho] {
+        guard hasTable("author_resonance") else { return [] }
+        var failed = false
+        var out: [VoiceEcho] = []
+        var stmt: OpaquePointer?
+        defer { sqlite3_finalize(stmt) }
+        guard sqlite3_prepare_v2(handle,
+            "SELECT dst_author, edges, lift FROM author_resonance WHERE src_author=? AND dst_author<>src_author "
+            + "AND edges >= ? ORDER BY lift DESC, dst_author LIMIT ?", -1, &stmt, nil) == SQLITE_OK else { return [] }
+        sqlite3_bind_text(stmt, 1, author, -1, Self.transientDtor)
+        sqlite3_bind_int(stmt, 2, Int32(clamping: max(1, minEdges)))
+        sqlite3_bind_int(stmt, 3, Int32(clamping: max(1, limit)))
+        while stepRow(stmt, failed: &failed) {
+            out.append(VoiceEcho(author: aText(stmt, 0) ?? "", edges: aInt(stmt, 1) ?? 0,
+                                 lift: sqlite3_column_double(stmt, 2)))
+        }
+        return failed ? [] : out
+    }
+
+    /// Columns 0…3 = id, ang, comp_id, gurmukhi.
+    private func verse(_ s: OpaquePointer?) -> VoiceVerse {
+        VoiceVerse(id: aInt(s, 0) ?? 0, ang: aInt(s, 1) ?? 0, compId: aInt(s, 2) ?? 0, gurmukhi: aText(s, 3) ?? "")
+    }
+}

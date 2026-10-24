@@ -892,21 +892,22 @@ final class SGGSUITests: XCTestCase {
         openTab(app, "Explore", expectingNavBar: "Explore")
         let lineage = app.buttons["Lineage"].firstMatch
         XCTAssertTrue(lineage.waitForExistence(timeout: 15)); lineage.tap()
-        XCTAssertTrue(app.staticTexts["30 voices · 12th–17th century"].waitForExistence(timeout: 15),
-                      "lineage header missing")
+        // "30 voices" today, "36 voices" once roster v2 and the attribution fix land.
+        let header = app.staticTexts.matching(NSPredicate(format: "label MATCHES %@", "[0-9]+ voices · 12th–17th century")).firstMatch
+        XCTAssertTrue(header.waitForExistence(timeout: 15), "lineage header missing")
         // open a profile
-        let farid = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Baba Sheikh Farid")).firstMatch
+        let farid = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Sheikh Farid")).firstMatch
         XCTAssertTrue(farid.waitForExistence(timeout: 8)); farid.tap()
-        // "lines preserved" stat tile always renders once the profile loads (some voices,
-        // like Farid, legitimately have no signature-themes section)
-        XCTAssertTrue(app.staticTexts["lines preserved"].waitForExistence(timeout: 12), "profile did not load")
+        // the "verses" stat tile (the canonical count, same as the card) always renders once the
+        // profile loads (some voices, like Farid, legitimately have no signature-themes section)
+        XCTAssertTrue(app.staticTexts["verses"].waitForExistence(timeout: 12), "profile did not load")
         app.buttons["Done"].tap()
         // compare two voices
         app.buttons["compareVoices"].tap()
         farid.tap()
         // Jaidev sits in the same top century group as Farid (List rows are lazy — a
         // far-scrolled voice wouldn't exist in the hierarchy yet)
-        let jaidev = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Jaidev,")).firstMatch
+        let jaidev = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Bhagat Jaidev Ji,")).firstMatch
         XCTAssertTrue(jaidev.waitForExistence(timeout: 8)); jaidev.tap()
         XCTAssertTrue(app.staticTexts["Theme emphasis (lift)"].waitForExistence(timeout: 12),
                       "compare sheet missing")
@@ -1921,7 +1922,8 @@ final class SGGSUITests: XCTestCase {
         }
         let lineage = app.buttons["Lineage"].firstMatch
         if lineage.waitForExistence(timeout: 8) { lineage.tap() }
-        _ = app.staticTexts["30 voices · 12th–17th century"].waitForExistence(timeout: 8)
+        _ = app.staticTexts.matching(NSPredicate(format: "label MATCHES %@", "[0-9]+ voices · 12th–17th century"))
+            .firstMatch.waitForExistence(timeout: 8)
         shot("lineage")
         openTab(app, "More", expectingNavBar: "More")
         _ = app.staticTexts["Accent"].waitForExistence(timeout: 8)
