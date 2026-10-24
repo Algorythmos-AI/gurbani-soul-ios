@@ -1395,7 +1395,8 @@ final class SGGSUITests: XCTestCase {
         let app = launchApp()
         openTab(app, "More", expectingNavBar: "More")
         let indigo = app.buttons["Indigo accent"]
-        if !indigo.waitForExistence(timeout: 8) { app.swipeUp() }
+        // scroll until the swatch is on screen (one swipe under- or over-shot on CI simulators)
+        for _ in 0..<5 where !(indigo.exists && indigo.isHittable) { app.swipeUp() }
         XCTAssertTrue(indigo.waitForExistence(timeout: 8))
         indigo.tap()
         XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label == %@ AND selected == 1", "Indigo accent"))
@@ -1404,8 +1405,10 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["More"].waitForExistence(timeout: 4))
         app.terminate(); app.launch()
         openTab(app, "More", expectingNavBar: "More")
-        if !app.buttons["Indigo accent"].waitForExistence(timeout: 8) { app.swipeUp() }
-        XCTAssertTrue(app.buttons["Indigo accent"].isSelected, "accent choice must persist")
+        let again = app.buttons["Indigo accent"]
+        for _ in 0..<5 where !(again.exists && again.isHittable) { app.swipeUp() }
+        XCTAssertTrue(again.waitForExistence(timeout: 8), "Indigo swatch missing after relaunch")
+        XCTAssertTrue(again.isSelected, "accent choice must persist")
         // restore the default for subsequent tests/captures
         app.buttons["Saffron accent"].tap()
     }
