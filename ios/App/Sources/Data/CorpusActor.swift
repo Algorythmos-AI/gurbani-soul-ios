@@ -55,6 +55,8 @@ actor CorpusActor {
     func raagAnalytics() throws -> [RaagStat] { try db.raagAnalytics() }
     /// Voices of the Granth (ribbon, places, entry points), computed from the verse lines.
     func voicesAtlas() -> VoicesAtlas? { (try? db.voicesAtlas()) ?? nil }
+    /// A random composition by one voice, at that voice's own first verse line in it.
+    func randomVerse(by author: String) -> VoiceEntry? { (try? db.randomVerse(by: author)) ?? nil }
     func themeNetwork(minPPMI: Double = 0.7, limit: Int = 40) throws -> [ThemeEdge] { try db.themeNetwork(minPPMI: minPPMI, limit: limit) }
     func constellation(concept: String, author: String? = nil, raag: String? = nil) throws -> ConstellationResult {
         try db.constellation(concept: concept, author: author, raag: raag)
@@ -77,6 +79,8 @@ actor CorpusActor {
     func progression(raag: String, bins: Int = 36, top: Int = 7) -> Progression? {
         db.progression(raag: raag, bins: bins, top: top)
     }
+    /// Verbatim echoes from one voice to another (line_neighbors), strongest first.
+    func versePairs(from a: String, to b: String, limit: Int = 3) -> [VersePair] { db.versePairs(from: a, to: b, limit: limit) }
     func vaars() -> [VaarSummary] { db.vaars() }
     func vaar(id: Int) -> VaarAnatomy { db.vaar(id: id) }
     /// The 22 Vaars' printed text (heading, saloks and pauris), built once and kept: ~9k lines,

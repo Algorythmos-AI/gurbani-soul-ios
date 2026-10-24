@@ -181,6 +181,8 @@ private struct NetworkCanvas: View {
 struct ResonanceSection: View {
     @Environment(AppContainer.self) private var container
     @State private var graph: ResonanceGraph?
+    @State private var echo: EchoItem?
+    struct EchoItem: Identifiable { let edge: ResonanceGraph.Edge; var id: String { edge.source + "→" + edge.target } }
 
     var body: some View {
         List {
@@ -192,18 +194,28 @@ struct ResonanceSection: View {
                 } footer: {
                     Text("How often a voice's lines land semantically nearest another voice's, relative to corpus share (lift). Descriptive, never a ranking of scripture.")
                 }
-                Section("Strongest resonances") {
+                Section {
                     ForEach(Array(graph.edges.prefix(20).enumerated()), id: \.offset) { _, e in
-                        HStack {
-                            Text("\(AuthorName(e.source).compact) → \(AuthorName(e.target).compact)")
-                                .font(.subheadline)
-                            Spacer()
-                            Text("lift \(e.lift, format: .number.precision(.fractionLength(2)))")
-                                .font(.caption).foregroundStyle(Theme.accent).monospacedDigit()
+                        Button { echo = EchoItem(edge: e) } label: {
+                            HStack {
+                                Text("\(AuthorName(e.source).compact) → \(AuthorName(e.target).compact)")
+                                    .font(.subheadline)
+                                Spacer()
+                                Text(EchoCopy.ratio(e.lift))
+                                    .font(.caption).foregroundStyle(Theme.accent).monospacedDigit()
+                                Image(systemName: "chevron.right").font(.caption2).foregroundStyle(.tertiary)
+                            }
+                            .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
                         .accessibilityElement(children: .combine)
-                        .accessibilityLabel("\(e.source) resonates with \(e.target), lift \(String(format: "%.2f", e.lift)), \(e.edges) nearest-neighbour links")
+                        .accessibilityLabel(EchoCopy.sentence(e))
+                        .accessibilityHint("Shows verses where the two voices echo each other")
                     }
+                } header: {
+                    Text("Echoes between voices")
+                } footer: {
+                    Text("Related wording, found by meaning — never a claim of influence or endorsement. Tap a pair to read the verses side by side.")
                 }
             } else if graph != nil {
                 ContentUnavailableView("Resonance data not in this build", systemImage: "circle.hexagonpath")
@@ -215,6 +227,89 @@ struct ResonanceSection: View {
             guard graph == nil, let corpus = container.corpus else { return }
             graph = await corpus.resonance()
         }
+        .sheet(item: $echo) { EchoPairsSheet(edge: $0.edge) }
+    }
+}
+
+/// Plain language for author_resonance.lift: how often voice A's verses find their closest
+/// wording in voice B's, relative to what B's share of the Granth alone would predict.
+enum EchoCopy {
+    static func ratio(_ lift: Double) -> String { String(format: "%.1f× expected", lift) }
+    static func sentence(_ e: ResonanceGraph.Edge) -> String {
+        "\(AuthorName(e.target).spoken)'s verses are the closest wording for \(AuthorName(e.source).spoken)'s "
+            + String(format: "%.1f", e.lift) + " times as often as their share of the Granth alone would predict"
+    }
+}
+
+/// Verses side by side where one voice echoes another — both verbatim, each cited by Ang and
+/// opening in the Reader. The score is shown as the Trail's calibrated band, never a raw %.
+struct EchoPairsSheet: View {
+    let edge: ResonanceGraph.Edge
+    @Environment(AppContainer.self) private var container
+    @Environment(\.dismiss) private var dismiss
+    @State private var pairs: [VersePair]?
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    VStack(alignment: .leading, spacing: Theme.Space.s) {
+                        AuthorNameLabel(name: AuthorName(edge.source))
+                        Image(systemName: "arrow.down").foregroundStyle(.tertiary).accessibilityHidden(true)
+                        AuthorNameLabel(name: AuthorName(edge.target))
+                        Text(EchoCopy.sentence(edge) + ".").font(.footnote).foregroundStyle(.secondary)
+                    }
+                }
+                .inkRow()
+                if let pairs, pairs.isEmpty {
+                    ContentUnavailableView("No verse pairs in this build", systemImage: "text.quote")
+                } else if let pairs {
+                    ForEach(pairs) { p in
+                        Section {
+                            verse(p.a, by: edge.source)
+                            HStack {
+                                let band = Theme.echoBand(p.score)
+                                Text(band.label).font(.caption2.weight(.semibold))
+                                    .padding(.horizontal, 8).padding(.vertical, 2)
+                                    .background(Capsule().fill(band.color.opacity(0.15)))
+                                    .foregroundStyle(band.color)
+                                    .accessibilityLabel("\(band.label) by meaning")
+                                Spacer()
+                            }
+                            verse(p.b, by: edge.target)
+                        }
+                        .inkRow()
+                    }
+                } else {
+                    ProgressView().frame(maxWidth: .infinity)
+                }
+            }
+            .inkGroupedList()
+            .navigationTitle("Echoes")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+        }
+        .task {
+            guard pairs == nil, let corpus = container.corpus else { pairs = []; return }
+            pairs = await corpus.versePairs(from: edge.source, to: edge.target, limit: 3)
+        }
+    }
+
+    private func verse(_ v: VersePair.Verse, by author: String) -> some View {
+        Button {
+            dismiss()
+            container.router.openAng(v.ang, lineId: v.id)
+        } label: {
+            VStack(alignment: .leading, spacing: 4) {
+                GurmukhiText(verbatim: v.gurmukhi, size: 20)
+                Text("\(AuthorName(author).english) · Sri Guru Granth Sahib Ji · Ang \(String(v.ang))")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityHint("Opens Ang \(String(v.ang)) in the Reader")
     }
 }
 

@@ -925,7 +925,7 @@ final class SGGSUITests: XCTestCase {
         app.buttons["insights_Network"].tap()
         XCTAssertTrue(app.staticTexts["Strongest pairs"].waitForExistence(timeout: 15), "network list missing")
         app.buttons["insights_Resonance"].tap()
-        XCTAssertTrue(app.staticTexts["Strongest resonances"].waitForExistence(timeout: 15), "resonance missing")
+        XCTAssertTrue(app.staticTexts["Echoes between voices"].waitForExistence(timeout: 15), "resonance missing")
         // Flow is the last pill in a horizontal row — on narrow widths it sits off-screen
         // (an off-screen XCUIElement has no hit point). Drag the row left first.
         // (`isHittable` itself throws for an off-screen element, so always drag — harmless

@@ -43,6 +43,52 @@ final class VoicesAtlasTests: XCTestCase {
         }
     }
 
+    func testRandomVerseIsByThatVoiceAtItsOwnFirstLine() throws {
+        let db = try source()
+        for s in try db.authorAnalytics().prefix(12) {
+            for _ in 0..<5 {
+                let v = try XCTUnwrap(try db.randomVerse(by: s.author), "\(s.author): no verse")
+                let page = try db.fetchAng(v.ang)
+                let line = try XCTUnwrap(page.lines.first(where: { $0.id == v.lineId }))
+                XCTAssertEqual(line.author, s.author, "random verse is by someone else")
+                XCTAssertFalse(line.isHeader)
+                XCTAssertEqual(line.compId, v.compId)
+                // nothing earlier in the same composition is by this voice
+                XCTAssertFalse(page.lines.contains { $0.compId == v.compId && $0.id < v.lineId
+                                                     && $0.author == s.author && !$0.isHeader })
+            }
+        }
+        XCTAssertNil(try db.randomVerse(by: "No Such Voice"))
+        // Ang 695: one composition id holds Trilochan, Sain, Pipa and Dhanna — Sain's entry
+        // must be Sain's own first line, not the composition's opening (Trilochan's).
+        if try db.authorAnalytics().contains(where: { $0.author == "Bhagat Sain Ji" }) {
+            let v = try XCTUnwrap(try db.randomVerse(by: "Bhagat Sain Ji"))
+            let line = try XCTUnwrap(try db.fetchAng(v.ang).lines.first(where: { $0.id == v.lineId }))
+            XCTAssertEqual(line.author, "Bhagat Sain Ji")
+        }
+    }
+
+    func testVersePairsAreVerbatimEchoesBetweenTheTwoVoices() throws {
+        let db = try source()
+        let graph = db.resonance()
+        let e = try XCTUnwrap(graph.edges.first, "no resonance edges in this build")
+        let pairs = db.versePairs(from: e.source, to: e.target, limit: 3)
+        XCTAssertFalse(pairs.isEmpty, "\(e.source) → \(e.target): resonance edge without a single verse pair")
+        XCTAssertLessThanOrEqual(pairs.count, 3)
+        XCTAssertEqual(pairs.map(\.score), pairs.map(\.score).sorted(by: >), "strongest first")
+        XCTAssertEqual(Set(pairs.map(\.a.id)).count, pairs.count, "one pair per verse of the source voice")
+        for p in pairs {
+            let la = try XCTUnwrap(try db.fetchAng(p.a.ang).lines.first(where: { $0.id == p.a.id }))
+            let lb = try XCTUnwrap(try db.fetchAng(p.b.ang).lines.first(where: { $0.id == p.b.id }))
+            XCTAssertEqual(la.author, e.source); XCTAssertEqual(lb.author, e.target)
+            XCTAssertEqual(la.gurmukhi, p.a.gurmukhi, "verse text must be the corpus text, verbatim")
+            XCTAssertEqual(lb.gurmukhi, p.b.gurmukhi)
+            XCTAssertFalse(la.isHeader || lb.isHeader)
+        }
+        XCTAssertTrue(db.versePairs(from: e.source, to: e.source).isEmpty)
+        XCTAssertTrue(db.versePairs(from: "No Such Voice", to: e.target).isEmpty)
+    }
+
     func testBucketsCoverTheGranthExactly() {
         XCTAssertEqual(VoicesAtlas.bucket(forAng: 1), 0)
         XCTAssertEqual(VoicesAtlas.bucket(forAng: 10), 0)

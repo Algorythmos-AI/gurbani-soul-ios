@@ -73,6 +73,32 @@ extension SQLiteCandidateSource {
     }
 
     /// serve.py:/api/analytics/resonance — nodes ≥ minLines, edges filtered to those nodes.
+    /// The strongest echoes from voice `a` to voice `b`: a's verse lines whose semantic nearest
+    /// neighbours (line_neighbors) are b's verse lines, best first, at most one pair per verse of
+    /// `a`. Empty when the voices never meet, on any step error, or for a == b.
+    public func versePairs(from a: String, to b: String, limit: Int = 3) -> [VersePair] {
+        guard a != b else { return [] }
+        let sql = "SELECT la.id, la.ang, la.gurmukhi, lb.id, lb.ang, lb.gurmukhi, max(n.score) AS s "
+            + "FROM lines la JOIN line_neighbors n ON n.line_id = la.id JOIN lines lb ON lb.id = n.neighbor_id "
+            + "WHERE la.author = ?1 AND lb.author = ?2 AND la.is_header = 0 AND lb.is_header = 0 "
+            + "GROUP BY la.id ORDER BY s DESC, la.id LIMIT ?3"
+        var st: OpaquePointer?
+        guard sqlite3_prepare_v2(handle, sql, -1, &st, nil) == SQLITE_OK else { return [] }
+        defer { sqlite3_finalize(st) }
+        sqlite3_bind_text(st, 1, a, -1, Self.transientDtor)
+        sqlite3_bind_text(st, 2, b, -1, Self.transientDtor)
+        sqlite3_bind_int(st, 3, Int32(clamping: max(1, min(limit, 20))))
+        var failed = false
+        var out: [VersePair] = []
+        while stepRow(st, failed: &failed) {
+            out.append(VersePair(
+                a: .init(id: aInt(st, 0) ?? 0, ang: aInt(st, 1) ?? 0, gurmukhi: aText(st, 2) ?? ""),
+                b: .init(id: aInt(st, 3) ?? 0, ang: aInt(st, 4) ?? 0, gurmukhi: aText(st, 5) ?? ""),
+                score: sqlite3_column_double(st, 6)))
+        }
+        return failed ? [] : out
+    }
+
     public func resonance(minLines: Int = 250, minLift: Double = 1.0, minEdges: Int = 8) -> ResonanceGraph {
         var failed = false   // a step error discards the partial result (see SQLiteStep)
         var nodes: [ResonanceGraph.Node] = []
