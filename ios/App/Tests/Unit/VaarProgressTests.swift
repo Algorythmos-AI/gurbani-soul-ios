@@ -1,4 +1,5 @@
 import XCTest
+import GurbaniSearchKit
 @testable import SGGS
 
 @MainActor
@@ -82,5 +83,44 @@ final class VaarReaderRowIdTests: XCTestCase {
         XCTAssertEqual(VaarReaderScreen.ang(fromRowId: mark), 1430)
         XCTAssertNil(VaarReaderScreen.ang(fromRowId: VaarReaderScreen.unitRowId(109)))
         XCTAssertNil(VaarReaderScreen.ang(fromRowId: 3302))
+    }
+}
+
+/// Where the Vaar reader opens (`VaarReaderScreen.landing`).
+final class VaarReaderLandingTests: XCTestCase {
+    /// heading 100–101 · salok 102 (label) 103–104 · salok 105 (label) 106 · pauri 107 (label) 108–109
+    private let t: VaarText = {
+        func l(_ id: Int, _ header: Bool = false) -> VaarLine { VaarLine(id: id, ang: 10, isHeader: header, gurmukhi: "ਤੁਕ") }
+        return VaarText(vaarId: 1, heading: [l(100, true), l(101, true)], dhuni: nil, units: [
+            VaarTextUnit(index: 0, kind: .salok, pauriNo: nil, label: l(102, true), author: nil, lines: [l(102, true), l(103), l(104)]),
+            VaarTextUnit(index: 1, kind: .salok, pauriNo: nil, label: l(105, true), author: nil, lines: [l(105, true), l(106)]),
+            VaarTextUnit(index: 2, kind: .pauri, pauriNo: 1, label: l(107, true), author: nil, lines: [l(107, true), l(108), l(109)]),
+        ])
+    }()
+    private func saved(_ line: Int, done: Bool = false) -> VaarPosition {
+        let t0 = Date(timeIntervalSince1970: 1_000)
+        return VaarPosition(lineId: line, pauriNo: 1, nPauris: 1, lastReadAt: t0, completedAt: done ? t0.addingTimeInterval(1) : nil)
+    }
+
+    func testPrecedenceExplicitThenSavedThenHeading() {
+        XCTAssertNil(VaarReaderScreen.landing(in: t, startLineId: nil, saved: nil, paurisOnly: false), "nothing → heading")
+        XCTAssertEqual(VaarReaderScreen.landing(in: t, startLineId: nil, saved: saved(106), paurisOnly: false), 106)
+        XCTAssertEqual(VaarReaderScreen.landing(in: t, startLineId: 108, saved: saved(106), paurisOnly: false), 108, "explicit wins")
+        XCTAssertEqual(VaarReaderScreen.landing(in: t, startLineId: 9_999, saved: saved(106), paurisOnly: false), 106,
+                       "a line outside the Vaar falls back to the saved position")
+        XCTAssertNil(VaarReaderScreen.landing(in: t, startLineId: nil, saved: saved(106, done: true), paurisOnly: false),
+                     "a finished Vaar opens at its heading")
+    }
+
+    func testLabelLinesLandOnTheirUnitRow() {
+        XCTAssertEqual(VaarReaderScreen.landing(in: t, startLineId: 105, saved: nil, paurisOnly: false),
+                       VaarReaderScreen.unitRowId(1))
+    }
+
+    func testPaurisOnlyLandsOnThePauriASalokLeadsInto() {
+        XCTAssertEqual(VaarReaderScreen.landing(in: t, startLineId: 103, saved: nil, paurisOnly: true),
+                       VaarReaderScreen.unitRowId(2))
+        XCTAssertEqual(VaarReaderScreen.landing(in: t, startLineId: 109, saved: nil, paurisOnly: true), 109,
+                       "a pauri line stays put")
     }
 }

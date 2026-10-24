@@ -300,6 +300,21 @@ struct VaarReaderScreen: View {
         Haptics.success()
     }
 
+    /// Where the reader opens: an explicit line, else the saved position (unless the Vaar was
+    /// finished since), else the heading (nil). A line outside this Vaar is ignored. In the
+    /// pauris-only view a salok line lands on the pauri it leads into; a label line lands on its
+    /// unit's row. Pure, so the precedence is unit-tested.
+    static func landing(in t: VaarText, startLineId: Int?, saved: VaarPosition?, paurisOnly: Bool) -> Int? {
+        let resumable = saved.flatMap { p in (p.completedAt.map { $0 < p.lastReadAt } ?? true) ? p.lineId : nil }
+        let wanted = [startLineId, resumable].compactMap { $0 }.first { t.unitIndex(containing: $0) != nil }
+        guard let want = wanted, let idx = t.unitIndex(containing: want) else { return nil }
+        let unit = t.units[idx]
+        if paurisOnly && unit.kind != .pauri {
+            return t.units[idx...].first { $0.kind == .pauri }.map { unitRowId($0.index) }
+        }
+        return unit.verse.contains { $0.id == want } ? want : unitRowId(unit.index)
+    }
+
     private func load() async {
         guard !loaded, let corpus = container.corpus else { return }
         onlyPauris = paurisOnly
@@ -308,19 +323,8 @@ struct VaarReaderScreen: View {
         summary = s; text = t; loaded = true
         if container.vaarOrder == nil { container.vaarOrder = await corpus.vaars().map(\.vaarId) }
         guard let t else { return }
-        // explicit start line > saved position > the heading
-        let saved = container.vaarProgress.position(for: vaarId)
-        let resumable = saved.flatMap { p in (p.completedAt.map { $0 < p.lastReadAt } ?? true) ? p.lineId : nil }
-        let want = startLineId ?? resumable
-        if let want, let idx = t.unitIndex(containing: want) {
-            let unit = t.units[idx]
-            if onlyPauris && unit.kind != .pauri {
-                let p = t.units[idx...].first { $0.kind == .pauri }
-                positionId = p.map { Self.unitRowId($0.index) }
-            } else {
-                positionId = unit.verse.contains { $0.id == want } ? want : Self.unitRowId(unit.index)
-            }
-        }
+        positionId = Self.landing(in: t, startLineId: startLineId,
+                                  saved: container.vaarProgress.position(for: vaarId), paurisOnly: onlyPauris)
         markProgrammatic()
         try? await Task.sleep(for: .milliseconds(400))   // let the landing settle before tracking
         landed = true
