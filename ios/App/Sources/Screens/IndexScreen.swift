@@ -26,6 +26,8 @@ struct IndexScreen: View {
     @State private var shapes: [String: CompositionShape] = [:]
     /// Find in Index.
     @State private var query = ""
+    /// `resumeKey` → whether that saved position resumes (filled by `checkResumable`).
+    @State private var resumable: [String: Bool] = [:]
 
     private let tabs: [(id: String, label: String)] =
         [("compositions", "Compositions"), ("raags", "Raags"), ("authors", "Voices")]
@@ -80,6 +82,7 @@ struct IndexScreen: View {
         // One load, in order; each step is a no-op once its data is in (re-appearing costs
         // nothing). The reading rings come from `container.nitnem`, which is @Observable, so they
         // refresh themselves when a composition reader writes a position.
+        .task(id: inProgress.map { resumeKey($0.id) }) { await checkResumable() }
         .task {
             await container.loadMeta()
             await loadRegistry()
@@ -252,15 +255,42 @@ struct IndexScreen: View {
 
     // MARK: continue
 
-    /// The composition the reader most recently left part-way through (not finished today),
-    /// among the ones this Index offers.
-    private var continueTarget: BaniSummary? {
-        let offered = CompositionCatalog.heroes.compactMap { CompositionCatalog.resolve($0, in: registry) }
+    /// The compositions this Index offers: the heroes as the registry names them, then the shelf.
+    private var offered: [BaniSummary] {
+        CompositionCatalog.heroes.compactMap { CompositionCatalog.resolve($0, in: registry) }
             + CompositionCatalog.more(from: registry)
-        return offered
-            .filter { !container.nitnem.isCompleted($0.id) && container.nitnem.fraction(for: $0.id, total: $0.nLines) > 0 }
-            .max { (container.nitnem.progress(for: $0.id)?.lastReadAt ?? .distantPast)
-                    < (container.nitnem.progress(for: $1.id)?.lastReadAt ?? .distantPast) }
+    }
+
+    private var inProgress: [BaniSummary] {
+        ContinueReading.inProgress(offered: offered, isCompleted: { container.nitnem.isCompleted($0) },
+                                   fraction: { container.nitnem.fraction(for: $0.id, total: $0.nLines) })
+    }
+
+    /// The composition the reader most recently left part-way through (not finished today) whose
+    /// saved position still resumes — see `ContinueReading`.
+    private var continueTarget: BaniSummary? {
+        ContinueReading.target(offered: offered, isCompleted: { container.nitnem.isCompleted($0) },
+                               fraction: { container.nitnem.fraction(for: $0.id, total: $0.nLines) },
+                               resumes: { resumable[resumeKey($0)] == true },
+                               lastReadAt: { container.nitnem.progress(for: $0)?.lastReadAt })
+    }
+
+    /// A composition's id with its saved position, so a new save re-checks resumability.
+    private func resumeKey(_ id: String) -> String {
+        "\(id)@\(container.nitnem.progress(for: id)?.lastSeq ?? 0)"
+    }
+
+    /// Whether each in-progress composition's saved position resumes against its current lines.
+    /// One bani read per newly saved position; nothing is read when nothing is in progress.
+    private func checkResumable() async {
+        guard let corpus = container.corpus else { return }
+        for b in inProgress where resumable[resumeKey(b.id)] == nil {
+            let key = resumeKey(b.id)
+            let variant = CompositionCatalog.heroes.first { CompositionCatalog.resolve($0, in: registry)?.id == b.id }?
+                .variant ?? b.variant
+            let lines = await corpus.bani(key: b.key, variant: variant)?.lines ?? []
+            resumable[key] = container.nitnem.resumeSeq(for: b.id, lines: lines) != nil
+        }
     }
 
     private func continueCard(_ b: BaniSummary) -> some View {
