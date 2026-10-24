@@ -31,7 +31,7 @@ final class VaarLinkTests: XCTestCase {
         let c = AppContainer(); let r = Router()
         r.handle(URL(string: "sggs://vaar/2")!, container: c)
         let before = r.explorePath
-        for bad in ["sggs://vaar/0", "sggs://vaar/23", "sggs://vaar/-1", "sggs://vaar/abc", "sggs://vaar/",
+        for bad in ["sggs://vaar/0", "sggs://vaar/23", "sggs://vaar/99", "sggs://vaar/-1", "sggs://vaar/abc", "sggs://vaar/",
                     "sggs://vaar/99999999999999999999", "sggs://vaar/%20"] {
             r.handle(URL(string: bad)!, container: c)
             XCTAssertEqual(r.explorePath, before, bad)
