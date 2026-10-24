@@ -73,7 +73,7 @@ enum BaniChoice: String, AppEnum {
 
 struct OpenVaarIntent: AppIntent {
     static let title: LocalizedStringResource = "Read a Vaar"
-    static let description = IntentDescription("Open one of the 22 Vaars of Sri Guru Granth Sahib Ji, woven by voice, or read it straight through.")
+    static let description = IntentDescription("Open a Vaar of Sri Guru Granth Sahib Ji, woven by voice, or read it straight through.")
     static let openAppWhenRun = true
 
     @Parameter(title: "Vaar", default: .asa) var vaar: VaarChoice
@@ -86,7 +86,7 @@ struct OpenVaarIntent: AppIntent {
     }
 }
 
-/// The 22 Vaars by `vaars.vaar_id` (Granth order). Names follow the Vaar's raag and pauri voice;
+/// The Vaars by `vaars.vaar_id` (Granth order). Names follow the Vaar's raag and pauri voice;
 /// pinned to the shipped DB by VaarLinkTests.
 enum VaarChoice: Int, AppEnum, CaseIterable {
     case sriRaag = 1, majh, gauriM4, gauriM5, asa, gujariM3, gujariM5, bihagara, vadhans, sorath, jaitsari,

@@ -36,9 +36,11 @@ final class VaarLinkTests: XCTestCase {
             r.handle(URL(string: bad)!, container: c)
             XCTAssertEqual(r.explorePath, before, bad)
         }
-        // an out-of-range pauri is dropped: the link still opens the weave, not a bogus reader
-        r.handle(URL(string: "sggs://vaar/19?pauri=500")!, container: c)
-        XCTAssertEqual(r.explorePath.count, 2)
+        // a malformed or out-of-range pauri is dropped: the link still opens the weave, not a bogus reader
+        for q in ["pauri=500", "pauri=abc", "pauri=", "pauri=-1", "pauri=0"] {
+            r.handle(URL(string: "sggs://vaar/19?\(q)")!, container: c)
+            XCTAssertEqual(r.explorePath.count, 2, q)
+        }
     }
 
     /// The Siri list names every Vaar the DB has, in its raag and pauri voice.
