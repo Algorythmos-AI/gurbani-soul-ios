@@ -82,6 +82,9 @@ actor CorpusActor {
     func timingRaag(name: String) -> RaagTiming { db.timingRaag(name: name) }
     func timingDivergence() -> TimingDivergence { db.timingDivergence() }
     func forms(compId: Int) -> ShabadForms { db.forms(compId: compId) }
+    /// The Index: one raag's page facts (nil = no such raag) and the named poetic forms.
+    func raagFacts(name: String) -> RaagFacts? { db.raagFacts(name: name) }
+    func poeticForms() -> [PoeticFormEntry] { db.poeticForms() }
 
     // Nitnem / Gutka registry (v1.2.0, ADR-0006) — pointers into the verbatim corpus plus a
     // separate labelled non-SGGS layer. Gated by `capabilities.hasBanis`.
