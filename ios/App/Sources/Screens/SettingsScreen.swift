@@ -61,14 +61,6 @@ struct MoreScreen: View {
                     Toggle("Show transliteration", isOn: $showTranslit)
                         .accessibilityIdentifier("translitToggle")
 
-                    if container.modelContainer != nil { Toggle(isOn: $yourThemes) {
-                        VStack(alignment: .leading) {
-                            Text("Show Your themes")
-                            Text("On the Themes page, the themes your saved verses carry. Worked out on this device; nothing leaves it.")
-                                .font(.caption).foregroundStyle(.secondary)
-                        }
-                    }
-                    .accessibilityIdentifier("yourThemesToggle") }
 
                     if container.corpus?.capabilities.hasEnglish == true {
                         Toggle(isOn: $showEnglish) {
@@ -133,6 +125,14 @@ struct MoreScreen: View {
                     // Insights & Constellation moved to the Explore tab (nav restructure)
                     if container.modelContainer != nil {
                         NavigationLink { SavedScreen() } label: { Label("Saved verses", systemImage: "bookmark") }
+                        Toggle(isOn: $yourThemes) {
+                            VStack(alignment: .leading) {
+                                Text("Show Your themes")
+                                Text("On the Themes page, the themes your saved verses carry. Worked out on this device; nothing leaves it.")
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }
+                        }
+                        .accessibilityIdentifier("yourThemesToggle")
                     } else {
                         // SavedScreen's @Query fatal-errors without a model container in the
                         // environment — when even the in-memory fallback failed, show why
