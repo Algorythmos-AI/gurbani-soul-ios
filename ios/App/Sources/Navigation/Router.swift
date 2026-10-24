@@ -25,6 +25,8 @@ enum Route: Hashable {
     case theme(String)
     /// Every verse of a theme, optionally narrowed (a word form, refrains, a voice/raag, Angs).
     case themeVerses(String, ThemeFilter)
+    /// The reader's own saved verses that carry a theme (Your themes).
+    case yourTheme(String)
     /// A bani from the Nitnem registry, by its stable key (variant is a user setting).
     case bani(String)
     /// The same registry bani read as a standalone composition from Explore → Index. Carries the
@@ -227,10 +229,21 @@ final class Router {
                 container.dismissSheetForNavigation()
                 openRaag(value)
             }
+        case "themes":
+            container.dismissSheetForNavigation()
+            selectedTab = .explore
+            explorePath = NavigationPath([Route.themes])
         case "theme":
             // sggs://theme/<slug>[?term=<Gurmukhi word>&rahao=1]: the theme page, or its verse list
             // when narrowed. A malformed slug is ignored, never queried.
-            if let slug = ConstellationLink.slug(value) {
+            // a well-formed name that is not one of the themes (a Siri phrase like "mercy") opens
+            // the index rather than a not-found page
+            if let slug = ConstellationLink.slug(value),
+               container.meta.map({ $0.concepts.contains { $0.concept == slug } }) == false {
+                container.dismissSheetForNavigation()
+                selectedTab = .explore
+                explorePath = NavigationPath([Route.themes])
+            } else if let slug = ConstellationLink.slug(value) {
                 let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
                 let term = items.first(where: { $0.name == "term" })?.value
                     .map { $0.trimmingCharacters(in: .whitespaces) }

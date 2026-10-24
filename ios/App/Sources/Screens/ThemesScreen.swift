@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 import GurbaniSearchKit
 
 /// The Themes index: the 54 corpus themes as a living index — today's theme and the themes of
@@ -21,6 +22,8 @@ struct ThemesScreen: View {
     /// Families whose header has scrolled under the bar; the last of them is the current chip.
     /// Updated only when a header crosses the line, never on every scroll frame.
     @State private var passed: Set<String> = []
+    @AppStorage(YourThemes.enabledKey) private var yoursOn = true
+    @State private var yours: YourThemes.Summary?
     @AppStorage("sggs_themes_arrange") private var arrangeRaw = ThemeIndexModel.Arrangement.family.rawValue
     @AppStorage("sggs_themes_layout") private var layoutRaw = ThemeCardView.Style.grid.rawValue
 
@@ -65,6 +68,9 @@ struct ThemesScreen: View {
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in refreshDay() }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in refreshDay() }
         .onChange(of: scenePhase) { _, phase in if phase == .active { refreshDay() } }
+        // saved verses change elsewhere (a Save in a shabad sheet, on any screen): recount on every
+        // return here and whenever a sheet closes; a newer run cancels the older one
+        .task(id: YoursKey(on: yoursOn, sheetOpen: container.presentation != nil)) { await loadYours() }
     }
 
     // MARK: the index
@@ -74,6 +80,7 @@ struct ThemesScreen: View {
             .font(.caption).foregroundStyle(Ink.muted)
             .fixedSize(horizontal: false, vertical: true)
         if let today { TodayHero(today: today) }
+        if yoursOn, let yours { YourThemesCard(summary: yours) { Task { await loadYours() } } }
         switch arrangement {
         case .family:
             ForEach(ThemeIndexModel.grouped(rows), id: \.group?.key) { section in
@@ -139,6 +146,12 @@ struct ThemesScreen: View {
             ThemeCardView(row: r, style: typeSize.isAccessibilitySize ? .grid : style)
         }
         .buttonStyle(.pressableCard)
+        .contextMenu {
+            Button {
+                container.router.openConstellation(ConstellationLink(theme: r.concept, with: nil, alone: false))
+            } label: { Label("Open in the Constellation", systemImage: "sparkles") }
+            ShareLink(item: ThemeShare.text(r)) { Label("Share", systemImage: "square.and.arrow.up") }
+        }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(ThemeIndexModel.accessibilitySummary(r))
         .accessibilityAddTraits(.isButton)
@@ -214,6 +227,29 @@ struct ThemesScreen: View {
 
     // MARK: data
 
+    private func loadYours() async {
+        // only from the app's own saved store: with no store at all (even the in-memory fallback
+        // failed) there is nothing to read, and the default context must never be fetched
+        guard yoursOn, let corpus = container.corpus, let store = container.modelContainer else { yours = nil; return }
+        let saved: [YourThemes.Verse]
+        do {
+            saved = try store.mainContext.fetch(FetchDescriptor<SavedLine>()).map {
+                YourThemes.Verse(lineId: $0.lineId, compId: $0.compId, ang: $0.ang, gurmukhi: $0.gurmukhi, translit: $0.translit)
+            }
+        } catch { yours = .unavailable(savedCount: 0); return }
+        guard let rows = try? await corpus.themeIndex() else { yours = .unavailable(savedCount: saved.count); return }
+        var members: [String: Set<Int>] = [:]
+        if saved.count >= YourThemes.minimumSaved {
+            // a failed lookup must not read as "none of your saved verses carries a theme"
+            do { members = try await corpus.themeMembers(lineIds: saved.map(\.lineId)) }
+            catch is CancellationError { return }
+            catch { yours = .unavailable(savedCount: saved.count); return }
+        }
+        guard !Task.isCancelled, yoursOn else { return }
+        yours = YourThemes.summarize(saved: saved, members: members, themes: rows,
+                                     day: HukamOfTheDay.dayNumber(of: Date(), calendar: .current))
+    }
+
     private func load() async {
         guard let corpus = container.corpus else { state = .failed("No database"); return }
         if case .loaded = state {} else { state = .loading }
@@ -243,6 +279,8 @@ struct ThemesScreen: View {
         today = ThemesToday(day: asked, theme: theme, hukam: hukam, row: rows.first { $0.concept == theme.concept })
     }
 }
+
+private struct YoursKey: Hashable { let on: Bool; let sheetOpen: Bool }
 
 struct ThemesToday: Equatable {
     /// The local day number (`HukamOfTheDay.dayNumber`) this hero was drawn for.
@@ -332,5 +370,17 @@ private struct TodayHero: View {
         .padding(Theme.Space.l)
         .background(Ink.card, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
         .overlay(RoundedRectangle(cornerRadius: Theme.Radius.card).strokeBorder(Ink.hairline))
+    }
+}
+
+/// The words a theme is shared with: its name, headword, counts and citation — no verse text, so
+/// nothing of the scripture is ever paraphrased or cut.
+enum ThemeShare {
+    static func text(_ r: ThemeIndexRow) -> String {
+        var head = ConceptName.display(r.concept)
+        if let w = r.headword { head += " · \(w)" }
+        let gloss = ThemeIndexModel.gloss(r.description)
+        return [head, gloss, "\(r.nVerses.formatted()) verses in \(r.nShabads.formatted()) shabads of Sri Guru Granth Sahib Ji",
+                "Gurbani Soul · gurbanisoul.com"].filter { !$0.isEmpty }.joined(separator: "\n")
     }
 }

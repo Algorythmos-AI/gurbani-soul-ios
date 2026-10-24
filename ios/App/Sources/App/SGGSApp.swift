@@ -59,6 +59,7 @@ struct SGGSApp: App {
                 await container.loadMeta()
                 await container.refreshWidgetSnapshot()
                 await container.refreshReminders()
+                await container.indexThemesForSpotlight()   // once per build, after launch settles
             }
             .onOpenURL { url in container.router.handle(url, container: container) }
             .onChange(of: scenePhase) { _, phase in
@@ -78,10 +79,13 @@ struct SGGSApp: App {
                 Task { await container.refreshReminders() }
             }
             .onContinueUserActivity(CSSearchableItemActionType) { activity in
-                // a saved verse tapped in system search → open its composition
-                if let id = activity.userInfo?[CSSearchableItemActivityIdentifier] as? String,
-                   let compId = SpotlightIndex.compId(fromIdentifier: id) {
+                // a saved verse tapped in system search → open its composition; a theme → its page
+                guard let id = activity.userInfo?[CSSearchableItemActivityIdentifier] as? String else { return }
+                if let compId = SpotlightIndex.compId(fromIdentifier: id) {
                     container.present(.shabad(compId: compId, focusLineId: SpotlightIndex.lineId(fromIdentifier: id)))
+                } else if let slug = SpotlightIndex.themeSlug(fromIdentifier: id), let url = URL(string: "sggs://theme/\(slug)") {
+                    container.dismissSheetForNavigation()
+                    container.router.handle(url, container: container)
                 }
             }
         }

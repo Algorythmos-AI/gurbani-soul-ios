@@ -36,6 +36,8 @@ struct PrivacyPolicyScreen: View {
 
             policy("What stays on your device", [
                 "Saved verses are stored in the app's own database, and added to your device's Spotlight index so you can find them from Home Screen search; unsaving removes them.",
+                "The 54 theme names (with their Gurmukhi words and verse counts — nothing about you) are also added to Spotlight, so a theme can be opened from Home Screen search.",
+                "\u{201C}Your themes\u{201D} on the Themes page is worked out on your device from your saved verses; it is never sent anywhere, and can be turned off in Settings.",
                 "Settings (accent, transliteration, traditional rendering, last Ang read) are stored in the app's local preferences.",
                 "Nitnem progress, your own sets and your reading journey are stored in the app's App Group container so the Nitnem widget can show them.",
                 "Reminders are optional local notifications, scheduled on your device at times you choose. No push service is used and no device token is created.",

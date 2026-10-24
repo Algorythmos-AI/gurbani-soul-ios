@@ -151,6 +151,24 @@ struct OpenConstellationIntent: AppIntent {
     }
 }
 
+struct OpenThemeIntent: AppIntent {
+    static let title: LocalizedStringResource = "Open a theme"
+    static let description = IntentDescription("Open a theme's page: its Gurmukhi words, its Rahao lines, and every verse that carries it.")
+    static let openAppWhenRun = true
+
+    @Parameter(title: "Theme", description: "A theme such as Sahaj, Naam or Bhana.") var theme: String?
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        let key = (theme ?? "").trimmingCharacters(in: .whitespaces).replacingOccurrences(of: " ", with: "_")
+        // an unknown or malformed name opens the Themes index rather than querying it
+        guard let url = ConstellationLink.slug(key).flatMap({ URL(string: "sggs://theme/\($0)") }) ?? URL(string: "sggs://themes")
+        else { return .result() }
+        await UIApplication.shared.open(url)
+        return .result()
+    }
+}
+
 struct SGGSShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(intent: TodaysHukamIntent(),
@@ -179,5 +197,8 @@ struct SGGSShortcuts: AppShortcutsProvider {
                     phrases: ["Show the constellation in \(.applicationName)",
                               "Explore themes in \(.applicationName)"],
                     shortTitle: "Constellation", systemImageName: "sparkle.magnifyingglass")
+        AppShortcut(intent: OpenThemeIntent(),
+                    phrases: ["Open a theme in \(.applicationName)"],
+                    shortTitle: "Open a theme", systemImageName: "square.grid.2x2")
     }
 }

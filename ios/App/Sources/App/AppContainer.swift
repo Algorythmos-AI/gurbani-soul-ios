@@ -275,12 +275,29 @@ final class AppContainer {
     func retryIntegrity() async {
         integrity = nil
         await runIntegrity()
+        Task { await indexThemesForSpotlight() }   // a recovered check indexes as launch would have (never holds the retry)
     }
 
     /// Number of Vaars in the bundled DB (Explore caption; nil until loaded).
     var vaarCount: Int?
     /// Number of voices in the bundled roster (Explore caption).
     let contributorCount: Int? = ContributorsStore.load()?.count
+
+    /// The 54 themes into system search, after the integrity check passes (never from a DB that
+    /// failed it). Failure is silent: Spotlight is a convenience, never a dependency.
+    ///
+    /// It never competes with the first screen: the index scan shares the corpus actor with the
+    /// Reader, so it runs only once per app build (the bundled DB only changes with a build) and
+    /// only after launch has settled.
+    func indexThemesForSpotlight() async {
+        guard let corpus, integrity?.ok == true, !DebugHooks.isUITest else { return }
+        let build = SpotlightIndex.themesIndexStamp(bundle: .main)
+        guard UserDefaults.standard.string(forKey: SpotlightIndex.themesIndexedKey) != build else { return }
+        try? await Task.sleep(for: .seconds(8))
+        guard !Task.isCancelled, let rows = try? await corpus.themeIndex() else { return }
+        SpotlightIndex.indexThemes(rows)
+        UserDefaults.standard.set(build, forKey: SpotlightIndex.themesIndexedKey)
+    }
 
     func loadMeta() async {
         guard meta == nil, let corpus else { return }

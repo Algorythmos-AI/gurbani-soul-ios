@@ -249,6 +249,10 @@ final class ThemePageTests: XCTestCase {
             XCTAssertEqual([t.n], truth, t.concept)
         }
         XCTAssertEqual(tally.map(\.n), tally.map(\.n).sorted(by: >))
+        let members = try db.themeMembers(lineIds: naam)
+        XCTAssertEqual(members["naam"], Set(naam))
+        for (c, ids) in members { XCTAssertTrue(ids.isSubset(of: Set(naam)), "\(c): an id that was not asked for") }
+        XCTAssertEqual(Dictionary(uniqueKeysWithValues: tally.map { ($0.concept, $0.n) }), members.mapValues(\.count))
     }
 
     // MARK: the theme page

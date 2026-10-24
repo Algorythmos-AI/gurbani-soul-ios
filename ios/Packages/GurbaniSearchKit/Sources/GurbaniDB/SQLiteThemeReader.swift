@@ -179,20 +179,25 @@ extension SQLiteCandidateSource {
         return line.map { ThemeOfTheDay(concept: concept, line: $0) }
     }
 
-    /// How many of the given verses carry each theme, most first (ties by slug). Ids are bound in
+    /// Which of the given verses carry each theme (theme → those verse ids). Ids are bound in
     /// chunks (SQLite caps host parameters); unknown ids simply match nothing.
-    public func themeTally(lineIds: [Int]) throws -> [ThemeTally] {
+    public func themeMembers(lineIds: [Int]) throws -> [String: Set<Int>] {
         let ids = Array(Set(lineIds)).sorted()
-        var tally: [String: Int] = [:]
+        var out: [String: Set<Int>] = [:]
         var start = 0
         while start < ids.count {
             let chunk = Array(ids[start..<min(start + 500, ids.count)])
             start += chunk.count
             let marks = Array(repeating: "?", count: chunk.count).joined(separator: ",")
-            try query("SELECT concept, COUNT(DISTINCT line_id) FROM concept_lines WHERE line_id IN (\(marks)) GROUP BY concept",
-                      chunk.map { .int($0) }) { s in tally[cText(s, 0) ?? "", default: 0] += cInt(s, 1) }
+            try query("SELECT DISTINCT concept, line_id FROM concept_lines WHERE line_id IN (\(marks))",
+                      chunk.map { .int($0) }) { s in out[cText(s, 0) ?? "", default: []].insert(cInt(s, 1)) }
         }
-        return tally.map { ThemeTally(concept: $0.key, n: $0.value) }
+        return out
+    }
+
+    /// How many of the given verses carry each theme, most first (ties by slug).
+    public func themeTally(lineIds: [Int]) throws -> [ThemeTally] {
+        try themeMembers(lineIds: lineIds).map { ThemeTally(concept: $0.key, n: $0.value.count) }
             .sorted { $0.n != $1.n ? $0.n > $1.n : $0.concept < $1.concept }
     }
 }
