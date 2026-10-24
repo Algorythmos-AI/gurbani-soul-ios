@@ -1325,8 +1325,12 @@ final class SGGSUITests: XCTestCase {
     func testThemePageWordFamilyNarrowsEverything() {
         let app = launchApp(selectSearch: false)
         openThemes(app)
+        // reach the card by search, not by scrolling (the index grows above it: Today, Your themes)
+        let field = app.searchFields.firstMatch
+        XCTAssertTrue(field.waitForExistence(timeout: 12), "no search field")
+        field.tap()
+        field.typeText("sahaj")
         let sahaj = app.buttons["theme_sahaj"].firstMatch
-        for _ in 0..<8 where !(sahaj.exists && sahaj.isHittable) { app.swipeUp() }
         XCTAssertTrue(sahaj.waitForExistence(timeout: 12), "Sahaj card missing")
         sahaj.tap()
         XCTAssertTrue(app.navigationBars["Sahaj"].waitForExistence(timeout: 12))
