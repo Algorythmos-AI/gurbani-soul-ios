@@ -976,8 +976,13 @@ final class SGGSUITests: XCTestCase {
         // the first node actually on screen (a lazy list keeps some nodes above the viewport)
         let nodes = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'vaar.unit.'"))
         XCTAssertTrue(nodes.firstMatch.waitForExistence(timeout: 5))
-        let pauri = nodes.allElementsBoundByIndex.first { $0.isHittable } ?? nodes.firstMatch
+        // middle of the screen: clear of the nav bar above and the floating tab bar below
+        let window = app.windows.firstMatch.frame
+        let band = (window.minY + window.height * 0.25)...(window.minY + window.height * 0.65)
+        let pauri = nodes.allElementsBoundByIndex.first { $0.isHittable && band.contains($0.frame.midY) }
+            ?? nodes.allElementsBoundByIndex.first { $0.isHittable } ?? nodes.firstMatch
         pauri.tap()
+        if !app.buttons["vaar.readFromHere"].waitForExistence(timeout: 4) { pauri.tap() }   // one retry
         XCTAssertTrue(app.buttons["vaar.readFromHere"].waitForExistence(timeout: 8), "unit sheet missing")
         shot("vaar_unit_sheet")
         app.buttons["Done"].firstMatch.tap()
