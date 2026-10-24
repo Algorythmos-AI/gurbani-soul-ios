@@ -54,8 +54,11 @@ final class VaarsHomeTests: XCTestCase {
         XCTAssertEqual(VaarFilter(key: "garbage"), .all)
         let s = [VaarSummary(vaarId: 1, raag: nil, roman: nil, firstAng: 83, lastAng: 91, nPauris: 21, nSaloks: 43,
                              pauriAuthor: "Guru Ram Das Ji (M4)", salokAuthors: [], crossAuthor: true, title: nil)]
-        let avail = VaarFilter.available(in: s, texts: [1: text([unit(0, .pauri, lines: 2, author: nil, pauri: 1)])])
+        let long = text((0..<21).map { unit($0, .pauri, lines: 2, author: nil, pauri: $0 + 1) })
+        let avail = VaarFilter.available(in: s, texts: [1: long])
         XCTAssertEqual(avail, [.all, .voice("Guru Ram Das Ji (M4)")], "no ਧੁਨੀ and nothing short → those chips hide")
+        let short = VaarFilter.available(in: s, texts: [1: text([unit(0, .pauri, lines: 2, author: nil, pauri: 1)], dhuni: true)])
+        XCTAssertEqual(short, [.all, .voice("Guru Ram Das Ji (M4)"), .dhuni, .short])
         XCTAssertEqual(VaarFilter.voice("Guru Ram Das Ji (M4)").title, "M4")
     }
 
