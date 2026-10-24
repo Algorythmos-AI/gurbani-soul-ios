@@ -17,6 +17,21 @@ struct LineageScreen: View {
     @State private var groupMode = "time"                      // time | kind | volume (web parity)
     /// The card → voice page zoom (iOS 18+).
     @Namespace private var voiceZoom
+    @State private var lens: Lens = .roll
+    @State private var signatureRaags: [SignatureRaag] = []
+    @State private var dialogueSpan: DialogueSpan?
+    @State private var voiceOfTheDay: VoiceOfTheDay?
+
+    /// How the voices are laid out: the card list (Roll) or one timeline (River).
+    enum Lens: String, CaseIterable, Identifiable {
+        case roll = "Roll", river = "River"
+        var id: String { rawValue }
+    }
+
+    struct VoiceOfTheDay: Equatable {
+        let contributor: Contributor
+        let verse: VoiceVerse
+    }
     @State private var compareMode = false
     @State private var comparePicks: [Contributor] = []
     @State private var comparePair: ComparePair?
@@ -45,14 +60,30 @@ struct LineageScreen: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: Theme.Space.l) {
                         hero(contributors)
+                        if let voiceOfTheDay { voiceOfTheDayCard(voiceOfTheDay) }
+                        didYouKnow
+                        Picker("Lens", selection: $lens) {
+                            ForEach(Lens.allCases) { Text($0.rawValue).tag($0) }
+                        }
+                        .pickerStyle(.segmented)
+                        .accessibilityIdentifier("lineageLens")
                         controls
-                        ForEach(bands(contributors), id: \.title) { band in
-                            bandView(band.title, band.members)
+                        switch lens {
+                        case .roll:
+                            ForEach(bands(contributors), id: \.title) { band in
+                                bandView(band.title, band.members)
+                            }
+                        case .river:
+                            // River taps follow the same rule as cards: in compare mode they pick.
+                            VoiceRiverView(voices: contributors.filter { kindFilter == "all" || $0.kind == kindFilter }) { c in
+                                select(c)
+                            }
                         }
                     }
                     .padding(Theme.Space.l)
                     .appAnimation(Motion.gentle, value: groupMode)
                     .appAnimation(Motion.gentle, value: kindFilter)
+                    .appAnimation(Motion.gentle, value: lens)
                 }
                 .background(Ink.canvas)
                 .contentMargins(.bottom, Theme.Space.xl, for: .scrollContent)
@@ -84,6 +115,11 @@ struct LineageScreen: View {
         .sheet(item: $comparePair) { pair in
             CompareVoicesSheet(a: pair.a, b: pair.b, summaryA: summaries[pair.a.name], summaryB: summaries[pair.b.name])
         }
+        // The Voice of the day turns over at the reader's midnight even if Lineage stays open.
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in refreshVoiceOfTheDay() }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+            refreshVoiceOfTheDay()
+        }
         .task {
             if contributors == nil { contributors = ContributorsStore.load() }
             if summaries.isEmpty, let corpus = container.corpus {
@@ -95,6 +131,9 @@ struct LineageScreen: View {
                     contributors = roster + list.filter { !known.contains($0.author) }
                         .map { Contributor(placeholderFor: $0.author) }
                 }
+                signatureRaags = await corpus.signatureRaags()
+                dialogueSpan = await corpus.dialogueSpan()
+                voiceOfTheDay = await pickVoiceOfTheDay(corpus)
             }
         }
     }
@@ -113,6 +152,8 @@ struct LineageScreen: View {
             // With the bundled roster this renders "30 voices · 12th–17th century" —
             // the exact header string testLineageAndVaars asserts.
             Text("\(String(list.count)) voices · \(span) century").font(.headline)
+            Text("Every verse here is verbatim and cited by Ang.")
+                .font(.caption).foregroundStyle(.secondary)
             Text("Five centuries of voices gathered into one Granth — the Gurus, the Bhagats of the Bhakti and Sufi traditions, the court Bhatts, and the Gursikh companions. Tap any voice for their page"
                  + (compareMode ? " — compare mode: pick two." : "; ⇄ compares two."))
                 .font(.caption).foregroundStyle(.secondary)
@@ -152,15 +193,113 @@ struct LineageScreen: View {
                     }
                 }
             }
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: Theme.Space.s) {
-                    ForEach(Self.groupModes, id: \.id) { g in
-                        ModePill(title: g.label, isSelected: groupMode == g.id) { groupMode = g.id }
+            if lens == .roll {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: Theme.Space.s) {
+                        ForEach(Self.groupModes, id: \.id) { g in
+                            ModePill(title: g.label, isSelected: groupMode == g.id) { groupMode = g.id }
+                        }
                     }
                 }
             }
         }
     }
+
+    private func open(_ c: Contributor) {
+        container.router.explorePath.append(VoiceLink(name: c.name))
+    }
+
+    /// A tap on a voice (card or River lifespan): picks it in compare mode, else opens it.
+    private func select(_ c: Contributor) {
+        guard compareMode else { return open(c) }
+        if comparePicks.contains(c) { comparePicks.removeAll { $0 == c }; return }
+        comparePicks.append(c)
+        if comparePicks.count == 2 {
+            comparePair = ComparePair(a: comparePicks[0], b: comparePicks[1])
+            compareMode = false
+            comparePicks = []
+        }
+    }
+
+    // MARK: voice of the day — one voice and one of its rahao verses, the same all day
+
+    private func refreshVoiceOfTheDay() {
+        guard let corpus = container.corpus else { return }
+        Task { voiceOfTheDay = await pickVoiceOfTheDay(corpus) }
+    }
+
+    private func pickVoiceOfTheDay(_ corpus: CorpusActor) async -> VoiceOfTheDay? {
+        let candidates = (contributors ?? []).filter { summaries[$0.name] != nil }.sorted { $0.name < $1.name }
+        let day = HukamOfTheDay.dayNumber(of: Date())
+        guard let i = VoiceOfTheDayPick.voiceIndex(day: day, count: candidates.count) else { return nil }
+        let c = candidates[i]
+        let deck = await corpus.authorRahao(c.name)
+        let fallback = deck.verses.isEmpty ? await corpus.authorCompositions(c.name).first.map {
+            VoiceVerse(id: $0.firstLineId, ang: $0.ang, compId: $0.compId, gurmukhi: $0.opening)
+        } : nil
+        return VoiceOfTheDayPick.verse(day: day, voiceCount: candidates.count, rahao: deck.verses, fallback: fallback)
+            .map { VoiceOfTheDay(contributor: c, verse: $0) }
+    }
+
+    private func voiceOfTheDayCard(_ v: VoiceOfTheDay) -> some View {
+        Button { open(v.contributor) } label: {
+            VStack(alignment: .leading, spacing: Theme.Space.s) {
+                SectionEyebrow(text: "Voice of the day")
+                HStack(spacing: Theme.Space.s) {
+                    VoiceMedallionView(contributor: v.contributor, diameter: 32)
+                    Text(v.contributor.displayName).font(.headline)
+                }
+                GurmukhiText(verbatim: v.verse.gurmukhi, size: 22)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text("Ang \(v.verse.ang)").font(.caption).foregroundStyle(.secondary)
+            }
+            .padding(Theme.Space.l)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Ink.card, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
+            .overlay(RoundedRectangle(cornerRadius: Theme.Radius.card).strokeBorder(Ink.hairline))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.pressableCard)
+        .accessibilityElement(children: .combine)
+        .accessibilityHint("Opens their page")
+        .accessibilityIdentifier("voiceOfTheDay")
+    }
+
+    // MARK: did you know — only facts computed from the DB, each cited by Ang
+
+    @ViewBuilder private var didYouKnow: some View {
+        let bhatts = summaries.values.filter { $0.author.hasPrefix("Bhatt ") }
+        let facts = LineageFacts.build(signatureRaags: signatureRaags, dialogue: dialogueSpan,
+                                       bhatts: bhatts, name: displayName)
+        if !facts.isEmpty {
+            VStack(alignment: .leading, spacing: Theme.Space.s) {
+                SectionEyebrow(text: "Did you know")
+                ForEach(facts, id: \.id) { f in
+                    Button { if let c = f.author.flatMap(voice) { open(c) } } label: {
+                        HStack(alignment: .top, spacing: Theme.Space.s) {
+                            if let g = f.gurmukhi { GurmukhiText(verbatim: g, size: 20) }
+                            Text(f.text).font(.callout)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            if f.author != nil {
+                                Image(systemName: "chevron.right").font(.caption2).foregroundStyle(.tertiary)
+                            }
+                        }
+                        .padding(Theme.Space.m)
+                        .background(Ink.card, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
+                        .overlay(RoundedRectangle(cornerRadius: Theme.Radius.card).strokeBorder(Ink.hairline))
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(f.author == nil)
+                    .accessibilityElement(children: .combine)
+                }
+            }
+        }
+    }
+
+    private func voice(_ author: String) -> Contributor? { contributors?.first { $0.name == author } }
+    private func displayName(_ author: String) -> String { voice(author)?.displayName ?? AuthorName(author).english }
+
 
     // MARK: bands (time / kind / volume)
 
@@ -216,21 +355,7 @@ struct LineageScreen: View {
         let summary = summaries[c.name]
         let picked = comparePicks.contains(c)
         let k = c.kindColor
-        return Button {
-            if compareMode {
-                if picked { comparePicks.removeAll { $0 == c } }
-                else {
-                    comparePicks.append(c)
-                    if comparePicks.count == 2 {
-                        comparePair = ComparePair(a: comparePicks[0], b: comparePicks[1])
-                        compareMode = false
-                        comparePicks = []
-                    }
-                }
-            } else {
-                container.router.explorePath.append(VoiceLink(name: c.name))
-            }
-        } label: {
+        return Button { select(c) } label: {
             HStack(alignment: .top, spacing: Theme.Space.s) {
                 // year column
                 Text(c.timelineYear == 9999 ? "—" : (c.circa ? "c. " : "") + String(c.timelineYear))
