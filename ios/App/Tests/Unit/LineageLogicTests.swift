@@ -107,4 +107,22 @@ final class LineageLogicTests: XCTestCase {
         XCTAssertEqual(VoiceRiverView.milestones.first { $0.year == 1706 }?.label, "c. 1705–06")
         XCTAssertEqual(VoiceRiverView.shownMilestones.isEmpty, !EditorialGate.aboutCopy)
     }
+
+    // MARK: Compare
+
+    @MainActor
+    func testCompareOverlapAndSharedAngs() throws {
+        let v = try voices()
+        let m1 = v[0], jaidev = v[1], beni = v[2]
+        XCTAssertNil(CompareVoicesSheet.overlap(m1, jaidev), "disjoint lifetimes")
+        XCTAssertNil(CompareVoicesSheet.overlap(m1, beni), "no dates, no overlap claimed")
+        XCTAssertEqual(CompareVoicesSheet.overlap(m1, m1), 1469...1539)
+        XCTAssertEqual(CompareVoicesSheet.overlapDuration(1500...1500), "about a year")
+        XCTAssertEqual(CompareVoicesSheet.overlapDuration(1500...1501), "about a year")
+        XCTAssertEqual(CompareVoicesSheet.overlapDuration(1469...1504), "about 35 years")
+        XCTAssertEqual(CompareVoicesSheet.sharedAngs(AngSet([1, 2, 1430]), AngSet([2, 3, 1430])), 2)
+        XCTAssertEqual(CompareVoicesSheet.sharedAngs(AngSet([1]), AngSet([2])), 0)
+        XCTAssertEqual(CompareVoicesSheet.liftText(nil), "—", "a missing theme is not a measured zero")
+        XCTAssertEqual(CompareVoicesSheet.liftText(1.63), "1.6×")
+    }
 }
