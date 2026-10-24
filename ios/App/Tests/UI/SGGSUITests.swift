@@ -381,7 +381,10 @@ final class SGGSUITests: XCTestCase {
         var swipes = 0
         while !link.waitForExistence(timeout: 2) && swipes < 8 { app.swipeUp(); swipes += 1 }
         XCTAssertTrue(link.waitForExistence(timeout: 12), "Privacy Policy link missing in More")
-        XCTAssertTrue(app.buttons["supportLink"].firstMatch.exists, "Support link missing in More")
+        // a SwiftUI Link is not reported as a Button on every iOS version (iOS 27 devices): match the
+        // identifier on any element type, as the online-policy link below already does
+        XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "supportLink").firstMatch.exists,
+                      "Support link missing in More")
         link.tap()
         XCTAssertTrue(app.navigationBars["Privacy Policy"].waitForExistence(timeout: 8), "Privacy Policy screen did not open")
         // the policy is a lazy List too: its "Data Not Collected" paragraph is below the fold
@@ -865,7 +868,15 @@ final class SGGSUITests: XCTestCase {
         from.press(forDuration: 0.05, thenDragTo: app.buttons["mode_auto"].firstMatch)
         let verifyPill = app.buttons["mode_verify"].firstMatch
         XCTAssertTrue(verifyPill.waitForExistence(timeout: 10))
+        // The pill row is wider than the screen: a pill half under the edge has no valid hit point,
+        // and a tap there does nothing (seen on an iPhone 17 Pro Max, iOS 27). Scroll it fully in.
+        var nudges = 0
+        while !verifyPill.isHittable && nudges < 4 { from.swipeLeft(); nudges += 1 }
         verifyPill.tap()
+        let selected = NSPredicate(format: "isSelected == true")
+        if XCTWaiter().wait(for: [expectation(for: selected, evaluatedWith: verifyPill)], timeout: 3) != .completed {
+            verifyPill.tap()   // one more tap if the first landed during the scroll's deceleration
+        }
         let verified = app.descendants(matching: .any)
             .matching(NSPredicate(format: "label CONTAINS[c] %@", "verified")).firstMatch
         XCTAssertTrue(verified.waitForExistence(timeout: 20), "verdict not shown")
@@ -1488,7 +1499,12 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(fields.element(boundBy: 0).waitForExistence(timeout: 8), "manual location sheet missing")
         fields.element(boundBy: 0).tap(); fields.element(boundBy: 0).typeText("31.63")
         fields.element(boundBy: 1).tap(); fields.element(boundBy: 1).typeText("74.87")
-        app.buttons["Use these coordinates"].firstMatch.tap()
+        let use = app.buttons["Use these coordinates"].firstMatch
+        XCTAssertTrue(use.waitForExistence(timeout: 5)); use.tap()
+        // On a device the first tap after typing can be consumed while the field is still first
+        // responder (iOS 27, iPhone 17 Pro Max): the sheet stays up with both values filled in.
+        if !use.waitForNonExistence(timeout: 3) { use.tap() }
+        XCTAssertTrue(use.waitForNonExistence(timeout: 5), "the manual location sheet did not close")
 
         XCTAssertTrue(forget.waitForExistence(timeout: 10), "a stored location offers Forget location")
         captureIfRequested(app, "clock_forget_location")
