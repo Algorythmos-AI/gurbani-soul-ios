@@ -63,6 +63,9 @@ both directions.
   `ios/Packages/GurbaniSearchKit/Sources/CSQLite/PROVENANCE.md`).
 - **Bani ordering and Sri Dasam Granth / Ardaas text** — via the ShabadOS open database
   (release 4.8.7). Scholar review recorded in `ios/Resources/NITNEM-REVIEW.md`.
+- **Coastline of the subcontinent** (Voices map, `ios/App/Sources/Data/SouthAsiaLand.swift`) —
+  Natural Earth 1:50m land, public domain, via the `world-atlas` 2.0.2 TopoJSON (ISC licence,
+  © Mike Bostock); clipped and simplified at build time, coastline only.
 
 ## Code
 Copyright Algorythmos Pty Ltd. All rights reserved unless separately licensed.
