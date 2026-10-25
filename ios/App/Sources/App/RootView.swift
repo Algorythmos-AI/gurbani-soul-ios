@@ -53,7 +53,12 @@ struct RootView: View {
                     ExploreScreen().tabItem { Label("Explore", systemImage: "square.grid.2x2") }.tag(Tab.explore)
                     MoreScreen().tabItem { Label("More", systemImage: "ellipsis") }.tag(Tab.more)
                 }
-                .onAppear { container.sheetHostDidAppear() }
+                .onAppear {
+                    #if DEBUG
+                    LaunchClock.mark(.tabsShown)
+                    #endif
+                    container.sheetHostDidAppear()
+                }
                 .onDisappear { container.sheetHostDidDisappear() }
                 .sheet(item: $c.presentation, onDismiss: { container.flushPendingPresentation() }) { p in
                     switch p {
@@ -87,6 +92,9 @@ struct RootView: View {
                 }
             }
         }
+        #if DEBUG
+        .onAppear { LaunchClock.mark(.rootShown) }
+        #endif
         .tint(palette.accent)
         .environment(\.palette, palette)
         .preferredColorScheme(appearance == "light" ? .light : appearance == "dark" ? .dark : nil)

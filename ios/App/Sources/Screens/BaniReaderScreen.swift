@@ -319,7 +319,8 @@ struct BaniReaderScreen: View {
                 if viewport > 0 { chrome.viewportHeight = viewport }
                 if let change = chrome.scrolled(to: y) { MotionGate.run(Motion.gentle) { chromeHidden = change } }
             },
-            onContentHeight: { h in chrome.contentHeight = h }))
+            onContentHeight: { h in chrome.contentHeight = h },
+            onUserScrolling: { chrome.userScrolling = $0 }))
         .contentMargins(.bottom, Theme.Space.xl, for: .scrollContent)
         .overlay(alignment: .top) {
             GeometryReader { g in
@@ -711,6 +712,9 @@ struct BaniReaderScreen: View {
         .appAnimation(Motion.gentle, value: chromeHidden)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("baniPageBar")
+        // hidden is gone, for assistive tech and UI tests alike: an invisible control that still
+        // reports itself is one a test taps through to the verse beneath
+        .accessibilityHidden(chromeHidden)
     }
 
     /// Live Activity progress inputs (a whole-percent bar; never a verse).

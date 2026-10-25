@@ -69,6 +69,49 @@ D4, D7, D8, D9 and the D5 widget half, plus D1 with a printed Bir.
 
 ## Follow-ups
 
-- Time the launch inside the app (a signpost written when Nitnem first draws) so that D10 does not
-  depend on XCTest timing over a tunnel.
-- Investigate the warm launch that held the launch screen for about 4 s.
+- Done after 1.4.9: D10 now reads the launch time from the app itself (below).
+- Done after 1.4.9: the warm launch that held the launch screen for about 4 s (below).
+
+## After 1.4.9: D10 measured inside the app
+
+`LaunchClock` (Debug builds only) records a timeline in seconds from the moment the kernel created
+the process: `appInit` (the first app code), `containerReady`, `rootShown` (RootView's first
+frame, where the launch screen hands over), `integrityStart`, `integrityHashed`, `integrityDone`,
+`tabsShown` and `nitnemDrawn`. Each mark is also a Points of Interest signpost for Instruments.
+With `SGGS_UITEST_LAUNCH_METRICS=1`, which D10 sets, the Nitnem screen carries the timeline as the
+value of an invisible `launchMetrics` element. D10 asserts `nitnemDrawn` < 5 s for the cold and
+the warm launch, checks that the cold launch re-hashed and the warm one used the fingerprint, and
+records XCTest's own clock beside it without judging it. The process start comes after XCTest
+has spawned the app, so the spawn overhead is left out. Any wait for XCTest inside the process
+still counts, and a late `appInit` shows it. None of this is in a release build:
+`ios/tools/check_no_test_hooks.sh` lists `SGGS_UITEST_LAUNCH_METRICS`, `LaunchClock`,
+`launchMetrics` and `nitnemDrawn`, passes on a Release bundle and fails on a Debug one.
+
+## After 1.4.9: the warm launch that held the launch screen for 4 s
+
+The screen recordings of runs `d10b1` and `d10b2`, read every 0.25 s, against each run's xcresult
+timeline:
+
+| Launch | ੴ on screen | XCTest "Setting up automation session" |
+|---|---|---|
+| d10b1 warm | about 1.25 s | 0.77 s |
+| d10b2 warm | about 4.0 s | 2.77 s |
+
+- The ੴ shown for those 4 s was the system launch screen. RootView's own verifying state adds a
+  spinner and "Verifying scripture integrity…" under the logo, and no frame shows them. So the
+  app had not drawn its first frame. The integrity check, which runs only after that frame, did
+  not hold the launch, and neither did its structural queries on the corpus actor.
+- In both warm runs the Nitnem screen appeared about 0.1–0.2 s after XCTest finished setting up
+  its automation session, and the hold grew with that setup (0.77 s → about 1.25 s, 2.77 s → about
+  4.0 s). XCTest connects to the app as it starts; over the Wi-Fi tunnel that took 2.8 s in
+  `d10b2`. The two move together, which points to the first frame waiting on that connection; an
+  install that XCTest did not launch would have no such wait. This is inferred from two runs, not
+  yet measured inside the app.
+- The app's own launch path has nothing that blocks for seconds. Before the first frame it opens
+  the corpus (SQLite, read-only), opens the bookmarks store, and asks Spotlight to reconcile, which
+  is asynchronous. A warm launch uses the cached fingerprint, so no hash runs. After the first
+  frame, the three structural checks (Ang 1, one FTS query, one verify) are the only work on the
+  corpus actor until Nitnem mounts.
+- The next device run shows where any long hold goes. If `appInit` is late, the time went before
+  the first app code (dyld and XCTest's injected bootstrap). If the gap from `rootShown` to
+  `tabsShown` is long, it was the integrity check.

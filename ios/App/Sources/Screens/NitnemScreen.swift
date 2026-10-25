@@ -35,6 +35,9 @@ struct NitnemScreen: View {
             }
             .background(Ink.canvas.ignoresSafeArea())
             .navigationTitle("Nitnem")
+            #if DEBUG
+            .overlay(alignment: .topLeading) { LaunchMetricsProbe() }
+            #endif
             .navigationDestination(for: Route.self) { route in RouteDestination(route: route) }
         }
         .task { await load() }
