@@ -1,10 +1,10 @@
 {
   "repository": "Algorythmos-AI/sggs-data",
-  "commit": "bc5b0f0c2614fa8a800f32983825acd0f08b025a",
-  "dataset_version": "1.0.0",
+  "commit": "f818b3aa79a92e2bda61d9f332df2b6c4e8809ae",
+  "dataset_version": "1.1.0",
   "database": {
     "path": "db/sggs.sqlite",
-    "sha256": "cb6775ff309fbba57e64088efaa33503c50caab1e79983ace7081a888688818b",
-    "size": 108417024
+    "sha256": "e90eab8918cf80d0b126b2f8759273b413a86e5fa6b893b876b85460085ec6e0",
+    "size": 108601344
   }
 }
