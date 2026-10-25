@@ -15,4 +15,8 @@ enum DebugHooks {
 
     /// True only in a Debug build launched by the XCUITest runner.
     static var isUITest: Bool { environment["SGGS_UITEST"] == "1" }
+
+    /// Pins the Explore hub's Feature (an `ExploreDestination` raw value, e.g. "vaars") so tests and
+    /// captures do not depend on the date.
+    static var exploreFeature: String? { environment["SGGS_EXPLORE_FEATURE"] }
 }

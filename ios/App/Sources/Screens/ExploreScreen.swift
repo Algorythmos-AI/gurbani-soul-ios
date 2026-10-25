@@ -1,101 +1,81 @@
 import SwiftUI
+import GurbaniSearchKit
 
-/// The Explore hub: one place for the browse/insight surfaces (web-navbar parity without
-/// burying them under settings). Owns the Explore tab's NavigationStack; every destination
-/// below is stack-less and pushed via `Route`. New surfaces (Lineage, Vaars, Raag Clock
-/// detail…) get a card + a Route case here — that's the whole checklist for adding one.
+/// The Explore hub, "The Granth Today": one place for the browse/insight surfaces. A dated
+/// masthead, today's Feature (turning over by the Hukam's day key), then every other destination
+/// as a card that previews the screen it opens. Owns the Explore tab's NavigationStack; every
+/// destination is stack-less and pushed via `Route`. A new surface gets an `ExploreDestination`
+/// case + a Route case here — that's the whole checklist for adding one.
 struct ExploreScreen: View {
     @Environment(AppContainer.self) private var container
-    @Environment(\.palette) private var palette
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    /// The Index's own last-read Ang; nil until the reader has opened one (no marker then).
+    @AppStorage("sggs_last_ang") private var lastAng: Int?
+    /// Today, refreshed at the reader's midnight so the Feature turns over with the Hukam.
+    @State private var today = Date()
 
-    private struct Entry: Identifiable {
-        let route: Route
-        let title: String
-        let caption: String
-        let icon: String
-        var id: String { title }
+    /// The bundled roster, read once (it never changes at runtime).
+    private static let roster: [Contributor]? = ContributorsStore.load()
+    private static let rosterIndex: [String: Contributor] =
+        Dictionary((roster ?? []).map { ($0.name, $0) }, uniquingKeysWith: { a, _ in a })
+
+    private var digest: ExploreDigest {
+        let current = container.vaarProgress.current()
+        return ExploreDigest(meta: container.meta, vaars: container.vaars, roster: Self.roster, lastAng: lastAng,
+                             continueVaar: current.map { ($0.vaarId, container.vaarProgress.fraction(for: $0.vaarId)) })
     }
 
-    /// Captions with counts are derived from the bundled data (never a hard-coded fact that a
-    /// DB-profile or roster change could silently falsify); the wording holds while loading.
-    private var entries: [Entry] {
-        let concepts = container.meta.map { "\(String($0.concepts.count)) concepts" } ?? "Every concept"
-        let voices = container.contributorCount.map { "\(String($0)) voices" } ?? "Every voice"
-        let vaars = container.vaarCount.map { "\(String($0)) ballads" } ?? "The ballads"
-        return [
-            .init(route: .index, title: "Index",
-                  caption: "Raags, sections & authors — jump anywhere", icon: "list.bullet"),
-            .init(route: .themes, title: "Themes",
-                  caption: "\(concepts), every tagged verse", icon: "circle.grid.2x2"),
-            .init(route: .lineage, title: "Lineage",
-                  caption: "\(voices) across five centuries", icon: "person.2"),
-            .init(route: .insights, title: "Insights",
-                  caption: "Contributors, network, resonance & flow", icon: "chart.bar.xaxis"),
-            .init(route: .constellation, title: "Constellation",
-                  caption: "Which other themes a theme's verses carry", icon: "circle.hexagongrid"),
-            .init(route: .vaars, title: "Vaars",
-                  caption: "\(vaars) — their voices, woven", icon: "list.number"),
-            .init(route: .clock, title: "Raag Clock",
-                  caption: "Which raags are sung in this watch", icon: "clock"),
-        ]
+    private var columns: Int {
+        if dynamicTypeSize.isAccessibilitySize { return 1 }
+        return horizontalSizeClass == .regular ? 3 : 2
+    }
+
+    /// Today's Feature. A DEBUG/XCUITest pin (`SGGS_EXPLORE_FEATURE`) wins; under the UI tests
+    /// with no pin the page is held on the Index so layout never depends on the test's date.
+    private var featured: ExploreDestination? {
+        let eligible = ExploreLayout.eligible(vaarsAvailable: container.vaars.map { !$0.isEmpty } ?? true)
+        var pinned = DebugHooks.exploreFeature.flatMap(ExploreDestination.init(rawValue:))
+        if pinned == nil, DebugHooks.isUITest { pinned = .index }
+        return ExploreLayout.feature(day: HukamOfTheDay.dayNumber(of: today), eligible: eligible, pinned: pinned)
     }
 
     var body: some View {
         @Bindable var router = container.router
+        let digest = digest
+        let featured = featured
+        let rows = ExploreLayout.pack(ExploreDestination.allCases.filter { $0 != featured }, columns: columns)
         NavigationStack(path: $router.explorePath) {
             ScrollView {
-                VStack(spacing: Theme.Space.l) {
-                    // Hero: the one gradient moment on this screen (restraint elsewhere).
-                    VStack(alignment: .leading, spacing: Theme.Space.xs) {
-                        Text("ੴ")
-                            .font(Brand.gurmukhi(30, relativeTo: .title))
-                            .accessibilityHidden(true)
-                        Text("Explore the Granth").font(Brand.heading(.title3))
-                        Text("Index, themes, voices, patterns, time — seven ways into 1,430 Angs.")
-                            .font(.caption).opacity(0.9)
+                // Non-lazy on purpose: every card exists in the tree, so the UI tests find a card
+                // below the fold (a lazy row would not be built until scrolled to).
+                VStack(alignment: .leading, spacing: Theme.Space.l) {
+                    ExploreMasthead(date: today, line: digest.mastheadLine)
+                    if let featured {
+                        ExploreCard(destination: featured, form: .feature, digest: digest, roster: Self.rosterIndex)
                     }
-                    .foregroundStyle(palette.onAccent)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(Theme.Space.l)
-                    .background(palette.heroGradient, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
-                    .accessibilityElement(children: .combine)
-
-                    let columns = dynamicTypeSize.isAccessibilitySize
-                        ? [GridItem(.flexible())]
-                        : [GridItem(.flexible(), spacing: Theme.Space.m), GridItem(.flexible())]
-                    LazyVGrid(columns: columns, spacing: Theme.Space.m) {
-                        ForEach(entries) { e in
-                            NavigationLink(value: e.route) {
-                                Card {
-                                    VStack(alignment: .leading, spacing: Theme.Space.s) {
-                                        Image(systemName: e.icon)
-                                            .font(.title2)
-                                            .foregroundStyle(palette.accent)
-                                        Text(e.title).font(.headline).foregroundStyle(.primary)
-                                        Text(e.caption)
-                                            .font(.caption).foregroundStyle(Ink.muted)
-                                            .multilineTextAlignment(.leading)
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                    }
-                                }
+                    ForEach(rows, id: \.first?.id) { row in
+                        ExploreSpanRow(columns: columns, spans: row.map(\.span)) {
+                            ForEach(row) { cell in
+                                ExploreCard(destination: cell.destination,
+                                            form: cell.span >= 2 || columns == 1 ? .wide : .square,
+                                            digest: digest, roster: Self.rosterIndex)
                             }
-                            .buttonStyle(.pressableCard)
-                            .accessibilityElement(children: .combine)
-                            .accessibilityLabel(e.title)
-                            .accessibilityHint(e.caption)
-                            .accessibilityIdentifier(e.title)
                         }
                     }
                 }
                 .padding(Theme.Space.l)
-                .frame(maxWidth: 720)                 // regular width: cards stay card-sized
+                .frame(maxWidth: horizontalSizeClass == .regular ? 1040 : 720)   // regular width: cards stay card-sized
                 .frame(maxWidth: .infinity)
             }
             .background(Ink.canvas)
             .contentMargins(.bottom, Theme.Space.xl, for: .scrollContent)
             .navigationTitle("Explore")
-            .task { await container.loadMeta() }   // captions + Index/Themes need meta
+            .task { await container.loadMeta() }   // previews + Index/Themes need meta
+            .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in today = Date() }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+                today = Date()
+            }
             .navigationDestination(for: Route.self) { route in RouteDestination(route: route) }
         }
     }

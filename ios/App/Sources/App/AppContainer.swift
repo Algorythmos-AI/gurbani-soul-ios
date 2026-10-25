@@ -278,8 +278,9 @@ final class AppContainer {
         Task { await indexThemesForSpotlight() }   // a recovered check indexes as launch would have (never holds the retry)
     }
 
-    /// Number of Vaars in the bundled DB (Explore caption; nil until loaded).
-    var vaarCount: Int?
+    /// The Vaars in the bundled DB (Explore's Vaars card; nil until loaded). A small precomputed
+    /// table — never the ~9k-line `vaarTexts()` build.
+    var vaars: [VaarSummary]?
     /// Number of voices in the bundled roster (Explore caption).
     let contributorCount: Int? = ContributorsStore.load()?.count
 
@@ -302,7 +303,7 @@ final class AppContainer {
     func loadMeta() async {
         guard meta == nil, let corpus else { return }
         meta = try? await corpus.meta()
-        vaarCount = await corpus.vaars().count
+        vaars = await corpus.vaars()
     }
 
     /// Refresh the <50 KB widget snapshot (App Group JSON): the Hukam of the day for today and
