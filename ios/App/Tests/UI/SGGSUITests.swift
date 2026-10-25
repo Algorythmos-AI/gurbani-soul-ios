@@ -1031,11 +1031,11 @@ final class SGGSUITests: XCTestCase {
         app.navigationBars.buttons.element(boundBy: 0).tap()   // back to Lineage
         // compare two voices
         app.buttons["compareVoices"].tap()
-        farid.tap()
-        // Jaidev sits in the same top century group as Farid (List rows are lazy — a
-        // far-scrolled voice wouldn't exist in the hierarchy yet)
+        // Each pick starts from the top of the lazy list, so neither depends on where Back left
+        // the scroll position, nor on whether Jaidev (c. 1170) sorts above or below Farid (1173).
+        XCTAssertTrue(pickCard(app, farid), "compare: Farid card missing")
         let jaidev = app.buttons["voiceCard_bhagat-jaidev-ji"].firstMatch
-        XCTAssertTrue(jaidev.waitForExistence(timeout: 8)); jaidev.tap()
+        XCTAssertTrue(pickCard(app, jaidev), "compare: Jaidev card missing")
         XCTAssertTrue(app.staticTexts["ACROSS THE GRANTH"].waitForExistence(timeout: 12),
                       "compare sheet missing")
         XCTAssertTrue(app.staticTexts["THEME EMPHASIS"].waitForExistence(timeout: 12), "diverging theme bars missing")
@@ -1160,19 +1160,7 @@ final class SGGSUITests: XCTestCase {
         guard scrollToCard(app, card) else {
             XCTFail("voice card missing", file: file, line: line); return false
         }
-        let window = app.windows.firstMatch.frame
-        var lastMid = CGFloat.nan
-        for _ in 0..<8 {
-            let mid = card.frame.midY
-            // In the middle band, or the list cannot move it further (its end): stop, so the tap
-            // never follows an overscroll bounce.
-            if mid > window.height * 0.3 && mid < window.height * 0.6 { break }
-            if abs(mid - lastMid) < 2 { break }
-            lastMid = mid
-            let from = app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.55))
-            let dy = (window.height * 0.45 - mid) / window.height
-            from.press(forDuration: 0.05, thenDragTo: from.withOffset(CGVector(dx: 0, dy: max(-0.35, min(0.35, dy)) * window.height)))
-        }
+        centerCard(app, card)
         let page = app.descendants(matching: .any)["voicePage"].firstMatch
         for _ in 0..<2 {
             card.tap()
@@ -1180,6 +1168,39 @@ final class SGGSUITests: XCTestCase {
         }
         XCTFail("voice page did not open", file: file, line: line)
         return false
+    }
+
+    /// Drags `card` into the middle band of the window (clear of the floating tab bar and the
+    /// navigation bar) so a tap lands on it. Stops when the list cannot move it further (its end),
+    /// so the tap never follows an overscroll bounce.
+    private func centerCard(_ app: XCUIApplication, _ card: XCUIElement) {
+        let window = app.windows.firstMatch.frame
+        var lastMid = CGFloat.nan
+        for _ in 0..<8 {
+            let mid = card.frame.midY
+            if mid > window.height * 0.3 && mid < window.height * 0.6 { break }
+            if abs(mid - lastMid) < 2 { break }
+            lastMid = mid
+            let from = app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.55))
+            let dy = (window.height * 0.45 - mid) / window.height
+            from.press(forDuration: 0.05, thenDragTo: from.withOffset(CGVector(dx: 0, dy: max(-0.35, min(0.35, dy)) * window.height)))
+        }
+    }
+
+    /// Picks `card` in Lineage's compare mode, wherever the list is scrolled. `scrollToCard` only
+    /// drags downward, so a card that is ABOVE the viewport (two neighbours like Jaidev and Farid,
+    /// whose order depends on the grouping, after Back from a voice page) would never be found.
+    /// This always starts from the top (the "N voices" header), then scrolls down to the card,
+    /// centres it and taps it once (a second tap would un-pick it).
+    @discardableResult
+    private func pickCard(_ app: XCUIApplication, _ card: XCUIElement) -> Bool {
+        let header = app.staticTexts.matching(NSPredicate(format: "label MATCHES %@", "[0-9]+ voices · 12th–17th century")).firstMatch
+        for _ in 0..<10 where !(header.exists && header.isHittable) { app.swipeDown() }
+        guard scrollToCard(app, card) else { return false }
+        centerCard(app, card)
+        guard card.isHittable else { return false }
+        card.tap()
+        return true
     }
 
     /// Lineage is a lazy list: a card below the fold does not exist until scrolled to. Waits until
