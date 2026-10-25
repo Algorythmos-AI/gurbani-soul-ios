@@ -58,12 +58,36 @@ final class VaarTextTests: XCTestCase {
             XCTAssertTrue(t.titleLines.allSatisfy { !VaarStructure.isInvocation($0.gurmukhi) }, "vaar \(id)")
             XCTAssertTrue(t.titleLines.contains { $0.gurmukhi.contains("ਵਾਰ") }, "vaar \(id): title has no ਵਾਰ")
         }
-        // the four the vaars table mis-titles with the invocation
+        // the four the vaars table titled with the invocation before dataset 1.2.0
         let texts = db.vaarTexts()
         XCTAssertEqual(texts[1]?.titleLines.map(\.id), [3300])
         XCTAssertEqual(texts[5]?.titleLines.map(\.id), [20884, 20885])
         XCTAssertEqual(texts[12]?.titleLines.map(\.id), [33503])
         XCTAssertEqual(texts[14]?.titleLines.map(\.id), [40604, 40605])
+        // Ramkali M3's heading is its own composition (the ਧੁਨੀ is not flagged as a header)
+        XCTAssertEqual(texts[14]?.heading.map(\.id), [40603, 40604, 40605])
+        for v in db.vaars() {
+            let title = try XCTUnwrap(v.title, "vaar \(v.vaarId): vaars.title")
+            XCTAssertFalse(VaarStructure.isInvocation(title), "vaar \(v.vaarId): vaars.title is the invocation")
+            XCTAssertTrue(title.contains("ਵਾਰ"), "vaar \(v.vaarId): vaars.title has no ਵਾਰ")
+        }
+    }
+
+    /// Dataset 1.2.0 reads `vaars` / `vaar_units` from the print as well: the tables and the text
+    /// built here must agree unit for unit, or one of the two has moved a boundary.
+    func testVaarTablesAgreeWithThePrint() throws {
+        let db = try source()
+        let texts = db.vaarTexts()
+        for v in db.vaars() {
+            let t = try XCTUnwrap(texts[v.vaarId], "vaar \(v.vaarId)")
+            XCTAssertEqual(v.nPauris, t.nPauris, "vaar \(v.vaarId) vaars.n_pauris")
+            XCTAssertEqual(v.nSaloks, t.nSaloks, "vaar \(v.vaarId) vaars.n_saloks")
+            let rows = db.vaar(id: v.vaarId).units
+            XCTAssertEqual(rows.map(\.kind), t.units.map(\.kind.rawValue), "vaar \(v.vaarId) unit kinds")
+            XCTAssertEqual(rows.map(\.firstLineId), t.units.map { $0.firstVerse?.id ?? -1 }, "vaar \(v.vaarId) unit starts")
+            XCTAssertEqual(rows.map(\.nLines), t.units.map(\.verse.count), "vaar \(v.vaarId) unit lengths")
+            XCTAssertEqual(rows.map(\.pauriNo), t.units.map(\.pauriNo), "vaar \(v.vaarId) pauri numbers")
+        }
     }
 
     func testExactlyNineDhunis() throws {

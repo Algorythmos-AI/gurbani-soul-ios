@@ -5,11 +5,13 @@ import Foundation
 /// corpus lines — the structure is READ from the print (the ਸਲੋਕ / ਮਃ / ਪਉੜੀ label lines and the
 /// ॥N॥ pauri numbers), never re-typed, and every string is the corpus `gurmukhi` unchanged.
 ///
-/// Why not `vaar_units`: on the shipped DB that table carries a phantom salok (Ramkali M3's
-/// ਧੁਨੀ rubric), misses the 17 inner ਡਖਣੇ saloks of Maru M5, and lets the last unit of several
-/// Vaars run into the bani that follows. `vaar_units` still supplies what the print leaves
-/// implicit (a salok whose label names no author, the kind of an unlabelled unit), and
-/// `build` refuses (nil) whenever the print and the pauri numbering disagree.
+/// Why not `vaar_units` alone: before dataset 1.2.0 that table carried a phantom salok (Ramkali
+/// M3's ਧੁਨੀ rubric), missed the 17 inner ਡਖਣੇ saloks of Maru M5, and let the last unit of several
+/// Vaars run into the bani that follows. 1.2.0 reads the table from the print too, and
+/// `VaarTextTests` proves the two agree unit for unit; the print stays the source here. `vaar_units`
+/// still supplies what the print leaves implicit (a salok whose label names no author, the kind
+/// of an unlabelled unit), and `build` refuses (nil) whenever the print and the pauri numbering
+/// disagree.
 public struct VaarText: Sendable, Equatable {
     public let vaarId: Int
     /// The printed heading run: invocation, title line(s) and any ਧੁਨੀ rubric, in order.
