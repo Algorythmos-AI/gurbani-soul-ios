@@ -12,7 +12,14 @@ final class DeviceChecklistTests: XCTestCase {
         }
     }
 
-    override func tearDown() { XCUIApplication().terminate() }
+    override func tearDown() {
+        // Housekeeping only: the row's verdict is already recorded. Over a Wi-Fi tunnel on iOS 27
+        // terminate() timed out after D2 and D6 had passed every step (2026-10-25); that must
+        // not fail the row. The next launch() terminates any leftover instance anyway.
+        XCTExpectFailure("terminate() can time out over a Wi-Fi tunnel", strict: false) {
+            XCUIApplication().terminate()
+        }
+    }
 
     /// End of the class: one ordinary launch hands the device's real data back (UITestVault).
     override class func tearDown() {
@@ -244,12 +251,18 @@ final class DeviceChecklistTests: XCTestCase {
     /// after an install or an update) reaches the app in under 5 s, and a warm relaunch is faster.
     /// Measured on this device only; the oldest supported device is a separate, manual run.
     func testD10ColdAndWarmLaunchTimes() {
+        // Start each clock with the app not running: otherwise launch() first terminates a
+        // leftover instance, and over a Wi-Fi tunnel that alone took 7.4 s (2026-10-25).
+        let leftover = XCUIApplication()
+        leftover.terminate()
+        XCTAssertTrue(leftover.wait(for: .notRunning, timeout: 30), "a leftover instance would not quit")
         let coldStart = Date()
         var app = launch(environment: ["SGGS_UITEST_COLD_VERIFY": "1"])
         XCTAssertTrue(app.navigationBars["Nitnem"].waitForExistence(timeout: 30), "cold launch never reached the app")
         let cold = Date().timeIntervalSince(coldStart)
         evidence(app, "D10 after a cold launch")
         app.terminate()
+        XCTAssertTrue(app.wait(for: .notRunning, timeout: 30), "the app would not quit before the warm launch")
         let warmStart = Date()
         app = launch(relaunch: true)
         XCTAssertTrue(app.navigationBars["Nitnem"].waitForExistence(timeout: 30), "warm launch never reached the app")
