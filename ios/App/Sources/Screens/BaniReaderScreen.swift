@@ -86,6 +86,14 @@ struct BaniReaderScreen: View {
                 chrome.autoScrolling = running
                 if running { MotionGate.run(Motion.gentle) { chromeHidden = true } } else { showChrome() }
             }
+            // the bar is hidden from assistive tech while it is hidden, so it must come back the
+            // moment VoiceOver or Switch Control turns on, not at the next scroll
+            .onReceive(NotificationCenter.default.publisher(for: UIAccessibility.voiceOverStatusDidChangeNotification)) { _ in
+                if UIAccessibility.isVoiceOverRunning { showChrome() }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIAccessibility.switchControlStatusDidChangeNotification)) { _ in
+                if UIAccessibility.isSwitchControlRunning { showChrome() }
+            }
             .onChange(of: container.router.pendingBaniSeq) { _, seq in
                 if let seq { container.router.pendingBaniSeq = nil; jump(toSeq: seq) }
             }

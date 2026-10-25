@@ -20,7 +20,7 @@ enum LaunchClock {
         case integrityHashed    // the streaming hash, or the cached fingerprint, is settled
         case integrityDone      // the structural checks have run
         case tabsShown          // the TabView mounted
-        case nitnemDrawn        // the Nitnem screen appeared
+        case nitnemDrawn        // the Nitnem home appeared with its banis loaded (not the skeleton)
     }
 
     /// Set by D10 only: the Nitnem screen then carries the timeline as an accessibility value.
@@ -65,7 +65,7 @@ enum LaunchClock {
     }
 }
 
-/// An invisible element on the Nitnem screen that marks its first appearance and, under D10,
+/// An invisible element on the loaded Nitnem home that marks its first appearance and, under D10,
 /// carries the launch timeline for the test to read (`launchMetrics`, as its value).
 struct LaunchMetricsProbe: View {
     @Environment(AppContainer.self) private var container

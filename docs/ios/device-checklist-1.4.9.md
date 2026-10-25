@@ -77,7 +77,8 @@ D4, D7, D8, D9 and the D5 widget half, plus D1 with a printed Bir.
 `LaunchClock` (Debug builds only) records a timeline in seconds from the moment the kernel created
 the process: `appInit` (the first app code), `containerReady`, `rootShown` (RootView's first
 frame, where the launch screen hands over), `integrityStart`, `integrityHashed`, `integrityDone`,
-`tabsShown` and `nitnemDrawn`. Each mark is also a Points of Interest signpost for Instruments.
+`tabsShown` and `nitnemDrawn` (the loaded home, never its skeleton). Each mark is also a Points of
+Interest signpost for Instruments.
 With `SGGS_UITEST_LAUNCH_METRICS=1`, which D10 sets, the Nitnem screen carries the timeline as the
 value of an invisible `launchMetrics` element. D10 asserts `nitnemDrawn` < 5 s for the cold and
 the warm launch, checks that the cold launch re-hashed and the warm one used the fingerprint, and

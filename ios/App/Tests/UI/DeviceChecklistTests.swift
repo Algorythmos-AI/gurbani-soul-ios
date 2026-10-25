@@ -252,9 +252,9 @@ final class DeviceChecklistTests: XCTestCase {
     /// Measured on this device only; the oldest supported device is a separate, manual run.
     ///
     /// The time is the app's own (`LaunchClock`, Debug only): from the moment the kernel created
-    /// the process to the Nitnem screen appearing. XCTest's clock is recorded beside it but not
-    /// judged: over the Wi-Fi tunnel its spawn and polling added about 3 s (±2 s) to every reading
-    /// (docs/ios/device-checklist-1.4.9.md).
+    /// the process to the Nitnem home appearing with its banis loaded. XCTest's clock is recorded
+    /// beside it but not judged: over the Wi-Fi tunnel its spawn and polling added about 3 s (±2 s)
+    /// to every reading (docs/ios/device-checklist-1.4.9.md).
     func testD10ColdAndWarmLaunchTimes() throws {
         // Start each launch with the app not running: otherwise launch() first terminates a
         // leftover instance, and over a Wi-Fi tunnel that alone took 7.4 s (2026-10-25).
