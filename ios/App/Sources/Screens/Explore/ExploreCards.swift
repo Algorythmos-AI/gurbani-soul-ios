@@ -52,6 +52,11 @@ struct ExploreCard: View {
     @ScaledMetric(relativeTo: .caption) private var squareHeight: CGFloat = 64
     @ScaledMetric(relativeTo: .caption) private var wideHeight: CGFloat = 40
     @ScaledMetric(relativeTo: .caption) private var featureHeight: CGFloat = 96
+    /// A ribbon is a line, not a block: the Feature draws it thin, whatever the card's size.
+    @ScaledMetric(relativeTo: .caption) private var featureRibbonHeight: CGFloat = 48
+
+    /// The Index ribbon and the Vaar spans read along a line.
+    private var isRibbon: Bool { destination == .index || destination == .vaars }
 
     private var accessibilitySize: Bool { dynamicTypeSize.isAccessibilitySize }
 
@@ -77,7 +82,7 @@ struct ExploreCard: View {
             VStack(alignment: .leading, spacing: Theme.Space.m) {
                 FeaturedChip()
                 titleRow(font: .title2.weight(.semibold))
-                preview(height: min(featureHeight, 96 * 1.4))
+                preview(height: isRibbon ? min(featureRibbonHeight, 48 * 1.4) : min(featureHeight, 96 * 1.4))
                 captionText
             }
         case .wide:

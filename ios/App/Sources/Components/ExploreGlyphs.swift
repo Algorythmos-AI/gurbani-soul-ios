@@ -87,21 +87,28 @@ struct RaagMassGlyph: View {
     }
 }
 
-/// Every verse line as a share of a dot (`DotFieldLayout.linesPerDot` lines each), gathered by
-/// tradition and coloured by it — the Voices dot field, at rest. The dot size is the largest that
-/// lets the whole field fit the frame, so no voice is ever clipped away.
+/// Every verse line as a share of a dot (`DotFieldLayout.linesPerDot` lines each), voice after
+/// voice in Granth order and coloured by tradition — the Voices dot field, at rest. The dot size is
+/// the largest that lets the whole field fit the frame, so the field fills the card and no voice is
+/// ever clipped away.
 struct DotGlyph: View {
     let voices: [ExploreDigest.VoiceLines]
     let roster: [String: Contributor]
 
     var body: some View {
         Canvas { ctx, size in
-            guard size.width > 0, !voices.isEmpty else { return }
+            guard size.width > 0, size.height > 0, !voices.isEmpty else { return }
             let pairs = voices.map { (author: $0.author, lines: $0.lines) }
+            func make(_ dot: CGFloat) -> DotFieldLayout {
+                DotFieldLayout.make(voices: pairs, roster: roster, grouping: .voice,
+                                    width: size.width, dot: dot, gap: dot * 0.4, labelHeight: 0)
+            }
+            // Start from the dot that would tile the frame exactly, then step down until it fits.
+            let count = CGFloat(pairs.reduce(0) { $0 + DotFieldLayout.dotCount(lines: $1.lines) })
+            let start = min(8, sqrt(size.width * size.height / max(count, 1)) / 1.4)
             var fitted: (layout: DotFieldLayout, dot: CGFloat)?
-            for dot in stride(from: CGFloat(5), through: 1.2, by: -0.4) {
-                let l = DotFieldLayout.make(voices: pairs, roster: roster, grouping: .tradition,
-                                            width: size.width, dot: dot, gap: dot * 0.45, labelHeight: 0)
+            for dot in stride(from: start, through: 1, by: -0.05) {
+                let l = make(dot)
                 fitted = (l, dot)
                 if l.size.height <= size.height { break }
             }
