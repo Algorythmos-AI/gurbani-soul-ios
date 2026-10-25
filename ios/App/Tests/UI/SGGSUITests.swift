@@ -33,7 +33,7 @@ final class SGGSUITests: XCTestCase {
             // Capture runs only: the runner's TEST_RUNNER_SGGS_CLOCK_* pins the Raag Clock (Debug
             // hooks; never present in Release) so the dial agrees with the 9:41 status bar.
             let env = ProcessInfo.processInfo.environment
-            for key in ["SGGS_CLOCK_NOW", "SGGS_CLOCK_MODE", "SGGS_CLOCK_NO_COORDS"] {
+            for key in ["SGGS_CLOCK_NOW", "SGGS_CLOCK_MODE", "SGGS_CLOCK_NO_COORDS", "SGGS_EXPLORE_FEATURE"] {
                 if let v = env[key] { app.launchEnvironment[key] = v }
             }
             // the app's own Appearance wins over the device's: pin it for the capture (argument
