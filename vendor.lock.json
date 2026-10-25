@@ -1,19 +1,19 @@
 {
   "sources": {
     "data": {
-      "commit": "f818b3aa79a92e2bda61d9f332df2b6c4e8809ae",
+      "commit": "c36e3172bdf38a61070849bb604b38da89ca5d8b",
       "files": {
         "pipeline/build_ios_db.py": "b793cc73815601c50ced6287446967a4936cf0216a1572ce4ffff509e2f0f80a"
       },
-      "ref": "f818b3aa79a92e2bda61d9f332df2b6c4e8809ae",
+      "ref": "c36e3172bdf38a61070849bb604b38da89ca5d8b",
       "repository": "Algorythmos-AI/sggs-data",
-      "version": "1.1.0"
+      "version": "1.2.0"
     },
     "platform": {
-      "commit": "f490db57d8e362565719b0aa405530ab34bb4cd7",
+      "commit": "533a740ce542269bf0de4cf2853169682b518656",
       "files": {
-        "contract/_meta.json": "0d654763da94d148ee5dc85f4ecada406384ac54e566a786b194899fb970abe3",
-        "contract/golden_analytics.ndjson": "589446db9965bd1689f41387bfd3206f7ea7e31e8898b23fe420dafdf72a6302",
+        "contract/_meta.json": "4d134ac1b1d599b3032d9e04a4eb85617656763b0e66a4120f5e01507abfc795",
+        "contract/golden_analytics.ndjson": "a83e308a69414fbecebb0029a34f71487d4d55483d2e041925efc84d19270731",
         "contract/golden_banis.ndjson": "2aec62ccbd402e0324b8474256a12c858467a75f9a509f7908fa27a8506ea584",
         "contract/golden_constellation.ndjson": "1b21ddf67993ea883596b0258046e91710bbe829cb7deb9fdf2db263818c6e2c",
         "contract/golden_difflib.ndjson": "2abfeef0181ab2cae25c9c671336502a76245255c672d81f1bf73aa5d6bcaf56",
@@ -26,7 +26,7 @@
         "docs/brand/tokens.json": "483d2c35f04872fb381c114b41056c325f8e7c177b5af66ef9c902420c2434c0",
         "frontend/public/contributors.json": "cb8257ec01caddb60222aba22ec0147737735435319f5d5260be49f8cb246e28"
       },
-      "ref": "v1.4.9",
+      "ref": "533a740ce542269bf0de4cf2853169682b518656",
       "repository": "Algorythmos-AI/sggs-platform",
       "version": "1.4.9"
     }

@@ -8,11 +8,39 @@ import GurbaniSearchKit
 /// The run is bounded by compositions, never by `vaar_units.n_lines`: it starts at the first line
 /// of the composition that holds the first unit and ends at the last line of the composition that
 /// holds the last unit, so it can neither reach back into the shabad before the heading nor run on
-/// into the bani after the closing pauri. Degrades to nil when the vaar tables are absent.
+/// into the bani after the closing pauri. A heading that stands as its own composition (Ramkali
+/// M3: the ਧੁਨੀ rubric is not flagged as a header, so ੴ, title and ਧੁਨੀ keep their own comp_id)
+/// is taken too; see `headingStart(before:failed:)`. Degrades to nil when the vaar tables are absent.
 extension SQLiteCandidateSource {
 
     /// A Vaar never spans more than ~700 lines; anything far larger means the bounds are wrong.
     private static let vaarLineCap = 2_000
+    /// The longest printed Vaar heading is three lines (ੴ, title, ਧੁਨੀ); leave room, refuse more.
+    private static let headingLineCap = 6
+
+    /// The first line of the composition that ends at `lo - 1`, when that composition is a Vaar
+    /// heading and nothing else: every line a header or a ਧੁਨੀ rubric, one of them naming the ਵਾਰ,
+    /// its ids contiguous. Anything else (the shabad before the Vaar, a closing rubric) is nil, so
+    /// the run still never reaches back past the heading.
+    private func headingStart(before lo: Int, failed: inout Bool) -> Int? {
+        var s: OpaquePointer?
+        let sql = "SELECT id, is_header, gurmukhi FROM lines WHERE comp_id = (SELECT comp_id FROM lines WHERE id=?) ORDER BY id"
+        guard sqlite3_prepare_v2(handle, sql, -1, &s, nil) == SQLITE_OK else { return nil }
+        defer { sqlite3_finalize(s) }
+        sqlite3_bind_int64(s, 1, Int64(lo - 1))
+        var ids: [Int] = []
+        var namesVaar = false
+        while stepRow(s, failed: &failed) {
+            let g = sqlite3_column_text(s, 2).map { String(cString: $0) } ?? ""
+            guard sqlite3_column_int64(s, 1) != 0 || VaarStructure.isDhuni(g) else { return nil }
+            ids.append(Int(sqlite3_column_int64(s, 0)))
+            namesVaar = namesVaar || g.contains("ਵਾਰ")
+            if ids.count > Self.headingLineCap { return nil }
+        }
+        guard !failed, namesVaar, let first = ids.first, ids.last == lo - 1,
+              ids == Array(first...(lo - 1)) else { return nil }
+        return first
+    }
 
     public func vaarText(id: Int) -> VaarText? {
         var failed = false   // a step error discards the partial result (see SQLiteStep)
@@ -57,7 +85,9 @@ extension SQLiteCandidateSource {
             lo = Int(sqlite3_column_int64(bounds, 0)); hi = Int(sqlite3_column_int64(bounds, 1))
         }
         sqlite3_finalize(bounds)
-        guard !failed, lo <= first.firstLineId, last.firstLineId <= hi, hi - lo < Self.vaarLineCap else { return nil }
+        guard !failed, lo <= first.firstLineId, last.firstLineId <= hi else { return nil }
+        if let h = headingStart(before: lo, failed: &failed) { lo = h }
+        guard !failed, hi - lo < Self.vaarLineCap else { return nil }
 
         var lines: [VaarLine] = []
         var ls: OpaquePointer?
