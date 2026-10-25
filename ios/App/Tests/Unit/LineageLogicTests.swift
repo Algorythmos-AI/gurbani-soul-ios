@@ -1,5 +1,6 @@
 import XCTest
 import GurbaniSearchKit
+import GurbaniDB
 @testable import SGGS
 
 /// Lineage's pure logic: the Voice of the day (deterministic, rotating, falling back when a voice
@@ -106,5 +107,51 @@ final class LineageLogicTests: XCTestCase {
     func testMilestonesWaitForTheScholar() {
         XCTAssertEqual(VoiceRiverView.milestones.first { $0.year == 1706 }?.label, "c. 1705–06")
         XCTAssertEqual(VoiceRiverView.shownMilestones.isEmpty, !EditorialGate.aboutCopy)
+    }
+
+    // MARK: Compare
+
+    @MainActor
+    func testCompareOverlapAndSharedAngs() throws {
+        let v = try voices()
+        let m1 = v[0], jaidev = v[1], beni = v[2]
+        XCTAssertNil(CompareVoicesSheet.overlap(m1, jaidev), "disjoint lifetimes")
+        XCTAssertNil(CompareVoicesSheet.overlap(m1, beni), "no dates, no overlap claimed")
+        XCTAssertEqual(CompareVoicesSheet.overlap(m1, m1), 1469...1539)
+        XCTAssertEqual(CompareVoicesSheet.overlapDuration(1500...1500), "about a year")
+        XCTAssertEqual(CompareVoicesSheet.overlapDuration(1500...1501), "about a year")
+        XCTAssertEqual(CompareVoicesSheet.overlapDuration(1469...1504), "about 35 years")
+        XCTAssertEqual(CompareVoicesSheet.sharedAngs(AngSet([1, 2, 1430]), AngSet([2, 3, 1430])), 2)
+        XCTAssertEqual(CompareVoicesSheet.sharedAngs(AngSet([1]), AngSet([2])), 0)
+        XCTAssertEqual(CompareVoicesSheet.liftText(nil), "—", "a missing theme is not a measured zero")
+        XCTAssertEqual(CompareVoicesSheet.liftText(1.63), "1.6×")
+    }
+
+    // MARK: one voice count
+
+    /// Lineage counts what Insights counts: voices with Bani in the DB. A roster entry without
+    /// verses (today Baba Sundar Ji; with 1.1.0 Bhagat Surdas Ji) is not a counted voice.
+    func testLineageCountsOnlyVoicesWithBani() throws {
+        let roster = try voices()   // M1, Jaidev, Beni
+        let today = LineageCount.split(roster, withBani: ["Guru Nanak Dev Ji (M1)", "Bhagat Jaidev Ji"])
+        XCTAssertEqual(today.voices.map(\.name), ["Guru Nanak Dev Ji (M1)", "Bhagat Jaidev Ji"])
+        XCTAssertEqual(today.withoutBani.map(\.name), ["Bhagat Beni Ji"])
+        let all = LineageCount.split(roster, withBani: Set(roster.map(\.name)))
+        XCTAssertEqual(all.voices.count, 3); XCTAssertTrue(all.withoutBani.isEmpty)
+        let unread = LineageCount.split(roster, withBani: [])
+        XCTAssertEqual(unread.voices.count, 3, "before the DB is read, the roster shows as is")
+    }
+
+    /// The bundled roster against the shipped DB: the hero's count equals the number of DB voices.
+    func testBundledRosterCountMatchesTheDB() throws {
+        guard let path = Bundle.main.url(forResource: "sggs-ios", withExtension: "sqlite")?.path else {
+            throw XCTSkip("bundled DB not found in host app")
+        }
+        let summaries = try SQLiteCandidateSource(path: path).voiceSummaries()
+        var roster = try XCTUnwrap(ContributorsStore.load())
+        let known = Set(roster.map(\.name))
+        roster += summaries.filter { !known.contains($0.author) }.map { Contributor(placeholderFor: $0.author) }
+        let split = LineageCount.split(roster, withBani: Set(summaries.map(\.author)))
+        XCTAssertEqual(split.voices.count, summaries.count, "Lineage and Insights must count the same voices")
     }
 }

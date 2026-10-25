@@ -87,3 +87,15 @@ enum LifespanLogic {
             : "c. \(y): " + alive.map(\.displayName).joined(separator: ", ")
     }
 }
+
+/// The one voice count. Lineage and Insights › Contributors both count the voices that have Bani
+/// in the loaded DB (Insights: `author_analytics` rows; Lineage: `voiceSummaries()`, the same set —
+/// pinned by VoiceReaderTests). A roster entry with no verses in this edition of the data (today
+/// Baba Sundar Ji, whose Sadu awaits the attribution fix; with 1.1.0, Bhagat Surdas Ji until the
+/// scholar decides) is named in a note, never counted.
+enum LineageCount {
+    static func split(_ roster: [Contributor], withBani: Set<String>) -> (voices: [Contributor], withoutBani: [Contributor]) {
+        guard !withBani.isEmpty else { return (roster, []) }   // the DB has not been read yet
+        return (roster.filter { withBani.contains($0.name) }, roster.filter { !withBani.contains($0.name) })
+    }
+}

@@ -52,6 +52,15 @@ final class VoiceReaderTests: XCTestCase {
         }
     }
 
+    /// Insights › Contributors counts `author_analytics` rows; Lineage counts `voiceSummaries()`.
+    /// They must be the same set of voices, so the two screens never show two counts.
+    func testInsightsAndLineageCountTheSameVoices() throws {
+        let db = try shippedDB()
+        let lineage = Set(db.voiceSummaries().map(\.author))
+        let insights = Set(try db.authorAnalytics().map(\.author))
+        XCTAssertEqual(lineage, insights)
+    }
+
     func testGuruTeghBahadurJi() throws {
         let db = try shippedDB()
         let m9 = try XCTUnwrap(db.voiceSummaries().first { $0.author == "Guru Tegh Bahadur Ji (M9)" })

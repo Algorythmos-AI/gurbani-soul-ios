@@ -17,6 +17,8 @@ struct VoicePage: View {
     @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.colorScheme) private var scheme
     @State private var data: VoiceData?
+    /// The summary read here when the card was tapped before Lineage had its counts.
+    @State private var loadedSummary: VoiceSummary?
     @State private var raagSheet: RaagShare?
     @State private var shareImage: Image?
 
@@ -40,7 +42,7 @@ struct VoicePage: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Space.xl) {
                 hero
-                if let summary { baniSection(summary) }
+                if let summary = summary ?? loadedSummary { baniSection(summary) }
                 if let data {
                     raagSection(data)
                     rahaoSection(data)
@@ -61,6 +63,7 @@ struct VoicePage: View {
             .frame(maxWidth: 720)
             .frame(maxWidth: .infinity)
         }
+        .accessibilityIdentifier("voicePage")
         .background(Ink.canvas)
         .contentMargins(.bottom, Theme.Space.xl, for: .scrollContent)
         .navigationTitle(contributor.displayName)
@@ -85,6 +88,9 @@ struct VoicePage: View {
 
     private func load() async {
         guard data == nil, let corpus = container.corpus else { return }
+        if summary == nil {
+            loadedSummary = await corpus.voiceSummaries().first { $0.author == contributor.name }
+        }
         if container.meta == nil { await container.loadMeta() }
         let name = contributor.name
         var d = VoiceData()
@@ -700,6 +706,40 @@ struct VoiceZoomDestination: ViewModifier {
             content.navigationTransition(.zoom(sourceID: id, in: namespace))
         } else {
             content
+        }
+    }
+}
+
+/// A voice's page reached by slug (sggs://voice/<slug>, "Open a voice"): resolves the roster entry —
+/// or a DB voice the roster does not list yet — and its canonical summary, then shows `VoicePage`.
+struct VoiceRouteView: View {
+    let slug: String
+    @Environment(AppContainer.self) private var container
+    @State private var resolved: (contributor: Contributor, summary: VoiceSummary?, roster: [Contributor])?
+    @State private var missing = false
+
+    var body: some View {
+        Group {
+            if let resolved {
+                VoicePage(contributor: resolved.contributor, summary: resolved.summary, roster: resolved.roster)
+            } else if missing {
+                ContentUnavailableView("Voice not found", systemImage: "person.slash",
+                                       description: Text("No voice of the Granth matches this link."))
+            } else {
+                ProgressView()
+            }
+        }
+        .task {
+            guard resolved == nil, let corpus = container.corpus else { return }
+            let summaries = await corpus.voiceSummaries()
+            var roster = ContributorsStore.load() ?? []
+            let known = Set(roster.map(\.name))
+            roster += summaries.filter { !known.contains($0.author) }.map { Contributor(placeholderFor: $0.author) }
+            if let c = roster.first(where: { $0.slug == slug }) {
+                resolved = (c, summaries.first { $0.author == c.name }, roster)
+            } else {
+                missing = true
+            }
         }
     }
 }
