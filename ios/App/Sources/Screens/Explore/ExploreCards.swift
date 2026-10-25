@@ -62,7 +62,9 @@ struct ExploreCard: View {
             }
         }
         .buttonStyle(.pressableCard)
-        .accessibilityElement(children: .ignore)
+        // `.combine` (not `.ignore`) keeps the link's button trait on the merged element, so it
+        // is still `app.buttons[title]`; the explicit label/value replace the merged child text.
+        .accessibilityElement(children: .combine)
         .accessibilityLabel(destination.title)
         .accessibilityValue(digest.spokenSummary(destination))
         .accessibilityHint(ExploreDigest.legacyCaption(destination))
