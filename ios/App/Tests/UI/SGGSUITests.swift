@@ -545,6 +545,18 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Jaap Sahib"].waitForExistence(timeout: 12), "Jaap reader did not open")
     }
 
+    /// Leaves an active search field. iOS 26 labels the button "Close" (earlier systems "Cancel").
+    /// Left open, the navigation bar holds the search field instead of the back button, so the
+    /// next "back" tap lands on "Clear text" and every later step runs on the wrong screen.
+    private func leaveSearch(_ app: XCUIApplication, timeout: TimeInterval = 2) {
+        for label in ["Cancel", "Close"] {
+            let inBar = app.navigationBars.buttons[label].firstMatch
+            let anywhere = app.buttons[label].firstMatch
+            if inBar.waitForExistence(timeout: label == "Cancel" ? timeout : 1) { inBar.tap(); return }
+            if anywhere.exists { anywhere.tap(); return }
+        }
+    }
+
     private func attachShot(_ app: XCUIApplication, _ name: String) {
         let a = XCTAttachment(screenshot: app.screenshot())
         a.name = "shot \(name)"; a.lifetime = .keepAlways; add(a)
@@ -2357,8 +2369,7 @@ final class SGGSUITests: XCTestCase {
         // Reader tap lands on nothing; both failure modes are silent).
         field.typeText("\n")
         // iPadOS 26 keeps the tab bar hidden while search is active — leave search explicitly
-        let cancel = app.buttons["Cancel"].firstMatch
-        if cancel.waitForExistence(timeout: 2) { cancel.tap() }
+        leaveSearch(app)
         shot("after_search")
         print("[SGGS shots] \(dir)")
         let readerTab = tab(app, "Reader")
@@ -2476,8 +2487,7 @@ final class SGGSUITests: XCTestCase {
             _ = app.buttons.containing(NSPredicate(format: "label BEGINSWITH %@", "Raag Gauri")).firstMatch
                 .waitForExistence(timeout: 8)
             shot("index_find")
-            let cancel = app.buttons["Cancel"].firstMatch
-            if cancel.exists { cancel.tap() }
+            leaveSearch(app)
         }
         if app.buttons["index_compositions"].firstMatch.waitForExistence(timeout: 5) {
             app.buttons["index_compositions"].firstMatch.tap()   // leave the Index as found
@@ -2517,7 +2527,7 @@ final class SGGSUITests: XCTestCase {
             themeSearch.typeText("ਹਉਮੈ")
             _ = app.buttons["theme_haumai"].firstMatch.waitForExistence(timeout: 8)
             shot("themes-search-gurmukhi")
-            if app.buttons["Cancel"].firstMatch.exists { app.buttons["Cancel"].firstMatch.tap() }
+            leaveSearch(app)
         }
         app.navigationBars.buttons.firstMatch.tap()   // back to the hub
         let constellation = app.buttons["Constellation"].firstMatch
