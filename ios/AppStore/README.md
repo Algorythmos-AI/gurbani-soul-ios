@@ -106,9 +106,9 @@ Reader, Clock, Nitnem, Index, Themes, Constellation, Insights, Lineage, More, Ve
 app afresh, and a shot is written only while the element that proves its screen is up, so one wrong turn
 can neither spill into the next group nor land a wrong screen under a name. The iPad landscape frames are
 the simulator's own (`simctl io`, taken when the test asks), because an XCUITest screenshot after a
-rotation stores its pixels with an EXIF rotation. `check_site_shots.py` then fails the run on identical
-pictures under different names (bar the opening-state pairs it lists), on any EXIF rotation, and on a
-landscape shot that is not landscape.
+rotation stores its pixels with an EXIF rotation. `check_site_shots.py` then fails the run on any expected name
+that is missing, on identical pictures under different names (bar the opening-state pairs it lists), on
+any EXIF rotation, and on a landscape shot that is not landscape.
 
 There is no iOS simulator runtime on the release Mac, so run it on CI (manual workflow; the driver, the
 script and the self-check always come from the workflow's commit, so an older tag is navigated by today's

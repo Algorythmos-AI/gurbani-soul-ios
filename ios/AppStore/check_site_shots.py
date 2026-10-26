@@ -6,7 +6,9 @@
 1. Within a set (iphone-light, ipad-portrait, ...), two names never share a hash unless both are in
    one ALLOWED group. Identical names are how the v1.4.9 run hid that Themes and Constellation were
    shot on the Index (themes == constellation == index_forms).
-2. No shot carries an EXIF rotation, and every shot in a landscape set shows wider than it is tall
+2. Every name the driver should write is there. A step whose control is missing writes nothing,
+   so only the list of expected names can tell a short set from a full one.
+3. No shot carries an EXIF rotation, and every shot in a landscape set shows wider than it is tall
    (the v1.4.9 landscape shots stored 2752×2064 pixels with orientation 8: viewers turned them).
 
 Hidden files (the capture's own request and temp files) are never shots. Standard library only.
@@ -31,6 +33,23 @@ ALLOWED = [
     {"nitnem_circular_done_light", "nitnem_circular_next_light"},
     {"nitnem_inline_done_light", "nitnem_inline_next_light"},
 ]
+
+# The names SiteShotTests writes in every iPhone and iPad set (the iPad runs the same groups), then
+# what the iPhone adds: Verify, About, and the Vaars shots the site uses (from testVaarsWeave).
+EXPECTED = """
+    search_results after_search reader reader_options reader_sehaj hukam clock
+    nitnem_home bani_reader bani_jaap
+    explore_hub index composition_reader index_compositions_continue index_raags
+    index_raags_hour_and_grid raag_gauri raag_gauri_forms_time index_forms index_find
+    themes themes-index your-themes theme-page theme-verses themes-search-gurmukhi
+    constellation constellation-focus constellation-card constellation-pair constellation-sky
+    insights_contributors voices_dots_traditions voices_dots_centuries voices_dots_voices
+    voices_ribbon voices_resonance_chord_and_list voices_echoes
+    lineage lineage-roll voice-of-the-day lineage-river voice-m9 compare-v2 more_display
+""".split()
+EXPECTED_IPHONE = "verify_typing verify about vaars_home vaar_weave_top vaar_reader_top".split()
+SETS = {"iphone-light": EXPECTED + EXPECTED_IPHONE, "iphone-dark": EXPECTED + EXPECTED_IPHONE,
+        "ipad-portrait": EXPECTED, "ipad-landscape": EXPECTED}
 
 
 def png_info(data):
@@ -68,6 +87,8 @@ def exif_orientation(tiff):
 def check(out):
     faults = []
     sets = sorted(p for p in out.iterdir() if p.is_dir() and not p.name.startswith("."))
+    for absent in sorted((set(SETS) | {"widgets"}) - {p.name for p in sets}):
+        faults.append(f"{absent}: the set is missing")
     for s in sets:
         shots = sorted(p for p in s.glob("*.png") if not p.name.startswith("."))
         by_hash = {}
@@ -83,6 +104,11 @@ def check(out):
                 w, h = h, w
             if "landscape" in s.name and w <= h:
                 faults.append(f"{s.name}/{p.name}: shows {w}×{h}, not landscape")
+        missing = sorted(set(SETS.get(s.name, [])) - {p.stem for p in shots})
+        if missing:
+            faults.append(f"{s.name}: {len(missing)} shot(s) missing: {', '.join(missing)}")
+        if s.name == "widgets" and not shots:
+            faults.append("widgets: no renders")
         for names in by_hash.values():
             if len(names) > 1 and not any(set(names) <= g for g in ALLOWED):
                 faults.append(f"{s.name}: identical pictures under different names: {', '.join(sorted(names))}")

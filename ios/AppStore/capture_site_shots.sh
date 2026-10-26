@@ -19,8 +19,8 @@
 # Needs: db/sggs.sqlite (`make dataset`), the personal pair in ios/Resources, xcodegen, Xcode 26+.
 # The public DB is copied into the BUILT .app only (never ios/Resources); the simulators are deleted.
 # A failing capture test is reported and the run goes on, so the shots that did land are kept; the
-# script then fails if any test failed or the self-check (check_site_shots.py) finds identical
-# pictures under different names or a landscape shot that is not landscape.
+# script then fails if any test failed or the self-check (check_site_shots.py) finds an expected
+# name missing, identical pictures under different names, or a landscape shot that is not landscape.
 # Used by .github/workflows/ios-site-shots.yml.
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"

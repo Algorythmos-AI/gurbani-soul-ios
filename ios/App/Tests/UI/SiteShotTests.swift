@@ -150,9 +150,12 @@ final class SiteShotTests: XCTestCase {
         }
     }
 
-    /// A segment (or chip) tap that is checked: tap again until the button reports selected.
-    private func select(_ button: XCUIElement) -> Bool {
-        guard button.waitForExistence(timeout: 6) else { return false }
+    /// A segment (or chip) tap that is checked: tap again until the button reports selected. A
+    /// missing control fails the test (its shots would otherwise be skipped without a word).
+    private func select(_ button: XCUIElement, file: StaticString = #filePath, line: UInt = #line) -> Bool {
+        guard button.waitForExistence(timeout: 6) else {
+            XCTFail("\(button) is missing", file: file, line: line); return false
+        }
         for _ in 0..<3 {
             button.tap()
             let selected = NSPredicate(format: "isSelected == true")
@@ -161,7 +164,7 @@ final class SiteShotTests: XCTestCase {
                 return true
             }
         }
-        XCTFail("\(button) never became selected")
+        XCTFail("\(button) never became selected", file: file, line: line)
         return false
     }
 
