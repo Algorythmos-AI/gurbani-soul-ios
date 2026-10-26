@@ -7,7 +7,8 @@
    one ALLOWED group. Identical names are how the v1.4.9 run hid that Themes and Constellation were
    shot on the Index (themes == constellation == index_forms).
 2. Every name the driver should write is there. A step whose control is missing writes nothing,
-   so only the list of expected names can tell a short set from a full one.
+   so only the list of expected names can tell a short set from a full one. The widget set has
+   exactly its listed renders.
 3. No shot carries an EXIF rotation, and every shot in a landscape set shows wider than it is tall
    (the v1.4.9 landscape shots stored 2752×2064 pixels with orientation 8: viewers turned them).
 
@@ -19,19 +20,17 @@ import sys
 from pathlib import Path
 
 # Names that may be the same picture: the second name is the screen's opening state, or the element
-# it shows is already on screen on a tall display. Each group is checked as a whole.
+# it shows is already on screen on a tall display. Each group is checked as a whole. Themes has none:
+# the driver places themes, your-themes and themes-index on purpose, so they differ on every layout.
 ALLOWED = [
-    {"themes", "themes-index"},                                    # the index is Themes' opening view
     {"constellation", "constellation-focus"},                      # Focus is the opening view
     {"lineage", "lineage-roll", "voice-of-the-day"},               # Roll opens; the card is in view
     {"insights_contributors", "voices_dots_voices", "voices_ribbon"},  # Voices opens; ribbon in view
     {"index_raags", "index_raags_hour_and_grid"},                  # the grid is in view on iPad
-    # widgets: no coordinates, so the solar Raag Now is the fixed one; accessory Nitnem
-    # families draw "done" and "next" alike
-    {"raagnow-circular-fixed-light", "raagnow-circular-solar-light"},
-    {"raagnow-inline-fixed-light", "raagnow-inline-solar-light"},
-    {"nitnem_circular_done_light", "nitnem_circular_next_light"},
-    {"nitnem_inline_done_light", "nitnem_inline_next_light"},
+    # widgets: the inline line and the small dial name the watch, not its hours, so a solar watch
+    # at home can draw as the fixed one
+    {"raagnow-circular-fixed-dark", "raagnow-circular-solar-dark"},
+    {"raagnow-inline-fixed-dark", "raagnow-inline-solar-dark"},
 ]
 
 # The names SiteShotTests writes in every iPhone and iPad set (the iPad runs the same groups), then
@@ -48,14 +47,19 @@ EXPECTED = """
     lineage lineage-roll voice-of-the-day lineage-river voice-m9 compare-v2 more_display
 """.split()
 EXPECTED_IPHONE = "verify_typing verify about vaars_home vaar_weave_top vaar_reader_top".split()
-# The widget renders (WidgetRenderTests, HukamWidgetRenderTests, NitnemWidgetRenderTests): every
-# family × mode × appearance. A render whose PNG is never written can still pass its test.
+# The widget renders (WidgetRenderTests, HukamWidgetRenderTests, NitnemWidgetRenderTests). A render
+# whose PNG is never written can still pass its test. The Home Screen families come light and dark;
+# the Lock Screen families once, as the Lock Screen draws them (light on the dark ground: a light
+# render of them was black on black, so fixed, solar and away came out identical and blank).
+HOME, LOCK = ("large", "medium", "small"), ("circular", "inline", "rectangular")
 WIDGETS = (
-    [f"raagnow-{f}-{m}-{a}" for f in ("circular", "inline", "large", "medium", "rectangular", "small")
-     for m in ("fixed", "solar") for a in ("light", "dark")] + ["raagnow-medium-silent-dark"]
+    [f"raagnow-{f}-{m}-{a}" for f in HOME for m in ("fixed", "solar") for a in ("light", "dark")]
+    + [f"raagnow-{f}-{m}-dark" for f in LOCK for m in ("fixed", "solar")]
+    + [f"raagnow-{f}-away-light" for f in HOME] + [f"raagnow-{f}-away-dark" for f in LOCK]
+    + ["raagnow-medium-silent-dark"]
     + [f"hukam-{f}-{x}{a}" for f in ("large", "medium") for x in ("", "ax2-") for a in ("light", "dark")]
-    + [f"nitnem_{f}_{t}_{a}" for f in ("circular", "inline", "medium", "rectangular", "small")
-       for t in ("done", "next") for a in ("light", "dark")])
+    + [f"nitnem_{f}_{t}_{a}" for f in ("medium", "small") for t in ("done", "next") for a in ("light", "dark")]
+    + [f"nitnem_{f}_{t}_dark" for f in LOCK for t in ("done", "next")])
 SETS = {"iphone-light": EXPECTED + EXPECTED_IPHONE, "iphone-dark": EXPECTED + EXPECTED_IPHONE,
         "ipad-portrait": EXPECTED, "ipad-landscape": EXPECTED, "widgets": WIDGETS}
 
@@ -115,6 +119,12 @@ def check(out):
         missing = sorted(set(SETS.get(s.name, [])) - {p.stem for p in shots})
         if missing:
             faults.append(f"{s.name}: {len(missing)} shot(s) missing: {', '.join(missing)}")
+        if s.name == "widgets":
+            # every render is named above, so a stranger is a render this set no longer makes
+            # (a light Lock Screen family, from tests older than the fix)
+            unknown = sorted({p.stem for p in shots} - set(WIDGETS))
+            if unknown:
+                faults.append(f"widgets: {len(unknown)} render(s) not in the set: {', '.join(unknown)}")
         for names in by_hash.values():
             if len(names) > 1 and not any(set(names) <= g for g in ALLOWED):
                 faults.append(f"{s.name}: identical pictures under different names: {', '.join(sorted(names))}")

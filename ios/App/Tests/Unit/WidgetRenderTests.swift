@@ -4,10 +4,14 @@ import WidgetKit
 import GurbaniPahar
 @testable import SGGS
 
-/// Renders the Raag Now widget in EVERY family (light + dark, fixed + solar) through
-/// `ImageRenderer`. A regression gate that each layout composes without trapping, and — when
-/// `SGGS_WIDGET_SNAPSHOT_DIR` is set — a PNG per family for visual review (the simulator's
-/// widget gallery cannot be scripted). Widget sizes are the iPhone 17 point sizes.
+/// Renders the Raag Now widget in EVERY family (fixed + solar; the Home Screen families light +
+/// dark) through `ImageRenderer`. A regression gate that each layout composes without trapping,
+/// and — when `SGGS_WIDGET_SNAPSHOT_DIR` is set — a PNG per family for visual review (the
+/// simulator's widget gallery cannot be scripted). Widget sizes are the iPhone 17 point sizes.
+///
+/// The Lock Screen families are drawn once, as the Lock Screen draws them: light content on the
+/// dark ground, whatever the phone's appearance. A "light" accessory render put black text on
+/// that ground and came out blank (fixed, solar and away identical in run 40380564001).
 @MainActor
 final class WidgetRenderTests: XCTestCase {
 
@@ -46,9 +50,17 @@ final class WidgetRenderTests: XCTestCase {
                      skyPlace: e.skyPlace)
     }
 
+    static func isAccessory(_ family: WidgetFamily) -> Bool {
+        [.accessoryCircular, .accessoryRectangular, .accessoryInline].contains(family)
+    }
+
+    /// Dark flags to draw a family in: the Home Screen families in both appearances, the Lock
+    /// Screen families in the Lock Screen's own (light on the dark ground).
+    static func schemes(_ family: WidgetFamily) -> [Bool] { isAccessory(family) ? [true] : [false, true] }
+
     private func render(_ pinned: RaagNowEntry, family: WidgetFamily, size: CGSize, dark: Bool) -> UIImage? {
         let entry = asRenderedAtItsOwnDate(pinned)
-        let accessory = [.accessoryCircular, .accessoryRectangular, .accessoryInline].contains(family)
+        let accessory = Self.isAccessory(family)
         let view = ZStack {
             if accessory { Color.black } else { PaperGround() }
             RaagNowView(entry: entry, familyOverride: family)
@@ -69,12 +81,19 @@ final class WidgetRenderTests: XCTestCase {
         try? FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
         print("SGGS_WIDGET_SNAPSHOT_DIR=\(out.path)")
         let snap = snapshot()
+        // Solar at home: a place on this clock's own meridian (Greenwich's latitude), so the face
+        // shows the solar sky and no "sky over" line. A fixed Sydney place was the away state on
+        // any clock but Sydney's: on the UTC runner solar and away rendered alike.
+        let zone = TimeZone.current, at = date(16, 40)
+        let standard = Double(zone.secondsFromGMT(for: at)) - zone.daylightSavingTimeOffset(for: at)
+        let home = RaagClockConfig(solar: true, lat: 51.48, lon: max(-180, min(180, standard / 3600 * 15)))
         let configs: [(String, RaagClockConfig)] = [
             ("fixed", RaagClockConfig(solar: false)),
-            ("solar", RaagClockConfig(solar: true, lat: -33.87, lon: 151.21)),
+            ("solar", home),
         ]
         for (mode, cfg) in configs {
             let entry = RaagNowTimeline.entry(at: date(16, 40), config: cfg, snapshot: snap)
+            XCTAssertNil(entry.skyPlace, "\(mode): the place is this clock's own, so no sky is named")
             if mode == "fixed" {
                 // what `.relative` renders: under one 3-hour pahar (1 hr, 20 min), never days
                 let rendered = asRenderedAtItsOwnDate(entry).boundaryDate.timeIntervalSinceNow
@@ -83,7 +102,7 @@ final class WidgetRenderTests: XCTestCase {
                 XCTAssertEqual(rendered, 80 * 60 + 30, accuracy: 5)
             }
             for (family, size, name) in families {
-                for dark in [false, true] {
+                for dark in Self.schemes(family) {
                     let img = try XCTUnwrap(render(entry, family: family, size: size, dark: dark),
                                             "\(name) \(mode) \(dark ? "dark" : "light") failed to render")
                     XCTAssertGreaterThan(img.size.width, 0)
@@ -95,15 +114,18 @@ final class WidgetRenderTests: XCTestCase {
         }
         // A saved place far from this phone's zone (Sydney on a London clock): every family names
         // the sky it shows. Attached to the result bundle for review.
-        let away = RaagNowTimeline.entry(at: date(16, 40), config: configs[1].1, snapshot: snap,
-                                         tz: TimeZone(identifier: "Europe/London")!)
+        let away = RaagNowTimeline.entry(at: date(16, 40), config: RaagClockConfig(solar: true, lat: -33.87, lon: 151.21),
+                                         snapshot: snap, tz: TimeZone(identifier: "Europe/London")!)
         XCTAssertEqual(away.skyPlace, "33.9°S 151.2°E")
         for (family, size, name) in families {
-            let img = try XCTUnwrap(render(away, family: family, size: size, dark: false),
+            let dark = Self.isAccessory(family)          // the Lock Screen's own appearance
+            let img = try XCTUnwrap(render(away, family: family, size: size, dark: dark),
                                     "\(name) away failed to render")
             let a = XCTAttachment(image: img)
             a.name = "raagnow-\(name)-away"; a.lifetime = .keepAlways; add(a)
-            if let png = img.pngData() { try png.write(to: out.appendingPathComponent("raagnow-\(name)-away-light.png")) }
+            if let png = img.pngData() {
+                try png.write(to: out.appendingPathComponent("raagnow-\(name)-away-\(dark ? "dark" : "light").png"))
+            }
         }
         // the silent watch and the no-snapshot state must also compose
         let silent = RaagNowTimeline.entry(at: date(1, 0), config: RaagClockConfig(solar: false), snapshot: snap)

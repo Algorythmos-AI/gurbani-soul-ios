@@ -7,7 +7,8 @@ name: iOS site screenshots
 # commit (the driver replaces the ref's own copy), so an older tag is navigated by today's driver;
 # the app sources under test are always the requested ref's. The run fails, after uploading, when a
 # capture test failed or the self-check found identical pictures under different names or a
-# landscape shot that is not landscape.
+# landscape shot that is not landscape. Each failed assertion is named with its test (annotations,
+# log, provenance.json), and the result bundles are uploaded as site-shots-xcresult on a failure.
 #
 #   gh workflow run ios-site-shots.yml --repo Algorythmos-AI/gurbani-soul-ios -f ref=v1.4.9
 
@@ -55,6 +56,7 @@ jobs:
       - name: Capture
         env:
           REF: ${{ inputs.ref }}
+          SITE_SHOTS_RESULTS: ${{ runner.temp }}/site-shots-xcresult
         run: |
           echo "capturing $REF = $(git rev-parse HEAD)"
           bash .site-shots-driver/ios/AppStore/capture_site_shots.sh "$RUNNER_TEMP/site-shots"
@@ -65,4 +67,12 @@ jobs:
           name: site-shots
           path: ${{ runner.temp }}/site-shots
           if-no-files-found: error
+          retention-days: 14
+      - name: Upload the result bundles (a test or the self-check failed)
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: site-shots-xcresult
+          path: ${{ runner.temp }}/site-shots-xcresult
+          if-no-files-found: warn
           retention-days: 14

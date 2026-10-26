@@ -12,6 +12,10 @@ import XCTest
 ///   Index) cannot carry into the next.
 /// - Every shot names the element that proves its screen is up (`showing:`). When that element is
 ///   missing the test fails and nothing is written, so a wrong screen never lands under a name.
+///   Anchors are accessibility identifiers where the app has one (display text changes: #95, #96),
+///   with the text as the fallback for older refs; a step whose control is missing fails by name.
+/// - Two names of one screen are placed on purpose (`bring`), never left to the display's height:
+///   a tall iPad shows more at once, and shots that only waited came out identical there.
 /// - TEST_RUNNER_SGGS_SHOT_HOST_FRAMES=1 (iPad landscape): an XCUITest screenshot taken after a
 ///   rotation comes back rotated and clipped, so the host takes the frame instead. The test leaves
 ///   `<dir>/.request-<name>` and waits; the script writes `<name>.png` from the simulator's own
@@ -173,30 +177,70 @@ final class SiteShotTests: XCTestCase {
         element.coordinate(withNormalizedOffset: CGVector(dx: 0.94, dy: 0.5)).tap()
     }
 
-    /// Lineage is a lazy list: waits until the cards carry their counts, then drags up a third of
-    /// the window at a time until `card` exists, and drags it into the middle band (clear of the
-    /// floating tab bar) so a tap lands on it.
+    /// The element whose accessibility identifier is `id` (a prefix of it when `prefix`), or
+    /// `fallback` on an older ref that predates the identifier: whichever turns up first. Display
+    /// text is a poor anchor (#96 put the eyebrows in sentence case, #95 renamed a theme), so an
+    /// identifier always comes first.
+    private func element(_ app: XCUIApplication, id: String, prefix: Bool = false, else fallback: XCUIElement,
+                         timeout: TimeInterval = 10) -> XCUIElement {
+        let byID = app.descendants(matching: .any)
+            .matching(NSPredicate(format: prefix ? "identifier BEGINSWITH %@" : "identifier == %@", id)).firstMatch
+        let deadline = Date().addingTimeInterval(timeout)
+        repeat {
+            if byID.exists { return byID }
+            if fallback.exists { return fallback }
+            settle(0.25)
+        } while Date() < deadline
+        return byID
+    }
+
+    /// A static text compared without case (the eyebrows are sentence case since #96).
+    private func caption(_ app: XCUIApplication, _ text: String) -> XCUIElement {
+        app.staticTexts.matching(NSPredicate(format: "label ==[c] %@", text)).firstMatch
+    }
+
+    /// Waits for a step's control. A missing one fails the test by name: the shots behind it
+    /// would otherwise be skipped without a word (constellation-pair in run 40380564001).
+    private func need(_ element: XCUIElement, _ what: String, timeout: TimeInterval = 10,
+                      file: StaticString = #filePath, line: UInt = #line) -> Bool {
+        if element.waitForExistence(timeout: timeout) { return true }
+        XCTFail("\(what) is missing", file: file, line: line)
+        return false
+    }
+
+    /// Drags the page until `element` exists and its middle sits in `band` (fractions of the
+    /// window's height), clear of the bars so a tap lands on it. Each drag is slow and then held,
+    /// never a fling, so the page stops where it was put. Lazy lists build rows only near the
+    /// screen, so a row far off is found by dragging, not by waiting: `lookingDown` drags the
+    /// content up (what is below comes in), otherwise down. False when it never got there.
+    @discardableResult
+    private func bring(_ app: XCUIApplication, _ element: XCUIElement, into band: ClosedRange<CGFloat> = 0.3...0.6,
+                       lookingDown: Bool = true) -> Bool {
+        let window = app.windows.firstMatch
+        let height = window.frame.height
+        func drag(_ dy: CGFloat) {
+            let from = window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.55))
+            from.press(forDuration: 0.05, thenDragTo: from.withOffset(CGVector(dx: 0, dy: dy * height)),
+                       withVelocity: .slow, thenHoldForDuration: 0.15)
+        }
+        for _ in 0..<14 where !element.exists { drag(lookingDown ? -0.35 : 0.35) }
+        guard element.waitForExistence(timeout: 2) else { return false }
+        var last = CGFloat.nan
+        for _ in 0..<10 {
+            let mid = element.frame.midY / height
+            if band.contains(mid) { return true }
+            if abs(mid - last) < 0.003 { break }           // the page cannot move further that way
+            last = mid
+            drag(max(-0.35, min(0.35, (band.lowerBound + band.upperBound) / 2 - mid)))
+        }
+        return band.contains(element.frame.midY / height)
+    }
+
+    /// Lineage is a lazy list: waits until the cards carry their counts, then brings `card` in.
     private func scrollToCard(_ app: XCUIApplication, _ card: XCUIElement) -> Bool {
         _ = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", " verses · ")).firstMatch
             .waitForExistence(timeout: 20)
-        let window = app.windows.firstMatch
-        for _ in 0..<12 where !card.exists {
-            let from = window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
-            from.press(forDuration: 0.05, thenDragTo: window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.35)))
-        }
-        guard card.waitForExistence(timeout: 2) else { return false }
-        let frame = window.frame
-        var lastMid = CGFloat.nan
-        for _ in 0..<8 {
-            let mid = card.frame.midY
-            if mid > frame.height * 0.3 && mid < frame.height * 0.6 { break }
-            if abs(mid - lastMid) < 2 { break }
-            lastMid = mid
-            let from = window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.55))
-            let dy = (frame.height * 0.45 - mid) / frame.height
-            from.press(forDuration: 0.05, thenDragTo: from.withOffset(CGVector(dx: 0, dy: max(-0.35, min(0.35, dy)) * frame.height)))
-        }
-        return true
+        return bring(app, card) || card.exists      // out of the band but there: a tap still scrolls to it
     }
 
     // MARK: Search, Reader, Hukam
@@ -284,7 +328,7 @@ final class SiteShotTests: XCTestCase {
         card.tap()
         let index = app.navigationBars["Index"]
         XCTAssertTrue(index.waitForExistence(timeout: 12), "Index did not open")
-        _ = app.staticTexts["MAJOR COMPOSITIONS"].waitForExistence(timeout: 8)
+        _ = caption(app, "Major compositions").waitForExistence(timeout: 8)
         shot(app, "index", showing: index)
 
         // A major composition opens its own reader; two steps in, it is "in progress", so the
@@ -306,7 +350,7 @@ final class SiteShotTests: XCTestCase {
 
         // Raags: "In this hour", the grid, a Raag page.
         if select(app.buttons["index_raags"].firstMatch) {
-            _ = app.staticTexts["BEFORE THE RAAGS"].waitForExistence(timeout: 8)
+            _ = caption(app, "Before the raags").waitForExistence(timeout: 8)
             shot(app, "index_raags", showing: index)
             let gauri = app.buttons["raag_gauri"].firstMatch
             for _ in 0..<6 where !(gauri.exists && gauri.isHittable) { app.swipeUp() }
@@ -343,16 +387,29 @@ final class SiteShotTests: XCTestCase {
         let bar = app.navigationBars["Themes"]
         let naam = app.buttons["theme_naam"].firstMatch
         _ = naam.waitForExistence(timeout: 12)
-        shot(app, "themes", showing: bar)
-        shot(app, "themes-index", showing: naam)
-        let yours = app.descendants(matching: .any)["themes.yours"].firstMatch
-        if yours.waitForExistence(timeout: 5) {
-            for _ in 0..<3 where !yours.isHittable { app.swipeUp() }
-            shot(app, "your-themes", showing: yours)
-            for _ in 0..<3 { app.swipeDown() }
+        _ = app.descendants(matching: .any)["themes.today"].firstMatch.waitForExistence(timeout: 8)
+        // Three views of one page, each placed on purpose: a tall iPad shows the opening view, the
+        // Your themes card and the first family at once, so shots that only waited for an element
+        // came out identical there (run 40380564001); on a phone a swipe overshot the card.
+        shot(app, "themes", showing: bar)                            // the opening view
+        let yours = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier == %@", "themes.yours")).firstMatch
+        if need(yours, "the Your themes card") {
+            if bring(app, yours, into: 0.22...0.34) {               // up under the bars: never its opening place
+                shot(app, "your-themes", showing: yours)
+            } else {
+                XCTFail("the Your themes card could not be brought up")
+            }
         }
-        if naam.waitForExistence(timeout: 8) {
-            for _ in 0..<3 where !naam.isHittable { app.swipeDown() }
+        // The index: the first family's chip scrolls its header under the family bar.
+        let divine = element(app, id: "themes.family.divine", else: app.buttons["The Divine Reality"].firstMatch)
+        if need(divine, "the Divine family chip") {
+            divine.tap()
+            settle(1.2)                                              // the scroll is animated
+            shot(app, "themes-index", showing: naam)
+        }
+        if need(naam, "the Naam card") {
+            if !bring(app, naam) { XCTFail("the Naam card could not be brought into reach") }
             naam.tap()
             let headword = app.descendants(matching: .any)["themes.page.headword"].firstMatch
             shot(app, "theme-page", showing: headword)
@@ -393,16 +450,22 @@ final class SiteShotTests: XCTestCase {
             let done = app.navigationBars["Naam"].buttons["Done"]
             if done.exists { done.tap() }
         }
+        // The pair sheet: the verses Naam shares with its first companion. Run 40380564001 never
+        // reached it: the row was looked up with `containing` (a descendant), but each row is one
+        // combined element, and the sheet's anchor ("Show 50 more") sits at the foot of a lazy list.
         let list = bar.buttons["View as list"]
-        if list.waitForExistence(timeout: 8) {
+        if need(list, "View as list") {
             list.tap()
-            let first = app.buttons.containing(NSPredicate(format: "label CONTAINS %@", "verses shared")).firstMatch
-            if first.waitForExistence(timeout: 8) {
-                first.tap()
-                shot(app, "constellation-pair", showing: app.buttons
-                    .containing(NSPredicate(format: "label BEGINSWITH %@", "Show ")).firstMatch)
-                let done = app.buttons["Done"].firstMatch
-                if done.exists { done.tap() }
+            let row = element(app, id: "constellation.pair.", prefix: true,
+                              else: app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "verses shared")).firstMatch)
+            if need(row, "the first companion row") {
+                row.tap()
+                let summary = element(app, id: "pairSheet.summary", else: app.navigationBars
+                    .matching(NSPredicate(format: "identifier CONTAINS %@", "✦")).firstMatch, timeout: 15)
+                settle(1)                                            // the first shabads land with the count
+                shot(app, "constellation-pair", showing: summary)
+                let done = app.navigationBars.buttons["Done"].firstMatch
+                if done.exists { done.tap(); _ = done.waitForNonExistence(timeout: 5) }
             }
             let map = bar.buttons["View as map"]
             if map.waitForExistence(timeout: 6) { map.tap() }
@@ -484,19 +547,25 @@ final class SiteShotTests: XCTestCase {
         } else {
             XCTFail("Guru Tegh Bahadur Ji's card missing")
         }
-        // Compare v2: Guru Tegh Bahadur Ji ⇄ Guru Nanak Dev Ji
+        // Compare v2: Guru Tegh Bahadur Ji ⇄ Guru Nanak Dev Ji. Each card is brought clear of the
+        // bars before its tap (swipes and an off-screen tap lost iPad landscape's compare-v2 in run
+        // 40380564001), and every step that can miss says so.
         let compare = app.buttons["compareVoices"]
-        if compare.waitForExistence(timeout: 5), m9.waitForExistence(timeout: 5) {
-            compare.tap()
-            m9.tap()
-            let m1 = app.buttons["voiceCard_guru-nanak-dev-ji"].firstMatch
-            for _ in 0..<6 where !(m1.exists && m1.isHittable) { app.swipeDown() }
-            if m1.waitForExistence(timeout: 5) {
-                m1.tap()
-                _ = app.staticTexts["THEME EMPHASIS"].waitForExistence(timeout: 12)
-                shot(app, "compare-v2", showing: app.navigationBars["Compare"])   // the sheet, not the picker
-            }
+        guard need(compare, "the Compare button") else { return }
+        compare.tap()
+        guard bring(app, m9), m9.isHittable else {
+            XCTFail("Guru Tegh Bahadur Ji's card is out of reach in compare mode"); return
         }
+        m9.tap()
+        let m1 = app.buttons["voiceCard_guru-nanak-dev-ji"].firstMatch
+        guard bring(app, m1, lookingDown: false), m1.isHittable else {   // the first Guru: above
+            XCTFail("Guru Nanak Dev Ji's card is out of reach in compare mode"); return
+        }
+        m1.tap()
+        let sheet = app.navigationBars["Compare"]
+        guard need(sheet, "the Compare sheet", timeout: 12) else { return }
+        _ = caption(app, "Theme emphasis").waitForExistence(timeout: 12)
+        shot(app, "compare-v2", showing: sheet)                    // the sheet, not the picker
     }
 
     // MARK: More
@@ -505,7 +574,14 @@ final class SiteShotTests: XCTestCase {
         _ = try shotDir()
         let app = launch()
         openTab(app, "More", expectingNavBar: "More")
-        shot(app, "more_display", showing: app.staticTexts["Accent"])
+        // The Display section (saroop, transliteration, size, appearance, accent). On a phone the
+        // Nitnem section fills the first screen and the list builds rows only near the screen, so
+        // the Accent row did not exist to wait for (more_display missing on iPhone, run 40380564001).
+        let accent = element(app, id: "accentPicker", else: app.staticTexts["Accent"].firstMatch, timeout: 3)
+        guard bring(app, accent, into: 0.45...0.75) else {
+            XCTFail("the Accent row could not be brought into view"); return
+        }
+        shot(app, "more_display", showing: accent)
     }
 
     /// Search → Verify: a Japji line typed in Roman, checked against the Granth.

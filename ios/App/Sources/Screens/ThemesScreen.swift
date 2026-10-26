@@ -202,6 +202,7 @@ struct ThemesScreen: View {
                     .buttonStyle(.plain)
                     .accessibilityLabel(section.group?.title ?? "More Themes")
                     .accessibilityAddTraits(on ? .isSelected : [])
+                    .accessibilityIdentifier("themes.family.\(key)")
                 }
             }
             .padding(.horizontal, Theme.Space.l).padding(.vertical, Theme.Space.s)
