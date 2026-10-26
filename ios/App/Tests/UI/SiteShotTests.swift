@@ -437,8 +437,7 @@ final class SiteShotTests: XCTestCase {
         shot(app, "voices_ribbon", showing: ribbon)
         let resonance = app.buttons["insights_Resonance"].firstMatch
         for _ in 0..<6 where !(resonance.exists && resonance.isHittable) { app.swipeDown() }
-        if resonance.waitForExistence(timeout: 6) {
-            resonance.tap()
+        if select(resonance) {
             let echo = app.buttons["echoRow"].firstMatch
             shot(app, "voices_resonance_chord_and_list", showing: echo)
             if echo.exists {
@@ -457,21 +456,20 @@ final class SiteShotTests: XCTestCase {
         let header = app.staticTexts.matching(NSPredicate(format: "label MATCHES %@", "[0-9]+ voices · 12th–17th century"))
             .firstMatch
         shot(app, "lineage", showing: header)
+        // Roll and River are checked selections: a dropped tap must not file one lens under the other
         let roll = app.segmentedControls.buttons["Roll"]
-        if roll.exists { roll.tap() }
-        shot(app, "lineage-roll", showing: header)
+        if select(roll) { shot(app, "lineage-roll", showing: header) }
         let votd = app.buttons["voiceOfTheDay"]
         if votd.waitForExistence(timeout: 8) {
             if !votd.isHittable { app.swipeUp() }
             shot(app, "voice-of-the-day", showing: votd)
         }
         let river = app.segmentedControls.buttons["River"]
-        if river.waitForExistence(timeout: 5) {
-            river.tap()
+        if select(river) {
             app.swipeUp()
             shot(app, "lineage-river", showing: app.navigationBars["Lineage"])
             app.swipeDown()
-            roll.tap()
+            _ = select(roll)
         }
         // Guru Tegh Bahadur Ji's page: Gurus only, then scroll to the card (the list is lazy).
         let gurus = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Gurus")).firstMatch
@@ -496,7 +494,7 @@ final class SiteShotTests: XCTestCase {
             if m1.waitForExistence(timeout: 5) {
                 m1.tap()
                 _ = app.staticTexts["THEME EMPHASIS"].waitForExistence(timeout: 12)
-                shot(app, "compare-v2", showing: app.buttons["Done"].firstMatch)
+                shot(app, "compare-v2", showing: app.navigationBars["Compare"])   // the sheet, not the picker
             }
         }
     }
