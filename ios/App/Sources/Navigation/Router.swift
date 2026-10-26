@@ -64,7 +64,7 @@ final class Router {
     func openAng(_ n: Int, lineId: Int? = nil) {
         navigatedToAngExplicitly = true
         pendingReaderLineId = (lineId ?? 0) > 0 ? lineId : nil
-        readerAng = max(1, min(1430, n))
+        readerAng = max(1, min(GranthAngs.count, n))
         selectedTab = .reader
     }
 
@@ -74,7 +74,7 @@ final class Router {
     /// these are the ONLY writers of `readerAng` — the single-writer rule that keeps the pager and
     /// the router from feeding each other in a loop.
     func pagerSettled(on n: Int) {
-        let c = max(1, min(1430, n))
+        let c = max(1, min(GranthAngs.count, n))
         guard c != readerAng else { return }
         navigatedToAngExplicitly = true
         readerAng = c
@@ -86,7 +86,7 @@ final class Router {
     /// is a no-op once any explicit navigation has happened.
     func resumeAng(_ n: Int) {
         guard !navigatedToAngExplicitly else { return }
-        readerAng = max(1, min(1430, n))
+        readerAng = max(1, min(GranthAngs.count, n))
     }
 
     /// A raag the Clock should focus when opened via deep link / Reader timing chip.
@@ -201,7 +201,7 @@ final class Router {
             .queryItems?.first(where: { $0.name == "variant" })?.value
         switch host {
         case "ang":
-            if let n = Int(value), (1...1430).contains(n) {
+            if let n = Int(value), GranthAngs.all.contains(n) {
                 // A deep link / intent to an Ang must land ON the Reader, not behind a shabad/hukam
                 // sheet that happened to be open (the reader would otherwise be hidden until dismissed).
                 container.dismissSheetForNavigation()

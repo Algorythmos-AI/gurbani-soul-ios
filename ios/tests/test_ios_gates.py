@@ -137,6 +137,45 @@ class DesignSystemGates(unittest.TestCase):
                        dirs=[APP / "Sources", APP / "Shared", APP / "Widgets"]), [])
 
 
+class NoTypedAngCount(unittest.TestCase):
+    """The Granth's Ang count is written once, in GranthAngs.count; everything else reads it, or
+    derives it from the data (GranthMap.angCount). Only App Intents metadata, which must be a
+    compile-time literal, may repeat it, and it must repeat the same number."""
+
+    INTENTS = APP / "Sources" / "Intents" / "AppIntents.swift"
+    LITERAL_ONLY = (r"IntentDescription\(", r"inclusiveRange:")
+
+    def count(self):
+        decl = (KIT / "GurbaniSearchKit" / "GranthAngs.swift").read_text(encoding="utf-8")
+        m = re.search(r"public static let count = (\d+)", decl)
+        self.assertIsNotNone(m, "GranthAngs.count must be declared")
+        return m.group(1)
+
+    def test_the_ang_count_is_typed_only_in_granth_angs(self):
+        n = self.count()
+        # not part of a longer number or a decimal (0.1430), but caught in a range (1...1430)
+        typed = re.compile(r"(?<!\d)(?<!\d\.)" + n[0] + ",?" + n[1:] + r"(?!\d)")
+        found = []
+        for path in shipping_swift():
+            if path.name == "GranthAngs.swift":
+                continue
+            for no, code, _ in code_lines(path):
+                if not typed.search(code):
+                    continue
+                if path == self.INTENTS and any(re.search(p, code) for p in self.LITERAL_ONLY):
+                    continue
+                found.append(f"{path.relative_to(ROOT)}:{no}: {code.strip()}")
+        self.assertEqual(found, [], "read GranthAngs.count (or the data) instead of typing the Ang count")
+
+    def test_app_intents_literals_match_granth_angs(self):
+        n = self.count()
+        lines = [code for _, code, _ in code_lines(self.INTENTS)
+                 if any(re.search(p, code) for p in self.LITERAL_ONLY) and re.search(r"\d{3,}", code)]
+        self.assertTrue(lines, "the Open Ang intent lost its range")
+        for code in lines:
+            self.assertIn(n, code.replace(",", ""), code.strip())
+
+
 class SQLiteStepGate(unittest.TestCase):
     def test_no_raw_step_loops(self):
         # `while sqlite3_step(s) == SQLITE_ROW` reads SQLITE_CORRUPT / IOERR / NOMEM as "no more

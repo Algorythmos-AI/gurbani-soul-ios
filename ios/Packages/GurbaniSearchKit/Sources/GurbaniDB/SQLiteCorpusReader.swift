@@ -93,7 +93,7 @@ extension SQLiteCandidateSource: CorpusReader, AnalyticsSource {
     }
 
     public func fetchAng(_ n: Int) throws -> AngPage {
-        let ang = max(1, min(1430, n))
+        let ang = max(1, min(GranthAngs.count, n))
         let rs = attachEn(try readerRows("SELECT \(Self.readerCols) FROM lines WHERE ang = ? ORDER BY id") {
             sqlite3_bind_int($0, 1, Int32(clamping: ang))
         })

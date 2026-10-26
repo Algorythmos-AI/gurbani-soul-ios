@@ -104,7 +104,7 @@ public struct VoiceEntry: Sendable, Equatable {
 /// places and entry point.
 public struct VoicesAtlas: Sendable, Equatable {
     public static let bucketSize = 10
-    public static let bucketCount = 143                  // 1,430 Angs / 10
+    public static let bucketCount = (GranthAngs.count + bucketSize - 1) / bucketSize   // 143 buckets of 10 Angs
     /// author → 143 verse-line counts (bucket b covers Angs 10b+1 … 10b+10).
     public let histogram: [String: [Int]]
     /// author → places, most lines first.
@@ -118,7 +118,7 @@ public struct VoicesAtlas: Sendable, Equatable {
     public static func bucket(forAng ang: Int) -> Int { min(max((ang - 1) / bucketSize, 0), bucketCount - 1) }
     public static func angs(inBucket b: Int) -> ClosedRange<Int> {
         let lo = b * bucketSize + 1
-        return lo...min(lo + bucketSize - 1, 1430)
+        return lo...min(lo + bucketSize - 1, GranthAngs.count)
     }
     /// Verse lines in one bucket, over every voice.
     public func total(inBucket b: Int) -> Int { histogram.values.reduce(0) { $0 + ($1.indices.contains(b) ? $1[b] : 0) } }

@@ -18,7 +18,7 @@ public struct ConstellationLens: Sendable, Equatable, Hashable {
     public var angMax: Int
 
     public init(author: String? = nil, raag: String? = nil, raags: [String] = [], rahaoOnly: Bool = false,
-                minThemes: Int = 0, angMin: Int = 1, angMax: Int = 1430) {
+                minThemes: Int = 0, angMin: Int = 1, angMax: Int = GranthAngs.count) {
         self.author = author; self.raag = raag; self.raags = raags; self.rahaoOnly = rahaoOnly
         self.minThemes = minThemes; self.angMin = angMin; self.angMax = angMax
     }
@@ -66,7 +66,7 @@ public struct ConstellationFocus: Sendable, Equatable {
     public static let binCount = 15
     public static let binWidth = 100
     /// The Ang range of bin `i` (1-based, inclusive).
-    public static func angRange(bin i: Int) -> ClosedRange<Int> { (i * binWidth + 1)...min(1430, i * binWidth + binWidth) }
+    public static func angRange(bin i: Int) -> ClosedRange<Int> { (i * binWidth + 1)...min(GranthAngs.count, i * binWidth + binWidth) }
 }
 
 public struct PairVerse: Sendable, Equatable, Identifiable {

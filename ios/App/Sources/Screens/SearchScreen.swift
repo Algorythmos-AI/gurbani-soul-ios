@@ -33,7 +33,7 @@ final class SearchModel {
                 var claim = q
                 if let r = q.range(of: #"(?:^|\s)@(\d{1,4})\s*$"#, options: .regularExpression),
                    let n = Int(q[r].drop(while: { !$0.isNumber }).prefix(while: { $0.isNumber })),
-                   (1...1430).contains(n) {
+                   GranthAngs.all.contains(n) {
                     ang = n
                     claim = String(q[q.startIndex..<r.lowerBound]).trimmingCharacters(in: .whitespaces)
                 }

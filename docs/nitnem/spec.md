@@ -64,7 +64,7 @@ chhand title), `gutkaRow` (two half-lines on one row, each a `gutkaHalf`) / `gut
 with a trustworthy outline of more than one numbered section steps by that rhythm; Rehras and
 Aarti keep "Previous/Next part"), `compositionBegin`, `bandComplete`, `nitnemJourney`, `rehrasVariantPicker`. Explore → Index compositions:
 `composition_<key>` (hero card and "More compositions" row), `compositionNext`, `baniBackToIndex`,
-the section header "MAJOR COMPOSITIONS". Reading settings: `gurmukhiSizeSlider`,
+the section header "Major compositions". Reading settings: `gurmukhiSizeSlider`,
 `readerLeadingPicker`, `readerTonePicker`, `translitToggle`, `englishToggle`. The Jaap reader must
 contain the text "Sri Dasam Granth"; the Rehras row label must contain "Taksal" when that variant
 is chosen. Env hooks: `SGGS_CLOCK_NOW`, `SGGS_UITEST`. Wiped prefs: `sggs_rehras_variant`,

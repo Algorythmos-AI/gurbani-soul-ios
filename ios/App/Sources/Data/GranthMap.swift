@@ -5,7 +5,12 @@ import GurbaniSearchKit
 /// raags (Ang 14–1353), and the banis after the raags (Ang 1353–1430). Built only from the DB's
 /// `raags` and `sections` tables — the movement boundaries are read from the data, never typed in.
 struct GranthMap: Equatable, Sendable {
-    static let totalAngs = 1430
+    /// The last Ang the works reach, read from the data (the raag and section spans): the count the
+    /// Index ribbon is measured in. Before the metadata loads, `GranthAngs.count` stands in.
+    var angCount: Int {
+        [raags.map(\.lastAng).max(), opening.map(\.lastAng).max(), closing.map(\.lastAng).max()]
+            .compactMap { $0 }.max() ?? GranthAngs.count
+    }
 
     /// The raags in saroop order (`seq`).
     let raags: [RaagRow]

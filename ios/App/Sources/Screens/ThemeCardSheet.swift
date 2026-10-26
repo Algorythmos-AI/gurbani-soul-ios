@@ -151,7 +151,7 @@ struct AngStrip: View {
                 }
             }
             HStack {
-                Text("Ang 1"); Spacer(); Text("1430")
+                Text("Ang 1"); Spacer(); Text(String(GranthAngs.count))
             }
             .font(.caption2).foregroundStyle(Ink.muted)
             .accessibilityHidden(true)

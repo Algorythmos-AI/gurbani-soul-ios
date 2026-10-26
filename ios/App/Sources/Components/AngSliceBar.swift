@@ -1,4 +1,5 @@
 import SwiftUI
+import GurbaniSearchKit
 
 /// A hairline map of all 1,430 Angs with one span lit: where a raag or bani sits in the saroop and
 /// how much of it it fills, at a glance (Gauri's 196 Angs vs Jaijavanti's 2). Decorative — the
@@ -6,7 +7,7 @@ import SwiftUI
 struct AngSliceBar: View {
     let first: Int
     let last: Int
-    var total: Int = GranthMap.totalAngs
+    var total: Int = GranthAngs.count
     var height: CGFloat = 4
     @Environment(\.palette) private var palette
 
