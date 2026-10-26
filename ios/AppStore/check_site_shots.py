@@ -48,8 +48,16 @@ EXPECTED = """
     lineage lineage-roll voice-of-the-day lineage-river voice-m9 compare-v2 more_display
 """.split()
 EXPECTED_IPHONE = "verify_typing verify about vaars_home vaar_weave_top vaar_reader_top".split()
+# The widget renders (WidgetRenderTests, HukamWidgetRenderTests, NitnemWidgetRenderTests): every
+# family × mode × appearance. A render whose PNG is never written can still pass its test.
+WIDGETS = (
+    [f"raagnow-{f}-{m}-{a}" for f in ("circular", "inline", "large", "medium", "rectangular", "small")
+     for m in ("fixed", "solar") for a in ("light", "dark")] + ["raagnow-medium-silent-dark"]
+    + [f"hukam-{f}-{x}{a}" for f in ("large", "medium") for x in ("", "ax2-") for a in ("light", "dark")]
+    + [f"nitnem_{f}_{t}_{a}" for f in ("circular", "inline", "medium", "rectangular", "small")
+       for t in ("done", "next") for a in ("light", "dark")])
 SETS = {"iphone-light": EXPECTED + EXPECTED_IPHONE, "iphone-dark": EXPECTED + EXPECTED_IPHONE,
-        "ipad-portrait": EXPECTED, "ipad-landscape": EXPECTED}
+        "ipad-portrait": EXPECTED, "ipad-landscape": EXPECTED, "widgets": WIDGETS}
 
 
 def png_info(data):
@@ -87,7 +95,7 @@ def exif_orientation(tiff):
 def check(out):
     faults = []
     sets = sorted(p for p in out.iterdir() if p.is_dir() and not p.name.startswith("."))
-    for absent in sorted((set(SETS) | {"widgets"}) - {p.name for p in sets}):
+    for absent in sorted(set(SETS) - {p.name for p in sets}):
         faults.append(f"{absent}: the set is missing")
     for s in sets:
         shots = sorted(p for p in s.glob("*.png") if not p.name.startswith("."))
@@ -107,8 +115,6 @@ def check(out):
         missing = sorted(set(SETS.get(s.name, [])) - {p.stem for p in shots})
         if missing:
             faults.append(f"{s.name}: {len(missing)} shot(s) missing: {', '.join(missing)}")
-        if s.name == "widgets" and not shots:
-            faults.append("widgets: no renders")
         for names in by_hash.values():
             if len(names) > 1 and not any(set(names) <= g for g in ALLOWED):
                 faults.append(f"{s.name}: identical pictures under different names: {', '.join(sorted(names))}")
