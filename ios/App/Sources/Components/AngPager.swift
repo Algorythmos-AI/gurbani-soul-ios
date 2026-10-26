@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import os
+import GurbaniSearchKit
 
 /// File-scope (a `static let` isn't allowed on a property of a generic type's nested class).
 private let angPagerLog = Logger(subsystem: "org.sggs", category: "Pager")
@@ -25,7 +26,7 @@ private let angPagerLog = Logger(subsystem: "org.sggs", category: "Pager")
 struct AngPager<Page: View>: UIViewControllerRepresentable {
     /// The desired Ang (read-only input — the router is the single source of truth).
     var index: Int
-    var bounds: ClosedRange<Int> = 1...1430
+    var bounds: ClosedRange<Int> = GranthAngs.all
     var reduceMotion = false
     @ViewBuilder var page: (Int) -> Page
     /// Called only when a finger swipe settles on a new page (never for a programmatic turn).

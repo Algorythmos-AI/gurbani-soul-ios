@@ -6,7 +6,7 @@ import Foundation
 
 /// The Angs (1…1430) on which a voice's verses appear, as a fixed 1430-bit set.
 public struct AngSet: Sendable, Equatable {
-    public static let angCount = 1430
+    public static let angCount = GranthAngs.count
     private var words: [UInt64]
 
     public init<S: Sequence>(_ angs: S) where S.Element == Int {

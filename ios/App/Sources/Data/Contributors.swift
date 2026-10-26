@@ -1,4 +1,5 @@
 import Foundation
+import GurbaniSearchKit
 
 /// The voices of the Granth — static biographical metadata bundled from the web app's
 /// frontend/public/contributors.json (single source of truth; referenced, not copied).
@@ -129,7 +130,7 @@ struct Contributor: Decodable, Identifiable, Sendable, Hashable {
 
     static func firstAng(in text: String) -> Int? {
         guard let r = text.range(of: #"\bAng [0-9]{1,4}\b"#, options: .regularExpression),
-              let n = Int(text[r].dropFirst(4)), (1...1430).contains(n) else { return nil }
+              let n = Int(text[r].dropFirst(4)), GranthAngs.all.contains(n) else { return nil }
         return n
     }
 

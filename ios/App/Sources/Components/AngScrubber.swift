@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import GurbaniSearchKit
 
 /// A large, finger-friendly scrubber for picking an Ang across the whole Granth. Unlike a stock
 /// `Slider` (a ~4 pt track where 1,430 values sit ~0.2 pt apart), the WHOLE 60 pt row is the drag
@@ -9,7 +10,7 @@ import UIKit
 /// `accessibilityRepresentation`, so the custom drawing never costs accessibility.
 struct AngScrubber: View {
     @Binding var value: Int
-    var bounds: ClosedRange<Int> = 1...1430
+    var bounds: ClosedRange<Int> = GranthAngs.all
     /// Angs at which to draw a faint tick (raag boundaries).
     var ticks: [Int] = []
     @Environment(\.palette) private var palette

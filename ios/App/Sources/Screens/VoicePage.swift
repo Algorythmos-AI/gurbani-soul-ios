@@ -190,7 +190,7 @@ struct VoicePage: View {
             AngBarcode(angs: s.angs, color: k, height: 32, marksRaagEnd: true) { ang in
                 container.router.openAng(ang)
             }
-            Text("On \(s.angs.count.formatted()) of 1,430 Angs, from Ang \(s.firstAng) to Ang \(s.lastAng). Tap a mark to open that Ang; the thin line is Ang 1353, where the raag sections end.")
+            Text("On \(s.angs.count.formatted()) of \(GranthAngs.count.formatted()) Angs, from Ang \(s.firstAng) to Ang \(s.lastAng). Tap a mark to open that Ang; the thin line is Ang 1353, where the raag sections end.")
                 .font(.caption).foregroundStyle(.secondary)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 120))], spacing: Theme.Space.s) {
                 StatTile(value: s.nVerses.formatted(), caption: s.nVerses == 1 ? "verse" : "verses")

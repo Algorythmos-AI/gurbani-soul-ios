@@ -160,8 +160,8 @@ struct IndexScreen: View {
         return VStack(alignment: .leading, spacing: Theme.Space.l) {
             if let c = continueTarget { continueCard(c) }
             VStack(alignment: .leading, spacing: Theme.Space.s) {
-                Text("MAJOR COMPOSITIONS")
-                    .font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+                Text("Major compositions")
+                    .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                     .accessibilityAddTraits(.isHeader)
                 // The opening bani spans the row: the rail starts where the Granth starts.
                 if let lead = heroes.first { heroCard(lead, featured: true) }

@@ -30,7 +30,7 @@ struct JumpToAngSheet: View {
     @FocusState private var fieldFocused: Bool
     @State private var detent: PresentationDetent = .fraction(0.65)
 
-    private let bounds = 1...1430
+    private let bounds = GranthAngs.all
 
     init(current: Int, focusField: Bool = false, onGo: @escaping (Int) -> Void) {
         self.current = current
@@ -131,7 +131,7 @@ struct JumpToAngSheet: View {
                 .accessibilityIdentifier("angField")
                 .accessibilityLabel("Ang number")
                 .accessibilityValue(String(effectiveTarget))
-                .accessibilityHint("Edit the number to any Ang from 1 to 1430")
+                .accessibilityHint("Edit the number to any Ang from 1 to \(String(GranthAngs.count))")
                 // pencil affordance so the number reads as editable, not a static label
                 .overlay(alignment: .trailing) {
                     if !fieldFocused {
@@ -152,12 +152,12 @@ struct JumpToAngSheet: View {
                 }
 
             if invalidTyped {
-                Text("Enter an Ang between 1 and 1430.")
+                Text("Enter an Ang between 1 and \(String(GranthAngs.count)).")
                     .font(.footnote).foregroundStyle(Ink.negative)
             } else if let loc = location {
                 locationLine(loc)
             } else {
-                Text("of 1430").font(.footnote).foregroundStyle(.secondary)
+                Text("of \(String(GranthAngs.count))").font(.footnote).foregroundStyle(.secondary)
             }
         }
         .frame(maxWidth: .infinity)
@@ -178,7 +178,7 @@ struct JumpToAngSheet: View {
         HStack {
             Text("1").foregroundStyle(.secondary)
             Spacer()
-            Text("1430").foregroundStyle(.secondary)
+            Text(String(GranthAngs.count)).foregroundStyle(.secondary)
         }
         .font(.caption).monospacedDigit()
         .accessibilityHidden(true)
@@ -250,7 +250,7 @@ struct JumpToAngSheet: View {
             Divider().overlay(Ink.hairline)
             Button { go() } label: {
                 Text(canGo ? "Go to Ang \(effectiveTarget)"
-                           : (invalidTyped ? "Enter an Ang from 1 to 1430" : "You're on Ang \(current)"))
+                           : (invalidTyped ? "Enter an Ang from 1 to \(String(GranthAngs.count))" : "You're on Ang \(current)"))
                     .contentTransition(.numericText())
                     .frame(maxWidth: .infinity, minHeight: 56)
             }

@@ -41,7 +41,7 @@ extension SQLiteCandidateSource {
         let rgs = Array(lens.raags.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }.prefix(40))
         return ConstellationLens(author: au, raag: rg, raags: rgs, rahaoOnly: lens.rahaoOnly,
                                  minThemes: max(0, min(8, lens.minThemes)),
-                                 angMin: max(1, min(1430, lens.angMin)), angMax: max(1, min(1430, lens.angMax)))
+                                 angMin: max(1, min(GranthAngs.count, lens.angMin)), angMax: max(1, min(GranthAngs.count, lens.angMax)))
     }
 
     func lensWhere(_ lens: ConstellationLens) -> (String, [Bind]) {
@@ -56,7 +56,7 @@ extension SQLiteCandidateSource {
         if lens.minThemes > 1 {
             parts.append("(SELECT COUNT(*) FROM concept_lines x WHERE x.line_id=l.id)>=?"); binds.append(.int(lens.minThemes))
         }
-        if lens.angMin > 1 || lens.angMax < 1430 {
+        if lens.angMin > 1 || lens.angMax < GranthAngs.count {
             parts.append("l.ang BETWEEN ? AND ?"); binds += [.int(lens.angMin), .int(lens.angMax)]
         }
         return (parts.isEmpty ? "" : " AND " + parts.joined(separator: " AND "), binds)

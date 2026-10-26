@@ -22,7 +22,7 @@ final class ReaderModel {
     private let loader: @Sendable (Int) async throws -> AngPage
     let hasTiming: Bool
 
-    static let bounds = 1...1430
+    static let bounds = GranthAngs.all
     static let capacity = 7                      // anchor ±2 protected + slack
     private static let log = Logger(subsystem: "org.sggs", category: "Reader")
 
@@ -165,7 +165,7 @@ struct ReaderScreen: View {
                     // page's scroll position survives a swipe-back. `readerAng` is the single source
                     // of truth — the pager writes it via `pagerSettled` on a swipe, and external
                     // navigation (Jump, deep link, chevrons, pills) drives the pager through it.
-                    AngPager(index: router.readerAng, bounds: 1...1430, reduceMotion: reduceMotion) { ang in
+                    AngPager(index: router.readerAng, bounds: ReaderModel.bounds, reduceMotion: reduceMotion) { ang in
                         AngPageView(ang: ang, model: model,
                                     onOpenJump: { showJump = true },
                                     onScroll: { y, content, viewport in
@@ -230,13 +230,13 @@ struct ReaderScreen: View {
                         // way into Jump, and a sense of place in the whole Granth.
                         Button { Haptics.tap(); showJump = true } label: {
                             VStack(spacing: 3) {
-                                Text("Ang \(String(router.readerAng)) of 1430")
+                                Text("Ang \(String(router.readerAng)) of \(String(GranthAngs.count))")
                                     .font(.caption).monospacedDigit().foregroundStyle(.secondary)
                                 GeometryReader { g in
                                     ZStack(alignment: .leading) {
                                         Capsule().fill(Ink.hairline).frame(height: 2)
                                         Capsule().fill(palette.accent)
-                                            .frame(width: g.size.width * CGFloat(router.readerAng) / 1430, height: 2)
+                                            .frame(width: g.size.width * CGFloat(router.readerAng) / CGFloat(GranthAngs.count), height: 2)
                                     }
                                 }.frame(height: 2)
                             }
@@ -391,14 +391,14 @@ extension ReaderScreen {
             Spacer(minLength: Theme.Space.s)
             Button { Haptics.tap(); container.router.openAng(next) } label: {
                 HStack(spacing: Theme.Space.xs) {
-                    if numbers, next <= 1430 { Text(String(next)).monospacedDigit().lineLimit(1).fixedSize() }
+                    if numbers, next <= GranthAngs.count { Text(String(next)).monospacedDigit().lineLimit(1).fixedSize() }
                     Image(systemName: "chevron.right")
                 }
                 .frame(minWidth: 44, minHeight: 44).contentShape(Rectangle())
             }
-            .disabled(ang >= 1430)
+            .disabled(ang >= GranthAngs.count)
             .accessibilityLabel("Next Ang")
-            .accessibilityValue(next <= 1430 ? "Ang \(String(next))" : "")
+            .accessibilityValue(next <= GranthAngs.count ? "Ang \(String(next))" : "")
             .accessibilityIdentifier("nextAng")
         }
     }

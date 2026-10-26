@@ -157,7 +157,7 @@ struct AngPageView: View {
                 // Fixed-height slot so it never shifts the verses above.
                 HStack {
                     Spacer()
-                    if page.ang < 1430, model.continuesOn(after: page.ang) {
+                    if page.ang < GranthAngs.count, model.continuesOn(after: page.ang) {
                         ContinuationPill(text: "Continues on Ang \(String(page.ang + 1))",
                                          systemImage: "arrow.down.forward",
                                          identifier: "continuesOnPill",

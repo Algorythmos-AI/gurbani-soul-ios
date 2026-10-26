@@ -17,7 +17,7 @@ final class RibbonLayoutTests: XCTestCase {
 
     func testStripIsContiguousAndCoversTheWholeGranth() throws {
         let (l, map) = try layout()
-        XCTAssertEqual(l.length, Double(GranthMap.totalAngs), accuracy: 1e-9, "one unit per Ang, 1…1430")
+        XCTAssertEqual(l.length, Double(GranthAngs.count), accuracy: 1e-9, "one unit per Ang, 1…\(GranthAngs.count)")
         XCTAssertEqual(l.segments.count, map.opening.count + map.raags.count + map.closing.count)
         XCTAssertEqual(l.segments.first?.x0, 0)
         for (a, b) in zip(l.segments, l.segments.dropFirst()) {
@@ -31,7 +31,7 @@ final class RibbonLayoutTests: XCTestCase {
 
     func testEveryAngMapsBackToAWorkThatHoldsIt() throws {
         let (l, _) = try layout()
-        for a in 1...GranthMap.totalAngs {
+        for a in GranthAngs.all {
             let x = try XCTUnwrap(l.x(forAng: a), "Ang \(a) is off the strip")
             let s = try XCTUnwrap(l.segment(at: x))
             XCTAssertTrue((s.firstAng...s.lastAng).contains(a), "Ang \(a) landed on \(s.name)")

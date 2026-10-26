@@ -1,4 +1,5 @@
 import SwiftUI
+import GurbaniSearchKit
 
 /// Where each Vaar sits in the Granth (VaarSpanRibbon — distinct from the Voices GranthRibbon): a 1–1430 axis with one mark per Vaar over its Ang span,
 /// coloured by the Vaar's pauri voice. Tap or drag to pick a Vaar (a selection tick per change);
@@ -14,7 +15,7 @@ struct VaarSpanRibbon: View {
 
     let marks: [Mark]
     @Binding var selected: Int?
-    static let angs = 1...1430
+    static let angs = GranthAngs.all
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Space.xs) {
@@ -41,7 +42,7 @@ struct VaarSpanRibbon: View {
             }
             .frame(height: 26)
             HStack {
-                Text("Ang 1"); Spacer(); Text("Ang 1430")
+                Text("Ang \(String(Self.angs.lowerBound))"); Spacer(); Text("Ang \(String(Self.angs.upperBound))")
             }
             .font(.caption2).foregroundStyle(.secondary).monospacedDigit()
         }

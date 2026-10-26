@@ -20,6 +20,8 @@ struct RaagScreen: View {
     @State private var timing: RaagTiming?
     @State private var vaars: [VaarSummary] = []
     @State private var raagCount = 31
+    /// The Granth's last Ang, from the data once the metadata is loaded.
+    private var angCount: Int { container.meta.map { GranthMap(meta: $0).angCount } ?? GranthAngs.count }
     @State private var voicesExpanded = false
 
     var body: some View {
@@ -95,12 +97,12 @@ struct RaagScreen: View {
                     Spacer()
                     Text((r.firstAng...r.lastAng).angLabel).font(.caption.weight(.semibold)).monospacedDigit()
                     Spacer()
-                    Text("Ang \(String(GranthMap.totalAngs))").font(.caption2).foregroundStyle(.tertiary)
+                    Text("Ang \(String(angCount))").font(.caption2).foregroundStyle(.tertiary)
                 }
                 .monospacedDigit()
             }
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("\((r.firstAng...r.lastAng).angLabel) of \(String(GranthMap.totalAngs))")
+            .accessibilityLabel("\((r.firstAng...r.lastAng).angLabel) of \(String(angCount))")
             ViewThatFits(in: .horizontal) {
                 HStack(spacing: Theme.Space.s) { actions(r, continueAng: continueAng) }
                 VStack(alignment: .leading, spacing: Theme.Space.s) { actions(r, continueAng: continueAng) }

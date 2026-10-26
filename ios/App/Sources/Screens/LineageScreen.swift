@@ -147,8 +147,8 @@ struct LineageScreen: View {
         let span = Self.span(list)
         let verses = summaries.values.reduce(0) { $0 + $1.nVerses }
         return VStack(alignment: .leading, spacing: Theme.Space.s) {
-            Text("THE CONTRIBUTORS")
-                .font(.caption2.weight(.semibold)).kerning(1.2)
+            Text("The contributors")
+                .font(.caption.weight(.semibold))
                 .foregroundStyle(palette.accentText)
             // With the bundled roster this renders "36 voices · 12th–17th century" —
             // the header string the UI tests assert.

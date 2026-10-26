@@ -122,6 +122,8 @@ struct SearchGurbaniIntent: AppIntent {
 
 struct OpenAngIntent: AppIntent {
     static let title: LocalizedStringResource = "Open Ang"
+    // App Intents metadata needs compile-time literals here, so these two lines repeat
+    // GranthAngs.count; the gate `test_the_ang_count_is_typed_only_in_granth_angs` holds them to it.
     static let description = IntentDescription("Open the Reader at a specific Ang (1–1430).")
     static let openAppWhenRun = true
 

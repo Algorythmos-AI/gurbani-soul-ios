@@ -72,7 +72,7 @@ struct GranthRibbon: View {
             axis
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Granth ribbon, 1,430 Angs in groups of ten")
+        .accessibilityLabel("Granth ribbon, \(GranthAngs.count.formatted()) Angs in groups of ten")
         .accessibilityValue(RibbonModel.describe(focus, column: model.columns[focus], selected: selected))
         .accessibilityAdjustableAction { dir in
             switch dir {
@@ -143,7 +143,7 @@ struct GranthRibbon: View {
 
     private var axis: some View {
         HStack {
-            Text("Ang 1"); Spacer(); Text("Ang 715"); Spacer(); Text("Ang 1430")
+            Text("Ang 1"); Spacer(); Text("Ang \(String(GranthAngs.count / 2))"); Spacer(); Text("Ang \(String(GranthAngs.count))")
         }
         .font(.caption2).monospacedDigit().foregroundStyle(.secondary)
         .accessibilityHidden(true)

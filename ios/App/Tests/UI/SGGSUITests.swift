@@ -751,14 +751,14 @@ final class SGGSUITests: XCTestCase {
         attachShot(app, "index_compositions")
 
         app.buttons["index_raags"].firstMatch.tap()
-        XCTAssertTrue(app.staticTexts["BEFORE THE RAAGS"].waitForExistence(timeout: 10), "opening movement missing")
+        XCTAssertTrue(app.staticTexts["Before the raags"].waitForExistence(timeout: 10), "opening movement missing")
         attachShot(app, "index_raags_top")
         let gauri = app.buttons["raag_gauri"].firstMatch
         for _ in 0..<6 where !(gauri.exists && gauri.isHittable) { app.swipeUp() }
         XCTAssertTrue(gauri.waitForExistence(timeout: 8), "Raag Gauri card missing")
         XCTAssertTrue(gauri.label.contains("Angs 151–346"), "the card must name its Angs: \(gauri.label)")
         attachShot(app, "index_raags_grid")
-        let after = app.staticTexts["AFTER THE RAAGS"].firstMatch
+        let after = app.staticTexts["After the raags"].firstMatch
         for _ in 0..<12 where !(after.exists && after.isHittable) { app.swipeUp() }
         XCTAssertTrue(after.waitForExistence(timeout: 8), "closing movement missing")
         attachShot(app, "index_raags_after")
@@ -779,16 +779,16 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(tab(app, "Explore").isSelected, "a raag page lives inside Explore")
         XCTAssertTrue(app.buttons["raagBegin"].firstMatch.waitForExistence(timeout: 8))
         XCTAssertTrue(app.buttons["raagBegin"].firstMatch.label.contains("Ang 876"), "Ramkali begins at Ang 876")
-        XCTAssertTrue(app.staticTexts["VOICES IN THIS RAAG"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.staticTexts["Voices in this raag"].waitForExistence(timeout: 8))
         attachShot(app, "raag_ramkali_top")
-        let vaars = app.staticTexts["ITS 3 VAARS"].firstMatch
+        let vaars = app.staticTexts["Its 3 Vaars"].firstMatch
         for _ in 0..<8 where !(vaars.exists && vaars.isHittable) { app.swipeUp() }
         XCTAssertTrue(vaars.waitForExistence(timeout: 8), "Ramkali carries three Vaars")
-        XCTAssertTrue(app.staticTexts["FORMS IN THIS RAAG"].exists, "the forms section is missing")
+        XCTAssertTrue(app.staticTexts["Forms in this raag"].exists, "the forms section is missing")
         attachShot(app, "raag_ramkali_forms")
         let clock = app.buttons["raagOpenClock"].firstMatch
         for _ in 0..<6 where !(clock.exists && clock.isHittable) { app.swipeUp() }
-        XCTAssertTrue(app.staticTexts["TRADITIONAL TIME"].exists, "the cited hour section is missing")
+        XCTAssertTrue(app.staticTexts["Traditional time"].exists, "the cited hour section is missing")
         attachShot(app, "raag_ramkali_time")
 
         app.navigationBars["Raag Ramkali"].buttons.element(boundBy: 0).tap()
@@ -1068,7 +1068,7 @@ final class SGGSUITests: XCTestCase {
         // the "verses" stat tile (the canonical count, same as the card) always renders once the
         // profile loads (some voices, like Farid, legitimately have no signature-themes section)
         XCTAssertTrue(app.staticTexts["verses"].waitForExistence(timeout: 12), "voice page did not load")
-        XCTAssertTrue(app.staticTexts["THEIR BANI IN THE GRANTH"].exists, "Ang barcode section missing")
+        XCTAssertTrue(app.staticTexts["Their Bani in the Granth"].exists, "Ang barcode section missing")
         XCTAssertTrue(app.buttons["voiceBeginFirst"].waitForExistence(timeout: 12), "voice actions missing")
         app.navigationBars.buttons.element(boundBy: 0).tap()   // back to Lineage
         // compare two voices
@@ -1078,9 +1078,9 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(pickCard(app, farid), "compare: Farid card missing")
         let jaidev = app.buttons["voiceCard_bhagat-jaidev-ji"].firstMatch
         XCTAssertTrue(pickCard(app, jaidev), "compare: Jaidev card missing")
-        XCTAssertTrue(app.staticTexts["ACROSS THE GRANTH"].waitForExistence(timeout: 12),
+        XCTAssertTrue(app.staticTexts["Across the Granth"].waitForExistence(timeout: 12),
                       "compare sheet missing")
-        XCTAssertTrue(app.staticTexts["THEME EMPHASIS"].waitForExistence(timeout: 12), "diverging theme bars missing")
+        XCTAssertTrue(app.staticTexts["Theme emphasis"].waitForExistence(timeout: 12), "diverging theme bars missing")
         app.buttons["Done"].tap()
         app.navigationBars.buttons.element(boundBy: 0).tap()   // back to Explore
         // vaars
@@ -1288,9 +1288,9 @@ final class SGGSUITests: XCTestCase {
         let m1 = app.buttons["voiceCard_guru-nanak-dev-ji"].firstMatch
         for _ in 0..<6 where !(m1.exists && m1.isHittable) { app.swipeDown() }
         XCTAssertTrue(m1.waitForExistence(timeout: 8), "M1 card missing"); m1.tap()
-        XCTAssertTrue(app.staticTexts["ACROSS THE GRANTH"].waitForExistence(timeout: 12), "compare: barcodes missing")
-        XCTAssertTrue(app.staticTexts["THEME EMPHASIS"].waitForExistence(timeout: 12), "compare: theme bars missing")
-        XCTAssertTrue(app.staticTexts["LIFETIMES"].exists, "compare: lifetimes missing")
+        XCTAssertTrue(app.staticTexts["Across the Granth"].waitForExistence(timeout: 12), "compare: barcodes missing")
+        XCTAssertTrue(app.staticTexts["Theme emphasis"].waitForExistence(timeout: 12), "compare: theme bars missing")
+        XCTAssertTrue(app.staticTexts["Lifetimes"].exists, "compare: lifetimes missing")
         app.buttons["Done"].tap()
     }
 
@@ -1898,7 +1898,7 @@ final class SGGSUITests: XCTestCase {
         sahaj.tap()
         XCTAssertTrue(app.navigationBars["Sahaj"].waitForExistence(timeout: 12))
         XCTAssertTrue(app.descendants(matching: .any)["themes.page.headword"].firstMatch.waitForExistence(timeout: 12))
-        XCTAssertTrue(app.staticTexts["HEART-LINES"].waitForExistence(timeout: 12), "no Rahao lines section")
+        XCTAssertTrue(app.staticTexts["Heart-lines"].waitForExistence(timeout: 12), "no Rahao lines section")
         attachShot(app, "theme-page")
         let word = app.buttons.matching(identifier: "themes.word").element(boundBy: 2)
         XCTAssertTrue(word.waitForExistence(timeout: 8), "no word chips")
@@ -2392,7 +2392,7 @@ final class SGGSUITests: XCTestCase {
             try audit("Index")
             if app.buttons["index_raags"].firstMatch.waitForExistence(timeout: 5) {
                 app.buttons["index_raags"].firstMatch.tap()
-                _ = app.staticTexts["BEFORE THE RAAGS"].waitForExistence(timeout: 8)
+                _ = app.staticTexts["Before the raags"].waitForExistence(timeout: 8)
                 try audit("Index Raags")
                 let gauri = app.buttons["raag_gauri"].firstMatch
                 for _ in 0..<6 where !(gauri.exists && gauri.isHittable) { app.swipeUp() }
@@ -2544,7 +2544,7 @@ final class SGGSUITests: XCTestCase {
         let index = app.buttons["Index"].firstMatch
         if index.waitForExistence(timeout: 8) { index.tap() }
         _ = app.navigationBars["Index"].waitForExistence(timeout: 8)
-        _ = app.staticTexts["MAJOR COMPOSITIONS"].waitForExistence(timeout: 8)
+        _ = app.staticTexts["Major compositions"].waitForExistence(timeout: 8)
         shot("index")
         // A major composition opens its own reader on the Explore stack (Index → composition).
         let composition = app.buttons["composition_sukhmani"].firstMatch
@@ -2563,7 +2563,7 @@ final class SGGSUITests: XCTestCase {
         shot("index_compositions_continue")
         if app.buttons["index_raags"].firstMatch.waitForExistence(timeout: 5) {
             app.buttons["index_raags"].firstMatch.tap()
-            _ = app.staticTexts["BEFORE THE RAAGS"].waitForExistence(timeout: 8)
+            _ = app.staticTexts["Before the raags"].waitForExistence(timeout: 8)
             shot("index_raags")
             let gauri = app.buttons["raag_gauri"].firstMatch
             for _ in 0..<6 where !(gauri.exists && gauri.isHittable) { app.swipeUp() }
@@ -2738,7 +2738,7 @@ final class SGGSUITests: XCTestCase {
             for _ in 0..<6 where !(m1.exists && m1.isHittable) { app.swipeDown() }
             if m1.waitForExistence(timeout: 5) {
                 m1.tap()
-                _ = app.staticTexts["THEME EMPHASIS"].waitForExistence(timeout: 12)
+                _ = app.staticTexts["Theme emphasis"].waitForExistence(timeout: 12)
                 shot("compare-v2")
                 app.buttons["Done"].tap()
             }

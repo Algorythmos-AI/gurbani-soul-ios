@@ -27,7 +27,7 @@ struct ConstellationScreen: View {
     private var concepts: [ConceptRow] { container.meta?.concepts ?? [] }
     /// The Ang-strip bin the lens is narrowed to (nil = all 1,430 Angs).
     private var selectedBin: Int? {
-        guard lens.angMin > 1 || lens.angMax < 1430 else { return nil }
+        guard lens.angMin > 1 || lens.angMax < GranthAngs.count else { return nil }
         return (lens.angMin - 1) / ConstellationFocus.binWidth
     }
     /// Large type reads better as a list; the map is still one tap away.
@@ -193,7 +193,7 @@ struct ConstellationScreen: View {
                     if let bin {
                         let r = ConstellationFocus.angRange(bin: bin)
                         lens.angMin = r.lowerBound; lens.angMax = r.upperBound
-                    } else { lens.angMin = 1; lens.angMax = 1430 }
+                    } else { lens.angMin = 1; lens.angMax = GranthAngs.count }
                 }
             }
             if f.total == 0 {

@@ -208,7 +208,7 @@ struct SaroopRibbon: View {
                     HStack(alignment: .firstTextBaseline) {
                         SectionEyebrow(text: "The saroop", symbol: "book.pages")
                         Spacer(minLength: Theme.Space.s)
-                        Text("\(GranthMap.totalAngs.formatted()) Angs")
+                        Text("\(Int(layout.length.rounded()).formatted()) Angs")
                             .font(.caption2).foregroundStyle(.secondary).monospacedDigit()
                     }
                     HStack(spacing: Theme.Space.xs) {

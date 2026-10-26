@@ -66,7 +66,7 @@ enum ThemeFilterText {
         if f.lens.rahaoOnly { out.append("Rahao lines only") }
         if let a = f.lens.author { out.append(a.replacingOccurrences(of: " Ji", with: "")) }
         if let r = f.lens.raag { out.append(raagName(r)) }
-        if f.lens.angMin > 1 || f.lens.angMax < 1430 { out.append("Angs \(f.lens.angMin)–\(f.lens.angMax)") }
+        if f.lens.angMin > 1 || f.lens.angMax < GranthAngs.count { out.append("Angs \(f.lens.angMin)–\(f.lens.angMax)") }
         return out
     }
 }
