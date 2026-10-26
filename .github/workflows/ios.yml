@@ -105,9 +105,9 @@ jobs:
             CODE_SIGNING_ALLOWED=NO | tail -60
       # Runs even when the unit tests failed, so one run reports every failure (the job still fails).
       # The UI step does not fail the job by itself: the "Failing tests" step below is the gate. It
-      # fails on any failure recorded in either bundle, and on a missing or unreadable bundle, so a
-      # real failure still fails the job. This lets a flaky-only failure that passes its one retry
-      # finish green, which is what the retry step is for.
+      # fails on any failure recorded in either bundle, and on a missing or unreadable bundle.
+      # No test is retried: the two Nitnem tests that used to be were fixed at their causes (the
+      # bani bar hiding on the app's own landing scroll; a fling past the journey card).
       - name: UI tests (SGGSUITests)
         id: ui
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
@@ -117,35 +117,6 @@ jobs:
             -destination "id=$SIM_UDID" -only-testing:SGGSUITests \
             -test-timeouts-enabled YES -resultBundlePath "$RUNNER_TEMP/uitests.xcresult" \
             CODE_SIGNING_ALLOWED=NO | tail -80
-      # Two Nitnem UI tests fail intermittently on the simulator (timing, not code; each has passed on the
-      # identical commit a run earlier). When they are the ONLY failures, run just those tests once more
-      # and let the retry's bundle stand for the gate; any other failure leaves the first bundle untouched.
-      - name: Retry the known-flaky UI tests once (only when nothing else failed)
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: |
-          f="$RUNNER_TEMP/uitests.xcresult"
-          [ -d "$f" ] || exit 0
-          xcrun xcresulttool get test-results summary --path "$f" --compact > "$RUNNER_TEMP/uitests-first.json" || exit 0
-          only=$(python3 - "$RUNNER_TEMP/uitests-first.json" <<'PY'
-          import json, sys
-          flaky = {"testNitnemOpensJapjiAndCompletes", "testJourneyOpens"}
-          s = json.load(open(sys.argv[1]))
-          names = set()
-          for t in s.get('testFailures', []):
-              ident = t.get('testIdentifierString') or t.get('testName') or ''
-              names.add(ident.split('/')[-1].rstrip('()'))
-          print(' '.join(sorted(names)) if names and names <= flaky else '')
-          PY
-          )
-          [ -n "$only" ] || { echo "no flaky-only failure set; nothing to retry"; exit 0; }
-          echo "::warning::retrying known-flaky UI tests once: $only"
-          mv "$f" "$RUNNER_TEMP/uitests-first.xcresult"
-          read -ra names <<<"$only"; args=()
-          for t in "${names[@]}"; do args+=("-only-testing:SGGSUITests/SGGSUITests/$t"); done
-          xcodebuild test-without-building -project ios/App/SGGS.xcodeproj -scheme SGGS \
-            -destination "id=$SIM_UDID" "${args[@]}" \
-            -test-timeouts-enabled YES -resultBundlePath "$f" \
-            CODE_SIGNING_ALLOWED=NO | tail -40 || true
       # The log above keeps only its last lines; name every failing test from the result bundles.
       - name: Failing tests (from the result bundles)
         # Names every failing test, and is a second, independent gate: the job also fails here if a
@@ -153,11 +124,6 @@ jobs:
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: |
           bad=0
-          if [ -d "$RUNNER_TEMP/uitests-first.xcresult" ]; then
-            echo "first UI attempt (before the one retry):"
-            xcrun xcresulttool get test-results summary --path "$RUNNER_TEMP/uitests-first.xcresult" --compact \
-              | python3 -c 'import json,sys;s=json.load(sys.stdin);print(f"  {s.get(\"result\")} — passed {s.get(\"passedTests\")}, failed {s.get(\"failedTests\")}")' || true
-          fi
           for b in unit uitests; do
             f="$RUNNER_TEMP/$b.xcresult"
             if [ ! -d "$f" ]; then echo "::error title=$b::no result bundle — the test step did not finish"; bad=1; continue; fi
@@ -186,6 +152,5 @@ jobs:
           path: |
             ${{ runner.temp }}/unit.xcresult
             ${{ runner.temp }}/uitests.xcresult
-            ${{ runner.temp }}/uitests-first.xcresult
           if-no-files-found: ignore
           retention-days: 7

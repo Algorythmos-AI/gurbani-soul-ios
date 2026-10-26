@@ -7,12 +7,18 @@ import SwiftUI
 struct ReaderScrollTracking: ViewModifier {
     let onScroll: (CGFloat, CGFloat, CGFloat) -> Void
     let onContentHeight: (CGFloat) -> Void
+    /// iOS 18+: whether the reader's own finger is moving the page (dragging, or the fling it
+    /// left coasting). Never called on iOS 17, where the scroll phase is not observable.
+    var onUserScrolling: ((Bool) -> Void)? = nil
     func body(content: Content) -> some View {
         if #available(iOS 18.0, *) {
             content.onScrollGeometryChange(for: ScrollSnapshot.self) { g in
                 ScrollSnapshot(y: g.contentOffset.y + g.contentInsets.top,
                                content: g.contentSize.height, viewport: g.containerSize.height)
             } action: { _, s in onScroll(s.y, s.content, s.viewport) }
+            .onScrollPhaseChange { _, phase in
+                onUserScrolling?(phase == .tracking || phase == .interacting || phase == .decelerating)
+            }
         } else {
             content
                 .onPreferenceChange(ReaderScrollOffsetKey.self) { y in onScroll(y, 0, 0) }
@@ -35,6 +41,13 @@ struct ReaderContentHeightKey: PreferenceKey {
 /// downwards (> 24 pt run, past 80 pt, on a page taller than the viewport + 120 so short pages
 /// never flicker); restore on ≥ 8 pt upwards or at the top. Never for VoiceOver / Switch
 /// Control users — the chrome is their navigation. Reduce Motion: MotionGate makes it instant.
+///
+/// Only the reader's own scrolling may hide it. Where the scroll phase is known (iOS 18+,
+/// `userScrolling`), movement the reader did not make — the app's landing scroll after "Next
+/// pauri", a lazy stack settling its row heights — never counts, however long it takes. The
+/// landing window below remains the guard on iOS 17. On a slow simulator a pauri landing took
+/// about 3 s, long after the 1 s window had closed; its tail hid the bar, and the next tap on
+/// the invisible "Next pauri" opened the verse underneath instead (CI run 40083157947).
 struct AmbientChrome {
     var hidden = false
     private var lastOffset: CGFloat = 0
@@ -47,20 +60,31 @@ struct AmbientChrome {
     private var landingGeneration = 0
     /// True while hands-free auto-scroll runs (the programmatic pace must not toggle chrome).
     var autoScrolling = false
+    /// Whether the reader is moving the page themselves; nil where the scroll phase is unknown.
+    var userScrolling: Bool?
 
-    /// Returns the new `hidden` value when it should change, nil otherwise.
+    /// Returns the new `hidden` value when it should change, nil otherwise. `hidden` follows it:
+    /// it used to be left false, so in the bani reader an upward read never brought the bar back.
     @MainActor mutating func scrolled(to offset: CGFloat) -> Bool? {
+        let change = decide(offset)
+        if let change { hidden = change }
+        return change
+    }
+
+    @MainActor private mutating func decide(_ offset: CGFloat) -> Bool? {
         let delta = offset - lastOffset
         lastOffset = offset
         if landingInProgress || autoScrolling { downRun = 0; upRun = 0; return nil }
         if UIAccessibility.isVoiceOverRunning || UIAccessibility.isSwitchControlRunning { return hidden ? false : nil }
+        if userScrolling == false { downRun = 0; upRun = 0; return hidden && offset <= 0 ? false : nil }
         if delta > 0 { downRun += delta; upRun = 0 } else if delta < 0 { upRun += -delta; downRun = 0 }
         if !hidden, downRun > 24, offset > 80, contentHeight > viewportHeight + 120 { return true }
         if hidden, upRun >= 8 || offset <= 0 { return false }
         return nil
     }
 
-    mutating func reset() { downRun = 0; upRun = 0 }
+    /// The chrome was shown by the screen itself (a jump, Sehaj focus, auto-scroll stopping).
+    mutating func reset() { downRun = 0; upRun = 0; hidden = false }
 
     /// Start a programmatic landing; hand the token to `endLanding` when it should be over. Only the
     /// latest landing's token ends it, so a reader tapping "Next pauri" twice in a second is never
