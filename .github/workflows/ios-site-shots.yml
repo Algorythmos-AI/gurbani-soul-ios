@@ -1,0 +1,63 @@
+name: iOS site screenshots
+
+# Manual: capture the gurbanisoul.com screenshot set from the app at a given tag or SHA, with the
+# PUBLIC (Gurmukhi-only) DB, on fresh simulators (iPhone 17 Pro light + dark, iPad Pro 13" portrait
+# + landscape) and the widget renders, then upload the PNGs with SHA256SUMS and provenance.json.
+# The capture script and the SiteShotTests driver come from this workflow's commit, so an older tag
+# can be captured too; the app sources under test are always the requested ref's.
+#
+#   gh workflow run ios-site-shots.yml --repo Algorythmos-AI/gurbani-soul-ios -f ref=v1.4.9
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Tag or full SHA whose app sources are captured (e.g. v1.4.9)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-site-shots-${{ inputs.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  capture:
+    runs-on: macos-15
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v7
+        with: { ref: "${{ inputs.ref }}" }
+      - uses: actions/checkout@v7
+        with: { path: .site-shots-driver }
+      - uses: ./.github/actions/fetch-dataset
+        with: { token: "${{ secrets.SGGS_READ_TOKEN || github.token }}" }
+      - uses: ./.github/actions/select-xcode
+      - name: Build the personal pair the project builds with (replaced by the public DB in the built app)
+        run: python3 pipeline/build_ios_db.py --profile personal
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Add the driver (SiteShotTests) when the ref predates it
+        run: |
+          f=ios/App/Tests/UI/SiteShotTests.swift
+          if [ -f "$f" ]; then echo "the ref has its own $f"; else cp ".site-shots-driver/$f" "$f"; echo "driver added from $(git -C .site-shots-driver rev-parse HEAD)"; fi
+      - name: Capture
+        env:
+          REF: ${{ inputs.ref }}
+        run: |
+          echo "capturing $REF = $(git rev-parse HEAD)"
+          bash .site-shots-driver/ios/AppStore/capture_site_shots.sh "$RUNNER_TEMP/site-shots"
+      - name: Upload the shots
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: site-shots
+          path: ${{ runner.temp }}/site-shots
+          if-no-files-found: error
+          retention-days: 14
