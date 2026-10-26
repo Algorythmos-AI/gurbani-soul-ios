@@ -35,6 +35,7 @@ final class ExploreDigestTests: XCTestCase {
         let (meta, vaars, roster) = try shipped()
         let d = ExploreDigest(meta: meta, vaars: vaars, roster: roster, lastAng: 262)
         XCTAssertEqual(d.raagMass, GranthMap(meta: meta).raags.map(\.nLines), "one bar per raag, in saroop order")
+        XCTAssertEqual(d.raagNames.count, d.raagMass.count)
         XCTAssertEqual(d.voices.count, meta.authors.count, "every voice draws")
         XCTAssertEqual(d.voices.map(\.lines).reduce(0, +), meta.authors.map(\.nLines).reduce(0, +))
         XCTAssertEqual(d.vaarMarks.count, vaars.count)
@@ -65,7 +66,7 @@ final class ExploreDigestTests: XCTestCase {
     func testContinueNamesTheVaarInProgress() throws {
         let (meta, vaars, roster) = try shipped()
         let v = try XCTUnwrap(vaars.first)
-        let d = ExploreDigest(meta: meta, vaars: vaars, roster: roster, lastAng: nil, continueVaar: (v.vaarId, 0.4))
+        let d = ExploreDigest(meta: meta, vaars: vaars, roster: roster, lastAng: nil, continueVaar: (v.vaarId, 1, 0.4))
         let raag = try XCTUnwrap(d.continueVaar?.raag)
         XCTAssertFalse(raag.isEmpty)
         XCTAssertEqual(d.caption(.vaars), "Continue · Raag \(raag)")

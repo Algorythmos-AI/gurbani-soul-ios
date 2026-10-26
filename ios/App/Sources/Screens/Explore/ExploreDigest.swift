@@ -19,6 +19,9 @@ struct ExploreDigest: Equatable {
     }
 
     struct ContinueVaar: Equatable {
+        let vaarId: Int
+        /// The verbatim corpus line id the reader stopped at (resumes exactly there).
+        let lineId: Int
         let raag: String
         let fraction: Double
     }
@@ -41,6 +44,8 @@ struct ExploreDigest: Equatable {
 
     // Insights: verse lines per raag, in saroop order (never sorted by size)
     let raagMass: [Int]
+    /// English names, parallel to `raagMass` (for the chart's spoken descriptor).
+    let raagNames: [String]
 
     // Lineage
     let voices: [VoiceLines]
@@ -52,7 +57,7 @@ struct ExploreDigest: Equatable {
     let continueVaar: ContinueVaar?
 
     init(meta: CorpusMeta?, vaars: [VaarSummary]?, roster: [Contributor]?,
-         lastAng: Int?, continueVaar: (vaarId: Int, fraction: Double)? = nil,
+         lastAng: Int?, continueVaar: (vaarId: Int, lineId: Int, fraction: Double)? = nil,
          pins: [Int] = CompositionCatalog.heroes.map(\.ang)) {
         let map = meta.map(GranthMap.init(meta:))
         let ribbon = map.map(RibbonLayout.init(map:))
@@ -72,6 +77,7 @@ struct ExploreDigest: Equatable {
             .map { GranthNames.raag($0.name, roman: $0.roman) ?? $0.name }
 
         raagMass = map?.raags.map(\.nLines) ?? []
+        raagNames = map?.raags.map { GranthNames.raag($0.name, roman: $0.roman) ?? $0.name } ?? []
 
         // Granth order = first Ang, then volume, then name (as the Voices dot field orders them).
         voices = (meta?.authors ?? [])
@@ -91,7 +97,8 @@ struct ExploreDigest: Equatable {
 
         vaarMarks = (vaars ?? []).map { VaarMark(firstAng: $0.firstAng, lastAng: $0.lastAng, pauriAuthor: $0.pauriAuthor) }
         if let c = continueVaar, let v = vaars?.first(where: { $0.vaarId == c.vaarId }) {
-            self.continueVaar = ContinueVaar(raag: v.roman ?? v.raag ?? "", fraction: c.fraction)
+            self.continueVaar = ContinueVaar(vaarId: v.vaarId, lineId: c.lineId, raag: v.roman ?? v.raag ?? "",
+                                             fraction: c.fraction)
         } else {
             self.continueVaar = nil
         }
@@ -100,7 +107,7 @@ struct ExploreDigest: Equatable {
     static func == (a: ExploreDigest, b: ExploreDigest) -> Bool {
         a.raagCount == b.raagCount && a.voiceCount == b.voiceCount && a.angCount == b.angCount
             && a.conceptCount == b.conceptCount && a.vaarCount == b.vaarCount && a.ribbon == b.ribbon
-            && a.pins == b.pins && a.lastAng == b.lastAng && a.raagMass == b.raagMass && a.voices == b.voices
+            && a.pins == b.pins && a.lastAng == b.lastAng && a.raagMass == b.raagMass && a.raagNames == b.raagNames && a.voices == b.voices
             && a.centurySpan?.first == b.centurySpan?.first && a.centurySpan?.last == b.centurySpan?.last
             && a.kinds == b.kinds && a.vaarMarks == b.vaarMarks && a.continueVaar == b.continueVaar
     }
