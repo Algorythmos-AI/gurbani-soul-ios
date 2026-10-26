@@ -1700,6 +1700,20 @@ final class SGGSUITests: XCTestCase {
             attachShot(app, "explore_feature_\(feature)")
             app.terminate()
         }
+        // Dark (warm ink): the dial, the sky, the theme and the dots on the dark card surface.
+        for feature in ["clock", "constellation", "themes", "lineage"] {
+            let app = XCUIApplication()
+            app.launchEnvironment["SGGS_UITEST"] = "1"
+            app.launchEnvironment["SGGS_EXPLORE_FEATURE"] = feature
+            app.launchEnvironment["SGGS_CLOCK_NOW"] = "810"
+            app.launchArguments += ["-sggs_appearance", "dark"]
+            app.launch()
+            openTab(app, "Explore", expectingNavBar: "Explore")
+            XCTAssertTrue(app.buttons["Index"].firstMatch.waitForExistence(timeout: 12))
+            RunLoop.current.run(until: Date().addingTimeInterval(2.5))
+            attachShot(app, "explore_feature_\(feature)_dark")
+            app.terminate()
+        }
     }
 
     /// A theme lists every verse it counts: the list states the card's own total and pages to the

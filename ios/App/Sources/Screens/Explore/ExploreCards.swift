@@ -49,8 +49,10 @@ struct ExploreCard: View {
     let roster: [String: Contributor]
     let live: ExploreLive
 
+    @Environment(AppContainer.self) private var container
     @Environment(\.palette) private var palette
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     /// Preview heights grow a little with text, capped so a chart never pushes its words away.
     @ScaledMetric(relativeTo: .caption) private var squareHeight: CGFloat = 64
     @ScaledMetric(relativeTo: .caption) private var wideHeight: CGFloat = 40
@@ -95,7 +97,8 @@ struct ExploreCard: View {
     }
 
     private func accessible<V: View>(_ v: V, clock: ExploreClockNow?) -> some View {
-        v
+        let actions = secondaryActions
+        return v
             // `.combine` (not `.ignore`) keeps the link's button trait on the merged element, so
             // it is still `app.buttons[title]`; the explicit label/value replace the merged text.
             .accessibilityElement(children: .combine)
@@ -103,19 +106,79 @@ struct ExploreCard: View {
             .accessibilityValue(spoken(clock: clock))
             .accessibilityHint(ExploreDigest.legacyCaption(destination))
             .accessibilityIdentifier(destination.title)
+            // Deep links the preview shows, without nesting a second tap target in the card:
+            // VoiceOver actions and a long-press menu carry them.
+            .accessibilityActions {
+                ForEach(actions) { a in Button(a.title, action: a.run) }
+            }
+            .modifier(ActionMenu(actions: actions))
+            .modifier(ChartDescription(descriptor: chartDescriptor))
+    }
+
+    // MARK: secondary actions + audio graphs
+
+
+    private var secondaryActions: [ExploreAction] {
+        let router = container.router
+        switch destination {
+        case .index:
+            guard let a = digest.lastAng else { return [] }
+            return [ExploreAction(title: "Read Ang \(a)", symbol: "book") { router.openAng(a) }]
+        case .themes:
+            guard let concept = live.themeToday?.concept else { return [] }
+            return [ExploreAction(title: "Open \(ConceptName.display(concept))", symbol: "circle.grid.2x2") {
+                router.explorePath.append(Route.theme(concept))
+            }]
+        case .constellation:
+            guard let concept = live.themeToday?.concept else { return [] }
+            return [ExploreAction(title: "Centre on \(ConceptName.display(concept))", symbol: "circle.hexagongrid") {
+                router.openConstellation(ConstellationLink(theme: concept, with: nil, alone: false))
+            }]
+        case .vaars:
+            guard let c = digest.continueVaar else { return [] }
+            return [ExploreAction(title: "Continue the Vaar", symbol: "book") {
+                router.openVaar(c.vaarId, read: true, line: c.lineId)
+            }]
+        case .lineage, .insights, .clock:
+            return []
+        }
+    }
+
+    /// Audio Graphs for the two chart previews (the preview itself is hidden from VoiceOver).
+    private var chartDescriptor: ExploreBarsDescriptor? {
+        switch destination {
+        case .insights where !digest.raagMass.isEmpty:
+            return ExploreBarsDescriptor(
+                title: "Verse lines per raag", summary: "Each raag in the Granth's own order. Descriptive, never a ranking.",
+                axis: "Raag", unit: "lines", names: digest.raagNames, values: digest.raagMass)
+        case .lineage where !digest.voices.isEmpty:
+            return ExploreBarsDescriptor(
+                title: "Verse lines per voice", summary: "Each voice in the order its Bani first appears in the Granth. Descriptive, never a ranking.",
+                axis: "Voice", unit: "lines", names: digest.voices.map { AuthorName($0.author).spoken },
+                values: digest.voices.map(\.lines))
+        default:
+            return nil
+        }
     }
 
     @ViewBuilder private func content(clock: ExploreClockNow?) -> some View {
         switch form {
+        case .feature where horizontalSizeClass == .regular && !accessibilitySize:
+            // Regular width: the words on the left, the preview given the room on the right.
+            HStack(alignment: .center, spacing: Theme.Space.xl) {
+                VStack(alignment: .leading, spacing: Theme.Space.m) {
+                    FeaturedChip()
+                    titleRow(font: .title2.weight(.semibold))
+                    captionText(clock: clock)
+                }
+                .frame(maxWidth: 280, alignment: .leading)
+                featurePreview(clock: clock, scale: 1.6)
+            }
         case .feature:
             VStack(alignment: .leading, spacing: Theme.Space.m) {
                 FeaturedChip()
                 titleRow(font: .title2.weight(.semibold))
-                if destination == .clock, let clock {
-                    clockFeature(clock)
-                } else {
-                    preview(height: featureHeightFor, clock: clock)
-                }
+                featurePreview(clock: clock, scale: 1)
                 captionText(clock: clock)
             }
         case .wide:
@@ -131,6 +194,15 @@ struct ExploreCard: View {
                 titleRow(font: .headline)
                 captionText(clock: clock)
             }
+        }
+    }
+
+    @ViewBuilder private func featurePreview(clock: ExploreClockNow?, scale: CGFloat) -> some View {
+        if destination == .clock, let clock {
+            clockFeature(clock)
+        } else {
+            // A ribbon stays a line at any width; blocks (dots, bars, sky) take the extra room.
+            preview(height: isRibbon || destination == .themes ? featureHeightFor : featureHeightFor * scale, clock: clock)
         }
     }
 
@@ -239,11 +311,14 @@ struct ExploreCard: View {
     private func themePreview(_ t: ThemeOfTheDay) -> some View {
         let color = ThemeGroup.color(t.concept)
         return VStack(alignment: .leading, spacing: Theme.Space.xs) {
-            HStack(spacing: 6) {
-                Circle().fill(color).frame(width: 8, height: 8)
-                Text(ConceptName.display(t.concept))
-                    .font(.headline).foregroundStyle(.primary)
-                    .lineLimit(1).minimumScaleFactor(0.7)
+            // At accessibility sizes the name lives in the caption, where it can grow.
+            if !accessibilitySize {
+                HStack(spacing: 6) {
+                    Circle().fill(color).frame(width: 8, height: 8)
+                    Text(ConceptName.display(t.concept))
+                        .font(.headline).foregroundStyle(.primary)
+                        .lineLimit(1).minimumScaleFactor(0.7)
+                }
             }
             AngSparkline(bins: live.themeBins, color: color, height: 18)
         }
@@ -332,6 +407,61 @@ struct ExploreSpanRow: Layout {
         for (view, w) in zip(subviews, widths(bounds.width)) {
             view.place(at: CGPoint(x: x, y: bounds.minY), proposal: ProposedViewSize(width: w, height: bounds.height))
             x += w + spacing
+        }
+    }
+}
+
+/// Attaches an Audio Graphs descriptor when there is one.
+private struct ChartDescription: ViewModifier {
+    let descriptor: ExploreBarsDescriptor?
+    func body(content: Content) -> some View {
+        if let descriptor {
+            content.accessibilityChartDescriptor(descriptor)
+        } else {
+            content
+        }
+    }
+}
+
+/// A bar run as Audio Graphs reads it: one category per bar, in the preview's own order.
+struct ExploreBarsDescriptor: AXChartDescriptorRepresentable {
+    let title: String
+    let summary: String
+    let axis: String
+    let unit: String
+    let names: [String]
+    let values: [Int]
+
+    func makeChartDescriptor() -> AXChartDescriptor {
+        let top = Double(max(values.max() ?? 1, 1))
+        let x = AXCategoricalDataAxisDescriptor(title: axis, categoryOrder: names)
+        let y = AXNumericDataAxisDescriptor(title: unit.capitalized, range: 0...top, gridlinePositions: []) {
+            "\(Int($0)) \(unit)"
+        }
+        let series = AXDataSeriesDescriptor(name: title, isContinuous: false,
+                                            dataPoints: zip(names, values).map { AXDataPoint(x: $0, y: Double($1)) })
+        return AXChartDescriptor(title: title, summary: summary, xAxis: x, yAxis: y, additionalAxes: [], series: [series])
+    }
+}
+
+/// A deep link a card offers beside its own destination.
+struct ExploreAction: Identifiable {
+    let title: String
+    let symbol: String
+    let run: () -> Void
+    var id: String { title }
+}
+
+/// A long-press menu only when the card has something to offer (an empty menu would still lift).
+private struct ActionMenu: ViewModifier {
+    let actions: [ExploreAction]
+    func body(content: Content) -> some View {
+        if actions.isEmpty {
+            content
+        } else {
+            content.contextMenu {
+                ForEach(actions) { a in Button(a.title, systemImage: a.symbol, action: a.run) }
+            }
         }
     }
 }

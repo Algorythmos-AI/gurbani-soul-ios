@@ -23,7 +23,9 @@ struct ExploreScreen: View {
     private var digest: ExploreDigest {
         let current = container.vaarProgress.current()
         return ExploreDigest(meta: container.meta, vaars: container.vaars, roster: Self.roster, lastAng: lastAng,
-                             continueVaar: current.map { ($0.vaarId, container.vaarProgress.fraction(for: $0.vaarId)) })
+                             continueVaar: current.map {
+                                 ($0.vaarId, $0.position.lineId, container.vaarProgress.fraction(for: $0.vaarId))
+                             })
     }
 
     private var columns: Int {
