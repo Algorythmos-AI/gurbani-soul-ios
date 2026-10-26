@@ -107,6 +107,16 @@ final class ExploreLiveTests: XCTestCase {
         XCTAssertEqual(clock.label, "2nd pahar of night")
         XCTAssertTrue(clock.window.hasPrefix("10:58 AM–1:"), clock.window)
         XCTAssertTrue(clock.window.hasSuffix(" PM"), clock.window)
+        // ...and the card says so: never another place's sky without naming it
+        XCTAssertEqual(clock.skyPlace, "33.9°S 151.2°E")
+        XCTAssertTrue(clock.caption.hasSuffix(" · sky over 33.9°S 151.2°E"), clock.caption)
+        XCTAssertTrue(clock.spoken.contains("Sky over 33.9°S 151.2°E, not this phone's time zone"), clock.spoken)
+        // a place on the phone's own clock adds nothing
+        let home = ExploreClockNow(entry: RaagNowTimeline.entry(at: at, config: RaagClockConfig(solar: true, lat: 51.51, lon: -0.13),
+                                                                 snapshot: nil, tz: london),
+                                   locale: Locale(identifier: "en_US"), tz: london)
+        XCTAssertNil(home.skyPlace)
+        XCTAssertFalse(home.caption.contains("sky over"))
     }
 
     func testClockStatesTheWidgetsWatch() throws {

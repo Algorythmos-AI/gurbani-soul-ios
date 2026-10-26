@@ -42,7 +42,8 @@ final class WidgetRenderTests: XCTestCase {
     private func asRenderedAtItsOwnDate(_ e: RaagNowEntry, now: Date = .now) -> RaagNowEntry {
         RaagNowEntry(date: e.date, pahar: e.pahar, windows: e.windows, sunrise: e.sunrise, sunset: e.sunset,
                      nextPahar: e.nextPahar, boundaryDate: now.addingTimeInterval(e.boundaryDate.timeIntervalSince(e.date) + 30),
-                     raags: e.raags, raagsGurmukhi: e.raagsGurmukhi, beads: e.beads, hasSnapshot: e.hasSnapshot, solar: e.solar)
+                     raags: e.raags, raagsGurmukhi: e.raagsGurmukhi, beads: e.beads, hasSnapshot: e.hasSnapshot, solar: e.solar,
+                     skyPlace: e.skyPlace)
     }
 
     private func render(_ pinned: RaagNowEntry, family: WidgetFamily, size: CGSize, dark: Bool) -> UIImage? {
@@ -91,6 +92,18 @@ final class WidgetRenderTests: XCTestCase {
                     }
                 }
             }
+        }
+        // A saved place far from this phone's zone (Sydney on a London clock): every family names
+        // the sky it shows. Attached to the result bundle for review.
+        let away = RaagNowTimeline.entry(at: date(16, 40), config: configs[1].1, snapshot: snap,
+                                         tz: TimeZone(identifier: "Europe/London")!)
+        XCTAssertEqual(away.skyPlace, "33.9°S 151.2°E")
+        for (family, size, name) in families {
+            let img = try XCTUnwrap(render(away, family: family, size: size, dark: false),
+                                    "\(name) away failed to render")
+            let a = XCTAttachment(image: img)
+            a.name = "raagnow-\(name)-away"; a.lifetime = .keepAlways; add(a)
+            if let png = img.pngData() { try png.write(to: out.appendingPathComponent("raagnow-\(name)-away-light.png")) }
         }
         // the silent watch and the no-snapshot state must also compose
         let silent = RaagNowTimeline.entry(at: date(1, 0), config: RaagClockConfig(solar: false), snapshot: snap)

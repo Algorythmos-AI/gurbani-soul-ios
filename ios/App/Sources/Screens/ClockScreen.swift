@@ -24,6 +24,10 @@ struct ClockScreen: View {
     @State private var showDivergence = false
     @State private var unknownRaagNote: String?
     @State private var showManualLocation = false
+    /// "Keep this place" for the stored coordinates though they are far from this phone's zone.
+    @AppStorage(SharedDefaults.solarPlaceKeptKey, store: SharedDefaults.suite) private var placeKept = false
+    /// The same choice while a UI test pins the coordinates — kept in memory, never stored.
+    @State private var pinnedPlaceKept = false
     /// Bumped when the system time zone or clock changes so the face redraws immediately.
     @State private var clockEpoch = 0
     /// Injectable for tests (XCUITest launches with SGGS_CLOCK_NOW=<minutes> to pin the time).
@@ -110,8 +114,33 @@ struct ClockScreen: View {
     private var coords: (lat: Double, lon: Double)? {
         #if DEBUG
         if ProcessInfo.processInfo.environment["SGGS_CLOCK_NO_COORDS"] == "1" { return nil }
+        if let pinned = pinnedCoords { return pinned }
         #endif
         return location?.coords
+    }
+
+    /// DEBUG: `SGGS_CLOCK_COORDS=<lat>,<lon>` pins the solar place for a UI test (with the
+    /// launch's `TZ`, the travel notice) without touching what the device has stored.
+    private var pinnedCoords: (lat: Double, lon: Double)? {
+        let parts = DebugHooks.environment["SGGS_CLOCK_COORDS"]?.split(separator: ",") ?? []
+        guard parts.count == 2, let lat = Double(parts[0]), let lon = Double(parts[1]),
+              abs(lat) <= 90, abs(lon) <= 180 else { return nil }
+        return (lat, lon)
+    }
+
+    /// The solar place and how far its sun runs from this phone's zone (hours), when solar
+    /// watches are live but drawn for a place clearly off this clock (`SolarPlace`). Never nil
+    /// without a reason shown: the notice, or once kept, the caption that names the place.
+    private var awayPlace: (lat: Double, lon: Double, lead: Double)? {
+        guard sun != nil, let c = coords else { return nil }
+        let lead = SolarPlace.leadHours(lon: c.lon, tz: .current, at: nowDate)
+        return abs(lead) >= SolarPlace.awayThresholdHours ? (c.lat, c.lon, lead) : nil
+    }
+
+    private var awayPlaceKept: Bool { pinnedCoords == nil ? placeKept : pinnedPlaceKept }
+
+    private func keepAwayPlace() {
+        if pinnedCoords == nil { placeKept = true } else { pinnedPlaceKept = true }
     }
 
     /// Usable sunrise/sunset (solar mode, stored coords, non-polar) — else nil → fixed clock.
@@ -241,7 +270,17 @@ struct ClockScreen: View {
     /// on its own — only from this explicit button (offline guardrail), or entered by hand.
     @ViewBuilder private func solarControls(live: Bool) -> some View {
         VStack(alignment: .leading, spacing: Theme.Space.s) {
-            if live {
+            if live, let away = awayPlace {
+                if awayPlaceKept {
+                    Text("Showing the sky over \(SolarPlace.label(lat: away.lat, lon: away.lon)), your kept place (stored on this device, never sent).")
+                        .font(.caption2).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityLabel("Showing the sky over \(SolarPlace.spokenLabel(lat: away.lat, lon: away.lon)), your kept place. Stored on this device, never sent.")
+                        .accessibilityIdentifier("clockKeptPlace")
+                } else {
+                    travelNotice(lat: away.lat, lon: away.lon, lead: away.lead)
+                }
+            } else if live {
                 Text("Solar watches from your stored location (rounded ~1 km; never leaves this device).")
                     .font(.caption2).foregroundStyle(.tertiary)
             } else if coords == nil {
@@ -275,6 +314,58 @@ struct ClockScreen: View {
             ManualLocationSheet { lat, lon in location?.setManually(lat: lat, lon: lon) }
                 .presentationDetents([.medium])
         }
+    }
+
+    /// The saved place is far from this phone's time zone: say whose sky this is, and offer the
+    /// two ways out — a fresh fix (only on this tap; the offline guardrail holds) or keep it.
+    private func travelNotice(lat: Double, lon: Double, lead: Double) -> some View {
+        VStack(alignment: .leading, spacing: Theme.Space.s) {
+            Label {
+                Text("Showing the sky over \(SolarPlace.label(lat: lat, lon: lon))")
+                    .font(.subheadline.weight(.semibold))
+                    .accessibilityLabel("Showing the sky over \(SolarPlace.spokenLabel(lat: lat, lon: lon))")
+            } icon: {
+                Image(systemName: "location.slash").foregroundStyle(palette.accentText)
+            }
+            Text("Your saved place is \(SolarPlace.leadPhrase(lead)) this phone's time zone. These watches follow its sunrise and sunset.")
+                .font(.caption).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: Theme.Space.s) { travelButtons }
+                VStack(alignment: .leading, spacing: Theme.Space.s) { travelButtons }
+            }
+            if location?.requesting == true {
+                Text("Finding your location…").font(.caption2).foregroundStyle(.secondary)
+            } else if location?.denied == true {
+                Text("Location is off for Gurbani Soul — enter coordinates manually, or keep this place.")
+                    .font(.caption2).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button("Enter manually") { showManualLocation = true }
+                    .buttonStyle(.bordered).font(.subheadline)
+            }
+        }
+        .padding(Theme.Space.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .overlay(RoundedRectangle(cornerRadius: Theme.Radius.card).strokeBorder(palette.accent, lineWidth: 1))
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("clockTravelNotice")
+    }
+
+    @ViewBuilder private var travelButtons: some View {
+        Button { location?.requestOnce() } label: {
+            Label("Use my location", systemImage: "location.fill")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(palette.onAccent)
+                .padding(.horizontal, Theme.Space.m).padding(.vertical, Theme.Space.s)
+                .background(Capsule().fill(palette.accentFill))
+                .overlay(Capsule().strokeBorder(palette.accent, lineWidth: 1))   // brand: fill always bordered
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("travelUseMyLocation")
+        Button("Keep this place") { keepAwayPlace() }
+            .buttonStyle(.bordered).font(.subheadline)
+            .accessibilityHint("Stops this notice for the saved place. The clock keeps naming the place it shows.")
+            .accessibilityIdentifier("travelKeepPlace")
     }
 
     @ViewBuilder private var locationButtons: some View {

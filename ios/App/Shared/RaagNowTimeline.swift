@@ -21,6 +21,9 @@ struct RaagNowEntry: TimelineEntry {
     let beads: [Int: Int]
     let hasSnapshot: Bool
     let solar: Bool
+    /// "33.9°S 151.2°E" when the solar watches are drawn for a place clearly off this phone's
+    /// time zone (`SolarPlace`) — the widget then names whose sky it shows. nil otherwise.
+    var skyPlace: String? = nil
 
     var minutesNow: Int { PaharFormat.minutesOfDay(date) }
     var model: PaharDialModel {
@@ -85,7 +88,15 @@ enum RaagNowTimeline {
                             nextPahar: b.nextPahar, boundaryDate: boundary,
                             raags: snapshot?.paharRaags[p] ?? [],
                             raagsGurmukhi: snapshot?.paharRaagsGurmukhi?[p] ?? [],
-                            beads: beads, hasSnapshot: snapshot != nil, solar: sun != nil)
+                            beads: beads, hasSnapshot: snapshot != nil, solar: sun != nil,
+                            skyPlace: skyPlace(config: config, solarLive: sun != nil, tz: tz, at: date))
+    }
+
+    /// Named whenever the mismatch holds, kept or not: a glance surface has no notice to read.
+    static func skyPlace(config: RaagClockConfig, solarLive: Bool, tz: TimeZone, at date: Date) -> String? {
+        guard solarLive, let lat = config.lat, let lon = config.lon,
+              SolarPlace.isAway(lon: lon, tz: tz, at: date) else { return nil }
+        return SolarPlace.label(lat: lat, lon: lon, short: true)
     }
 
     /// Entry dates for the next 24 h: now, every pahar boundary (wall-clock, DST-safe) and a
