@@ -96,13 +96,23 @@ in this style when one is available.
 The marketing site uses unframed captures, not the store frames. `capture_site_shots.sh` makes them from
 the app sources in the checkout with the **public** DB swapped into the built `.app` (proved by its
 sha256 and by the absence of the `translations`/`fts_en` tables), each set on a fresh simulator with the
-9:41 status bar and the clock pinned: iPhone 17 Pro light and dark (`testCaptureScreens`,
-`testVaarsWeave`, `SiteShotTests` for Verify and About), iPad Pro 13" (M5) portrait and landscape, and
-the widget renders (`WidgetRenderTests`, `HukamWidgetRenderTests`, `NitnemWidgetRenderTests`). It writes
-`SHA256SUMS` and `provenance.json` beside the PNGs.
+9:41 status bar and the clock pinned: iPhone 17 Pro light and dark (`SiteShotTests`, plus
+`testVaarsWeave`), iPad Pro 13" (M5) portrait and landscape (`SiteShotTests`' surfaces), and the widget
+renders (`WidgetRenderTests`, `HukamWidgetRenderTests`, `NitnemWidgetRenderTests`). It writes `SHA256SUMS`
+and `provenance.json` beside the PNGs.
 
-There is no iOS simulator runtime on the release Mac, so run it on CI (manual workflow; the driver test
-is added to an older ref's checkout when it predates it):
+`SiteShotTests` is the driver, independent of `testCaptureScreens`: each surface group (Search and
+Reader, Clock, Nitnem, Index, Themes, Constellation, Insights, Lineage, More, Verify, About) launches the
+app afresh, and a shot is written only while the element that proves its screen is up, so one wrong turn
+can neither spill into the next group nor land a wrong screen under a name. The iPad landscape frames are
+the simulator's own (`simctl io`, taken when the test asks), because an XCUITest screenshot after a
+rotation stores its pixels with an EXIF rotation. `check_site_shots.py` then fails the run on identical
+pictures under different names (bar the opening-state pairs it lists), on any EXIF rotation, and on a
+landscape shot that is not landscape.
+
+There is no iOS simulator runtime on the release Mac, so run it on CI (manual workflow; the driver, the
+script and the self-check always come from the workflow's commit, so an older tag is navigated by today's
+driver):
 
 ```bash
 gh workflow run ios-site-shots.yml --repo Algorythmos-AI/gurbani-soul-ios -f ref=v1.4.9
