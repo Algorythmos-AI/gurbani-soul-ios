@@ -146,3 +146,35 @@ struct VaarSpanGlyph: View {
         .accessibilityHidden(true)
     }
 }
+
+/// Every theme as a star — size by √verses, colour by theological family — with the pairs the Sky
+/// screen draws (PPMI ≥ 0.7), at the Sky screen's own seeded layout: the Constellation, at rest.
+struct SkyGlyph: View {
+    let sky: ExploreSky
+
+    var body: some View {
+        Canvas { ctx, size in
+            guard !sky.points.isEmpty else { return }
+            let maxN = Double(sky.verses.max() ?? 1)
+            let unit = min(size.width, size.height)
+            let rMax = max(2.5, unit * 0.055)
+            let inset = rMax + 2
+            func at(_ p: CGPoint) -> CGPoint {
+                CGPoint(x: inset + p.x * (size.width - 2 * inset), y: inset + p.y * (size.height - 2 * inset))
+            }
+            for e in sky.drawn where sky.points.indices.contains(e.i) && sky.points.indices.contains(e.j) {
+                var path = Path()
+                path.move(to: at(sky.points[e.i]))
+                path.addLine(to: at(sky.points[e.j]))
+                ctx.stroke(path, with: .color(Ink.muted.opacity(0.10 + 0.4 * min(1, e.jaccard / 0.5))), lineWidth: 0.6)
+            }
+            for (i, p) in sky.points.enumerated() {
+                let r = max(1.2, rMax * CGFloat((Double(sky.verses[i]) / max(maxN, 1)).squareRoot()))
+                let c = at(p)
+                ctx.fill(Path(ellipseIn: CGRect(x: c.x - r, y: c.y - r, width: 2 * r, height: 2 * r)),
+                         with: .color(ThemeGroup.color(sky.concepts[i])))
+            }
+        }
+        .accessibilityHidden(true)
+    }
+}

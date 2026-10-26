@@ -317,25 +317,7 @@ private struct TodayHero: View {
             .accessibilityLabel("Theme of the day: \(ConceptName.display(concept))\(today.row?.headword.map { ", \($0)" } ?? "")")
             .accessibilityIdentifier("themes.today")
 
-            Button {
-                Haptics.tap()
-                container.present(.shabad(compId: line.compId, focusLineId: line.id))
-            } label: {
-                VStack(alignment: .leading, spacing: Theme.Space.xs) {
-                    GurmukhiText(verbatim: line.gurmukhi, size: 22).foregroundStyle(.primary)
-                        .multilineTextAlignment(.leading)
-                    if !line.translit.isEmpty {
-                        Text(line.translit).font(.callout).foregroundStyle(Ink.muted)
-                            .multilineTextAlignment(.leading)
-                    }
-                    Text("Sri Guru Granth Sahib Ji · Ang \(line.ang)\(today.theme.isRefrain ? " · a Rahao line" : "")")
-                        .font(.caption).foregroundStyle(palette.accentText)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityHint("Opens the shabad")
+            VerseQuoteBlock(line: line, isRefrain: today.theme.isRefrain)
 
             if !today.hukam.isEmpty {
                 Divider()

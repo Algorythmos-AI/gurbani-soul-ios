@@ -52,14 +52,15 @@ struct ExploreScreen: View {
                 VStack(alignment: .leading, spacing: Theme.Space.l) {
                     ExploreMasthead(date: today, line: digest.mastheadLine)
                     if let featured {
-                        ExploreCard(destination: featured, form: .feature, digest: digest, roster: Self.rosterIndex)
+                        ExploreCard(destination: featured, form: .feature, digest: digest, roster: Self.rosterIndex,
+                                    live: container.exploreLive)
                     }
                     ForEach(rows, id: \.first?.id) { row in
                         ExploreSpanRow(columns: columns, spans: row.map(\.span)) {
                             ForEach(row) { cell in
                                 ExploreCard(destination: cell.destination,
                                             form: cell.span >= 2 || columns == 1 ? .wide : .square,
-                                            digest: digest, roster: Self.rosterIndex)
+                                            digest: digest, roster: Self.rosterIndex, live: container.exploreLive)
                             }
                         }
                     }
@@ -72,6 +73,10 @@ struct ExploreScreen: View {
             .contentMargins(.bottom, Theme.Space.xl, for: .scrollContent)
             .navigationTitle("Explore")
             .task { await container.loadMeta() }   // previews + Index/Themes need meta
+            // Today's theme and the theme sky: deferred, once per process (and again on a new day).
+            .task(id: HukamOfTheDay.dayNumber(of: today)) {
+                await container.exploreLive.load(corpus: container.corpus, day: HukamOfTheDay.dayNumber(of: today))
+            }
             .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in today = Date() }
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
                 today = Date()

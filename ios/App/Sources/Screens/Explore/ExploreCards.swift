@@ -1,4 +1,5 @@
 import SwiftUI
+import GurbaniSearchKit
 
 /// The hub's header: today's date, the one serif hero line, and the Granth's measure — every
 /// number derived (`ExploreDigest.mastheadLine`), so a loading page says less, never a guess.
@@ -39,12 +40,14 @@ enum ExploreCardForm: Equatable {
 /// One destination's card: a preview of the screen it opens, its title, and what the preview shows
 /// in words. ONE accessibility element and one button, whose label and identifier are the
 /// destination's title (the UI tests' handle), whose value states the preview's facts, and whose
-/// hint is the hub's shipped caption.
+/// hint is the hub's shipped caption. Today's Theme Feature adds the theme's verse below the link
+/// as its own button (opens the shabad), so VoiceOver reads the Gurmukhi with its Punjabi tag.
 struct ExploreCard: View {
     let destination: ExploreDestination
     let form: ExploreCardForm
     let digest: ExploreDigest
     let roster: [String: Contributor]
+    let live: ExploreLive
 
     @Environment(\.palette) private var palette
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -54,6 +57,8 @@ struct ExploreCard: View {
     @ScaledMetric(relativeTo: .caption) private var featureHeight: CGFloat = 96
     /// A ribbon is a line, not a block: the Feature draws it thin, whatever the card's size.
     @ScaledMetric(relativeTo: .caption) private var featureRibbonHeight: CGFloat = 48
+    /// The Feature dial: large enough to read the lit watch and the hand.
+    @ScaledMetric(relativeTo: .caption) private var featureDial: CGFloat = 112
 
     /// The Index ribbon and the Vaar spans read along a line.
     private var isRibbon: Bool { destination == .index || destination == .vaars }
@@ -61,44 +66,78 @@ struct ExploreCard: View {
     private var accessibilitySize: Bool { dynamicTypeSize.isAccessibilitySize }
 
     var body: some View {
-        NavigationLink(value: destination.route) {
-            Card {
-                content.frame(maxHeight: .infinity, alignment: .top)
+        if destination == .clock {
+            // The hand moves once a minute, and only this card redraws for it.
+            TimelineView(.periodic(from: PaharFormat.nextMinuteBoundary(), by: 60)) { _ in
+                card(clock: ExploreClockNow.now())
             }
+        } else {
+            card(clock: nil)
         }
-        .buttonStyle(.pressableCard)
-        // `.combine` (not `.ignore`) keeps the link's button trait on the merged element, so it
-        // is still `app.buttons[title]`; the explicit label/value replace the merged child text.
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(destination.title)
-        .accessibilityValue(digest.spokenSummary(destination))
-        .accessibilityHint(ExploreDigest.legacyCaption(destination))
-        .accessibilityIdentifier(destination.title)
     }
 
-    @ViewBuilder private var content: some View {
+    @ViewBuilder private func card(clock: ExploreClockNow?) -> some View {
+        if form == .feature, destination == .themes, let today = live.themeToday {
+            Card {
+                VStack(alignment: .leading, spacing: Theme.Space.m) {
+                    accessible(NavigationLink(value: destination.route) { content(clock: nil) }
+                        .buttonStyle(.plain), clock: nil)
+                    Divider()
+                    VerseQuoteBlock(line: today.line, isRefrain: today.isRefrain)
+                }
+            }
+        } else {
+            accessible(NavigationLink(value: destination.route) {
+                Card { content(clock: clock).frame(maxHeight: .infinity, alignment: .top) }
+            }
+            .buttonStyle(.pressableCard), clock: clock)
+        }
+    }
+
+    private func accessible<V: View>(_ v: V, clock: ExploreClockNow?) -> some View {
+        v
+            // `.combine` (not `.ignore`) keeps the link's button trait on the merged element, so
+            // it is still `app.buttons[title]`; the explicit label/value replace the merged text.
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(destination.title)
+            .accessibilityValue(spoken(clock: clock))
+            .accessibilityHint(ExploreDigest.legacyCaption(destination))
+            .accessibilityIdentifier(destination.title)
+    }
+
+    @ViewBuilder private func content(clock: ExploreClockNow?) -> some View {
         switch form {
         case .feature:
             VStack(alignment: .leading, spacing: Theme.Space.m) {
                 FeaturedChip()
                 titleRow(font: .title2.weight(.semibold))
-                preview(height: isRibbon ? min(featureRibbonHeight, 48 * 1.4) : min(featureHeight, 96 * 1.4))
-                captionText
+                if destination == .clock, let clock {
+                    clockFeature(clock)
+                } else {
+                    preview(height: featureHeightFor, clock: clock)
+                }
+                captionText(clock: clock)
             }
         case .wide:
             VStack(alignment: .leading, spacing: Theme.Space.s) {
                 titleRow(font: .headline)
-                captionText
-                preview(height: min(wideHeight, 40 * 1.4))
+                captionText(clock: clock)
+                preview(height: min(wideHeight, 40 * 1.4), clock: clock)
                     .padding(.top, Theme.Space.xs)
             }
         case .square:
             VStack(alignment: .leading, spacing: Theme.Space.s) {
-                preview(height: min(squareHeight, 64 * 1.4))
+                preview(height: min(squareHeight, 64 * 1.4), clock: clock)
                 titleRow(font: .headline)
-                captionText
+                captionText(clock: clock)
             }
         }
+    }
+
+    private var featureHeightFor: CGFloat {
+        if isRibbon { return min(featureRibbonHeight, 48 * 1.4) }
+        if destination == .themes { return min(featureRibbonHeight, 48 * 1.4) }
+        return min(featureHeight, 96 * 1.4)
     }
 
     private func titleRow(font: Font) -> some View {
@@ -110,9 +149,9 @@ struct ExploreCard: View {
         }
     }
 
-    private var captionText: some View {
+    private func captionText(clock: ExploreClockNow?) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(digest.caption(destination))
+            Text(caption(clock: clock))
                 .font(.subheadline).foregroundStyle(Ink.muted)
                 .monospacedDigit()
             // At accessibility sizes the words carry what a small chart cannot.
@@ -125,7 +164,41 @@ struct ExploreCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    @ViewBuilder private func preview(height: CGFloat) -> some View {
+    // MARK: words for the live cards (the rest come from the digest)
+
+    private func caption(clock: ExploreClockNow?) -> String {
+        switch destination {
+        case .clock:
+            return clock?.caption ?? ExploreDigest.legacyCaption(destination)
+        case .themes:
+            guard let t = live.themeToday else { return digest.caption(destination) }
+            let name = ConceptName.display(t.concept)
+            return digest.conceptCount.map { "Today: \(name) · \($0.formatted()) concepts" } ?? "Today: \(name)"
+        case .constellation:
+            return live.sky.map { "\($0.concepts.count.formatted()) themes, and which travel together" }
+                ?? ExploreDigest.legacyCaption(destination)
+        default:
+            return digest.caption(destination)
+        }
+    }
+
+    private func spoken(clock: ExploreClockNow?) -> String {
+        switch destination {
+        case .clock:
+            return clock?.spoken ?? ""
+        case .themes:
+            let today = live.themeToday.map { "Theme of the day: \(ConceptName.display($0.concept))" }
+            return [today, digest.conceptCount.map { "\($0) concepts" }].compactMap { $0 }.joined(separator: ". ")
+        case .constellation:
+            return live.sky.map { "All \($0.concepts.count) themes as a sky; lines join themes that share shabads" } ?? ""
+        default:
+            return digest.spokenSummary(destination)
+        }
+    }
+
+    // MARK: previews
+
+    @ViewBuilder private func preview(height: CGFloat, clock: ExploreClockNow?) -> some View {
         Group {
             switch destination {
             case .index:
@@ -140,13 +213,73 @@ struct ExploreCard: View {
                 if let angs = digest.angRange, !digest.vaarMarks.isEmpty {
                     VaarSpanGlyph(marks: digest.vaarMarks, angs: angs)
                 } else { PreviewPlaceholder() }
-            case .themes, .constellation, .clock:
-                SymbolWell(symbol: destination.symbol)
+            case .themes:
+                if let t = live.themeToday { themePreview(t) } else { PreviewPlaceholder() }
+            case .constellation:
+                if let sky = live.sky {
+                    SkyGlyph(sky: sky)
+                        .padding(Theme.Space.xs)
+                        .background(Ink.clockFace, in: RoundedRectangle(cornerRadius: Theme.Radius.chip))
+                } else { PreviewPlaceholder() }
+            case .clock:
+                if let clock {
+                    PaharDialRenderer(model: clock.model, style: .compact, palette: palette, analogFace: false)
+                        .aspectRatio(1, contentMode: .fit)
+                } else { PreviewPlaceholder() }
             }
         }
         .frame(maxWidth: .infinity)
         .frame(height: height)
+        .appAnimation(Motion.gentle, value: live.sky != nil)
+        .appAnimation(Motion.gentle, value: live.themeToday?.concept)
         .accessibilityHidden(true)
+    }
+
+    /// Today's theme: its name in its family colour and where its verses fall in the Granth.
+    private func themePreview(_ t: ThemeOfTheDay) -> some View {
+        let color = ThemeGroup.color(t.concept)
+        return VStack(alignment: .leading, spacing: Theme.Space.xs) {
+            HStack(spacing: 6) {
+                Circle().fill(color).frame(width: 8, height: 8)
+                Text(ConceptName.display(t.concept))
+                    .font(.headline).foregroundStyle(.primary)
+                    .lineLimit(1).minimumScaleFactor(0.7)
+            }
+            AngSparkline(bins: live.themeBins, color: color, height: 18)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+    }
+
+    /// The Clock Feature: the dial with this watch lit, beside the raags sung in it — verbatim
+    /// Gurmukhi names, in ink, never clipped (the row grows to fit them).
+    private func clockFeature(_ clock: ExploreClockNow) -> some View {
+        let dial = min(featureDial, 112 * 1.4)
+        return HStack(alignment: .center, spacing: Theme.Space.l) {
+            PaharDialRenderer(model: clock.model, style: .compact, palette: palette, analogFace: false)
+                .frame(width: dial, height: dial)
+                .accessibilityHidden(true)
+            // The raag table is written to the widget snapshot after launch; until then the dial
+            // and the watch (in the caption) are all the card claims.
+            if clock.hasSnapshot {
+                VStack(alignment: .leading, spacing: Theme.Space.xs) {
+                    Text("Sung in this watch")
+                        .font(.caption.weight(.semibold)).foregroundStyle(Ink.muted)
+                    if clock.raagsGurmukhi.isEmpty {
+                        Text(clock.raagCount == 0 ? "No raags are assigned to this watch."
+                                                  : clock.raagsRoman.joined(separator: " · "))
+                            .font(.subheadline).foregroundStyle(.primary)
+                    } else {
+                        FlowLayout(spacing: Theme.Space.s) {
+                            ForEach(clock.raagsGurmukhi, id: \.self) { name in
+                                GurmukhiText(verbatim: name, size: 18).foregroundStyle(.primary)
+                            }
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -169,21 +302,6 @@ private struct FeaturedChip: View {
 private struct PreviewPlaceholder: View {
     var body: some View {
         RoundedRectangle(cornerRadius: Theme.Radius.chip).fill(Ink.raised)
-    }
-}
-
-/// A quiet well with the destination's symbol, for a card whose live preview is not drawn yet.
-private struct SymbolWell: View {
-    let symbol: String
-    @Environment(\.palette) private var palette
-    var body: some View {
-        RoundedRectangle(cornerRadius: Theme.Radius.chip)
-            .fill(Ink.raised)
-            .overlay(
-                Image(systemName: symbol)
-                    .font(.title2)
-                    .foregroundStyle(palette.accent)
-            )
     }
 }
 

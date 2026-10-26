@@ -575,6 +575,18 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Jaap Sahib"].waitForExistence(timeout: 12), "Jaap reader did not open")
     }
 
+    /// Leaves an active search field. iOS 26 labels the button "Close" (earlier systems "Cancel").
+    /// Left open, the navigation bar holds the search field instead of the back button, so the
+    /// next "back" tap lands on "Clear text" and every later step runs on the wrong screen.
+    private func leaveSearch(_ app: XCUIApplication, timeout: TimeInterval = 2) {
+        for label in ["Cancel", "Close"] {
+            let inBar = app.navigationBars.buttons[label].firstMatch
+            let anywhere = app.buttons[label].firstMatch
+            if inBar.waitForExistence(timeout: label == "Cancel" ? timeout : 1) { inBar.tap(); return }
+            if anywhere.exists { anywhere.tap(); return }
+        }
+    }
+
     private func attachShot(_ app: XCUIApplication, _ name: String) {
         let a = XCTAttachment(screenshot: app.screenshot())
         a.name = "shot \(name)"; a.lifetime = .keepAlways; add(a)
@@ -1693,6 +1705,33 @@ final class SGGSUITests: XCTestCase {
         }
     }
 
+    /// Explore's Feature, pinned to each destination in turn (SGGS_EXPLORE_FEATURE): the featured
+    /// card leads the page and is still the one button carrying its title. Each state is attached
+    /// to the result bundle for review. The clock is pinned to 13:30, a watch with raags.
+    func testExploreFeatures() {
+        let all = [("index", "Index"), ("themes", "Themes"), ("lineage", "Lineage"), ("vaars", "Vaars"),
+                   ("constellation", "Constellation"), ("insights", "Insights"), ("clock", "Raag Clock")]
+        for (feature, title) in all {
+            let app = XCUIApplication()
+            app.launchEnvironment["SGGS_UITEST"] = "1"
+            app.launchEnvironment["SGGS_EXPLORE_FEATURE"] = feature
+            app.launchEnvironment["SGGS_CLOCK_NOW"] = "810"
+            app.launch()
+            openTab(app, "Explore", expectingNavBar: "Explore")
+            let card = app.buttons[title].firstMatch
+            XCTAssertTrue(card.waitForExistence(timeout: 12), "\(title) card missing")
+            for (_, other) in all where other != title {
+                let o = app.buttons[other].firstMatch
+                XCTAssertTrue(o.exists, "\(other) card missing while \(title) is featured")
+                XCTAssertLessThan(card.frame.minY, o.frame.minY, "\(title) does not lead the page")
+            }
+            // the deferred previews (theme of the day, the sky) arrive a beat after the first frame
+            RunLoop.current.run(until: Date().addingTimeInterval(2.5))
+            attachShot(app, "explore_feature_\(feature)")
+            app.terminate()
+        }
+    }
+
     /// A theme lists every verse it counts: the list states the card's own total and pages to the
     /// end (it used to stop silently at 200 while the card promised thousands).
     func testThemeListStatesItsTrueTotal() {
@@ -2360,8 +2399,7 @@ final class SGGSUITests: XCTestCase {
         // Reader tap lands on nothing; both failure modes are silent).
         field.typeText("\n")
         // iPadOS 26 keeps the tab bar hidden while search is active — leave search explicitly
-        let cancel = app.buttons["Cancel"].firstMatch
-        if cancel.waitForExistence(timeout: 2) { cancel.tap() }
+        leaveSearch(app)
         shot("after_search")
         print("[SGGS shots] \(dir)")
         let readerTab = tab(app, "Reader")
@@ -2479,8 +2517,7 @@ final class SGGSUITests: XCTestCase {
             _ = app.buttons.containing(NSPredicate(format: "label BEGINSWITH %@", "Raag Gauri")).firstMatch
                 .waitForExistence(timeout: 8)
             shot("index_find")
-            let cancel = app.buttons["Cancel"].firstMatch
-            if cancel.exists { cancel.tap() }
+            leaveSearch(app)
         }
         if app.buttons["index_compositions"].firstMatch.waitForExistence(timeout: 5) {
             app.buttons["index_compositions"].firstMatch.tap()   // leave the Index as found
@@ -2520,7 +2557,7 @@ final class SGGSUITests: XCTestCase {
             themeSearch.typeText("ਹਉਮੈ")
             _ = app.buttons["theme_haumai"].firstMatch.waitForExistence(timeout: 8)
             shot("themes-search-gurmukhi")
-            if app.buttons["Cancel"].firstMatch.exists { app.buttons["Cancel"].firstMatch.tap() }
+            leaveSearch(app)
         }
         app.navigationBars.buttons.firstMatch.tap()   // back to the hub
         let constellation = app.buttons["Constellation"].firstMatch

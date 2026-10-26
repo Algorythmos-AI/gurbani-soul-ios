@@ -60,10 +60,10 @@ struct ExploreCell: Equatable, Identifiable, Sendable {
 /// today's Feature, and how the rest pack into rows.
 enum ExploreLayout {
 
-    /// Destinations that can lead the page. A destination joins once its card draws a real
-    /// preview; `vaarsAvailable == false` (the DB holds no Vaars) drops the Vaars card.
+    /// Destinations that can lead the page: every one, since each card draws a real preview;
+    /// `vaarsAvailable == false` (the DB holds no Vaars) drops the Vaars card.
     static func eligible(vaarsAvailable: Bool) -> [ExploreDestination] {
-        [.index, .lineage, .vaars, .insights].filter { $0 != .vaars || vaarsAvailable }
+        ExploreDestination.allCases.filter { $0 != .vaars || vaarsAvailable }
     }
 
     /// Today's Feature: the day number (the Hukam's own day key, so the hub turns over with the rest
