@@ -1663,6 +1663,33 @@ final class SGGSUITests: XCTestCase {
         }
     }
 
+    /// Explore's Feature, pinned to each destination in turn (SGGS_EXPLORE_FEATURE): the featured
+    /// card leads the page and is still the one button carrying its title. Each state is attached
+    /// to the result bundle for review. The clock is pinned to 13:30, a watch with raags.
+    func testExploreFeatures() {
+        let all = [("index", "Index"), ("themes", "Themes"), ("lineage", "Lineage"), ("vaars", "Vaars"),
+                   ("constellation", "Constellation"), ("insights", "Insights"), ("clock", "Raag Clock")]
+        for (feature, title) in all {
+            let app = XCUIApplication()
+            app.launchEnvironment["SGGS_UITEST"] = "1"
+            app.launchEnvironment["SGGS_EXPLORE_FEATURE"] = feature
+            app.launchEnvironment["SGGS_CLOCK_NOW"] = "810"
+            app.launch()
+            openTab(app, "Explore", expectingNavBar: "Explore")
+            let card = app.buttons[title].firstMatch
+            XCTAssertTrue(card.waitForExistence(timeout: 12), "\(title) card missing")
+            for (_, other) in all where other != title {
+                let o = app.buttons[other].firstMatch
+                XCTAssertTrue(o.exists, "\(other) card missing while \(title) is featured")
+                XCTAssertLessThan(card.frame.minY, o.frame.minY, "\(title) does not lead the page")
+            }
+            // the deferred previews (theme of the day, the sky) arrive a beat after the first frame
+            RunLoop.current.run(until: Date().addingTimeInterval(2.5))
+            attachShot(app, "explore_feature_\(feature)")
+            app.terminate()
+        }
+    }
+
     /// A theme lists every verse it counts: the list states the card's own total and pages to the
     /// end (it used to stop silently at 200 while the card promised thousands).
     func testThemeListStatesItsTrueTotal() {

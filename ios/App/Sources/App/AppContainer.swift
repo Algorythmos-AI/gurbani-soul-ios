@@ -281,6 +281,8 @@ final class AppContainer {
     /// The Vaars in the bundled DB (Explore's Vaars card; nil until loaded). A small precomputed
     /// table — never the ~9k-line `vaarTexts()` build.
     var vaars: [VaarSummary]?
+    /// Explore's deferred previews (today's theme, the theme sky), read once per process.
+    let exploreLive = ExploreLive()
     /// Number of voices in the bundled roster (Explore caption).
     let contributorCount: Int? = ContributorsStore.load()?.count
 
