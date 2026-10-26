@@ -8,7 +8,8 @@
 #   <out>/iphone-light/   iPhone 17 Pro, light: testCaptureScreens + testVaarsWeave + SiteShotTests
 #   <out>/iphone-dark/    the same in dark
 #   <out>/ipad-portrait/  iPad Pro 13" (M5), light: testCaptureScreens
-#   <out>/ipad-landscape/ the same, rotated after launch (SGGS_SHOT_LANDSCAPE=1)
+#   <out>/ipad-landscape/ the same, rotated after launch (SGGS_SHOT_LANDSCAPE=1), plus
+#   <out>/ipad-landscape-frames/ settled simulator frames polled during that run (rotated to landscape)
 #   <out>/widgets/        Raag Now, Hukam and Nitnem widget renders (unit tests, ImageRenderer)
 #   <out>/SHA256SUMS, <out>/provenance.json
 #
@@ -101,7 +102,27 @@ udid=$(new_sim "$IPAD" ipad-portrait light)
 run_tests "$udid" ipad-portrait light "SGGS_NOOP=1" SGGSUITests/SGGSUITests/testCaptureScreens
 drop_sim "$udid"
 udid=$(new_sim "$IPAD" ipad-landscape light)
+# An XCUITest screenshot taken after rotating comes back rotated and not filling the frame (seen
+# 2026-09-26), so also poll the simulator's own framebuffer and keep each settled frame once: a frame
+# identical to the one 2 s before it, and new. `simctl io` writes it portrait; rotate 270° to landscape.
+FRAMES="$OUT/ipad-landscape-frames"; mkdir -p "$FRAMES"
+(
+  prev=""; last=""; n=0
+  while :; do
+    f="$FRAMES/.poll.png"
+    xcrun simctl io "$udid" screenshot "$f" >/dev/null 2>&1 || { sleep 2; continue; }
+    h=$(shasum -a 256 "$f" | cut -c1-16)
+    if [ "$h" = "$prev" ] && [ "$h" != "$last" ]; then
+      n=$((n + 1)); mv "$f" "$FRAMES/frame-$(printf %03d "$n").png"; last="$h"
+    fi
+    prev="$h"; sleep 2
+  done
+) & POLL=$!
 run_tests "$udid" ipad-landscape light "TEST_RUNNER_SGGS_SHOT_LANDSCAPE=1" SGGSUITests/SGGSUITests/testCaptureScreens
+kill "$POLL" 2>/dev/null || true; wait "$POLL" 2>/dev/null || true
+rm -f "$FRAMES/.poll.png"
+for f in "$FRAMES"/frame-*.png; do [ -e "$f" ] && sips -r 270 "$f" >/dev/null; done
+echo "  $(find "$FRAMES" -name 'frame-*.png' | wc -l | tr -d ' ') settled landscape frames"
 drop_sim "$udid"
 
 say "provenance"
