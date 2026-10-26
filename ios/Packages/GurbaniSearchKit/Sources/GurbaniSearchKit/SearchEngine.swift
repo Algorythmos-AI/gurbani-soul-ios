@@ -121,6 +121,11 @@ public struct SearchEngine {
         "sri", "baba", "guru", "dev", "waale", "wale",
     ]
 
+    /// serve.py `LEXICON_OVER_SLUG`: theme slugs that are also a word seekers type for something
+    /// more exact. In auto mode the lexicon entry wins over the slug's theme shortcut, so
+    /// "vahiguru" finds the lines of ਵਾਹਿਗੁਰੂ exactly as "waheguru" does.
+    public static let lexiconOverSlug: Set<String> = ["vahiguru"]
+
     public init(source: SearchSource) { self.source = source }
 
     public func search(_ rawQuery: String, mode: String, limit: Int = 50, offset: Int = 0) throws -> SearchOutput {
@@ -191,7 +196,7 @@ public struct SearchEngine {
                 }
             } else {
                 let ql = q.lowercased()
-                if try source.conceptExactExists(ql) {
+                if try source.conceptExactExists(ql) && !Self.lexiconOverSlug.contains(ql) {
                     let t = try source.themeSearch(ql, limit: limit, offset: offset)
                     return SearchOutput(mode: "theme", results: t.lines, concept: t.concept, relatedThemes: nil)
                 }

@@ -191,9 +191,13 @@ extension SQLiteCandidateSource: SearchSource {
 
     public func themeSearch(_ q: String, limit: Int, offset: Int) throws -> ThemeSearchResult {
         let ql = q.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        // exact concept, else LIKE on concept/description
+        // exact concept, else the one concept whose slug folds like the query, else LIKE on
+        // concept/description
         var name: String?, termsJSON = "", desc = ""
         if let row = try conceptRow("SELECT concept, gurmukhi_terms, description FROM concepts WHERE concept = ?", ql) {
+            (name, termsJSON, desc) = row
+        } else if let c = try conceptByFold(ql),
+                  let row = try conceptRow("SELECT concept, gurmukhi_terms, description FROM concepts WHERE concept = ?", c) {
             (name, termsJSON, desc) = row
         } else if let row = try conceptRow(
             "SELECT concept, gurmukhi_terms, description FROM concepts WHERE concept LIKE ? OR description LIKE ?",
@@ -211,6 +215,19 @@ extension SQLiteCandidateSource: SearchSource {
         let terms = (try? JSONDecoder().decode([String].self, from: Data(termsJSON.utf8))) ?? []
         return ThemeSearchResult(concept: ThemeConcept(name: concept, terms: terms, description: desc, total: total),
                                  lines: lines)
+    }
+
+    /// serve.py `concept_by_fold`: the one theme whose slug folds like the query (waheguru,
+    /// vaheguru, wahiguru → vahiguru), or nil when no slug or more than one does (bani/bhana both
+    /// fold to "vn").
+    func conceptByFold(_ ql: String) throws -> String? {
+        let f = RomanNorm.fold(ql)
+        guard !f.isEmpty else { return nil }
+        var hits: [String] = []
+        try query("SELECT concept FROM concepts", []) { stmt in
+            if let c = cText(stmt, 0), RomanNorm.fold(c.replacingOccurrences(of: "_", with: " ")) == f { hits.append(c) }
+        }
+        return hits.count == 1 ? hits[0] : nil
     }
 
     public func termConcepts(_ tokens: [String]) throws -> [String] {

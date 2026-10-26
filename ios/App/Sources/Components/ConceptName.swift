@@ -5,8 +5,29 @@ import Foundation
 /// underscores never leak into the UI (`String.capitalized` keeps them: "Dukh_Sukh").
 /// Presentation only: the slug itself stays the key for queries, routes and deep links.
 enum ConceptName {
+    /// Names shown in their widely used spelling rather than the slug's: the slug `vahiguru` is
+    /// the theme's key (routes, Spotlight ids, saved themes, contract vectors) and is never renamed.
+    static let names: [String: String] = ["vahiguru": "Waheguru"]
+
+    /// Other Roman spellings a reader may type or link for a theme, each a valid slug form. Search
+    /// over the Themes index matches them, and a link or Siri phrase that uses one opens the theme.
+    static let aliases: [String: [String]] = ["vahiguru": ["waheguru", "vaheguru", "wahiguru"]]
+
+    /// The theme a slug-shaped spelling names: the slug itself, or the slug an alias belongs to.
+    static func canonical(_ slug: String) -> String {
+        aliases.first { $0.value.contains(slug) }?.key ?? slug
+    }
+
+    /// Changes whenever a shown name or alias changes, so system search re-indexes the themes.
+    static var revision: String {
+        (names.sorted { $0.key < $1.key }.map { "\($0.key)=\($0.value)" }
+            + aliases.sorted { $0.key < $1.key }.map { "\($0.key)~\($0.value.joined(separator: ","))" })
+            .joined(separator: ";")
+    }
+
     static func display(_ slug: String) -> String {
-        slug.split(separator: "_").map { $0.prefix(1).uppercased() + $0.dropFirst() }.joined(separator: " ")
+        if let name = names[slug] { return name }
+        return slug.split(separator: "_").map { $0.prefix(1).uppercased() + $0.dropFirst() }.joined(separator: " ")
     }
 
     /// The English label a theme is known by, from its `concepts.description` ("Divine

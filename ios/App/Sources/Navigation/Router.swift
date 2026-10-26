@@ -305,9 +305,11 @@ struct ConstellationLink: Hashable {
     let alone: Bool
 
     /// A theme key as the corpus spells them: lowercase ascii and underscores, 1–32 chars (a
-    /// hostile or malformed value is ignored, never queried).
+    /// hostile or malformed value is ignored, never queried). A known alternative spelling
+    /// (`waheguru`) resolves to its theme's key (`vahiguru`).
     static func slug(_ raw: String) -> String? {
         let k = raw.lowercased()
-        return !k.isEmpty && k.count <= 32 && k.allSatisfy({ ("a"..."z").contains($0) || $0 == "_" }) ? k : nil
+        return !k.isEmpty && k.count <= 32 && k.allSatisfy({ ("a"..."z").contains($0) || $0 == "_" })
+            ? ConceptName.canonical(k) : nil
     }
 }

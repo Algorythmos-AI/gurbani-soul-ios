@@ -49,10 +49,11 @@ enum ThemeIndexModel {
         let gurmukhi = isGurmukhi(q)
         func tier(_ r: ThemeIndexRow) -> Int? {
             let name = fold(ConceptName.display(r.concept))
-            let slug = fold(r.concept.replacingOccurrences(of: "_", with: " "))
+            let slugs = ([r.concept] + (ConceptName.aliases[r.concept] ?? []))
+                .map { fold($0.replacingOccurrences(of: "_", with: " ")) }
             if !gurmukhi {
-                if name.hasPrefix(q) || slug.hasPrefix(q) { return 0 }
-                if name.contains(q) || slug.contains(q) { return 1 }
+                if name.hasPrefix(q) || slugs.contains(where: { $0.hasPrefix(q) }) { return 0 }
+                if name.contains(q) || slugs.contains(where: { $0.contains(q) }) { return 1 }
             }
             if let head = r.headword, fold(head) == q { return 2 }
             if r.terms.contains(where: { fold($0) == q }) { return 3 }

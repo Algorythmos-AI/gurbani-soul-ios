@@ -56,6 +56,14 @@ public enum SeekerLexicon {
         "inka": .translit(["tin", "tinhaa"]), "jivan": .translit(["jeevan"]),
         "mua": .translit(["mooaa", "moaa"]), "keertan": .translit(["keeratan"]),
         "raidas": .translit(["ravidaas"]), "waheguruji": .translit(["vaahiguroo"]),
+        // Every common roman spelling of ਵਾਹਿਗੁਰੂ finds the same lines as "waheguru". The fold alone
+        // let raag headers into the variant tier, and "vahiguru" is the theme slug (lexiconOverSlug).
+        "vaheguru": .translit(["vaahiguroo"]), "vahiguru": .translit(["vaahiguroo"]),
+        "wahiguru": .translit(["vaahiguroo"]), "vaheguruji": .translit(["vaahiguroo"]),
+        "vahiguruji": .translit(["vaahiguroo"]), "wahiguruji": .translit(["vaahiguroo"]),
+        "satnam vaheguru": .translit(["vaahiguroo", "sat naam"]),
+        "satnam vahiguru": .translit(["vaahiguroo", "sat naam"]),
+        "satnam wahiguru": .translit(["vaahiguroo", "sat naam"]),
         "sachkhand": .translit(["sach khand"]), "kirtan sohila": .translit(["sohilaa"]),
         "onkar": .translit(["oankaar"]), "ikonkar": .translit(["oankaar"]),
         "rabb": .translit(["har", "raam"]), "rab": .translit(["har", "raam"]),
