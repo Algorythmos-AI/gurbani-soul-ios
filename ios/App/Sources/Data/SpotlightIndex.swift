@@ -56,11 +56,13 @@ enum SpotlightIndex {
 
     static func themeIdentifier(_ concept: String) -> String { "theme-\(concept)" }
 
-    /// The build whose themes are in system search (themes change only with the bundled DB).
+    /// The build whose themes are in system search (themes change only with the bundled DB, and
+    /// their shown names with `ConceptName.revision`, which the stamp carries too).
     static let themesIndexedKey = "sggs_spotlight_themes_build"
     static func themesIndexStamp(bundle: Bundle) -> String {
         let info = bundle.infoDictionary ?? [:]
         return "\(info["CFBundleShortVersionString"] as? String ?? "?")+\(info["CFBundleVersion"] as? String ?? "?")"
+            + "+\(ConceptName.revision)"
     }
 
     /// The theme slug of a theme result (nil for any other identifier, or a malformed slug).
@@ -74,7 +76,7 @@ enum SpotlightIndex {
         let name = ConceptName.display(r.concept)
         attrs.title = r.headword.map { "\(name) · \($0)" } ?? name       // the headword verbatim
         attrs.contentDescription = "\(ThemeIndexModel.gloss(r.description))\n\(r.nVerses.formatted()) verses in Sri Guru Granth Sahib Ji"
-        attrs.keywords = ["Gurbani", "theme", name, r.concept] + r.terms
+        attrs.keywords = ["Gurbani", "theme", name, r.concept] + (ConceptName.aliases[r.concept] ?? []) + r.terms
         return CSSearchableItem(uniqueIdentifier: themeIdentifier(r.concept), domainIdentifier: themeDomain, attributeSet: attrs)
     }
 

@@ -428,5 +428,5 @@ finding about the scripture.
   - `daya`, "the fifth of the panj gun";
   - `santokh`, "paired with sat, daya, dharam, and dhairy";
   - `bhau`, "the classic Gurbani couplet ਭੈ ਭਾਉ".
-- They use different spellings for the same names: "Nam" and "Naam", "Waheguru" (the theme is
-  displayed as "Vahiguru"), and "SGGS" (the project style is "Sri Guru Granth Sahib Ji").
+- They use different spellings for the same names: "Nam" and "Naam", "Waheguru" (the theme was
+  displayed as "Vahiguru"; resolved: the app now shows "Waheguru", slug `vahiguru` unchanged), and "SGGS" (the project style is "Sri Guru Granth Sahib Ji").

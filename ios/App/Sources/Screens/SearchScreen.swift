@@ -150,7 +150,7 @@ struct SearchScreen: View {
                           idle: { AnyView(SearchIdleView(mode: model.mode)) }) { out in
                 List {
                     if let themes = out.relatedThemes, !themes.isEmpty {
-                        Section { Text("Related themes: " + themes.joined(separator: " · "))
+                        Section { Text("Related themes: " + themes.map(ConceptName.display).joined(separator: " · "))
                             .font(.caption).foregroundStyle(Brand.gold) }
                             .readingColumn()
                             .listRowBackground(Ink.base)
