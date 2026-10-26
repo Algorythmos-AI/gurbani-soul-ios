@@ -101,29 +101,40 @@ final class ExploreLive {
     private(set) var themeToday: ThemeOfTheDay?
     private(set) var themeBins: [Int] = []
     private(set) var sky: ExploreSky?
-    private var loading = false
+    /// The day the newest `load` asked for. A read still in flight for an older day (the hub left
+    /// open across midnight or a time-zone change) never publishes over it.
+    private var requestedDay: Int?
+    private var skyLoading = false
 
     private static let signposter = OSSignposter(subsystem: "org.sggs.app", category: "Explore")
 
     func load(corpus: CorpusActor?, day: Int) async {
-        guard let corpus, !loading, themeDay != day || sky == nil else { return }
-        loading = true
-        defer { loading = false }
+        guard let corpus else { return }
+        requestedDay = day
+        let needsTheme = themeDay != day
+        guard needsTheme || (sky == nil && !skyLoading) else { return }
         // Let the hub's first frame (and any page the reader opens from it) go first.
         try? await Task.sleep(for: .milliseconds(350))
-        guard !Task.isCancelled else { return }
+        guard !Task.isCancelled, requestedDay == day else { return }
 
-        if themeDay != day {
+        if needsTheme {
             let state = Self.signposter.beginInterval("themeOfTheDay")
-            if let theme = try? await corpus.themeOfTheDay(day: day) {
-                let bins = (try? await corpus.themeAngBins(theme.concept)) ?? []
+            let theme = try? await corpus.themeOfTheDay(day: day)
+            var bins: [Int] = []
+            if let theme { bins = (try? await corpus.themeAngBins(theme.concept)) ?? [] }
+            Self.signposter.endInterval("themeOfTheDay", state)
+            // A newer day may have been asked for while this read was in flight.
+            if let theme, requestedDay == day, !Task.isCancelled {
                 themeToday = theme
                 themeBins = bins
                 themeDay = day
             }
-            Self.signposter.endInterval("themeOfTheDay", state)
         }
-        if sky == nil, !Task.isCancelled {
+        // The sky is the same every day: one build per process, kept even if this task was
+        // superseded meanwhile.
+        if sky == nil, !skyLoading, !Task.isCancelled {
+            skyLoading = true
+            defer { skyLoading = false }
             let state = Self.signposter.beginInterval("constellationSky")
             if let graph = try? await corpus.constellationSky(minPPMI: 0), !graph.nodes.isEmpty {
                 sky = await ExploreSky.make(graph)

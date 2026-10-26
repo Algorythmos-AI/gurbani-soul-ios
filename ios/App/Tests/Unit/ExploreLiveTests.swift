@@ -56,6 +56,22 @@ final class ExploreLiveTests: XCTestCase {
         XCTAssertNotEqual(live.themeToday?.concept, first?.concept, "a new day turns the theme over")
     }
 
+    /// The hub left open across midnight: a load still in flight for yesterday never publishes
+    /// over today's (Codex review on #90).
+    func testANewerDayWinsOverALoadInFlight() async throws {
+        let actor = try corpus()
+        let live = ExploreLive()
+        // Yesterday's load starts first and is still waiting when today's is asked for.
+        let yesterday = Task { await live.load(corpus: actor, day: 20) }
+        try await Task.sleep(for: .milliseconds(50))
+        await live.load(corpus: actor, day: 21)
+        await yesterday.value
+        let expected = try await actor.themeOfTheDay(day: 21)
+        XCTAssertEqual(live.themeToday, expected, "yesterday's theme published over today's")
+        await live.load(corpus: actor, day: 21)
+        XCTAssertEqual(live.themeToday, expected)
+    }
+
     func testClockStatesTheWidgetsWatch() throws {
         let noon = try XCTUnwrap(Calendar.current.date(bySettingHour: 13, minute: 30, second: 0, of: Date()))
         let entry = RaagNowTimeline.entry(at: noon, config: RaagClockConfig(solar: false), snapshot: nil)
