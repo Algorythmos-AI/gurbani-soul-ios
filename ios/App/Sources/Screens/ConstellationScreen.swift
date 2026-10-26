@@ -374,19 +374,20 @@ private struct ConstellationList: View {
         VStack(alignment: .leading, spacing: 0) {
             ForEach(shown) { co in
                 row(title: ConceptName.display(co.co), color: ThemeGroup.color(co.co),
-                    detail: "\(co.n.formatted()) verses shared · together in \(co.shabadCount.formatted()) shabads · PPMI \(co.ppmi.formatted(.number.precision(.fractionLength(2))))") {
+                    detail: "\(co.n.formatted()) verses shared · together in \(co.shabadCount.formatted()) shabads · PPMI \(co.ppmi.formatted(.number.precision(.fractionLength(2))))",
+                    id: "constellation.pair.\(co.co)") {
                     onSelect(co.co)
                 }
                 Divider()
             }
             if focus.solo > 0 {
                 row(title: "\(ConceptName.display(concept)) alone", color: Ink.muted,
-                    detail: "\(focus.solo.formatted()) verses carry no other theme") { onSelect(nil) }
+                    detail: "\(focus.solo.formatted()) verses carry no other theme", id: "constellation.alone") { onSelect(nil) }
             }
         }
     }
 
-    private func row(title: String, color: Color, detail: String, action: @escaping () -> Void) -> some View {
+    private func row(title: String, color: Color, detail: String, id: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(alignment: .firstTextBaseline, spacing: Theme.Space.s) {
                 Circle().fill(color).frame(width: 10, height: 10).accessibilityHidden(true)
@@ -404,6 +405,7 @@ private struct ConstellationList: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
+        .accessibilityIdentifier(id)
     }
 }
 
@@ -451,6 +453,7 @@ struct PairSheet: View {
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                         .accessibilityElement(children: .combine)
+                        .accessibilityIdentifier("pairSheet.summary")
                     }
                     .listRowBackground(Ink.base)
                     ForEach(shabads) { sh in

@@ -3,9 +3,10 @@ import SwiftUI
 import WidgetKit
 @testable import SGGS
 
-/// Renders the Nitnem widget in every family (light + dark) through `ImageRenderer` — a gate
-/// that each layout composes without trapping, and (with `SGGS_WIDGET_SNAPSHOT_DIR`) a PNG per
-/// family for visual review.
+/// Renders the Nitnem widget in every family through `ImageRenderer` — a gate that each layout
+/// composes without trapping, and (with `SGGS_WIDGET_SNAPSHOT_DIR`) a PNG per family for visual
+/// review. Home Screen families light + dark; the Lock Screen families once, as the Lock Screen
+/// draws them (light on the dark ground): a light render of them was blank.
 @MainActor
 final class NitnemWidgetRenderTests: XCTestCase {
     private let families: [(WidgetFamily, CGSize, String)] = [
@@ -42,7 +43,7 @@ final class NitnemWidgetRenderTests: XCTestCase {
         let dir = ProcessInfo.processInfo.environment["SGGS_WIDGET_SNAPSHOT_DIR"]
         for (family, size, name) in families {
             for (e, tag) in [(entry(next: true), "next"), (entry(next: false), "done")] {
-                for dark in [false, true] {
+                for dark in WidgetRenderTests.schemes(family) {
                     let img = render(e, family: family, size: size, dark: dark)
                     XCTAssertNotNil(img, "\(name) \(tag) dark=\(dark) failed to render")
                     if let dir, let png = img?.pngData() {
