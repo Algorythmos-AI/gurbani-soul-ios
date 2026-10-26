@@ -250,28 +250,65 @@ final class DeviceChecklistTests: XCTestCase {
     /// D10: a cold launch (the integrity cache cleared, so the whole database is re-hashed, as
     /// after an install or an update) reaches the app in under 5 s, and a warm relaunch is faster.
     /// Measured on this device only; the oldest supported device is a separate, manual run.
-    func testD10ColdAndWarmLaunchTimes() {
-        // Start each clock with the app not running: otherwise launch() first terminates a
+    ///
+    /// The time is the app's own (`LaunchClock`, Debug only): from the moment the kernel created
+    /// the process to the Nitnem home appearing with its banis loaded. XCTest's clock is recorded
+    /// beside it but not judged: over the Wi-Fi tunnel its spawn and polling added about 3 s (±2 s)
+    /// to every reading (docs/ios/device-checklist-1.4.9.md).
+    func testD10ColdAndWarmLaunchTimes() throws {
+        // Start each launch with the app not running: otherwise launch() first terminates a
         // leftover instance, and over a Wi-Fi tunnel that alone took 7.4 s (2026-10-25).
         let leftover = XCUIApplication()
         leftover.terminate()
         XCTAssertTrue(leftover.wait(for: .notRunning, timeout: 30), "a leftover instance would not quit")
-        let coldStart = Date()
-        var app = launch(environment: ["SGGS_UITEST_COLD_VERIFY": "1"])
+        let metrics = ["SGGS_UITEST_LAUNCH_METRICS": "1"]
+        var xctestStart = Date()
+        var app = launch(environment: metrics.merging(["SGGS_UITEST_COLD_VERIFY": "1"]) { $1 })
         XCTAssertTrue(app.navigationBars["Nitnem"].waitForExistence(timeout: 30), "cold launch never reached the app")
-        let cold = Date().timeIntervalSince(coldStart)
+        let coldXCTest = Date().timeIntervalSince(xctestStart)
+        let cold = try launchTimeline(app, "cold")
         evidence(app, "D10 after a cold launch")
         app.terminate()
         XCTAssertTrue(app.wait(for: .notRunning, timeout: 30), "the app would not quit before the warm launch")
-        let warmStart = Date()
-        app = launch(relaunch: true)
+        xctestStart = Date()
+        app = launch(relaunch: true, environment: metrics)
         XCTAssertTrue(app.navigationBars["Nitnem"].waitForExistence(timeout: 30), "warm launch never reached the app")
-        let warm = Date().timeIntervalSince(warmStart)
-        note("D10 timings", String(format: "cold (full verify) to Nitnem: %.2f s\nwarm to Nitnem: %.2f s", cold, warm))
-        XCTAssertLessThan(cold, 5, "a cold launch must finish verifying in under 5 s")
-        XCTAssertLessThan(warm, 5, "a warm launch must be under 5 s too")
+        let warmXCTest = Date().timeIntervalSince(xctestStart)
+        let warm = try launchTimeline(app, "warm")
+        XCTAssertEqual(cold.cachedHash, false, "the cold launch must re-hash the whole database")
+        XCTAssertEqual(warm.cachedHash, true, "the warm launch must use the verified fingerprint")
+        note("D10 timings", """
+            process start to Nitnem, measured in the app:
+              cold (full verify): \(String(format: "%.2f", cold.nitnem)) s
+              warm:               \(String(format: "%.2f", warm.nitnem)) s
+            XCTest's clock (not judged; includes spawning and polling over the connection):
+              cold \(String(format: "%.2f", coldXCTest)) s, warm \(String(format: "%.2f", warmXCTest)) s
+            timelines (s since process start):
+              cold \(cold.raw)
+              warm \(warm.raw)
+            """)
+        XCTAssertLessThan(cold.nitnem, 5, "a cold launch must finish verifying in under 5 s")
+        XCTAssertLessThan(warm.nitnem, 5, "a warm launch must be under 5 s too")
         // "faster" is recorded, not asserted: on a current iPhone the full hash takes tens of
         // milliseconds, well inside launch-to-launch noise, so a comparison would only flake.
+    }
+
+    private struct LaunchTimeline { let nitnem: Double; let cachedHash: Bool?; let raw: String }
+
+    /// The app's own launch timeline (`launchMetrics` on the Nitnem screen; Debug builds only).
+    private func launchTimeline(_ app: XCUIApplication, _ name: String) throws -> LaunchTimeline {
+        let probe = app.staticTexts["launchMetrics"].firstMatch
+        XCTAssertTrue(probe.waitForExistence(timeout: 10), "\(name): the app published no launch timeline")
+        var raw = ""
+        let deadline = Date().addingTimeInterval(5)
+        while raw.isEmpty && Date() < deadline {
+            raw = probe.value as? String ?? ""
+            if raw.isEmpty { RunLoop.current.run(until: Date().addingTimeInterval(0.25)) }
+        }
+        let object = try JSONSerialization.jsonObject(with: Data(raw.utf8)) as? [String: Any]
+        let since = object?["since_process_start"] as? [String: Double] ?? [:]
+        let nitnem = try XCTUnwrap(since["nitnemDrawn"], "\(name): no Nitnem mark in \(raw)")
+        return LaunchTimeline(nitnem: nitnem, cachedHash: object?["cached_hash"] as? Bool, raw: raw)
     }
 
     /// D11: resume after a force quit, and a force quit DURING the integrity verify.

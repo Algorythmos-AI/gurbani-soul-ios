@@ -9,6 +9,7 @@ struct SGGSApp: App {
 
     init() {
         #if DEBUG
+        LaunchClock.mark(.appInit)
         // XCUITest launches set SGGS_UITEST=1: clear per-launch residue that would otherwise
         // leak between tests (resume-last-Ang, the transliteration toggle). Never the accent —
         // its persistence across a relaunch is itself under test. Debug builds only.
@@ -36,6 +37,9 @@ struct SGGSApp: App {
         #endif
         Brand.applyNavigationTitleFonts()
         _container = State(initialValue: AppContainer())
+        #if DEBUG
+        LaunchClock.mark(.containerReady)
+        #endif
     }
 
     var body: some Scene {

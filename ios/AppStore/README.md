@@ -90,3 +90,20 @@ shot is attached to the result bundle. A device capture carries the real status 
 composer repaints it as 9:41 with full signal and battery and an empty Dynamic Island.
 The iPad 13" set is still the 1.4.0 frame (no iPad or simulator on the release Mac); re-frame it
 in this style when one is available.
+
+## The website set (gurbanisoul.com, since 1.4.9)
+
+The marketing site uses unframed captures, not the store frames. `capture_site_shots.sh` makes them from
+the app sources in the checkout with the **public** DB swapped into the built `.app` (proved by its
+sha256 and by the absence of the `translations`/`fts_en` tables), each set on a fresh simulator with the
+9:41 status bar and the clock pinned: iPhone 17 Pro light and dark (`testCaptureScreens`,
+`testVaarsWeave`, `SiteShotTests` for Verify and About), iPad Pro 13" (M5) portrait and landscape, and
+the widget renders (`WidgetRenderTests`, `HukamWidgetRenderTests`, `NitnemWidgetRenderTests`). It writes
+`SHA256SUMS` and `provenance.json` beside the PNGs.
+
+There is no iOS simulator runtime on the release Mac, so run it on CI (manual workflow; the driver test
+is added to an older ref's checkout when it predates it):
+
+```bash
+gh workflow run ios-site-shots.yml --repo Algorythmos-AI/gurbani-soul-ios -f ref=v1.4.9
+```

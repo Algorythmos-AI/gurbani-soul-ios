@@ -86,6 +86,14 @@ struct BaniReaderScreen: View {
                 chrome.autoScrolling = running
                 if running { MotionGate.run(Motion.gentle) { chromeHidden = true } } else { showChrome() }
             }
+            // the bar is hidden from assistive tech while it is hidden, so it must come back the
+            // moment VoiceOver or Switch Control turns on, not at the next scroll
+            .onReceive(NotificationCenter.default.publisher(for: UIAccessibility.voiceOverStatusDidChangeNotification)) { _ in
+                if UIAccessibility.isVoiceOverRunning { showChrome() }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIAccessibility.switchControlStatusDidChangeNotification)) { _ in
+                if UIAccessibility.isSwitchControlRunning { showChrome() }
+            }
             .onChange(of: container.router.pendingBaniSeq) { _, seq in
                 if let seq { container.router.pendingBaniSeq = nil; jump(toSeq: seq) }
             }
@@ -319,7 +327,8 @@ struct BaniReaderScreen: View {
                 if viewport > 0 { chrome.viewportHeight = viewport }
                 if let change = chrome.scrolled(to: y) { MotionGate.run(Motion.gentle) { chromeHidden = change } }
             },
-            onContentHeight: { h in chrome.contentHeight = h }))
+            onContentHeight: { h in chrome.contentHeight = h },
+            onUserScrolling: { chrome.userScrolling = $0 }))
         .contentMargins(.bottom, Theme.Space.xl, for: .scrollContent)
         .overlay(alignment: .top) {
             GeometryReader { g in
@@ -711,6 +720,9 @@ struct BaniReaderScreen: View {
         .appAnimation(Motion.gentle, value: chromeHidden)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("baniPageBar")
+        // hidden is gone, for assistive tech and UI tests alike: an invisible control that still
+        // reports itself is one a test taps through to the verse beneath
+        .accessibilityHidden(chromeHidden)
     }
 
     /// Live Activity progress inputs (a whole-percent bar; never a verse).

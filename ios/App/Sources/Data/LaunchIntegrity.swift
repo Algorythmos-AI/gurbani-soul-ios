@@ -89,6 +89,9 @@ enum LaunchIntegrity {
     /// `cacheSuiteName` selects the UserDefaults domain for the fingerprint cache — nil = .standard
     /// (a String parameter, not a UserDefaults, so the call crosses actor boundaries under Swift 6).
     static func run(corpus: CorpusActor, cacheSuiteName: String? = nil) async -> IntegrityReport {
+        #if DEBUG
+        LaunchClock.mark(.integrityStart)
+        #endif
         var checks: [IntegrityReport.Check] = []
         let defaults = cacheSuiteName.flatMap { UserDefaults(suiteName: $0) } ?? .standard
         let path = corpus.dbPath
@@ -114,6 +117,9 @@ enum LaunchIntegrity {
             // Hash the ~100 MB DB OFF the main thread (this is awaited from a @MainActor caller).
             sha = await Task.detached(priority: .userInitiated) { sha256(ofFileAt: path) ?? "" }.value
         }
+        #if DEBUG
+        LaunchClock.mark(.integrityHashed)
+        #endif
         let hashOK = expected != nil && sha == expected
         checks.append(.init(name: "db_sha256 matches manifest", passed: hashOK))
         if hashOK && !cached, let expected, let attrs {
@@ -137,6 +143,9 @@ enum LaunchIntegrity {
         let verdict = (try? await corpus.verify("ਸੋਚੈ ਸੋਚਿ ਨ ਹੋਵਈ ਜੇ ਸੋਚੀ ਲਖ ਵਾਰ", ang: 1))?.verdict ?? ""
         checks.append(.init(name: "Verify engine sane", passed: verdict.hasPrefix("VERIFIED_EXACT")))
 
+        #if DEBUG
+        LaunchClock.mark(.integrityDone)
+        #endif
         return IntegrityReport(ok: checks.allSatisfy { $0.passed }, dbSha256: sha,
                                expectedSha256: expected, sqliteVersion: corpus.sqliteVersion,
                                checks: checks, usedCachedHash: cached)

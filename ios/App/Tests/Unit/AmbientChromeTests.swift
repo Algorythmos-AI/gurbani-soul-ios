@@ -40,4 +40,36 @@ final class AmbientChromeTests: XCTestCase {
         c.endLanding(second)
         XCTAssertFalse(c.landingInProgress)
     }
+
+    /// CI run 40083157947: on a slow simulator a "Next pauri" landing ran about 3 s, past the 1 s
+    /// landing window, and its tail hid the bar. Movement the reader did not make never hides it.
+    func testMovementTheReaderDidNotMakeNeverHidesTheChrome() {
+        var c = tallPage()
+        c.userScrolling = false                   // the landing scroll, or row heights settling
+        XCTAssertNil(c.scrolled(to: 100))
+        XCTAssertNil(c.scrolled(to: 900))
+        c.userScrolling = true                    // the reader's own drag starts a fresh run
+        XCTAssertNil(c.scrolled(to: 910))
+        XCTAssertEqual(c.scrolled(to: 960), true)
+    }
+
+    func testAHiddenChromeReturnsAtTheTopWhateverMovedThePage() {
+        var c = tallPage()
+        c.userScrolling = true
+        XCTAssertEqual(c.scrolled(to: 300), true)
+        c.userScrolling = false                   // e.g. a tap on the status bar scrolls to the top
+        XCTAssertNil(c.scrolled(to: 120))
+        XCTAssertEqual(c.scrolled(to: 0), false)
+    }
+
+    /// The bar the reader scrolled away comes back on a small upward read (it never did in the
+    /// bani reader: `hidden` stayed false, so the restore branch was unreachable).
+    func testAnUpwardReadRestoresTheChrome() {
+        var c = tallPage()
+        XCTAssertEqual(c.scrolled(to: 300), true)
+        XCTAssertTrue(c.hidden)
+        XCTAssertNil(c.scrolled(to: 400), "already hidden: no change to report")
+        XCTAssertEqual(c.scrolled(to: 390), false)
+        XCTAssertFalse(c.hidden)
+    }
 }

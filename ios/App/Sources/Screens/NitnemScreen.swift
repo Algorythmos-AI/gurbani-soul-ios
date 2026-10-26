@@ -26,6 +26,10 @@ struct NitnemScreen: View {
                     TimelineView(.periodic(from: .now, by: 60)) { _ in
                         content(list.banis, at: now())
                     }
+                    // the launch ends with the usable home, never the skeleton before it
+                    #if DEBUG
+                    .overlay(alignment: .topLeading) { LaunchMetricsProbe() }
+                    #endif
                 } else if failed {
                     EmptyStateView(title: "Nitnem could not load", message: "Reinstalling the app restores the bundled corpus.", isError: true,
                                    actionTitle: "Try again") { Task { await load() } }

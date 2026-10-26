@@ -116,6 +116,34 @@ final class SGGSUITests: XCTestCase {
         return app.buttons[action].firstMatch
     }
 
+    /// Scroll `element` (which must already exist) wholly into the band between the navigation bar
+    /// and the tab bar, in short drags that hold at the end so the page does not coast. A full
+    /// `swipeUp()` flings about a screen: on the Nitnem home it carried the journey card under the
+    /// status bar, `isHittable` still said yes, and the tap at its centre (y 58) hit the bar instead
+    /// (CI run 40083157947).
+    private func reveal(_ app: XCUIApplication, _ element: XCUIElement,
+                        file: StaticString = #file, line: UInt = #line) {
+        let window = app.windows.firstMatch.frame
+        let nav = app.navigationBars.firstMatch
+        let bar = app.tabBars.firstMatch
+        let top = (nav.exists ? nav.frame.maxY : window.minY) + 8
+        let bottom = (bar.exists ? bar.frame.minY : window.maxY) - 8
+        let origin = app.coordinate(withNormalizedOffset: .zero)
+        for _ in 0..<12 {
+            let f = element.frame
+            if f.minY >= top && f.maxY <= bottom { return }
+            let below = f.maxY > bottom
+            let needed = below ? f.maxY - bottom : top - f.minY
+            let distance = min(needed + 24, (bottom - top) * 0.6)
+            let start = origin.withOffset(CGVector(dx: window.midX, dy: below ? bottom - 24 : top + 24))
+            let end = start.withOffset(CGVector(dx: 0, dy: below ? -distance : distance))
+            start.press(forDuration: 0.05, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 0.3)
+        }
+        let f = element.frame
+        XCTAssertTrue(f.minY >= top && f.maxY <= bottom,
+                      "\(element) never came fully on screen (\(f), band \(top)–\(bottom))", file: file, line: line)
+    }
+
     // MARK: Jump-sheet helpers
 
     /// Enter a new Ang into the (seeded, editable) number field: focus, clear the existing digits,
@@ -286,7 +314,7 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Amrit Vela"].waitForExistence(timeout: 8), "band title missing")
         let row = app.buttons["bani_japji"].firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 12))
-        for _ in 0..<4 where !row.isHittable { app.swipeUp() }   // the Hukam cards sit above the banis
+        reveal(app, row)                                          // the Hukam cards sit above the banis
         row.tap()
         XCTAssertTrue(app.navigationBars["Japji Sahib"].waitForExistence(timeout: 12), "bani reader did not open")
         let mool = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "ੴ ਸਤਿ ਨਾਮੁ ਕਰਤਾ ਪੁਰਖੁ")).firstMatch
@@ -461,9 +489,11 @@ final class SGGSUITests: XCTestCase {
     /// The reading journey opens from the home and shows the month.
     func testJourneyOpens() {
         let app = launchApp(selectSearch: false)
+        // The home loads its banis after the first frame: scrolling before the card exists flung
+        // the page past it (the card would have been on screen as it loaded).
         let card = app.buttons["nitnemJourney"].firstMatch
-        for _ in 0..<4 where !(card.exists && card.isHittable) { app.swipeUp() }
-        XCTAssertTrue(card.waitForExistence(timeout: 12), "journey card missing")
+        XCTAssertTrue(card.waitForExistence(timeout: 20), "journey card missing")
+        reveal(app, card)
         card.tap()
         XCTAssertTrue(app.navigationBars["Reading journey"].waitForExistence(timeout: 10), "journey did not open")
         XCTAssertTrue(app.staticTexts["Begin today"].waitForExistence(timeout: 6)
@@ -489,8 +519,8 @@ final class SGGSUITests: XCTestCase {
 
         openTab(app, "Nitnem", expectingNavBar: "Nitnem")
         let card = app.buttons["nitnemJourney"].firstMatch
-        for _ in 0..<4 where !(card.exists && card.isHittable) { app.swipeUp() }
         XCTAssertTrue(card.waitForExistence(timeout: 12), "journey card missing")
+        reveal(app, card)
         card.tap()
         XCTAssertTrue(app.navigationBars["Reading journey"].waitForExistence(timeout: 10))
 
@@ -511,7 +541,7 @@ final class SGGSUITests: XCTestCase {
         let app = launchApp(selectSearch: false)
         let row = app.buttons["bani_japji"].firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 12))
-        for _ in 0..<4 where !row.isHittable { app.swipeUp() }   // the Hukam cards sit above the banis
+        reveal(app, row)                                          // the Hukam cards sit above the banis
         row.tap()
         XCTAssertTrue(app.navigationBars["Japji Sahib"].waitForExistence(timeout: 12))
         app.buttons["baniOptions"].tap()
