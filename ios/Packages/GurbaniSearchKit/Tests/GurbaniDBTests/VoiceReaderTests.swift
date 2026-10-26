@@ -40,7 +40,7 @@ final class VoiceReaderTests: XCTestCase {
     func testOneCanonicalCountMatchesAuthorAnalytics() throws {
         let db = try shippedDB()
         let voices = db.voiceSummaries()
-        XCTAssertGreaterThanOrEqual(voices.count, 29)   // 29 today (Baba Sundar Ji's Sadu awaits the sggs-data fix)
+        XCTAssertGreaterThanOrEqual(voices.count, 29)   // voices with tagged lines: 35 of the roster's 36 with dataset 1.2.0
         for v in voices {
             let analytics = scalar(db, "SELECT n_lines FROM author_analytics WHERE author=?", v.author)
             XCTAssertGreaterThanOrEqual(analytics, 0, "\(v.author): no author_analytics row")
@@ -52,9 +52,10 @@ final class VoiceReaderTests: XCTestCase {
         }
     }
 
-    /// Insights › Contributors counts `author_analytics` rows; Lineage counts `voiceSummaries()`.
-    /// They must be the same set of voices, so the two screens never show two counts.
-    func testInsightsAndLineageCountTheSameVoices() throws {
+    /// The figures computed from tagged lines: Insights › Contributors reads `author_analytics`
+    /// rows, Lineage reads `voiceSummaries()`. They must cover the same voices, so the two screens
+    /// flag the same roster voice as under review (the voice COUNT itself is the roster's, 36).
+    func testInsightsAndLineageTagTheSameVoices() throws {
         let db = try shippedDB()
         let lineage = Set(db.voiceSummaries().map(\.author))
         let insights = Set(try db.authorAnalytics().map(\.author))

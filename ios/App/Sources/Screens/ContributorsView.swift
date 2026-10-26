@@ -17,9 +17,19 @@ struct ContributorsView: View {
     private let roster = Self.rosterIndex
     /// Voices with a cited place in the bundled roster (roster v2), read once.
     private static let mapVoices = MapVoice.loadBundled()
-    /// The bundled roster by name, read once (it never changes at runtime).
+    /// The bundled roster, read once (it never changes at runtime), and by name.
+    private static let rosterList: [Contributor] = ContributorsStore.load() ?? []
     private static let rosterIndex: [String: Contributor] =
-        Dictionary((ContributorsStore.load() ?? []).map { ($0.name, $0) }, uniquingKeysWith: { a, _ in a })
+        Dictionary(rosterList.map { ($0.name, $0) }, uniquingKeysWith: { a, _ in a })
+
+    /// The one voice count (the roster's, as Explore and Lineage show it) and the roster voices
+    /// with no lines tagged to them, which the dot field and the counts below cannot include.
+    private var split: LineageCount.Split {
+        LineageCount.split(Self.rosterList, withBani: Set(authors.map(\.author)))
+    }
+
+    /// "36 voices · one Granth".
+    static func header(_ split: LineageCount.Split) -> String { "\(String(split.voices.count)) voices · one Granth" }
 
     enum Order: String, CaseIterable, Identifiable {
         case granth = "Granth order", volume = "Most Bani"
@@ -64,7 +74,7 @@ struct ContributorsView: View {
         List {
             Section {
                 VStack(alignment: .leading, spacing: Theme.Space.m) {
-                    Text("\(String(authors.count)) voices · one Granth")
+                    Text(Self.header(split))
                         .font(Brand.heading(.title3)).accessibilityAddTraits(.isHeader)
                     Picker("Group", selection: $grouping) {
                         ForEach(DotFieldLayout.Grouping.allCases) { Text($0.rawValue).tag($0) }
@@ -89,7 +99,12 @@ struct ContributorsView: View {
                 }
                 .padding(.vertical, Theme.Space.xs)
             } footer: {
-                Text("One dot ≈ \(DotFieldLayout.linesPerDot) verse lines; every voice keeps at least one. Size shows how much Bani is preserved here — never importance.")
+                VStack(alignment: .leading, spacing: Theme.Space.xs) {
+                    Text("One dot ≈ \(DotFieldLayout.linesPerDot) verse lines; every voice keeps at least one. Size shows how much Bani is preserved here — never importance.")
+                    if let note = LineageCount.taggedNote(split) {
+                        Text(note).accessibilityIdentifier("insightsTaggedNote")
+                    }
+                }
             }
             .inkRow()
             if VoicesFeatures.mapEnabled, !Self.mapVoices.isEmpty {
@@ -121,6 +136,16 @@ struct ContributorsView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityHint(atlas == nil ? "" : "Shows where this voice sings in the Granth ribbon")
+                }
+                ForEach(split.underReview) { c in
+                    VStack(alignment: .leading, spacing: 4) {
+                        AuthorNameLabel(name: AuthorName(c.name))
+                        Text(LineageCount.reviewLine(c)).font(.caption).foregroundStyle(.secondary)
+                    }
+                    .padding(.vertical, 2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityIdentifier("voiceUnderReview_\(c.slug)")
                 }
             } header: {
                 HStack {

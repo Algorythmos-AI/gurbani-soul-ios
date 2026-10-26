@@ -57,10 +57,11 @@ struct LineageScreen: View {
     var body: some View {
         Group {
             if contributors != nil {
+                let split = self.split
                 let voices = split.voices
                 ScrollView {
                     VStack(alignment: .leading, spacing: Theme.Space.l) {
-                        hero(voices)
+                        hero(split)
                         if let voiceOfTheDay { voiceOfTheDayCard(voiceOfTheDay) }
                         didYouKnow
                         Picker("Lens", selection: $lens) {
@@ -79,10 +80,6 @@ struct LineageScreen: View {
                             VoiceRiverView(voices: voices.filter { kindFilter == "all" || $0.kind == kindFilter }) { c in
                                 select(c)
                             }
-                        }
-                        if !split.withoutBani.isEmpty {
-                            Text("Not counted: \(LineageFacts.join(split.withoutBani.map(\.displayName), .current)). No verses carry this attribution in this edition of the data; it is under review.")
-                                .font(.caption).foregroundStyle(.secondary)
                         }
                     }
                     .padding(Theme.Space.l)
@@ -145,18 +142,17 @@ struct LineageScreen: View {
 
     // MARK: hero — web .lin-hero parity
 
-    private func hero(_ list: [Contributor]) -> some View {
-        let years = list.map(\.timelineYear).filter { $0 != 9999 }
-        let span = years.isEmpty ? "" :
-            "\(String((years.min()! / 100) + 1))th–\(String((years.max()! / 100) + 1))th"
+    private func hero(_ split: LineageCount.Split) -> some View {
+        let list = split.voices
+        let span = Self.span(list)
         let verses = summaries.values.reduce(0) { $0 + $1.nVerses }
         return VStack(alignment: .leading, spacing: Theme.Space.s) {
             Text("THE CONTRIBUTORS")
                 .font(.caption2.weight(.semibold)).kerning(1.2)
                 .foregroundStyle(palette.accentText)
-            // With the bundled roster this renders "30 voices · 12th–17th century" —
-            // the exact header string testLineageAndVaars asserts.
-            Text("\(String(list.count)) voices · \(span) century").font(.headline)
+            // With the bundled roster this renders "36 voices · 12th–17th century" —
+            // the header string the UI tests assert.
+            Text(Self.headline(list)).font(.headline)
             Text("Every verse here is verbatim and cited by Ang.")
                 .font(.caption).foregroundStyle(.secondary)
             Text("Five centuries of voices gathered into one Granth — the Gurus, the Bhagats of the Bhakti and Sufi traditions, the court Bhatts, and the Gursikh companions. Tap any voice for their page"
@@ -168,6 +164,10 @@ struct LineageScreen: View {
                 StatTile(value: "\(String(list.count))", caption: "contributors")
                 StatTile(value: verses.formatted(), caption: "verses preserved here")
                 StatTile(value: span.isEmpty ? "—" : "\(span) c.", caption: "span of voices")
+            }
+            if let note = LineageCount.taggedNote(split) {
+                Text(note).font(.caption2).foregroundStyle(.secondary)
+                    .accessibilityIdentifier("lineageTaggedNote")
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -181,6 +181,18 @@ struct LineageScreen: View {
             }
         )
         .overlay(RoundedRectangle(cornerRadius: Theme.Radius.card).strokeBorder(Ink.hairline))
+    }
+
+    /// "12th–17th" from the roster's dates; "" when no voice is dated.
+    static func span(_ voices: [Contributor]) -> String {
+        let years = voices.map(\.timelineYear).filter { $0 != 9999 }
+        guard let lo = years.min(), let hi = years.max() else { return "" }
+        return "\(String((lo / 100) + 1))th–\(String((hi / 100) + 1))th"
+    }
+
+    /// "36 voices · 12th–17th century" — every voice, whether or not lines are tagged to it yet.
+    static func headline(_ voices: [Contributor]) -> String {
+        "\(String(voices.count)) voices · \(span(voices)) century"
     }
 
     // MARK: controls
@@ -210,8 +222,8 @@ struct LineageScreen: View {
         }
     }
 
-    /// Voices with Bani in the loaded DB (counted, listed) and roster entries without (a note).
-    private var split: (voices: [Contributor], withoutBani: [Contributor]) {
+    /// Every voice (the count) and those with no lines tagged to them yet (under review).
+    private var split: LineageCount.Split {
         LineageCount.split(contributors ?? [], withBani: Set(summaries.keys))
     }
 
@@ -414,8 +426,8 @@ struct LineageScreen: View {
                             .padding(.vertical, 2)
                         Text(Self.countLine(summary))
                             .font(.caption2).foregroundStyle(.secondary)
-                    } else {
-                        Text("Attribution under review").font(.caption2).foregroundStyle(.secondary)
+                    } else if !summaries.isEmpty {
+                        Text(LineageCount.reviewLine(c)).font(.caption2).foregroundStyle(.secondary)
                     }
                 }
                 .padding(Theme.Space.m)
@@ -430,8 +442,9 @@ struct LineageScreen: View {
         // One element per card: the label goes on the Button itself. Wrapping the Button in
         // `.accessibilityElement(children: .ignore)` made a second element with the same frame —
         // VoiceOver read each card twice and a UI-test tap could land on the wrong one.
-        .accessibilityLabel("\(c.displayName), \(c.kind), \(c.era.isEmpty ? "undated" : c.era), "
-                            + (summary.map { Self.countLine($0) } ?? "attribution under review"))
+        .accessibilityLabel([c.displayName, c.kind, c.era.isEmpty ? "undated" : c.era,
+                             summary.map { Self.countLine($0) } ?? (summaries.isEmpty ? nil : LineageCount.reviewLine(c))]
+                            .compactMap { $0 }.joined(separator: ", "))
         .accessibilityHint(compareMode ? "Selects for comparison" : "Opens their page")
         .accessibilityIdentifier("voiceCard_\(c.slug)")
     }

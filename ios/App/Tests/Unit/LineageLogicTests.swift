@@ -129,29 +129,41 @@ final class LineageLogicTests: XCTestCase {
 
     // MARK: one voice count
 
-    /// Lineage counts what Insights counts: voices with Bani in the DB. A roster entry without
-    /// verses (today Baba Sundar Ji; with 1.1.0 Bhagat Surdas Ji) is not a counted voice.
-    func testLineageCountsOnlyVoicesWithBani() throws {
+    /// Every roster voice is counted; one with no tagged lines is under review, not dropped.
+    func testEveryRosterVoiceIsCounted() throws {
         let roster = try voices()   // M1, Jaidev, Beni
         let today = LineageCount.split(roster, withBani: ["Guru Nanak Dev Ji (M1)", "Bhagat Jaidev Ji"])
-        XCTAssertEqual(today.voices.map(\.name), ["Guru Nanak Dev Ji (M1)", "Bhagat Jaidev Ji"])
-        XCTAssertEqual(today.withoutBani.map(\.name), ["Bhagat Beni Ji"])
+        XCTAssertEqual(today.voices.map(\.name), roster.map(\.name), "the count is the roster's")
+        XCTAssertEqual(today.underReview.map(\.name), ["Bhagat Beni Ji"])
+        XCTAssertEqual(today.tagged, 2)
         let all = LineageCount.split(roster, withBani: Set(roster.map(\.name)))
-        XCTAssertEqual(all.voices.count, 3); XCTAssertTrue(all.withoutBani.isEmpty)
+        XCTAssertEqual(all.voices.count, 3); XCTAssertTrue(all.underReview.isEmpty)
+        XCTAssertNil(LineageCount.taggedNote(all), "no note when every voice has tagged lines")
         let unread = LineageCount.split(roster, withBani: [])
         XCTAssertEqual(unread.voices.count, 3, "before the DB is read, the roster shows as is")
+        XCTAssertTrue(unread.underReview.isEmpty, "nothing is under review before the DB is read")
+        let extra = LineageCount.split(roster, withBani: ["Guru Nanak Dev Ji (M1)", "Bhatt Kalh"])
+        XCTAssertEqual(extra.voices.map(\.name).last, "Bhatt Kalh", "a DB voice the roster lacks is still counted")
+        XCTAssertEqual(extra.voices.count, 4)
     }
 
-    /// The bundled roster against the shipped DB: the hero's count equals the number of DB voices.
-    func testBundledRosterCountMatchesTheDB() throws {
-        guard let path = Bundle.main.url(forResource: "sggs-ios", withExtension: "sqlite")?.path else {
-            throw XCTSkip("bundled DB not found in host app")
-        }
-        let summaries = try SQLiteCandidateSource(path: path).voiceSummaries()
-        var roster = try XCTUnwrap(ContributorsStore.load())
-        let known = Set(roster.map(\.name))
-        roster += summaries.filter { !known.contains($0.author) }.map { Contributor(placeholderFor: $0.author) }
-        let split = LineageCount.split(roster, withBani: Set(summaries.map(\.author)))
-        XCTAssertEqual(split.voices.count, summaries.count, "Lineage and Insights must count the same voices")
+    func testReviewLineAndNoteCiteTheAng() throws {
+        let json = #"""
+        {"contributors": [{"name": "Bhagat Surdas Ji", "roman": "Surdas", "display": "Bhagat Surdas Ji", "kind": "bhagat",
+          "circa": true, "era": "16th century", "region": "", "tradition": "", "blurb": "b",
+          "attribution_note": "The corpus files his single line (Ang 1253, ਛਾਡਿ) under Namdev."},
+          {"name": "Bhagat Beni Ji", "roman": "Beni", "kind": "bhagat", "circa": true,
+           "era": "", "region": "", "tradition": "", "blurb": "b"}]}
+        """#
+        let roster = try XCTUnwrap(ContributorsStore.decode(Data(json.utf8)))
+        XCTAssertEqual(roster[0].reviewAng, 1253)
+        XCTAssertNil(roster[1].reviewAng)
+        XCTAssertEqual(LineageCount.reviewLine(roster[0]), "Ang 1253 · attribution under scholarly review")
+        XCTAssertEqual(LineageCount.reviewLine(roster[1]), "Attribution under scholarly review")
+        let split = LineageCount.split(roster, withBani: ["Guru Nanak Dev Ji (M1)"])
+        XCTAssertEqual(LineageCount.taggedNote(split, locale: Locale(identifier: "en_US")),
+                       "Figures count the lines tagged to each voice. Bhagat Surdas Ji (Ang 1253) and Bhagat Beni Ji: attribution under scholarly review.")
+        XCTAssertNil(Contributor.firstAng(in: "Ang 9999"), "an Ang outside 1–1430 is not a citation")
+        XCTAssertNil(Contributor.firstAng(in: "Angs 12"))
     }
 }

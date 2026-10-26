@@ -29,6 +29,9 @@ struct Contributor: Decodable, Identifiable, Sendable, Hashable {
     let sources: [Source]?
     let review: Review?
     let notable: [Notable]?
+    /// Roster v2 `attribution_note`: set when the lines that are this voice's are tagged to
+    /// another voice in the data, pending the scholar (G3). Prose; `reviewAng` is read from it.
+    let attributionNote: String?
     var id: String { name }
 
     struct Source: Decodable, Sendable, Hashable { let ref: String; let entry: String? }
@@ -47,7 +50,7 @@ struct Contributor: Decodable, Identifiable, Sendable, Hashable {
     private enum CodingKeys: String, CodingKey {
         case name, roman, kind, seq, born, died, circa, era, region, tradition, blurb
         case display, gurmukhi, chhap, birthplace, context, sources, review, notable
-        case rangeNote = "range_note"
+        case rangeNote = "range_note", attributionNote = "attribution_note"
     }
 
     init(from decoder: Decoder) throws {
@@ -75,6 +78,7 @@ struct Contributor: Decodable, Identifiable, Sendable, Hashable {
         sources = lenient([Source].self, .sources)
         review = lenient(Review.self, .review)
         notable = lenient([Notable].self, .notable)
+        attributionNote = lenient(String.self, .attributionNote).flatMap { $0.isEmpty ? nil : $0 }
     }
 
     /// A voice the DB carries but the bundled roster does not list yet (a dataset release can
@@ -89,7 +93,7 @@ struct Contributor: Decodable, Identifiable, Sendable, Hashable {
         born = nil; died = nil; circa = false
         era = ""; region = ""; tradition = ""; blurb = ""
         display = nil; gurmukhi = nil; chhap = nil; rangeNote = nil; birthplace = nil
-        context = nil; sources = nil; review = nil; notable = nil
+        context = nil; sources = nil; review = nil; notable = nil; attributionNote = nil
     }
 
     /// Sort key for the timeline (birth year; unknowns last).
@@ -118,6 +122,16 @@ struct Contributor: Decodable, Identifiable, Sendable, Hashable {
     /// Roster v2 `context`, only once the scholar has approved it (brand gate G3). Draft or
     /// pending prose — or context with no review record at all — is never shown as biography.
     var reviewedContext: String? { (review?.isApproved ?? false) ? context : nil }
+
+    /// The Ang the roster's `attribution_note` cites first ("… (Ang 1253, …)"): where the lines
+    /// under review are printed. Nil without a note or a valid Ang in it.
+    var reviewAng: Int? { attributionNote.flatMap(Self.firstAng(in:)) }
+
+    static func firstAng(in text: String) -> Int? {
+        guard let r = text.range(of: #"\bAng [0-9]{1,4}\b"#, options: .regularExpression),
+              let n = Int(text[r].dropFirst(4)), (1...1430).contains(n) else { return nil }
+        return n
+    }
 
     /// True when the entry carries roster `context` the scholar has not approved (it is gated).
     var awaitingReview: Bool { context != nil && !(review?.isApproved ?? false) }

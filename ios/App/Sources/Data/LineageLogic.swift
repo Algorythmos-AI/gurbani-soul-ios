@@ -88,14 +88,42 @@ enum LifespanLogic {
     }
 }
 
-/// The one voice count. Lineage and Insights › Contributors both count the voices that have Bani
-/// in the loaded DB (Insights: `author_analytics` rows; Lineage: `voiceSummaries()`, the same set —
-/// pinned by VoiceReaderTests). A roster entry with no verses in this edition of the data (today
-/// Baba Sundar Ji, whose Sadu awaits the attribution fix; with 1.1.0, Bhagat Surdas Ji until the
-/// scholar decides) is named in a note, never counted.
+/// The one voice count, everywhere (Explore, Lineage, Insights › Contributors, the Voice pages):
+/// the voices the roster lists, plus any voice the DB carries that the roster does not list yet.
+/// Figures computed from tagged lines (verses, shares, dots) cover only the voices with lines
+/// tagged to them. A roster voice with none — with dataset 1.2.0 Bhagat Surdas Ji, whose line at
+/// Ang 1253 is tagged to another voice until the scholar rules (G3) — is still a voice: shown
+/// with its attribution under scholarly review, never dropped and never as "0 lines".
 enum LineageCount {
-    static func split(_ roster: [Contributor], withBani: Set<String>) -> (voices: [Contributor], withoutBani: [Contributor]) {
-        guard !withBani.isEmpty else { return (roster, []) }   // the DB has not been read yet
-        return (roster.filter { withBani.contains($0.name) }, roster.filter { !withBani.contains($0.name) })
+    struct Split: Equatable {
+        /// Every voice: the roster in its order, then DB voices it does not list. THE count.
+        let voices: [Contributor]
+        /// Voices with no lines tagged to them in the loaded DB (empty until the DB is read).
+        let underReview: [Contributor]
+        /// Voices whose figures come from tagged lines.
+        var tagged: Int { voices.count - underReview.count }
+    }
+
+    static func split(_ roster: [Contributor], withBani: Set<String>) -> Split {
+        let known = Set(roster.map(\.name))
+        let voices = roster + withBani.subtracting(known).sorted().map { Contributor(placeholderFor: $0) }
+        guard !withBani.isEmpty else { return Split(voices: voices, underReview: []) }   // the DB has not been read yet
+        return Split(voices: voices, underReview: roster.filter { !withBani.contains($0.name) })
+    }
+
+    static let underReview = "attribution under scholarly review"
+
+    /// "Ang 1253 · attribution under scholarly review" — a voice card or row in place of counts.
+    static func reviewLine(_ c: Contributor) -> String {
+        c.reviewAng.map { "Ang \(String($0)) · \(underReview)" } ?? "Attribution under scholarly review"
+    }
+
+    /// The note under every figure computed from tagged lines; nil when every voice has some.
+    /// "Figures count the lines tagged to each voice. Bhagat Surdas Ji (Ang 1253): attribution
+    /// under scholarly review."
+    static func taggedNote(_ split: Split, locale: Locale = .current) -> String? {
+        guard !split.underReview.isEmpty else { return nil }
+        let names = split.underReview.map { c in c.reviewAng.map { "\(c.displayName) (Ang \(String($0)))" } ?? c.displayName }
+        return "Figures count the lines tagged to each voice. \(LineageFacts.join(names, locale)): \(underReview)."
     }
 }
