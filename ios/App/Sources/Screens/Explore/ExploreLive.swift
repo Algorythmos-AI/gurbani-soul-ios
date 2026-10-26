@@ -54,6 +54,9 @@ struct ExploreClockNow: Equatable {
     let raagsRoman: [String]
     /// False until the app has written the widget snapshot (the pahar→raags table).
     let hasSnapshot: Bool
+    /// "33.9°S 151.2°E" when the watches follow a saved place clearly off this phone's zone
+    /// (`SolarPlace`): the card then names whose sky it shows, as the widget does.
+    let skyPlace: String?
 
     init(entry: RaagNowEntry, locale: Locale = .current, tz: TimeZone = .current) {
         pahar = entry.pahar
@@ -64,11 +67,13 @@ struct ExploreClockNow: Equatable {
         raagsGurmukhi = entry.raagsGurmukhi
         raagsRoman = entry.raags
         hasSnapshot = entry.hasSnapshot
+        skyPlace = entry.skyPlace
     }
 
     static func == (a: ExploreClockNow, b: ExploreClockNow) -> Bool {
         a.pahar == b.pahar && a.window == b.window && a.model == b.model
             && a.raagsGurmukhi == b.raagsGurmukhi && a.raagsRoman == b.raagsRoman && a.hasSnapshot == b.hasSnapshot
+            && a.skyPlace == b.skyPlace
     }
 
     static func now(_ date: Date = NitnemClock.now()) -> ExploreClockNow {
@@ -78,11 +83,12 @@ struct ExploreClockNow: Equatable {
 
     var raagCount: Int { max(raagsRoman.count, raagsGurmukhi.count) }
 
-    /// "3rd pahar of day · 12–3 PM"
-    var caption: String { "\(label) · \(window)" }
+    /// "3rd pahar of day · 12–3 PM", and "· sky over 33.9°S 151.2°E" for a far saved place
+    var caption: String { "\(label) · \(window)" + (skyPlace.map { " · sky over \($0)" } ?? "") }
 
     var spoken: String {
         var s = "\(label), \(window.replacingOccurrences(of: "–", with: " to "))"
+        if let skyPlace { s += ". Sky over \(skyPlace), not this phone's time zone" }
         if !raagsRoman.isEmpty {
             s += ". Sung in this watch: " + ListFormatter.localizedString(byJoining: raagsRoman)
         }

@@ -1692,6 +1692,40 @@ final class SGGSUITests: XCTestCase {
                       "with no location the fixed windows are shown")
     }
 
+    /// Solar watches for a saved place far from this phone's time zone are never shown silently.
+    /// Sydney's sky on a London clock (the 2026-10-26 report): the notice names the place and offers
+    /// a fresh fix or "Keep this place"; keeping folds it into a caption that still names the place.
+    /// Debug hooks pin the place and the zone, so nothing stored on the device is read or changed.
+    func testRaagClockTravelNotice() {
+        let app = XCUIApplication()
+        app.launchEnvironment["SGGS_UITEST"] = "1"
+        app.launchEnvironment["SGGS_CLOCK_NOW"] = "810"                 // 13:30 on the phone's clock
+        app.launchEnvironment["SGGS_CLOCK_MODE"] = "solar"
+        app.launchEnvironment["SGGS_CLOCK_COORDS"] = "-33.87,151.21"    // the saved place: Sydney
+        app.launchEnvironment["TZ"] = "Europe/London"                   // the phone: London
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        openClock(app)
+        let notice = app.descendants(matching: .any)["clockTravelNotice"].firstMatch
+        XCTAssertTrue(notice.waitForExistence(timeout: 20), "the travel notice is missing")
+        let title = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@",
+                                                         "Showing the sky over 33.87 degrees south")).firstMatch
+        XCTAssertTrue(title.waitForExistence(timeout: 8), "the notice does not name the saved place")
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "this phone's time zone. These watches follow"))
+            .firstMatch.exists, "the notice does not say why")
+        XCTAssertTrue(app.buttons["travelUseMyLocation"].exists, "no way to a fresh fix")
+        let keep = app.buttons["travelKeepPlace"].firstMatch
+        XCTAssertTrue(keep.exists, "no way to keep the place")
+        captureIfRequested(app, "clock_travel_notice")
+        attachShot(app, "clock_travel_notice")
+        keep.tap()
+        XCTAssertTrue(notice.waitForNonExistence(timeout: 8), "keeping the place leaves the notice up")
+        let caption = app.staticTexts["clockKeptPlace"].firstMatch
+        XCTAssertTrue(caption.waitForExistence(timeout: 8), "a kept place must still be named")
+        XCTAssertTrue(caption.label.contains("33.87 degrees south"), "the caption names the place, got: \(caption.label)")
+        attachShot(app, "clock_travel_kept")
+    }
+
     /// The Explore hub reaches every browse surface (nav-restructure gate).
     func testExploreHubReachesEverySurface() {
         let app = launchApp()
@@ -2680,5 +2714,14 @@ final class SGGSUITests: XCTestCase {
         openTab(app, "More", expectingNavBar: "More")
         _ = app.staticTexts["Accent"].waitForExistence(timeout: 8)
         shot("more_display")
+        // Last, as it relaunches: the Raag Clock's travel notice — a saved place (Sydney) far from
+        // the phone's zone (London). Debug hooks pin both; nothing stored on the device changes.
+        app.terminate()
+        app.launchEnvironment["SGGS_CLOCK_MODE"] = "solar"
+        app.launchEnvironment["SGGS_CLOCK_COORDS"] = "-33.87,151.21"
+        app.launchEnvironment["TZ"] = "Europe/London"
+        app.launch()
+        openClock(app)
+        if app.buttons["travelKeepPlace"].waitForExistence(timeout: 12) { shot("clock_travel_notice") }
     }
 }

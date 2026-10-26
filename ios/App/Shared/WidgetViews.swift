@@ -227,6 +227,13 @@ struct RaagNowView: View {
         }
     }
 
+    /// "Sky over 33.9°S 151.2°E": whose sky the watches follow, when that is not this phone's zone.
+    private func skyLine(_ place: String, size: CGFloat) -> some View {
+        Text("Sky over \(place)")
+            .font(.system(size: size, weight: .medium)).foregroundStyle(.secondary)
+            .lineLimit(1).minimumScaleFactor(0.7)
+    }
+
     private var solarBadge: some View {
         Group {
             if entry.solar {
@@ -255,6 +262,7 @@ struct RaagNowView: View {
                     .font(.system(size: 9, weight: .semibold))
                     .lineLimit(1).minimumScaleFactor(0.7)
             }
+            if let place = entry.skyPlace { skyLine(place, size: 8) }   // the dial gives way
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -285,7 +293,8 @@ struct RaagNowView: View {
                     chips(limit: 2, gurmukhiSize: 14)
                 }
                 Spacer(minLength: 4)
-                nextLine
+                // no room for both: whose sky it is outranks the countdown
+                if let place = entry.skyPlace { skyLine(place, size: 10) } else { nextLine }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
@@ -309,6 +318,7 @@ struct RaagNowView: View {
                         .lineLimit(1).minimumScaleFactor(0.8)
                     Text(entry.windowText)
                         .font(.system(size: 11)).foregroundStyle(.secondary)
+                    if let place = entry.skyPlace { skyLine(place, size: 10) }
                     Spacer(minLength: 4)
                     if entry.raags.isEmpty {
                         Text(emptyText).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(2)
@@ -383,17 +393,22 @@ struct RaagNowView: View {
                 Text(entry.raags.prefix(3).map(\.capitalized).joined(separator: " · "))
                     .font(.system(size: 11)).lineLimit(1).minimumScaleFactor(0.8)
             }
-            HStack(spacing: 3) {
-                Text("next in")
-                Text(entry.boundaryDate, style: .relative)
+            if let place = entry.skyPlace {
+                skyLine(place, size: 10)
+            } else {
+                HStack(spacing: 3) {
+                    Text("next in")
+                    Text(entry.boundaryDate, style: .relative)
+                }
+                .font(.system(size: 10)).foregroundStyle(.secondary).lineLimit(1)
             }
-            .font(.system(size: 10)).foregroundStyle(.secondary).lineLimit(1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var inline: some View {
         let names = entry.raagsGurmukhi.isEmpty ? entry.raags.prefix(3).map(\.capitalized) : Array(entry.raagsGurmukhi.prefix(3))
+        if let place = entry.skyPlace { return Text("P\(entry.pahar) · sky over \(place)") }
         return Text("P\(entry.pahar) · " + (names.isEmpty ? Pahar.label(entry.pahar) : names.joined(separator: ", ")))
     }
 
@@ -401,6 +416,7 @@ struct RaagNowView: View {
         let names = entry.raagsGurmukhi.isEmpty ? entry.raags.map { $0.capitalized } : entry.raagsGurmukhi
         return "Raag now. \(PaharFormat.time(entry.date)). \(Pahar.label(entry.pahar)), \(entry.windowText). "
             + (names.isEmpty ? "No raags named." : names.joined(separator: ", "))
+            + (entry.skyPlace.map { ". Sky over \($0), not this phone's time zone." } ?? "")
     }
 }
 

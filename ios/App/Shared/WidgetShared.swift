@@ -165,6 +165,10 @@ enum SharedDefaults {
     /// clock (and the app offers a one-tap location card). An explicit choice always wins.
     static let defaultClockMode = "solar"
     static let solarCoordsKey = "sggs_solar_coords"  // "lat,lon" rounded to 2 dp
+    /// The reader chose "Keep this place" for the stored coordinates although they are far from
+    /// the phone's time zone (`SolarPlace`). A flag, never a second copy of the location: storing
+    /// different coordinates or forgetting them clears it.
+    static let solarPlaceKeptKey = "sggs_solar_place_kept"
 
     /// UserDefaults is documented thread-safe; the type simply predates Sendable.
     nonisolated(unsafe) static let suite: UserDefaults = UserDefaults(suiteName: WidgetStore.appGroup) ?? .standard
@@ -194,7 +198,15 @@ enum SharedDefaults {
 
     static func storeSolarCoords(lat: Double, lon: Double) {
         let r = { (x: Double) in (x * 100).rounded() / 100 }   // 2 dp ≈ 1 km — enough for sunrise
-        suite.set("\(r(lat)),\(r(lon))", forKey: solarCoordsKey)
+        let value = "\(r(lat)),\(r(lon))"
+        // a new place is a new decision: the notice asks again (the same fix again keeps it)
+        if suite.string(forKey: solarCoordsKey) != value { suite.removeObject(forKey: solarPlaceKeptKey) }
+        suite.set(value, forKey: solarCoordsKey)
+    }
+
+    static var solarPlaceKept: Bool {
+        get { suite.bool(forKey: solarPlaceKeptKey) }
+        set { if newValue { suite.set(true, forKey: solarPlaceKeptKey) } else { suite.removeObject(forKey: solarPlaceKeptKey) } }
     }
 
     /// "Forget location": removes the coordinates from the App-Group suite, from the
@@ -203,6 +215,7 @@ enum SharedDefaults {
     /// then shows the fixed clock and offers the location card, exactly as before a first fix.
     static func forgetSolarCoords() {
         suite.removeObject(forKey: solarCoordsKey)
+        suite.removeObject(forKey: solarPlaceKeptKey)
         UserDefaults.standard.removeObject(forKey: solarCoordsKey)
         WidgetStore.clearSolarCoords()
     }
