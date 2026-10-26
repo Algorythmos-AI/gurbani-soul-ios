@@ -1052,7 +1052,7 @@ final class SGGSUITests: XCTestCase {
         openTab(app, "Explore", expectingNavBar: "Explore")
         let lineage = app.buttons["Lineage"].firstMatch
         XCTAssertTrue(lineage.waitForExistence(timeout: 15)); lineage.tap()
-        // "30 voices" today, "36 voices" once roster v2 and the attribution fix land.
+        // "36 voices" — the exact count is pinned by testEverySurfaceSaysThirtySixVoices.
         let header = app.staticTexts.matching(NSPredicate(format: "label MATCHES %@", "[0-9]+ voices · 12th–17th century")).firstMatch
         XCTAssertTrue(header.waitForExistence(timeout: 15), "lineage header missing")
         // the River lens draws, then the Roll comes back for the cards below
@@ -1306,6 +1306,38 @@ final class SGGSUITests: XCTestCase {
         app.navigationBars.buttons.element(boundBy: 0).tap()   // back lands on Lineage
         XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label MATCHES %@", "[0-9]+ voices · 12th–17th century"))
             .firstMatch.waitForExistence(timeout: 8), "back from a deep-linked voice should be Lineage")
+    }
+
+    /// One voice count: Explore, Lineage and Insights › Contributors all say 36 (the roster). The
+    /// notes under the tagged-line figures name Bhagat Surdas Ji, and his Voice page cites Ang 1253
+    /// with its attribution under scholarly review — never "0 verses".
+    func testEverySurfaceSaysThirtySixVoices() {
+        let app = launchApp()
+        openTab(app, "Explore", expectingNavBar: "Explore")
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "· 36 voices ·"))
+            .firstMatch.waitForExistence(timeout: 15), "Explore masthead must say 36 voices")
+        let lineage = app.buttons["Lineage"].firstMatch
+        XCTAssertTrue(lineage.waitForExistence(timeout: 15)); lineage.tap()
+        XCTAssertTrue(app.staticTexts["36 voices · 12th–17th century"].waitForExistence(timeout: 15),
+                      "Lineage header must say 36 voices")
+        let lineageNote = app.staticTexts["lineageTaggedNote"]
+        XCTAssertTrue(lineageNote.waitForExistence(timeout: 20), "Lineage tagged-figure note missing")
+        XCTAssertTrue(lineageNote.label.contains("Bhagat Surdas Ji (Ang 1253)"), lineageNote.label)
+        app.navigationBars.buttons.element(boundBy: 0).tap()   // back to the hub
+        let insights = app.buttons["Insights"].firstMatch
+        XCTAssertTrue(insights.waitForExistence(timeout: 15)); insights.tap()
+        XCTAssertTrue(app.staticTexts["36 voices · one Granth"].waitForExistence(timeout: 15),
+                      "Insights › Contributors must say 36 voices")
+        let insightsNote = app.staticTexts["insightsTaggedNote"]
+        for _ in 0..<4 where !insightsNote.exists { app.swipeUp() }
+        XCTAssertTrue(insightsNote.waitForExistence(timeout: 8), "Insights tagged-figure note missing")
+        XCTAssertTrue(insightsNote.label.contains("Bhagat Surdas Ji (Ang 1253)"), insightsNote.label)
+        XCUIDevice.shared.system.open(URL(string: "sggs://voice/bhagat-surdas-ji")!)
+        XCTAssertTrue(app.navigationBars["Bhagat Surdas Ji"].waitForExistence(timeout: 15), "Surdas's page did not open")
+        let review = app.staticTexts["voiceUnderReview"]
+        XCTAssertTrue(review.waitForExistence(timeout: 12), "Surdas's page must say his attribution is under review")
+        XCTAssertEqual(review.label, "Ang 1253 · attribution under scholarly review")
+        XCTAssertFalse(app.staticTexts["verses"].exists, "no verse tile, so never 0 verses")
     }
 
     /// Insights completions: network + resonance + flow views render their content.

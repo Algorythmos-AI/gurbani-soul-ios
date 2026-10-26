@@ -42,7 +42,11 @@ struct VoicePage: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Space.xl) {
                 hero
-                if let summary = summary ?? loadedSummary { baniSection(summary) }
+                if let summary = summary ?? loadedSummary {
+                    baniSection(summary)
+                } else if data != nil {
+                    underReviewSection
+                }
                 if let data {
                     raagSection(data)
                     rahaoSection(data)
@@ -206,6 +210,25 @@ struct VoicePage: View {
                 if let m = data?.facts?.mattr100 {
                     StatTile(value: String(format: "%.2f", m), caption: "vocabulary range")
                 }
+            }
+        }
+    }
+
+    /// A roster voice with no lines tagged to it in this DB (Bhagat Surdas Ji with dataset 1.2.0):
+    /// where its Bani is printed and that the attribution is under review — never "0 verses".
+    private var underReviewSection: some View {
+        VStack(alignment: .leading, spacing: Theme.Space.s) {
+            SectionEyebrow(text: "Their Bani in the Granth")
+            Text(LineageCount.reviewLine(contributor))
+                .font(.callout).foregroundStyle(.secondary)
+                .accessibilityIdentifier("voiceUnderReview")
+            if let ang = contributor.reviewAng {
+                Button {
+                    container.router.openAng(ang)
+                } label: {
+                    Label("Open Ang \(String(ang))", systemImage: "book")
+                }
+                .buttonStyle(.bordered)
             }
         }
     }
@@ -732,14 +755,20 @@ struct VoiceRouteView: View {
         .task {
             guard resolved == nil, let corpus = container.corpus else { return }
             let summaries = await corpus.voiceSummaries()
-            var roster = ContributorsStore.load() ?? []
-            let known = Set(roster.map(\.name))
-            roster += summaries.filter { !known.contains($0.author) }.map { Contributor(placeholderFor: $0.author) }
-            if let c = roster.first(where: { $0.slug == slug }) {
-                resolved = (c, summaries.first { $0.author == c.name }, roster)
+            if let r = Self.resolve(slug: slug, roster: ContributorsStore.load() ?? [], summaries: summaries) {
+                resolved = r
             } else {
                 missing = true
             }
         }
+    }
+
+    /// The page a `sggs://voice/<slug>` link opens: any of the voices Lineage counts (the roster,
+    /// then DB voices it does not list), with its tagged-line summary when it has one.
+    static func resolve(slug: String, roster: [Contributor], summaries: [VoiceSummary])
+        -> (contributor: Contributor, summary: VoiceSummary?, roster: [Contributor])? {
+        let voices = LineageCount.split(roster, withBani: Set(summaries.map(\.author))).voices
+        guard let c = voices.first(where: { $0.slug == slug }) else { return nil }
+        return (c, summaries.first { $0.author == c.name }, voices)
     }
 }
