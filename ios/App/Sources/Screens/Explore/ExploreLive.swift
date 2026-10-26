@@ -55,11 +55,11 @@ struct ExploreClockNow: Equatable {
     /// False until the app has written the widget snapshot (the pahar→raags table).
     let hasSnapshot: Bool
 
-    init(entry: RaagNowEntry, locale: Locale = .current) {
+    init(entry: RaagNowEntry, locale: Locale = .current, tz: TimeZone = .current) {
         pahar = entry.pahar
         label = Pahar.label(entry.pahar)
         let w = entry.windows.indices.contains(entry.pahar - 1) ? entry.windows[entry.pahar - 1] : Pahar.window(entry.pahar)
-        window = PaharFormat.window(w, on: entry.date, locale: locale)
+        window = PaharFormat.window(w, on: entry.date, locale: locale, tz: tz)
         model = entry.model
         raagsGurmukhi = entry.raagsGurmukhi
         raagsRoman = entry.raags

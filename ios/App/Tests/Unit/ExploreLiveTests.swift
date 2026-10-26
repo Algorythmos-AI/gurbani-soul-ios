@@ -72,6 +72,43 @@ final class ExploreLiveTests: XCTestCase {
         XCTAssertEqual(live.themeToday, expected)
     }
 
+    /// A night watch that crosses midnight, read at 01:35: the window runs PM → AM on the reader's
+    /// clock (device review of #90 asked for this pin).
+    func testNightWatchAcrossMidnightReadsPMtoAM() throws {
+        let london = try XCTUnwrap(TimeZone(identifier: "Europe/London"))
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = london
+        let at = try XCTUnwrap(cal.date(from: DateComponents(year: 2026, month: 10, day: 26, hour: 1, minute: 35)))
+        let us = Locale(identifier: "en_US")
+
+        let solar = RaagClockConfig(solar: true, lat: 51.51, lon: -0.13)
+        let entry = RaagNowTimeline.entry(at: at, config: solar, snapshot: nil, tz: london)
+        let clock = ExploreClockNow(entry: entry, locale: us, tz: london)
+        XCTAssertEqual(clock.label, "3rd pahar of night")
+        XCTAssertEqual(clock.window, "11:45 PM–3:13 AM")
+
+        let fixed = RaagNowTimeline.entry(at: at, config: RaagClockConfig(solar: false), snapshot: nil, tz: london)
+        XCTAssertEqual(ExploreClockNow(entry: fixed, locale: us, tz: london).window, "12–3 AM")
+        XCTAssertEqual(PaharFormat.window(Pahar.window(6), on: at, locale: us, tz: london), "9 PM–12 AM")
+    }
+
+    /// Solar watches follow the STORED location's sky, shown on the reader's own clock. A location
+    /// half a world from the device's zone (Sydney coordinates on a London clock) therefore puts a
+    /// night watch in London's daytime — the device capture on #90 ("2nd pahar of night ·
+    /// 10:58 AM–1:39 PM" at a pinned 13:30) is this case, not a formatting error.
+    func testStoredLocationFarFromTheClocksZone() throws {
+        let london = try XCTUnwrap(TimeZone(identifier: "Europe/London"))
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = london
+        let at = try XCTUnwrap(cal.date(from: DateComponents(year: 2026, month: 10, day: 26, hour: 13, minute: 30)))
+        let sydney = RaagClockConfig(solar: true, lat: -33.87, lon: 151.21)
+        let clock = ExploreClockNow(entry: RaagNowTimeline.entry(at: at, config: sydney, snapshot: nil, tz: london),
+                                    locale: Locale(identifier: "en_US"), tz: london)
+        XCTAssertEqual(clock.label, "2nd pahar of night")
+        XCTAssertTrue(clock.window.hasPrefix("10:58 AM–1:"), clock.window)
+        XCTAssertTrue(clock.window.hasSuffix(" PM"), clock.window)
+    }
+
     func testClockStatesTheWidgetsWatch() throws {
         let noon = try XCTUnwrap(Calendar.current.date(bySettingHour: 13, minute: 30, second: 0, of: Date()))
         let entry = RaagNowTimeline.entry(at: noon, config: RaagClockConfig(solar: false), snapshot: nil)
