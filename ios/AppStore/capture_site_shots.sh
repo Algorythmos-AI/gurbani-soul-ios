@@ -106,7 +106,8 @@ IPHONE_TESTS=("${SITE_TESTS[@]}" SGGSUITests/SiteShotTests/testCaptureVerify SGG
 # and waits. An XCUITest screenshot after a rotation stores the pixels one way and an EXIF
 # orientation (8) that turns them (the v1.4.9 run), so the frame comes from the simulator instead:
 # taken until two in a row agree (settled), turned to landscape when simctl wrote it portrait, then
-# moved into place. The request is removed last, which releases the test.
+# moved into place. The request is removed last, which releases the test; a request that got no
+# frame is removed too, and the test fails on the missing file.
 serve_frames() {  # udid, dir
   local udid="$1" dir="$2" r name tmp prev h w ht
   set +e                                   # a failed frame must not stop the server (its test then fails)

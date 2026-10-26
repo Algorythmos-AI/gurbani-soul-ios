@@ -63,13 +63,19 @@ final class SiteShotTests: XCTestCase {
             return
         }
         if env["SGGS_SHOT_HOST_FRAMES"] == "1" {
-            let request = "\(dir)/.request-\(name)"
-            FileManager.default.createFile(atPath: request, contents: Data())
+            // The host removes the request whether or not it wrote a frame, so the frame itself is
+            // the proof: none before the request, one after it.
+            let fm = FileManager.default
+            let request = "\(dir)/.request-\(name)", frame = "\(dir)/\(name).png"
+            try? fm.removeItem(atPath: frame)
+            fm.createFile(atPath: request, contents: Data())
             let deadline = Date().addingTimeInterval(60)
-            while FileManager.default.fileExists(atPath: request) && Date() < deadline { settle(0.25) }
-            if FileManager.default.fileExists(atPath: request) {
-                try? FileManager.default.removeItem(atPath: request)
-                XCTFail("\(name): the host never took the frame", file: file, line: line)
+            while fm.fileExists(atPath: request) && Date() < deadline { settle(0.25) }
+            if fm.fileExists(atPath: request) {
+                try? fm.removeItem(atPath: request)
+                XCTFail("\(name): the host never answered the frame request", file: file, line: line)
+            } else if !fm.fileExists(atPath: frame) {
+                XCTFail("\(name): the host could not take the frame", file: file, line: line)
             }
             return
         }
