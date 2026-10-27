@@ -359,7 +359,7 @@ struct IndexScreen: View {
     }
 
     private func accessibilityLabel(_ hero: CompositionCatalog.Hero, _ summary: BaniSummary?) -> String {
-        guard let summary else { return "\(hero.roman) — open Ang \(hero.ang)" }
+        guard let summary else { return "\(hero.roman) — open Ang \(String(hero.ang))" }
         let pct = Int(container.nitnem.fraction(for: summary.id, total: summary.nLines) * 100)
         let progress = container.nitnem.isCompleted(summary.id) ? "read today"
             : (pct > 0 ? "\(pct) percent read" : "not started")
@@ -388,7 +388,7 @@ struct IndexScreen: View {
                     }
                 }
                 .buttonStyle(.pressableCard)
-                .accessibilityLabel("\(a.name), \(a.nLines) lines, from Ang \(a.firstAng)")
+                .accessibilityLabel("\(a.name), \(a.nLines) lines, from Ang \(String(a.firstAng))")
             }
         }
     }

@@ -38,7 +38,7 @@ struct RibbonModel: Equatable {
 
     static func describe(_ b: Int, column c: Column, selected: String?) -> String {
         let r = VoicesAtlas.angs(inBucket: b)
-        let where_ = "Angs \(r.lowerBound) to \(r.upperBound)"
+        let where_ = "Angs \(String(r.lowerBound)) to \(String(r.upperBound))"
         if let selected {
             let n = c.voices.first(where: { $0.0 == selected })?.1 ?? 0
             return n == 0 ? "\(where_): \(AuthorName(selected).spoken) does not sing here"

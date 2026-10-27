@@ -57,7 +57,7 @@ struct NitnemLiveActivity: Widget {
             }
             .frame(width: 40, height: 40)
             VStack(alignment: .leading, spacing: 2) {
-                Text("READING").font(.system(size: 10, weight: .semibold)).tracking(1.2).foregroundStyle(palette.accentText)
+                Text("Reading").font(.system(size: 10, weight: .semibold)).foregroundStyle(palette.accentText)
                 Text(context.attributes.titleGm).font(WidgetType.gurmukhi(19)).foregroundStyle(.primary).lineLimit(1).minimumScaleFactor(0.7)
                 if !context.state.sectionLabel.isEmpty {
                     Text(context.state.sectionLabel).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(1)

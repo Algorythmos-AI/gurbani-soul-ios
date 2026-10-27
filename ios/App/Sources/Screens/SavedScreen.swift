@@ -16,7 +16,7 @@ struct SavedScreen: View {
                 List {
                     ForEach(saved) { item in
                         LineRow(gurmukhi: item.gurmukhi, translit: item.translit,
-                                meta: "Ang \(item.ang)",
+                                meta: "Ang \(String(item.ang))",
                                 lineId: item.lineId, ang: item.ang, compId: item.compId) {
                             container.present(.shabad(compId: item.compId, focusLineId: item.lineId))
                         }

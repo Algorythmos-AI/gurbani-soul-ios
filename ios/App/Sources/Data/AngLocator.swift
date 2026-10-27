@@ -15,7 +15,7 @@ enum AngLocator {
         let lastAng: Int
 
         var rangeLabel: String {
-            firstAng == lastAng ? "Ang \(firstAng)" : "Angs \(firstAng)–\(lastAng)"
+            firstAng == lastAng ? "Ang \(String(firstAng))" : "Angs \(String(firstAng))–\(String(lastAng))"
         }
     }
 

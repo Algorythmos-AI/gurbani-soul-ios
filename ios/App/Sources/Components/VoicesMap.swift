@@ -134,7 +134,7 @@ struct VoicesMap: View {
                 Text(String(Int(Self.years.lowerBound))).font(.caption2).monospacedDigit()
                 Slider(value: $year, in: Self.years, step: 10)
                     .accessibilityLabel("Year")
-                    .accessibilityValue("\(Int(year)), \(shownCount) voices")
+                    .accessibilityValue("\(String(Int(year))), \(shownCount) voices")
                     .accessibilityIdentifier("voicesMapYear")
                 Text(String(Int(Self.years.upperBound))).font(.caption2).monospacedDigit()
             }

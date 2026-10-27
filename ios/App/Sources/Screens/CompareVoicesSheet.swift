@@ -88,7 +88,7 @@ struct CompareVoicesSheet: View {
                 Text(shared == 0 ? "They share no Ang."
                      : "Both appear on \(shared.formatted()) \(shared == 1 ? "Ang" : "Angs").")
                     .font(.callout)
-                Text("\(a.displayName): Angs \(sa.firstAng)–\(sa.lastAng). \(b.displayName): Angs \(sb.firstAng)–\(sb.lastAng).")
+                Text("\(a.displayName): Angs \(String(sa.firstAng))–\(String(sa.lastAng)). \(b.displayName): Angs \(String(sb.firstAng))–\(String(sb.lastAng)).")
                     .font(.caption).foregroundStyle(.secondary)
             }
         }

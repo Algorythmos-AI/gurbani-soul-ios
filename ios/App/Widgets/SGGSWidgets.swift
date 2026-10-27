@@ -5,7 +5,7 @@ import GurbaniPahar
 /// SGGS widgets — read the App-Group snapshot + pure GurbaniPahar math only (never the corpus
 /// DB; extension memory stays in kilobytes). Deep links route through the app's sggs:// table.
 ///
-/// Design (brand book §6, "Widgets"): warm paper ground, one gold accent, a small-caps eyebrow,
+/// Design (brand book §6, "Widgets"): warm paper ground, one gold accent, a sentence-case eyebrow,
 /// scripture in ink Sant Lipi with air around it, the full citation in the heading serif.
 /// Scripture is verbatim from the snapshot and is never coloured or restyled.
 
@@ -118,7 +118,7 @@ struct HukamView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .center) {
                 // "of the day" only when the verse really is today's
-                Eyebrow(text: entry.day != nil ? "HUKAM OF THE DAY" : "HUKAM")
+                Eyebrow(text: entry.day != nil ? "Hukam of the day" : "Hukam")
                 Spacer()
                 Mark(size: large ? 22 : 16)
             }

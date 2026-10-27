@@ -40,17 +40,17 @@ enum LineageFacts {
         var out: [Fact] = []
         for r in signatureRaags.prefix(2) {
             out.append(Fact(id: "raag-\(r.raag)", gurmukhi: r.raag,
-                            text: "appears in the Granth only in \(name(r.author))'s Bani, from Ang \(r.firstAng).",
+                            text: "appears in the Granth only in \(name(r.author))'s Bani, from Ang \(String(r.firstAng)).",
                             author: r.author))
         }
         if let d = dialogue, !d.gurus.isEmpty, !d.bhagats.isEmpty {
             out.append(Fact(id: "dialogues", gurmukhi: nil,
-                            text: "Saloks of \(join(d.gurus.map(name), locale)) are set beside saloks of \(join(d.bhagats.map(name), locale)), Angs \(d.firstAng)–\(d.lastAng).",
+                            text: "Saloks of \(join(d.gurus.map(name), locale)) are set beside saloks of \(join(d.bhagats.map(name), locale)), Angs \(String(d.firstAng))–\(String(d.lastAng)).",
                             author: nil))
         }
         if bhatts.count > 1, let first = bhatts.map(\.firstAng).min(), let last = bhatts.map(\.lastAng).max() {
             out.append(Fact(id: "bhatts", gurmukhi: nil,
-                            text: "\(bhatts.count) Bhatts each have Swaiyye in the Granth, Angs \(first)–\(last).",
+                            text: "\(bhatts.count) Bhatts each have Swaiyye in the Granth, Angs \(String(first))–\(String(last)).",
                             author: nil))
         }
         return out

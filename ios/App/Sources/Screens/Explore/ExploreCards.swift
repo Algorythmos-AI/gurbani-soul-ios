@@ -123,7 +123,7 @@ struct ExploreCard: View {
         switch destination {
         case .index:
             guard let a = digest.lastAng else { return [] }
-            return [ExploreAction(title: "Read Ang \(a)", symbol: "book") { router.openAng(a) }]
+            return [ExploreAction(title: "Read Ang \(String(a))", symbol: "book") { router.openAng(a) }]
         case .themes:
             guard let concept = live.themeToday?.concept else { return [] }
             return [ExploreAction(title: "Open \(ConceptName.display(concept))", symbol: "circle.grid.2x2") {

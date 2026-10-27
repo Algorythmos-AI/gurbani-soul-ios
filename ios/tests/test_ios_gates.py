@@ -176,6 +176,35 @@ class NoTypedAngCount(unittest.TestCase):
             self.assertIn(n, code.replace(",", ""), code.strip())
 
 
+class AngNumbersArePlain(unittest.TestCase):
+    """An Ang number is an identifier, so it is written plain: "Ang 1429", never "Ang 1,429".
+
+    In `Text("Ang \\(n)")` (and Button, Label, accessibilityLabel …) the literal is a
+    LocalizedStringKey, which formats an Int with the locale's grouping. Whether a literal is a
+    String or a key depends on where it is used, and a String helper can later move into a Text,
+    so every literal that names an Ang wraps the number in String(): after "Ang "/"Angs ", and
+    for the far end of a range ("–", " to "). Counts ("of 1,430 Angs") may keep their grouping.
+    """
+
+    LITERAL = re.compile(r'"((?:[^"\\\n]|\\.)*)"')
+    BARE = re.compile(r"(?:\bAngs?\s+|–|\bto\s+)\\\((?!String\()")
+    # os.Logger interpolation (`privacy:`) and explicit never-grouped formats are already plain
+    PLAIN = re.compile(r"privacy:|grouping\(\.never\)")
+
+    def test_ang_numbers_are_interpolated_through_string(self):
+        found = []
+        for base in (APP / "Sources", APP / "Shared", APP / "Widgets"):
+            for path in sorted(base.rglob("*.swift")):
+                for no, code, _ in code_lines(path):
+                    for lit in self.LITERAL.findall(code):
+                        if "Ang" not in lit:
+                            continue
+                        for m in self.BARE.finditer(lit):
+                            if not self.PLAIN.search(lit[m.end():m.end() + 60]):
+                                found.append(f"{path.relative_to(ROOT)}:{no}: {code.strip()}")
+        self.assertEqual(found, [], 'write an Ang as "Ang \\(String(n))" so it is never grouped')
+
+
 class SQLiteStepGate(unittest.TestCase):
     def test_no_raw_step_loops(self):
         # `while sqlite3_step(s) == SQLITE_ROW` reads SQLITE_CORRUPT / IOERR / NOMEM as "no more

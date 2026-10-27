@@ -118,5 +118,6 @@ final class GranthMapTests: XCTestCase {
     func testAngLabel() {
         XCTAssertEqual((12...12).angLabel, "Ang 12")
         XCTAssertEqual((1...8).angLabel, "Angs 1–8")
+        XCTAssertEqual((1429...1429).angLabel, "Ang 1429")   // no thousands separator
     }
 }

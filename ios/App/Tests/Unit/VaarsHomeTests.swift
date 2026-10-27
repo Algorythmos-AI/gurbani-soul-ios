@@ -45,6 +45,8 @@ final class VaarsHomeTests: XCTestCase {
     func testAngSpanReadsSingleAngs() {
         XCTAssertEqual(angSpan(1193, 1193), "Ang 1193")
         XCTAssertEqual(angSpan(137, 150), "Angs 137–150")
+        // four-digit Angs are written plain, never "1,353"
+        XCTAssertEqual(angSpan(1353, 1429), "Angs 1353–1429")
     }
 
     func testFiltersRoundTripAndHideEmpty() {

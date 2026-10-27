@@ -158,7 +158,7 @@ struct ExploreDigest: Equatable {
             var s = [raagCount.map { "\($0) raags" }, angCount.map { "\($0) Angs" }]
                 .compactMap { $0 }.joined(separator: " across ")
             if let a = lastAng {
-                s += (s.isEmpty ? "" : ". ") + "You last read Ang \(a)"
+                s += (s.isEmpty ? "" : ". ") + "You last read Ang \(String(a))"
                 if let r = lastAngRaag { s += ", in Raag \(r)" }
             }
             return s

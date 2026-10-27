@@ -66,7 +66,7 @@ enum ThemeFilterText {
         if f.lens.rahaoOnly { out.append("Rahao lines only") }
         if let a = f.lens.author { out.append(a.replacingOccurrences(of: " Ji", with: "")) }
         if let r = f.lens.raag { out.append(raagName(r)) }
-        if f.lens.angMin > 1 || f.lens.angMax < GranthAngs.count { out.append("Angs \(f.lens.angMin)–\(f.lens.angMax)") }
+        if f.lens.angMin > 1 || f.lens.angMax < GranthAngs.count { out.append("Angs \(String(f.lens.angMin))–\(String(f.lens.angMax))") }
         return out
     }
 }
@@ -169,7 +169,7 @@ struct ThemeResultsScreen: View {
 
     private func groupHeader(_ g: ThemeFeed.Group) -> some View {
         let first = g.lines[0]
-        var bits = ["Ang \(first.ang)"]
+        var bits = ["Ang \(String(first.ang))"]
         if let r = first.raag { bits.append(raagName(r)) }
         if let a = first.author { bits.append(a.replacingOccurrences(of: " Ji", with: "")) }
         return HStack {

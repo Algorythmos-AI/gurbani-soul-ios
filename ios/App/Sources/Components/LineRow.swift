@@ -128,7 +128,7 @@ struct LineRow: View {
     private var shareText: String {
         var out = gurmukhi
         if let sourceLabel { out += "\n— \(sourceLabel)" }
-        else if ang > 0 { out += "\n— Sri Guru Granth Sahib Ji, Ang \(ang)" }
+        else if ang > 0 { out += "\n— Sri Guru Granth Sahib Ji, Ang \(String(ang))" }
         return out
     }
 
@@ -142,7 +142,7 @@ struct LineRow: View {
         }
         if !meta.isEmpty { out += AttributedString(". \(meta)") }
         else if let sourceLabel { out += AttributedString(". \(sourceLabel)") }
-        else if ang > 0 { out += AttributedString(". Ang \(ang)") }
+        else if ang > 0 { out += AttributedString(". Ang \(String(ang))") }
         return out
     }
 
@@ -181,6 +181,6 @@ struct LineRow: View {
 
 extension SearchLine {
     var metaLine: String {
-        [ "Ang \(ang)", raag, author ].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
+        [ "Ang \(String(ang))", raag, author ].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
     }
 }

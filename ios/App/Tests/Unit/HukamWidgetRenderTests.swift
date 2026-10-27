@@ -144,8 +144,8 @@ private struct HukamWidgetBody: View {
     let translit: String
     let ang: Int
     let large: Bool
-    /// "HUKAM OF THE DAY" for a Hukam-of-the-day entry (the longer eyebrow), "HUKAM" for an older snapshot.
-    var eyebrow = "HUKAM OF THE DAY"
+    /// "Hukam of the day" for a Hukam-of-the-day entry (the longer eyebrow), "Hukam" for an older snapshot.
+    var eyebrow = "Hukam of the day"
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
