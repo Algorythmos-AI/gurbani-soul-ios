@@ -4,7 +4,7 @@ Derived by `python3 ios/tools/device_run.py rebuild` from every `summary.json` h
 Runbook: `docs/ios/device-evidence.md`. `RECORDED-NO-BUNDLES` rows were backfilled from documents
 after their result bundles were lost; they never pass a gate.
 
-| Version | Run | Verdict | Tree | Device | Unit | UI | Checklist | D10 cold / warm (in-app) |
+| Version | Run | Verdict | Tree | Device | Unit | UI | Checklist | D10 cold / warm (method) |
 |---|---|---|---|---|---|---|---|---|
 | 1.4.9 | [20261026T0024Z-bc36c9b](1.4.9/20261026T0024Z-bc36c9b/summary.md) | RECORDED-NO-BUNDLES | `bc36c9b` | S-iPhone · iOS 27.0.1 | 408/0/0 | 76/2/9 | 5/12 | — / — |
 | 1.4.9 | [20261025T0822Z-844e172](1.4.9/20261025T0822Z-844e172/summary.md) | RECORDED-NO-BUNDLES | `844e172` | S-iPhone · iOS 27.0.1 | — | — | 6/12 | — / — |
