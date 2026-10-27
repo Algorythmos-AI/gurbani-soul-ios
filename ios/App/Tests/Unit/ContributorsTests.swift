@@ -22,6 +22,20 @@ final class ContributorsTests: XCTestCase {
         XCTAssertEqual(Set(roster.map(\.name)).count, roster.count)
     }
 
+    /// The kind tag under each voice is sentence case, never all-caps (brand book).
+    func testKindTagIsSentenceCase() throws {
+        XCTAssertEqual(try XCTUnwrap(decode(v1)?.first).kindTag, "Bhagat")
+        let guru = try XCTUnwrap(decode(v1.replacingOccurrences(of: #""kind": "bhagat", "seq": null"#,
+                                                                 with: #""kind": "guru", "seq": 5"#))?.first)
+        XCTAssertEqual(guru.kindTag, "Guru · M5")
+        for (kind, tag) in [("bhatt", "Bhatt"), ("gursikh", "Gursikh")] {
+            let c = try XCTUnwrap(decode(v1.replacingOccurrences(of: #""kind": "bhagat""#, with: #""kind": "\#(kind)""#))?.first)
+            XCTAssertEqual(c.kindTag, tag)
+        }
+        let roster = try XCTUnwrap(ContributorsStore.load())
+        for c in roster { XCTAssertNotEqual(c.kindTag, c.kindTag.uppercased(), c.name) }
+    }
+
     func testV1EntryHasNoV2Fields() throws {
         let c = try XCTUnwrap(decode(v1)?.first)
         XCTAssertNil(c.display); XCTAssertNil(c.gurmukhi); XCTAssertNil(c.sources); XCTAssertNil(c.review)

@@ -408,7 +408,7 @@ struct LineageScreen: View {
                             // Ink, not the tradition colour: the Gurus' colour is brand gold, which
                             // is never text (brand book); the rail dot and medallion ring carry it.
                             Text(c.kindTag)
-                                .font(.caption2.weight(.semibold)).kerning(0.5)
+                                .font(.caption2.weight(.semibold))
                                 .foregroundStyle(.secondary)
                         }
                         Spacer(minLength: 0)
@@ -472,10 +472,10 @@ extension Contributor {
         }
     }
 
-    /// "GURU · M5" / "BHAGAT" style tag.
+    /// "Guru · M5" / "Bhagat" style tag, in sentence case (brand book: no all-caps).
     var kindTag: String {
-        if kind == "guru", let seq { return "GURU · M\(seq)" }
-        return kind.uppercased()
+        if kind == "guru", let seq { return "Guru · M\(seq)" }
+        return kind.prefix(1).uppercased() + kind.dropFirst()
     }
 
     /// "c. 1173–1266" lifespan chip text; nil when nothing is known.
