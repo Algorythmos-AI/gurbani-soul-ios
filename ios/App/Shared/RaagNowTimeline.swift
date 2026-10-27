@@ -33,7 +33,7 @@ struct RaagNowEntry: TimelineEntry {
         PaharDialModel(windows: windows, current: pahar, minutesNow: minutesNow,
                        sunrise: sunrise, sunset: sunset, beads: beads)
     }
-    var windowText: String { PaharFormat.window(windows[pahar - 1], on: date) }
+    var windowText: String { PaharFormat.window(windows[pahar - 1], on: date, tz: timeZone) }
 }
 
 /// The reader's clock configuration as the widget sees it: the App-Group suite first

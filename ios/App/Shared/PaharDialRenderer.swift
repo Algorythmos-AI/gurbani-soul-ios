@@ -117,6 +117,8 @@ struct PaharDialRenderer: View {
     var analogFace = true
     /// The date shown by the face's day/date complication (nil hides it).
     var faceDate: Date? = nil
+    /// The zone `faceDate` is read in (a widget entry's own, so its date matches its ring).
+    var faceTimeZone: TimeZone = .current
 
     private var mono: Bool { monochrome || style == .mono }
 
@@ -182,7 +184,7 @@ struct PaharDialRenderer: View {
         }
         // day/date complication between the hub and the "3"
         if f.showsDate, let faceDate {
-            let (weekday, day) = PaharFormat.weekdayDay(faceDate)
+            let (weekday, day) = PaharFormat.weekdayDay(faceDate, tz: faceTimeZone)
             let size = max(9, r * 0.105)
             let t = Text(weekday + " ").font(.system(size: size, weight: .medium)).foregroundStyle(Color.secondary)
                 + Text(day).font(.system(size: size, weight: .semibold)).monospacedDigit()

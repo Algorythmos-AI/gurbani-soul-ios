@@ -85,6 +85,54 @@ final class WidgetRenderTests: XCTestCase {
         return r.uiImage
     }
 
+    /// Runs `body` with the process's system zone set to `id` (what `TimeZone.current` returns),
+    /// then restores it — a phone that changed zone after its timeline was saved.
+    private func withSystemTimeZone(_ id: String, _ body: () throws -> Void) rethrows {
+        let saved = ProcessInfo.processInfo.environment["TZ"]
+        setenv("TZ", id, 1); NSTimeZone.resetSystemTimeZone()
+        defer {
+            if let saved { setenv("TZ", saved, 1) } else { unsetenv("TZ") }
+            NSTimeZone.resetSystemTimeZone()
+        }
+        try body()
+    }
+
+    /// An entry resolved in Kolkata (08:18, AM) drawn on a phone now in Sydney (12:48 PM there):
+    /// the hands, the ring's angle and its half of the day all read the entry's clock, never the
+    /// phone's new one — and the widget renders the same pixels whichever zone the phone is in.
+    func testAnEntryKeepsItsOwnClockWhenThePhoneChangesZone() throws {
+        let kolkata = try XCTUnwrap(TimeZone(identifier: "Asia/Kolkata"))
+        let sydney = try XCTUnwrap(TimeZone(identifier: "Australia/Sydney"))
+        var cal = Calendar(identifier: .gregorian); cal.timeZone = kolkata
+        let at = try XCTUnwrap(cal.date(from: DateComponents(year: 2026, month: 9, day: 18, hour: 8, minute: 18)))
+        let e = RaagNowTimeline.entry(at: at, config: RaagClockConfig(solar: false), snapshot: snapshot(), tz: kolkata)
+
+        var pngs: [String: [Data]] = [:]
+        for zone in ["Australia/Sydney", "Asia/Kolkata"] {
+            try withSystemTimeZone(zone) {
+                XCTAssertEqual(TimeZone.current.identifier, zone, "precondition: the phone's zone is \(zone)")
+                XCTAssertEqual(e.timeZone, kolkata)
+                XCTAssertEqual(e.minutesNow, 8 * 60 + 18)
+                XCTAssertEqual(e.model.half, .am, "08:18 in Kolkata is the AM half")
+                let hand = ClockHands.angles(for: e.date, tz: e.timeZone, wholeMinutes: true).hour * 180 / .pi
+                XCTAssertEqual(hand, Pahar.faceDegrees(e.minutesNow), accuracy: 1e-9, "hour hand on the ring's angle")
+                XCTAssertEqual(DialMetrics.angle(Double(e.minutesNow)).degrees + 90, hand, accuracy: 1e-9)
+                for (family, size, name) in families where [.systemSmall, .systemMedium, .systemLarge].contains(family) {
+                    let img = try XCTUnwrap(render(e, family: family, size: size, dark: false), "\(name) in \(zone)")
+                    pngs[name, default: []].append(try XCTUnwrap(img.pngData()))
+                }
+            }
+        }
+        // the phone's own clock would have put the hand elsewhere (and in the other half)
+        let phoneHand = ClockHands.angles(for: e.date, tz: sydney, wholeMinutes: true).hour * 180 / .pi
+        XCTAssertEqual(phoneHand, Pahar.faceDegrees(12 * 60 + 48), accuracy: 1e-9)
+        XCTAssertEqual(Pahar.HalfDay(minute: PaharFormat.minutesOfDay(e.date, tz: sydney)), .pm)
+        for (name, images) in pngs {
+            XCTAssertEqual(images.count, 2)
+            XCTAssertEqual(images.first, images.last, "\(name): the widget must not depend on the phone's current zone")
+        }
+    }
+
     func testEveryFamilyRendersInBothSchemesAndModes() throws {
         // PNGs land in the env-named dir when given, else in the host's temp dir (printed).
         let out = ProcessInfo.processInfo.environment["SGGS_WIDGET_SNAPSHOT_DIR"].map { URL(fileURLWithPath: $0) }
