@@ -39,8 +39,8 @@ approved, the glosses can be added to `PoeticForms` and shown under each form na
 
 ## Related data finding (sggs-data, not this app)
 
-`sections` currently names Ang 1363–1384 "ਚਉਬੋਲੇ" (815 lines). The corpus carries the headings
-**ਸਲੋਕ ਭਗਤ ਕਬੀਰ ਜੀਉ ਕੇ** (Ang 1364) and **ਸਲੋਕ ਸੇਖ ਫਰੀਦ ਕੇ** (Ang 1377), so that one section
+`sections` currently names Ang 1363–1384 `ਚਉਬੋਲੇ` (815 lines). The corpus carries the headings
+`ਸਲੋਕ ਭਗਤ ਕਬੀਰ ਜੀਉ ਕੇ` (Ang 1364) and `ਸਲੋਕ ਸੇਖ ਫਰੀਦ ਕੇ` (Ang 1377), so that one section
 holds Chaubole, Salok Bhagat Kabir Ji and Salok Sheikh Farid Ji. This is a metadata-only fix in
 sggs-data (section boundaries; scripture byte-identical). The Index will show the corrected
 sections as soon as the dataset pin moves.
