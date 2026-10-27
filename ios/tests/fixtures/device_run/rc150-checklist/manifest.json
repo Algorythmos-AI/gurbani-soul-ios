@@ -1,0 +1,299 @@
+[
+ {
+  "attachments": [
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "369752AE-9479-4DF3-A52C-BEBD3FFAB700.txt",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D10 timings_0_0D581633-775E-452F-8F0C-D56763B23377.txt",
+    "timestamp": 1793118302.522
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "4A03F951-BC68-4C86-9DFF-2D45B46BE94C.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D10 after a cold launch_0_B34FA108-D51A-4D16-B1CC-777284CA3C63.png",
+    "timestamp": 1793118293.853
+   }
+  ],
+  "testIdentifier": "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
+  "testIdentifierURL": "test://com.apple.xcode/SGGS/SGGSUITests/DeviceChecklistTests/testD10ColdAndWarmLaunchTimes"
+ },
+ {
+  "attachments": [
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "6227ABFE-1F1E-4EF7-9F8B-3E41015F845B.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D11 after the interrupted verify_0_00C2F8FF-FA6E-4DDD-8508-A1A58001E768.png",
+    "timestamp": 1793118357.93
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "A806D20A-E9A0-42A9-9925-06EEB7305129.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D11 at the force quit_0_3F12C7F5-BA6F-493D-93FE-E4880A7B2F0F.png",
+    "timestamp": 1793118347.617
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "6805EBDD-46BD-411E-BBBC-152BDA6D895B.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D11 resumed on Ang 700_0_CBA27654-89F1-49C5-95FB-02B5E8774792.png",
+    "timestamp": 1793118341.891
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "8B1EA82B-4AA4-42A2-9EEC-F9A068E306E0.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D11 reading Ang 700_0_FD3F0CA3-DC63-4FE2-BA3B-FD64EBD2E42B.png",
+    "timestamp": 1793118315.034
+   }
+  ],
+  "testIdentifier": "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()",
+  "testIdentifierURL": "test://com.apple.xcode/SGGS/SGGSUITests/DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify"
+ },
+ {
+  "attachments": [
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "993098CC-65F8-4629-AB4D-DCC625690874.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D12 after sggsshabadabc_0_3E8E83D2-FA6A-4539-965E-51BE34E12E0E.png",
+    "timestamp": 1793118379.146
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "8926FEF3-8C50-468E-84DA-759536107424.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D12 after sggsang99999_0_EE38FC88-A578-4EB0-BE49-EEEF6163250B.png",
+    "timestamp": 1793118376.912
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "765BFE08-2DE2-40E9-8229-720A27EF4403.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D12 after sggsshabad-1_0_6A173C25-F223-4E57-904A-7F966B1BC9D2.png",
+    "timestamp": 1793118374.684
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "AA822C13-23EF-47D5-915A-AA20FF1F2FF9.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D12 after sggsshabad3000000000_0_E3E6E348-1F06-47A1-8319-985BD9ED2587.png",
+    "timestamp": 1793118372.365
+   }
+  ],
+  "testIdentifier": "DeviceChecklistTests/testD12HostileLinksNeverCrash()",
+  "testIdentifierURL": "test://com.apple.xcode/SGGS/SGGSUITests/DeviceChecklistTests/testD12HostileLinksNeverCrash"
+ },
+ {
+  "attachments": [
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "43C5E197-3D66-4C17-8BF5-F9F87D44CA96.txt",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D2 pasted text and scalars_0_EF47CDAA-F485-4185-A633-38B7EBC68F67.txt",
+    "timestamp": 1793118459.324
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "95321DF3-D277-49EB-9241-442C0F94D638.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D2 pasted, saroop off_0_885BB91E-56F2-428E-9C33-7EC976FF0A88.png",
+    "timestamp": 1793118459.323
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "B5F07657-1A1D-44D1-9E78-EA357B8C1CBF.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D2 Ang 1400, saroop off_0_3B10C70C-2E0A-4530-A43D-81D7E0E37610.png",
+    "timestamp": 1793118441.512
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "B33B7497-2473-4D65-911D-B0E3C2A13B01.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D2 pasted, saroop on_0_EF8B7E0B-48CF-49BD-939D-3FAD71D9D608.png",
+    "timestamp": 1793118424.681
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "04546EE8-EE69-4036-A089-34D69828EC95.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D2 Ang 1400, saroop on_0_70892D52-B2BA-4727-BFEF-6E0BEE8EBD2F.png",
+    "timestamp": 1793118408.805
+   }
+  ],
+  "testIdentifier": "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
+  "testIdentifierURL": "test://com.apple.xcode/SGGS/SGGSUITests/DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff"
+ },
+ {
+  "attachments": [
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "4B5465E9-3FBF-4A38-901A-04BE0CE8BC16.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D3 Ang 1354 ਸਤੵਿੰ dark standard size_0_DA8DE40E-A1E8-4CDA-AC39-9C742BD961EC.png",
+    "timestamp": 1793118608.187
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "11A5C133-D7E6-4844-B4EF-602F63829C61.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D3 Ang 1400 dark AX3_0_49D6DFE9-3314-45FF-B4BC-8C9E294DE65A.png",
+    "timestamp": 1793118594.237
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "1E6D00A1-F52B-4AC2-B264-2FB5D75FF213.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D3 Ang 1359 dark AX3_0_F21F61D2-DFC7-497F-8A75-47C864B7A1B0.png",
+    "timestamp": 1793118588.787
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "88EF7282-FA6F-42DF-A97D-E5AD80FBB1AC.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D3 Ang 1354 dark AX3_0_FCA4B772-796A-43C8-9230-55672366DC9C.png",
+    "timestamp": 1793118583.359
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "9C6795E3-EC14-4A50-8C59-3C21C398AE46.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D3 Ang 1 dark AX3_0_88281074-71ED-43E5-B8DF-40BC20523132.png",
+    "timestamp": 1793118577.906
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "EBF199CC-97CE-43FD-89D9-531FAD58AEFA.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D3 Ang 1354 ਸਤੵਿੰ light standard size_0_2B77CA48-BEBC-4324-B07D-B1F3EC116B88.png",
+    "timestamp": 1793118547.47
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "F84116CB-CFF1-48D1-B914-E685154CE860.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D3 Ang 1400 light AX3_0_00075F64-318A-4504-8B67-4D513A12AB09.png",
+    "timestamp": 1793118531.762
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "C52560F1-3865-4176-9A6B-FBDF04779DA6.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D3 Ang 1359 light AX3_0_5799EBFA-CE40-4B8F-B0E4-BE2464C9B446.png",
+    "timestamp": 1793118524.641
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "04ED7DB7-4CA8-4BDD-821F-537C8E97CAF0.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D3 Ang 1354 light AX3_0_172119C3-1BC7-474F-83EC-23C68C0634AE.png",
+    "timestamp": 1793118519.2
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "FBA20E99-5BF3-42F3-A4F5-5DD88B40E27B.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D3 Ang 1 light AX3_0_A6388661-BB90-4CBC-BD73-812CABD96E0B.png",
+    "timestamp": 1793118513.727
+   }
+  ],
+  "testIdentifier": "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
+  "testIdentifierURL": "test://com.apple.xcode/SGGS/SGGSUITests/DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3"
+ },
+ {
+  "attachments": [
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "32009E09-1111-4E03-9109-B5114047FAB0.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D6 saved verses after clearing_0_1E2425B5-2308-440B-9F3E-FB133121D6A6.png",
+    "timestamp": 1793118728.702
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "93FD9D07-B648-451E-9F0E-2330091DDE4B.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D6 journey after clearing_0_E4DD421F-AFC8-4734-9A85-98E4E8167D6E.png",
+    "timestamp": 1793118708.669
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "AF3C3FEA-0AB4-42C4-8253-DB11130D70FE.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D6 confirmation_0_47C0B903-4E95-42A4-AFEF-21DF41D56148.png",
+    "timestamp": 1793118701.215
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "792519D5-C198-4852-9AAD-76696DA1C05E.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D6 journey with history_0_2E079038-16E0-478B-8845-B418D2A90F1D.png",
+    "timestamp": 1793118699.107
+   }
+  ],
+  "testIdentifier": "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
+  "testIdentifierURL": "test://com.apple.xcode/SGGS/SGGSUITests/DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse"
+ }
+]

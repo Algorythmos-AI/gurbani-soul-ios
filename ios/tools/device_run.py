@@ -420,12 +420,27 @@ def cmd_begin(args, host=HOST, root=ROOT, now=None):
 
 # ---------------------------------------------------------------- summarize
 
-def walk_cases(nodes):
+SYSTEM_SUITE = "System Failures"
+
+
+def walk_cases(nodes, system=False):
+    """Test cases; with system=True, the runner's own failures instead ("System Failures": a test
+    runner that crashed or lost its connection). Those are not tests and no rerun can pass them."""
     for n in nodes:
         if n.get("nodeType") == "Test Case":
-            yield n
-        else:
-            yield from walk_cases(n.get("children", []))
+            if system == is_system_case(n):
+                yield n
+        elif not (n.get("nodeType") == "Test Suite" and n.get("name") == SYSTEM_SUITE and not system):
+            yield from walk_cases(n.get("children", []), system)
+
+
+def is_system_case(node):
+    return not re.match(r"^\w+/\w+\(.*\)$", node.get("nodeIdentifier") or "")
+
+
+def skip_reason(message):
+    """XCTest prefixes the test's own XCTSkip message with "Test skipped - "."""
+    return re.sub(r"^Test skipped\s*-\s*", "", message or "")
 
 
 def messages(node, kind):
@@ -440,7 +455,7 @@ def case_attempts(node):
     out = []
     for r in reps:
         fails = messages(r, "Failure Message")
-        skips = messages(r, "Skip Message") or messages(node, "Skip Message")
+        skips = [skip_reason(m) for m in messages(r, "Skip Message") or messages(node, "Skip Message")]
         out.append({"outcome": r.get("result", "unknown"),
                     "duration": round(float(r.get("durationInSeconds") or 0), 3),
                     "failure": fails[0] if fails else None,
@@ -629,12 +644,18 @@ def cmd_summarize(args, host=HOST, runs_dir=None):
                     if a["outcome"] == "Failed" and a["cause"] == "unknown" and t not in overrides:
                         a["cause"] = probe
         kind = BUNDLE_RE.match(path.name).group(1)
+        system = [{"name": scrub_text(n.get("name", "")),
+                   "failure": scrub_text((messages(n, "Failure Message") or [""])[0]),
+                   "cause": classify((messages(n, "Failure Message") or [""])[0])}
+                  for n in walk_cases(tests.get("testNodes", []), system=True)]
         rec = {"name": path.stem, "kind": kind, "started_at": iso(b_start),
                "finished_at": iso(from_epoch(summary["finishTime"])) if summary.get("finishTime") else None,
                "result": summary.get("result"),
                "counts": {k: summary.get(k, 0) for k in ("totalTestCount", "passedTests", "failedTests",
                                                          "skippedTests", "expectedFailures")},
                "root_id": root_id}
+        if system:
+            rec["system_failures"] = system
         if not args.no_tar:
             name = f"{path.stem}.tar.gz"
             digest, size = deterministic_tar(real, run_dir / "upload" / name)
@@ -676,13 +697,13 @@ def cmd_summarize(args, host=HOST, runs_dir=None):
             checklist[row] = entry
             continue
         t = by_id.get(test)
-        ok_attempt = next((a for a in reversed(attempts.get(test, []))
-                           if a["outcome"] in ("Passed", "Expected Failure")), None)
+        # The evidence of the latest attempt that ran: a passing row's proof, or a failing row's
+        # record (a slow D10 still leaves its timeline).
+        last = next((a for a in reversed(attempts.get(test, [])) if a["outcome"] != "Skipped"), None)
         evid = []
-        if ok_attempt:
-            b = next(x for x in bundles if x["name"] == ok_attempt["bundle"])
-            evid = [a for a in b["atts"].get(test, []) if a["name"].startswith(row + " ")
-                    or a["name"] == f"{row} launch timeline"]
+        if last:
+            b = next(x for x in bundles if x["name"] == last["bundle"])
+            evid = [a for a in b["atts"].get(test, []) if a["name"].startswith(row + " ")]
         entry = {"mode": "auto", "title": title, "test": test,
                  "attachments": [{"name": a["name"], "sha256": a["sha256"]} for a in evid]}
         img = [a["sha256"] for a in evid if a["image"]]
@@ -716,7 +737,8 @@ def cmd_summarize(args, host=HOST, runs_dir=None):
                                     "note": scrub_text(manual["restore"].get("note") or "")}
                                    if manual.get("restore") else None),
                 "incidents": sorted({t["cause"] for t in tests if t.get("cause", "unknown") != "unknown"}
-                                    | {r["cause"] for t in tests for r in t.get("reruns", []) if r.get("cause")})},
+                                    | {r["cause"] for t in tests for r in t.get("reruns", []) if r.get("cause")}
+                                    | {f["cause"] for b in bundles for f in b.get("system_failures", [])})},
         "started_at": run["started_at"],
         "ended_at": max((b["finished_at"] or b["started_at"] for b in bundles), default=None),
         "xcode": run.get("xcode"), "operator": run.get("operator"),
@@ -1181,6 +1203,13 @@ def render_md(s):
         if launch.get("xctest_clock"):
             x = launch["xctest_clock"]
             lines.append(f"- XCTest's clock (recorded, not judged): cold {x.get('cold')} s, warm {x.get('warm')} s")
+    sysf = [(b["name"], f) for b in s.get("bundles", []) for f in b.get("system_failures", [])]
+    if sysf:
+        lines += ["", "## Test-runner failures", "", "Not tests: the runner itself failed, and the tests it had not reached "
+                  "are listed under \"Planned but never run\" until a later bundle runs them.", "",
+                  "| Bundle | Failure | Cause |", "|---|---|---|"]
+        for name, f in sysf:
+            lines.append(f"| {name} | {f['failure'][:200].replace('|', '/')} | {f['cause']} |")
     bad = [t for t in s.get("tests", []) if "failure" in t or (t["outcome"] == "Skipped" and not t.get("skip_allowed"))]
     if bad:
         lines += ["", "## Failures and reruns", "", "| Test | First failure | Cause | Reruns | Final |", "|---|---|---|---|---|"]

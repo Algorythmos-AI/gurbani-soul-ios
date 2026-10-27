@@ -1,8 +1,10 @@
 """Tests for ios/tools/device_run.py — device runs as checkable evidence.
 
 CI has no device and no xcrun: every xcresulttool call is answered from captured JSON under
-fixtures/device_run/ (`unit` is the real 1.5.0 RC unit bundle from S-iPhone, scrubbed; `ui`,
-`checklist` and `rerun-1` follow xcresulttool 3.60's output for UI-test bundles).
+fixtures/device_run/. `unit`, `rc150-ui` and `rc150-checklist` are the real 1.5.0 RC bundles from
+S-iPhone (UDID replaced; images shrunk to tiny PNGs of the same shape; the screen recording left
+out). `ui`, `checklist` and `rerun-1` are made in the same xcresulttool 3.60 shape to reach the
+branches the real run did not (a passing rerun, a bench probe, a clean pass).
 """
 import argparse
 import importlib.util
@@ -31,9 +33,9 @@ BEGIN = dr.from_epoch(T0 - 60)
 UDID = "0000" + "8150" + "-" + "00081CEE" + "2238401C"
 
 
-def fixture_ids():
+def fixture_ids(names=("unit", "ui", "checklist", "rerun-1")):
     ids = set()
-    for name in ("unit", "ui", "checklist", "rerun-1"):
+    for name in names:
         ids |= {c["nodeIdentifier"] for c in dr.walk_cases(json.loads((FIX / name / "tests.json").read_text())["testNodes"])}
     return sorted(ids)
 
@@ -46,6 +48,7 @@ class FixtureHost(dr.Host):
         self.dev = {"name": name, "model": "iPhone 17 Pro Max", "ios": "27.0.1", "transport": "wired",
                     "tunnel": "connected", "locked": locked}
         self.mutate = {}
+        self.source = {}        # bundle name → fixture folder, when they differ
         self.http_calls = []
 
     def git(self, *args, cwd=None):
@@ -63,7 +66,7 @@ class FixtureHost(dr.Host):
 
     def xcresult(self, *args):
         path = Path(args[args.index("--path") + 1])
-        src = FIX / path.stem
+        src = FIX / self.source.get(path.stem, path.stem)
         if args[0] == "export":
             out = Path(args[args.index("--output-path") + 1])
             manifest = json.loads((src / "manifest.json").read_text())
@@ -540,6 +543,39 @@ class SummarizeTests(Base):
             old.mkdir(parents=True)
             (old / "summary.json").write_text(json.dumps({"run_id": old.name, "bundles": [{"root_id": "0~seen-before"}]}))
         self.assertIn("reused result folder", refused(reused))
+
+
+class RealCandidateRunTests(Base):
+    """The 1.5.0 release candidate on S-iPhone as it happened: the UI runner lost its connection after
+    13 tests, and D10's in-app cold launch read 5.054 s (appInit at 4.786 s)."""
+
+    def test_the_real_bundles(self):
+        planned = fixture_ids(("unit", "rc150-ui", "rc150-checklist")) + ["SGGSUITests/testSearchOpensShabad()"]
+        self.planned.write_text("\n".join(planned) + "\n")
+        self.host.source = {"ui": "rc150-ui", "checklist": "rc150-checklist"}
+        rd = self.full_run(bundles=("unit", "ui", "checklist"))
+        self.assertEqual(self.summarize(rd), 0)
+        s = self.summary(rd)
+        self.assertEqual(s["verdict"], "FAIL")
+        self.assertTrue(any("D10 cold launch 5.05 s" in r for r in s["verdict_reasons"]))
+        self.assertTrue(any("never ran: SGGSUITests/testSearchOpensShabad()" in r for r in s["verdict_reasons"]))
+        runner = s["bundles"][1]["system_failures"]
+        self.assertEqual((len(runner), runner[0]["cause"]), (1, "env:tunnel"))
+        self.assertTrue(runner[0]["name"].startswith("SGGSUITests-Runner"))
+        self.assertIn("env:tunnel", s["env"]["incidents"])
+        tests = {t["id"]: t for t in s["tests"]}
+        self.assertFalse(any("Runner" in tid for tid in tests))
+        self.assertEqual(tests["SGGSUITests/testAccessibilityAuditReport()"]["skip"], "report-only: set TEST_RUNNER_SGGS_SHOT_DIR")
+        self.assertIn("skip_allowed", tests["SGGSUITests/testAccessibilityAuditReport()"])
+        self.assertEqual(tests["DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()"]["outcome"], "Failed")
+        for row in ("D2", "D3", "D6", "D11", "D12"):
+            self.assertEqual(s["checklist"][row]["result"], "pass", row)
+        self.assertEqual(s["checklist"]["D10"]["result"], "incomplete")    # failed once, not yet rerun
+        self.assertEqual(len(s["checklist"]["D3"]["attachments"]), 10)
+        self.assertEqual((s["launch"]["cold"]["appInit"], s["launch"]["cold"]["nitnemDrawn"]), (4.786, 5.054))
+        self.assertEqual(s["launch"]["xctest_clock"], {"cold": 19.37, "warm": 4.39})
+        self.assertIn("## Test-runner failures", (rd / "summary.md").read_text())
+        self.assertEqual(dr.cmd_check(ns(run_dirs=[]), runs_dir=self.runs), 0)
 
 
 # ---------------------------------------------------------------- record-manual
