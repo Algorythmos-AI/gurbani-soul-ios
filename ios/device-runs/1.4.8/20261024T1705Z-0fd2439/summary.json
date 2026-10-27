@@ -1,0 +1,244 @@
+{
+  "schema": 1,
+  "tool_version": "1",
+  "origin": "backfill",
+  "evidence_lost": true,
+  "version": "1.4.8",
+  "run_id": "20261024T1705Z-0fd2439",
+  "app": {
+    "version": "1.4.8",
+    "build": "1",
+    "build_config": "Debug"
+  },
+  "source": {
+    "commit": "38947dac88bb23f2c558aeea18fc8bee25bc5804",
+    "tree": "0fd2439f8aacc1f579b460fb862e44dd3d1e65b3",
+    "dirty": false
+  },
+  "device": {
+    "name": "S-iPhone",
+    "model": "iPhone 17 Pro Max",
+    "ios": "27.0.1"
+  },
+  "connection": {
+    "transport": "localNetwork"
+  },
+  "started_at": "2026-10-24T17:05:00Z",
+  "ended_at": null,
+  "operator": {
+    "role": "supervisor"
+  },
+  "bundles": [],
+  "backfill_counts": {
+    "unit": {
+      "passed": 372,
+      "failed": 0,
+      "skipped": 0
+    },
+    "ui": {
+      "passed": 66,
+      "failed": 8,
+      "skipped": 2
+    }
+  },
+  "tests": [
+    {
+      "id": "SGGSUITests/testGutkaSwitchTogglesTheLayout()",
+      "outcome": "Passed",
+      "duration": 0,
+      "failure": "failed in the full suite; passed alone",
+      "cause": "unknown",
+      "reruns": [
+        {
+          "bundle": "rerun alone",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "id": "SGGSUITests/testInsights()",
+      "outcome": "Passed",
+      "duration": 0,
+      "failure": "terminate failed in the full suite; passed alone",
+      "cause": "unknown",
+      "reruns": [
+        {
+          "bundle": "rerun alone",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "id": "SGGSUITests/testReaderChromeReturnsOnScrollUp()",
+      "outcome": "Passed",
+      "duration": 0,
+      "failure": "failed in the full suite; passed alone",
+      "cause": "unknown",
+      "reruns": [
+        {
+          "bundle": "rerun alone",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "id": "SGGSUITests/testThemesIndexSearchFindsByMeaningAndGurmukhi()",
+      "outcome": "Passed",
+      "duration": 0,
+      "failure": "keyboard focus; passed alone",
+      "cause": "unknown",
+      "reruns": [
+        {
+          "bundle": "rerun alone",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "id": "SGGSUITests/testLineageAndVaars()",
+      "outcome": "Failed",
+      "duration": 0,
+      "failure": "voice page did not load (Farid card tapped before counts loaded; a real bug: a voice page opened early never showed its verses tile)",
+      "cause": "code",
+      "reruns": [
+        {
+          "bundle": "rerun alone",
+          "outcome": "Failed",
+          "failure": "voice page did not load (Farid card tapped before counts loaded; a real bug: a voice page opened early never showed its verses tile)",
+          "cause": "code"
+        }
+      ]
+    },
+    {
+      "id": "SGGSUITests/testPrivacyPolicyReachableFromMore()",
+      "outcome": "Failed",
+      "duration": 0,
+      "failure": "Support row queried as a Button; a SwiftUI Link has another type on iOS 27 (test-side)",
+      "cause": "code",
+      "reruns": [
+        {
+          "bundle": "rerun alone",
+          "outcome": "Failed",
+          "failure": "Support row queried as a Button; a SwiftUI Link has another type on iOS 27 (test-side)",
+          "cause": "code"
+        }
+      ]
+    },
+    {
+      "id": "SGGSUITests/testVerifyShowsVerdict()",
+      "outcome": "Failed",
+      "duration": 0,
+      "failure": "Verify pill half off-screen; the tap did not switch mode (test-side)",
+      "cause": "code",
+      "reruns": [
+        {
+          "bundle": "rerun alone",
+          "outcome": "Failed",
+          "failure": "Verify pill half off-screen; the tap did not switch mode (test-side)",
+          "cause": "code"
+        }
+      ]
+    },
+    {
+      "id": "SGGSUITests/testForgetLocationReturnsToTheLocationCard()",
+      "outcome": "Failed",
+      "duration": 0,
+      "failure": "'Use these coordinates' tapped with the number keyboard up; the sheet stayed (test-side)",
+      "cause": "code",
+      "reruns": [
+        {
+          "bundle": "rerun alone",
+          "outcome": "Failed",
+          "failure": "'Use these coordinates' tapped with the number keyboard up; the sheet stayed (test-side)",
+          "cause": "code"
+        }
+      ]
+    }
+  ],
+  "checklist": {
+    "D1": {
+      "mode": "backfill",
+      "title": "Charter S",
+      "result": "not-run",
+      "note": "no checklist in this run"
+    },
+    "D2": {
+      "mode": "backfill",
+      "title": "Copy fidelity",
+      "result": "not-run",
+      "note": "no checklist in this run"
+    },
+    "D3": {
+      "mode": "backfill",
+      "title": "Gurmukhi rendering",
+      "result": "not-run",
+      "note": "no checklist in this run"
+    },
+    "D4": {
+      "mode": "backfill",
+      "title": "Update from the store build",
+      "result": "not-run",
+      "note": "no checklist in this run"
+    },
+    "D5": {
+      "mode": "backfill",
+      "title": "Forget location (widget half)",
+      "result": "not-run",
+      "note": "no checklist in this run"
+    },
+    "D6": {
+      "mode": "backfill",
+      "title": "Clear reading history",
+      "result": "not-run",
+      "note": "no checklist in this run"
+    },
+    "D7": {
+      "mode": "backfill",
+      "title": "Spotlight",
+      "result": "not-run",
+      "note": "no checklist in this run"
+    },
+    "D8": {
+      "mode": "backfill",
+      "title": "Widgets",
+      "result": "not-run",
+      "note": "no checklist in this run"
+    },
+    "D9": {
+      "mode": "backfill",
+      "title": "Airplane Mode",
+      "result": "not-run",
+      "note": "no checklist in this run"
+    },
+    "D10": {
+      "mode": "backfill",
+      "title": "Launch time (this device)",
+      "result": "not-run",
+      "note": "no checklist in this run"
+    },
+    "D11": {
+      "mode": "backfill",
+      "title": "Force quit and relaunch",
+      "result": "not-run",
+      "note": "no checklist in this run"
+    },
+    "D12": {
+      "mode": "backfill",
+      "title": "Hostile links",
+      "result": "not-run",
+      "note": "no checklist in this run"
+    }
+  },
+  "launch": {},
+  "sources": [
+    "supervisor ledger 1.4.9 (owner's machine; not in git), 2026-10-24 17:05–18:21"
+  ],
+  "notes": [
+    "Merge-queue run for waves 1+2 + #65. All 8 failures passed in the CI simulator.",
+    "The three test-side fixes and the voice-page fix were verified on the device and merged (#81, #78)."
+  ],
+  "verdict": "RECORDED-NO-BUNDLES",
+  "verdict_reasons": [
+    "backfilled from documents; the result bundles were lost"
+  ]
+}

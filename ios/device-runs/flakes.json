@@ -1,0 +1,278 @@
+{
+  "schema": 1,
+  "_comment": "Derived by `device_run.py rebuild`. A flake event is an unexplained (cause unknown) failure that passed on a rerun; a test with 3 or more is chronic.",
+  "tests": {
+    "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()": {
+      "runs": 3,
+      "fails": 2,
+      "env_fails": 1,
+      "fail_then_pass": 0,
+      "flake_events": 0,
+      "last_failure": {
+        "run": "20261026T0024Z-bc36c9b",
+        "version": "1.4.9",
+        "cause": "code",
+        "text": "5.83 s on XCTest's clock (the in-app clock, #88, was not merged yet)"
+      },
+      "sources": [
+        "backfill"
+      ],
+      "chronic": false
+    },
+    "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()": {
+      "runs": 3,
+      "fails": 1,
+      "env_fails": 1,
+      "fail_then_pass": 1,
+      "flake_events": 0,
+      "last_failure": {
+        "run": "20261025T0822Z-844e172",
+        "version": "1.4.9",
+        "cause": "code",
+        "text": "iOS 27 'Paste' menu item not found (test-side)"
+      },
+      "sources": [
+        "backfill"
+      ],
+      "chronic": false
+    },
+    "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()": {
+      "runs": 3,
+      "fails": 1,
+      "env_fails": 1,
+      "fail_then_pass": 1,
+      "flake_events": 0,
+      "last_failure": {
+        "run": "20261025T0822Z-844e172",
+        "version": "1.4.9",
+        "cause": "env:tunnel",
+        "text": "XCTest could not terminate the app (tearDown, Wi-Fi tunnel); every step had passed"
+      },
+      "sources": [
+        "backfill"
+      ],
+      "chronic": false
+    },
+    "SGGSUITests/testCaptureScreens()": {
+      "runs": 1,
+      "fails": 1,
+      "env_fails": 1,
+      "fail_then_pass": 1,
+      "flake_events": 0,
+      "last_failure": {
+        "run": "20261025T0822Z-844e172",
+        "version": "1.4.9",
+        "cause": "env:landscape",
+        "text": "failed with the phone in landscape (app window 956×440)"
+      },
+      "sources": [
+        "backfill"
+      ],
+      "chronic": false
+    },
+    "SGGSUITests/testForgetLocationReturnsToTheLocationCard()": {
+      "runs": 2,
+      "fails": 1,
+      "env_fails": 0,
+      "fail_then_pass": 0,
+      "flake_events": 0,
+      "last_failure": {
+        "run": "20261024T1705Z-0fd2439",
+        "version": "1.4.8",
+        "cause": "code",
+        "text": "'Use these coordinates' tapped with the number keyboard up; the sheet stayed (test-side)"
+      },
+      "sources": [
+        "backfill"
+      ],
+      "chronic": false
+    },
+    "SGGSUITests/testGutkaSwitchTogglesTheLayout()": {
+      "runs": 1,
+      "fails": 1,
+      "env_fails": 0,
+      "fail_then_pass": 1,
+      "flake_events": 1,
+      "last_failure": {
+        "run": "20261024T1705Z-0fd2439",
+        "version": "1.4.8",
+        "cause": "unknown",
+        "text": "failed in the full suite; passed alone"
+      },
+      "sources": [
+        "backfill"
+      ],
+      "chronic": false
+    },
+    "SGGSUITests/testInsights()": {
+      "runs": 1,
+      "fails": 1,
+      "env_fails": 0,
+      "fail_then_pass": 1,
+      "flake_events": 1,
+      "last_failure": {
+        "run": "20261024T1705Z-0fd2439",
+        "version": "1.4.8",
+        "cause": "unknown",
+        "text": "terminate failed in the full suite; passed alone"
+      },
+      "sources": [
+        "backfill"
+      ],
+      "chronic": false
+    },
+    "SGGSUITests/testLineageAndVaars()": {
+      "runs": 2,
+      "fails": 2,
+      "env_fails": 1,
+      "fail_then_pass": 1,
+      "flake_events": 0,
+      "last_failure": {
+        "run": "20261025T0822Z-844e172",
+        "version": "1.4.9",
+        "cause": "env:landscape",
+        "text": "failed with the phone in landscape (app window 956×440)"
+      },
+      "sources": [
+        "backfill"
+      ],
+      "chronic": false
+    },
+    "SGGSUITests/testPrivacyPolicyReachableFromMore()": {
+      "runs": 1,
+      "fails": 1,
+      "env_fails": 0,
+      "fail_then_pass": 0,
+      "flake_events": 0,
+      "last_failure": {
+        "run": "20261024T1705Z-0fd2439",
+        "version": "1.4.8",
+        "cause": "code",
+        "text": "Support row queried as a Button; a SwiftUI Link has another type on iOS 27 (test-side)"
+      },
+      "sources": [
+        "backfill"
+      ],
+      "chronic": false
+    },
+    "SGGSUITests/testRaagPageFromTheIndex()": {
+      "runs": 1,
+      "fails": 1,
+      "env_fails": 0,
+      "fail_then_pass": 1,
+      "flake_events": 1,
+      "last_failure": {
+        "run": "20261026T0024Z-bc36c9b",
+        "version": "1.4.9",
+        "cause": "unknown",
+        "text": "'Back must return to the Index'"
+      },
+      "sources": [
+        "backfill"
+      ],
+      "chronic": false
+    },
+    "SGGSUITests/testReaderChromeReturnsOnScrollUp()": {
+      "runs": 1,
+      "fails": 1,
+      "env_fails": 0,
+      "fail_then_pass": 1,
+      "flake_events": 1,
+      "last_failure": {
+        "run": "20261024T1705Z-0fd2439",
+        "version": "1.4.8",
+        "cause": "unknown",
+        "text": "failed in the full suite; passed alone"
+      },
+      "sources": [
+        "backfill"
+      ],
+      "chronic": false
+    },
+    "SGGSUITests/testReaderJumpAndSwipe()": {
+      "runs": 1,
+      "fails": 1,
+      "env_fails": 0,
+      "fail_then_pass": 1,
+      "flake_events": 1,
+      "last_failure": {
+        "run": "20261026T0024Z-bc36c9b",
+        "version": "1.4.9",
+        "cause": "unknown",
+        "text": "'angField missing'"
+      },
+      "sources": [
+        "backfill"
+      ],
+      "chronic": false
+    },
+    "SGGSUITests/testSearchOpensShabad()": {
+      "runs": 1,
+      "fails": 1,
+      "env_fails": 1,
+      "fail_then_pass": 1,
+      "flake_events": 0,
+      "last_failure": {
+        "run": "20261025T0822Z-844e172",
+        "version": "1.4.9",
+        "cause": "env:landscape",
+        "text": "failed with the phone in landscape (app window 956×440)"
+      },
+      "sources": [
+        "backfill"
+      ],
+      "chronic": false
+    },
+    "SGGSUITests/testThemeListStatesItsTrueTotal()": {
+      "runs": 1,
+      "fails": 1,
+      "env_fails": 1,
+      "fail_then_pass": 1,
+      "flake_events": 0,
+      "last_failure": {
+        "run": "20261025T0822Z-844e172",
+        "version": "1.4.9",
+        "cause": "env:landscape",
+        "text": "failed with the phone in landscape (app window 956×440)"
+      },
+      "sources": [
+        "backfill"
+      ],
+      "chronic": false
+    },
+    "SGGSUITests/testThemesIndexSearchFindsByMeaningAndGurmukhi()": {
+      "runs": 2,
+      "fails": 2,
+      "env_fails": 1,
+      "fail_then_pass": 2,
+      "flake_events": 1,
+      "last_failure": {
+        "run": "20261025T0822Z-844e172",
+        "version": "1.4.9",
+        "cause": "env:landscape",
+        "text": "failed with the phone in landscape (app window 956×440)"
+      },
+      "sources": [
+        "backfill"
+      ],
+      "chronic": false
+    },
+    "SGGSUITests/testVerifyShowsVerdict()": {
+      "runs": 2,
+      "fails": 2,
+      "env_fails": 1,
+      "fail_then_pass": 1,
+      "flake_events": 0,
+      "last_failure": {
+        "run": "20261025T0822Z-844e172",
+        "version": "1.4.9",
+        "cause": "env:landscape",
+        "text": "failed with the phone in landscape (app window 956×440)"
+      },
+      "sources": [
+        "backfill"
+      ],
+      "chronic": false
+    }
+  }
+}

@@ -1,0 +1,295 @@
+{
+  "schema": 1,
+  "tool_version": "1",
+  "origin": "backfill",
+  "evidence_lost": true,
+  "version": "1.4.9",
+  "run_id": "20261025T0822Z-844e172",
+  "app": {
+    "version": "1.4.9",
+    "build": "1",
+    "build_config": "Debug"
+  },
+  "source": {
+    "commit": "e8eef368da3671ae6e83e2b2b99de236807d99c9",
+    "tree": "844e1722fb64fb2d8ec26ff867bdd126bbfd468f",
+    "dirty": false
+  },
+  "device": {
+    "name": "S-iPhone",
+    "model": "iPhone 17 Pro Max",
+    "ios": "27.0.1"
+  },
+  "connection": {
+    "transport": "localNetwork"
+  },
+  "started_at": "2026-10-25T08:22:00Z",
+  "ended_at": null,
+  "operator": {
+    "role": "supervisor"
+  },
+  "bundles": [],
+  "backfill_counts": {},
+  "tests": [
+    {
+      "id": "SGGSUITests/testThemesIndexSearchFindsByMeaningAndGurmukhi()",
+      "outcome": "Passed",
+      "duration": 0,
+      "failure": "failed with the phone in landscape (app window 956×440)",
+      "cause": "env:landscape",
+      "reruns": [
+        {
+          "bundle": "rerun upright",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "id": "SGGSUITests/testVerifyShowsVerdict()",
+      "outcome": "Passed",
+      "duration": 0,
+      "failure": "failed with the phone in landscape (app window 956×440)",
+      "cause": "env:landscape",
+      "reruns": [
+        {
+          "bundle": "rerun upright",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "id": "SGGSUITests/testCaptureScreens()",
+      "outcome": "Passed",
+      "duration": 0,
+      "failure": "failed with the phone in landscape (app window 956×440)",
+      "cause": "env:landscape",
+      "reruns": [
+        {
+          "bundle": "rerun upright",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "id": "SGGSUITests/testThemeListStatesItsTrueTotal()",
+      "outcome": "Passed",
+      "duration": 0,
+      "failure": "failed with the phone in landscape (app window 956×440)",
+      "cause": "env:landscape",
+      "reruns": [
+        {
+          "bundle": "rerun upright",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "id": "SGGSUITests/testSearchOpensShabad()",
+      "outcome": "Passed",
+      "duration": 0,
+      "failure": "failed with the phone in landscape (app window 956×440)",
+      "cause": "env:landscape",
+      "reruns": [
+        {
+          "bundle": "rerun upright",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "id": "SGGSUITests/testLineageAndVaars()",
+      "outcome": "Passed",
+      "duration": 0,
+      "failure": "failed with the phone in landscape (app window 956×440)",
+      "cause": "env:landscape",
+      "reruns": [
+        {
+          "bundle": "rerun upright",
+          "outcome": "Failed",
+          "failure": "'Farid card missing' — a test-side bug, fixed in #83",
+          "cause": "code"
+        },
+        {
+          "bundle": "after #83",
+          "outcome": "Passed"
+        },
+        {
+          "bundle": "after #83",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "id": "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
+      "outcome": "Passed",
+      "duration": 0,
+      "failure": "iOS 27 'Paste' menu item not found (test-side)",
+      "cause": "code",
+      "reruns": [
+        {
+          "bundle": "rerun",
+          "outcome": "Failed",
+          "failure": "terminate() timed out after 60 s over the Wi-Fi tunnel in tearDown; every step had passed",
+          "cause": "env:tunnel"
+        },
+        {
+          "bundle": "after the tearDown fix",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "id": "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
+      "outcome": "Passed",
+      "duration": 0,
+      "failure": "XCTest could not terminate the app (tearDown, Wi-Fi tunnel); every step had passed",
+      "cause": "env:tunnel",
+      "reruns": [
+        {
+          "bundle": "after the tearDown fix",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "id": "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
+      "outcome": "Failed",
+      "duration": 0,
+      "failure": "cold 8.35 s > 5 s on XCTest's clock; 7.4 s of a reading was XCTest terminating a leftover app",
+      "cause": "code",
+      "reruns": [
+        {
+          "bundle": "after the terminate fix",
+          "outcome": "Failed",
+          "failure": "6.83/4.29 s and 8.22/7.04 s on XCTest's clock (≈3 s of spawn/poll over the tunnel)",
+          "cause": "env:tunnel"
+        }
+      ]
+    },
+    {
+      "id": "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
+      "outcome": "Passed",
+      "duration": 0
+    },
+    {
+      "id": "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()",
+      "outcome": "Passed",
+      "duration": 0
+    },
+    {
+      "id": "DeviceChecklistTests/testD12HostileLinksNeverCrash()",
+      "outcome": "Passed",
+      "duration": 0
+    }
+  ],
+  "checklist": {
+    "D1": {
+      "mode": "backfill",
+      "title": "Charter S",
+      "result": "needs-reference",
+      "note": "needs a person with a printed Bir"
+    },
+    "D2": {
+      "mode": "backfill",
+      "title": "Copy fidelity",
+      "result": "pass",
+      "note": "ਜਲ੍ਯ੍ਯਨ pasted as stored, saroop on and off, no U+0A75"
+    },
+    "D3": {
+      "mode": "backfill",
+      "title": "Gurmukhi rendering",
+      "result": "pass",
+      "note": "Angs 1, 1354, 1359, 1400, light and dark, AX3, plus Ang 1354 at the standard size"
+    },
+    "D4": {
+      "mode": "backfill",
+      "title": "Update from the store build",
+      "result": "not-run",
+      "note": "manual; not run"
+    },
+    "D5": {
+      "mode": "backfill",
+      "title": "Forget location (widget half)",
+      "result": "not-run",
+      "note": "not re-run; the widget half is manual"
+    },
+    "D6": {
+      "mode": "backfill",
+      "title": "Clear reading history",
+      "result": "pass",
+      "note": "cancel kept everything; confirm cleared history"
+    },
+    "D7": {
+      "mode": "backfill",
+      "title": "Spotlight",
+      "result": "not-run",
+      "note": "manual; not run"
+    },
+    "D8": {
+      "mode": "backfill",
+      "title": "Widgets",
+      "result": "not-run",
+      "note": "manual; not run"
+    },
+    "D9": {
+      "mode": "backfill",
+      "title": "Airplane Mode",
+      "result": "not-run",
+      "note": "manual; not run"
+    },
+    "D10": {
+      "mode": "backfill",
+      "title": "Launch time (this device)",
+      "result": "pass",
+      "note": "judged from the screen recording (window opening → Nitnem): cold 1.25/1.6 s, warm 1.5/4.3 s; the test's own clock failed"
+    },
+    "D11": {
+      "mode": "backfill",
+      "title": "Force quit and relaunch",
+      "result": "pass",
+      "note": "resume and a force quit during a held cold verify"
+    },
+    "D12": {
+      "mode": "backfill",
+      "title": "Hostile links",
+      "result": "pass",
+      "note": "no crash on the hostile sggs:// forms"
+    }
+  },
+  "launch": {
+    "screen_recording": {
+      "cold": [
+        1.25,
+        1.6
+      ],
+      "warm": [
+        1.5,
+        4.3
+      ]
+    },
+    "xctest_clock": {
+      "cold": [
+        6.83,
+        8.22
+      ],
+      "warm": [
+        4.29,
+        7.04
+      ]
+    }
+  },
+  "sources": [
+    "docs/ios/device-checklist-1.4.9.md",
+    "supervisor ledger 1.4.9 (owner's machine; not in git), 2026-10-25 08:22–13:20"
+  ],
+  "notes": [
+    "Debug build of release/1.4.9 on main 2040eee (#83), with the D10/tearDown test fixes before they were committed in e8eef36. e8eef36 adds them and the checklist doc; its tree 844e172 is the tree of the v1.4.9 tag f700fb3 (#82, squash). The tested tree differed from it only by that doc.",
+    "Full unit and UI suites on the device were run but their counts are not recorded; the CI simulator ran 397/0 unit and 87 UI on e8eef36.",
+    "A disk-full stop (ENOSPC) at 12:17 forced the supervisor's result bundles to be deleted; the rest were lost when the scratchpad was wiped.",
+    "Real data sealed by UITestVault; restored by an ordinary launch at the end."
+  ],
+  "verdict": "RECORDED-NO-BUNDLES",
+  "verdict_reasons": [
+    "backfilled from documents; the result bundles were lost"
+  ]
+}

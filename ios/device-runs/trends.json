@@ -1,0 +1,230 @@
+{
+  "schema": 1,
+  "_comment": "Derived by `device_run.py rebuild`.",
+  "runs": [
+    {
+      "version": "1.4.2",
+      "run_id": "20261017T0020Z-ee0c379",
+      "verdict": "RECORDED-NO-BUNDLES",
+      "d10": {
+        "cold": null,
+        "warm": null
+      },
+      "suite_seconds": {},
+      "slowest": [
+        [
+          "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
+          0
+        ],
+        [
+          "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()",
+          0
+        ],
+        [
+          "DeviceChecklistTests/testD12HostileLinksNeverCrash()",
+          0
+        ],
+        [
+          "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
+          0
+        ],
+        [
+          "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
+          0
+        ],
+        [
+          "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
+          0
+        ],
+        [
+          "SGGSUITests/testAccentPickerSwitchesAndPersists()",
+          0
+        ],
+        [
+          "SGGSUITests/testChevronsTurnPagesRepeatedly()",
+          0
+        ],
+        [
+          "SGGSUITests/testDeepLinkAngBeatsResume()",
+          0
+        ],
+        [
+          "SGGSUITests/testForgetLocationReturnsToTheLocationCard()",
+          0
+        ],
+        [
+          "SGGSUITests/testLiveActivityToggleDefaultsOff()",
+          0
+        ],
+        [
+          "SGGSUITests/testPageBarStaysOnOneLineAtLargeText()",
+          0
+        ],
+        [
+          "SGGSUITests/testRapidChevronTapsStayInSync()",
+          0
+        ],
+        [
+          "SGGSUITests/testReaderBoundsAndRubberBand()",
+          0
+        ],
+        [
+          "SGGSUITests/testRehrasVariantPersists()",
+          0
+        ],
+        [
+          "SGGSUITests/testSavedVerseRoundTrip()",
+          0
+        ]
+      ]
+    },
+    {
+      "version": "1.4.8",
+      "run_id": "20261024T1705Z-0fd2439",
+      "verdict": "RECORDED-NO-BUNDLES",
+      "d10": {
+        "cold": null,
+        "warm": null
+      },
+      "suite_seconds": {},
+      "slowest": [
+        [
+          "SGGSUITests/testForgetLocationReturnsToTheLocationCard()",
+          0
+        ],
+        [
+          "SGGSUITests/testGutkaSwitchTogglesTheLayout()",
+          0
+        ],
+        [
+          "SGGSUITests/testInsights()",
+          0
+        ],
+        [
+          "SGGSUITests/testLineageAndVaars()",
+          0
+        ],
+        [
+          "SGGSUITests/testPrivacyPolicyReachableFromMore()",
+          0
+        ],
+        [
+          "SGGSUITests/testReaderChromeReturnsOnScrollUp()",
+          0
+        ],
+        [
+          "SGGSUITests/testThemesIndexSearchFindsByMeaningAndGurmukhi()",
+          0
+        ],
+        [
+          "SGGSUITests/testVerifyShowsVerdict()",
+          0
+        ]
+      ]
+    },
+    {
+      "version": "1.4.9",
+      "run_id": "20261025T0822Z-844e172",
+      "verdict": "RECORDED-NO-BUNDLES",
+      "d10": {
+        "cold": null,
+        "warm": null
+      },
+      "suite_seconds": {},
+      "slowest": [
+        [
+          "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
+          0
+        ],
+        [
+          "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()",
+          0
+        ],
+        [
+          "DeviceChecklistTests/testD12HostileLinksNeverCrash()",
+          0
+        ],
+        [
+          "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
+          0
+        ],
+        [
+          "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
+          0
+        ],
+        [
+          "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
+          0
+        ],
+        [
+          "SGGSUITests/testCaptureScreens()",
+          0
+        ],
+        [
+          "SGGSUITests/testLineageAndVaars()",
+          0
+        ],
+        [
+          "SGGSUITests/testSearchOpensShabad()",
+          0
+        ],
+        [
+          "SGGSUITests/testThemeListStatesItsTrueTotal()",
+          0
+        ],
+        [
+          "SGGSUITests/testThemesIndexSearchFindsByMeaningAndGurmukhi()",
+          0
+        ],
+        [
+          "SGGSUITests/testVerifyShowsVerdict()",
+          0
+        ]
+      ]
+    },
+    {
+      "version": "1.4.9",
+      "run_id": "20261026T0024Z-bc36c9b",
+      "verdict": "RECORDED-NO-BUNDLES",
+      "d10": {
+        "cold": null,
+        "warm": null
+      },
+      "suite_seconds": {},
+      "slowest": [
+        [
+          "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
+          0
+        ],
+        [
+          "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()",
+          0
+        ],
+        [
+          "DeviceChecklistTests/testD12HostileLinksNeverCrash()",
+          0
+        ],
+        [
+          "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
+          0
+        ],
+        [
+          "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
+          0
+        ],
+        [
+          "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
+          0
+        ],
+        [
+          "SGGSUITests/testRaagPageFromTheIndex()",
+          0
+        ],
+        [
+          "SGGSUITests/testReaderJumpAndSwipe()",
+          0
+        ]
+      ]
+    }
+  ]
+}

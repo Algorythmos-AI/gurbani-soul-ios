@@ -1,0 +1,202 @@
+{
+  "schema": 1,
+  "tool_version": "1",
+  "origin": "backfill",
+  "evidence_lost": true,
+  "version": "1.4.9",
+  "run_id": "20261026T0024Z-bc36c9b",
+  "app": {
+    "version": "1.4.9",
+    "build": "1",
+    "build_config": "Debug"
+  },
+  "source": {
+    "commit": "40d6b21aaa75233397b77bb46f0664f615a198e9",
+    "tree": "bc36c9b3aee17ba917473603d788ba9085d03a2c",
+    "dirty": false
+  },
+  "device": {
+    "name": "S-iPhone",
+    "model": "iPhone 17 Pro Max",
+    "ios": "27.0.1"
+  },
+  "connection": {
+    "transport": "localNetwork"
+  },
+  "started_at": "2026-10-26T00:24:00Z",
+  "ended_at": null,
+  "operator": {
+    "role": "supervisor"
+  },
+  "bundles": [],
+  "backfill_counts": {
+    "unit": {
+      "passed": 408,
+      "failed": 0,
+      "skipped": 0
+    },
+    "ui": {
+      "passed": 76,
+      "failed": 2,
+      "skipped": 9
+    }
+  },
+  "tests": [
+    {
+      "id": "SGGSUITests/testRaagPageFromTheIndex()",
+      "outcome": "Passed",
+      "duration": 0,
+      "failure": "'Back must return to the Index'",
+      "cause": "unknown",
+      "reruns": [
+        {
+          "bundle": "rerun alone",
+          "outcome": "Passed"
+        },
+        {
+          "bundle": "rerun alone",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "id": "SGGSUITests/testReaderJumpAndSwipe()",
+      "outcome": "Passed",
+      "duration": 0,
+      "failure": "'angField missing'",
+      "cause": "unknown",
+      "reruns": [
+        {
+          "bundle": "rerun alone",
+          "outcome": "Passed"
+        },
+        {
+          "bundle": "rerun alone",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "id": "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
+      "outcome": "Failed",
+      "duration": 0,
+      "failure": "5.83 s on XCTest's clock (the in-app clock, #88, was not merged yet)",
+      "cause": "code"
+    },
+    {
+      "id": "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
+      "outcome": "Passed",
+      "duration": 0
+    },
+    {
+      "id": "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
+      "outcome": "Passed",
+      "duration": 0
+    },
+    {
+      "id": "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
+      "outcome": "Passed",
+      "duration": 0
+    },
+    {
+      "id": "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()",
+      "outcome": "Passed",
+      "duration": 0
+    },
+    {
+      "id": "DeviceChecklistTests/testD12HostileLinksNeverCrash()",
+      "outcome": "Passed",
+      "duration": 0
+    }
+  ],
+  "checklist": {
+    "D1": {
+      "mode": "backfill",
+      "title": "Charter S",
+      "result": "not-run",
+      "note": "manual; not run"
+    },
+    "D2": {
+      "mode": "backfill",
+      "title": "Copy fidelity",
+      "result": "pass",
+      "note": ""
+    },
+    "D3": {
+      "mode": "backfill",
+      "title": "Gurmukhi rendering",
+      "result": "pass",
+      "note": ""
+    },
+    "D4": {
+      "mode": "backfill",
+      "title": "Update from the store build",
+      "result": "not-run",
+      "note": "manual; not run"
+    },
+    "D5": {
+      "mode": "backfill",
+      "title": "Forget location (widget half)",
+      "result": "not-run",
+      "note": "manual; not run"
+    },
+    "D6": {
+      "mode": "backfill",
+      "title": "Clear reading history",
+      "result": "pass",
+      "note": ""
+    },
+    "D7": {
+      "mode": "backfill",
+      "title": "Spotlight",
+      "result": "not-run",
+      "note": "manual; not run"
+    },
+    "D8": {
+      "mode": "backfill",
+      "title": "Widgets",
+      "result": "not-run",
+      "note": "manual; not run"
+    },
+    "D9": {
+      "mode": "backfill",
+      "title": "Airplane Mode",
+      "result": "not-run",
+      "note": "manual; not run"
+    },
+    "D10": {
+      "mode": "backfill",
+      "title": "Launch time (this device)",
+      "result": "fail",
+      "note": "5.83 s on XCTest's clock; not judged on the in-app clock"
+    },
+    "D11": {
+      "mode": "backfill",
+      "title": "Force quit and relaunch",
+      "result": "pass",
+      "note": ""
+    },
+    "D12": {
+      "mode": "backfill",
+      "title": "Hostile links",
+      "result": "pass",
+      "note": ""
+    }
+  },
+  "launch": {
+    "xctest_clock": {
+      "cold": 5.83
+    }
+  },
+  "sources": [
+    "supervisor ledger 1.4.9 (owner's machine; not in git), 2026-10-26 00:24–01:33"
+  ],
+  "notes": [
+    "Post-release run on main (dataset 1.2.0). Both UI failures passed twice alone: full-suite flakes on the device.",
+    "Real data restored."
+  ],
+  "verdict": "RECORDED-NO-BUNDLES",
+  "verdict_reasons": [
+    "backfilled from documents; the result bundles were lost"
+  ]
+}

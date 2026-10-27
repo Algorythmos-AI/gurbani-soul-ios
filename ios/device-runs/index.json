@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "_comment": "Derived by `device_run.py rebuild` from every summary.json; never edit.",
+  "runs": [
+    {
+      "version": "1.4.2",
+      "run_id": "20261017T0020Z-ee0c379",
+      "path": "1.4.2/20261017T0020Z-ee0c379/summary.json",
+      "verdict": "RECORDED-NO-BUNDLES",
+      "origin": "backfill",
+      "commit": "021e780ebf8752e1b5a3daf5b109efdcebc0f220",
+      "tree": "ee0c37932ecbf527f514ce92b26d1e0eb3b3b3f1",
+      "started_at": "2026-10-17T00:20:00Z",
+      "device": "S-iPhone",
+      "ios": "26.6.2",
+      "evidence_lost": true
+    },
+    {
+      "version": "1.4.8",
+      "run_id": "20261024T1705Z-0fd2439",
+      "path": "1.4.8/20261024T1705Z-0fd2439/summary.json",
+      "verdict": "RECORDED-NO-BUNDLES",
+      "origin": "backfill",
+      "commit": "38947dac88bb23f2c558aeea18fc8bee25bc5804",
+      "tree": "0fd2439f8aacc1f579b460fb862e44dd3d1e65b3",
+      "started_at": "2026-10-24T17:05:00Z",
+      "device": "S-iPhone",
+      "ios": "27.0.1",
+      "evidence_lost": true
+    },
+    {
+      "version": "1.4.9",
+      "run_id": "20261025T0822Z-844e172",
+      "path": "1.4.9/20261025T0822Z-844e172/summary.json",
+      "verdict": "RECORDED-NO-BUNDLES",
+      "origin": "backfill",
+      "commit": "e8eef368da3671ae6e83e2b2b99de236807d99c9",
+      "tree": "844e1722fb64fb2d8ec26ff867bdd126bbfd468f",
+      "started_at": "2026-10-25T08:22:00Z",
+      "device": "S-iPhone",
+      "ios": "27.0.1",
+      "evidence_lost": true
+    },
+    {
+      "version": "1.4.9",
+      "run_id": "20261026T0024Z-bc36c9b",
+      "path": "1.4.9/20261026T0024Z-bc36c9b/summary.json",
+      "verdict": "RECORDED-NO-BUNDLES",
+      "origin": "backfill",
+      "commit": "40d6b21aaa75233397b77bb46f0664f615a198e9",
+      "tree": "bc36c9b3aee17ba917473603d788ba9085d03a2c",
+      "started_at": "2026-10-26T00:24:00Z",
+      "device": "S-iPhone",
+      "ios": "27.0.1",
+      "evidence_lost": true
+    }
+  ]
+}
