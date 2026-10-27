@@ -549,16 +549,20 @@ final class SiteShotTests: XCTestCase {
         }
         // Compare v2: Guru Tegh Bahadur Ji ⇄ Guru Nanak Dev Ji. Each card is brought clear of the
         // bars before its tap (swipes and an off-screen tap lost iPad landscape's compare-v2 in run
-        // 40380564001), and every step that can miss says so.
+        // 40380564001), and every step that can miss says so. A tap needs the card hittable, not
+        // centred: Guru Tegh Bahadur Ji is the last of the Gurus, so at the end of the list it
+        // sits below the middle band and `bring` reports false (all four devices, run 40460578102).
         let compare = app.buttons["compareVoices"]
         guard need(compare, "the Compare button") else { return }
         compare.tap()
-        guard bring(app, m9), m9.isHittable else {
+        _ = bring(app, m9)
+        guard m9.isHittable else {
             XCTFail("Guru Tegh Bahadur Ji's card is out of reach in compare mode"); return
         }
         m9.tap()
         let m1 = app.buttons["voiceCard_guru-nanak-dev-ji"].firstMatch
-        guard bring(app, m1, lookingDown: false), m1.isHittable else {   // the first Guru: above
+        _ = bring(app, m1, lookingDown: false)                           // the first Guru: above
+        guard m1.isHittable else {
             XCTFail("Guru Nanak Dev Ji's card is out of reach in compare mode"); return
         }
         m1.tap()
