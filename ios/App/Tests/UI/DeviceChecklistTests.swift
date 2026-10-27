@@ -275,6 +275,8 @@ final class DeviceChecklistTests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Nitnem"].waitForExistence(timeout: 30), "warm launch never reached the app")
         let warmXCTest = Date().timeIntervalSince(xctestStart)
         let warm = try launchTimeline(app, "warm")
+        // Attached before any assertion can stop the test, so a slow launch still leaves its timeline.
+        attachTimeline(cold: cold, warm: warm, xctest: (coldXCTest, warmXCTest))
         XCTAssertEqual(cold.cachedHash, false, "the cold launch must re-hash the whole database")
         XCTAssertEqual(warm.cachedHash, true, "the warm launch must use the verified fingerprint")
         note("D10 timings", """
@@ -294,6 +296,21 @@ final class DeviceChecklistTests: XCTestCase {
     }
 
     private struct LaunchTimeline { let nitnem: Double; let cachedHash: Bool?; let raw: String }
+
+    /// D10's evidence as data: "D10 launch timeline" (JSON) holds each launch's marks as the app
+    /// reported them, and XCTest's clock beside them (recorded, never judged). device_run.py reads
+    /// it into the run's summary and its launch trend (docs/ios/device-evidence.md).
+    private func attachTimeline(cold: LaunchTimeline, warm: LaunchTimeline, xctest: (cold: Double, warm: Double)) {
+        func marks(_ t: LaunchTimeline) -> Any { (try? JSONSerialization.jsonObject(with: Data(t.raw.utf8))) ?? [:] }
+        func seconds(_ s: Double) -> Double { (s * 1000).rounded() / 1000 }
+        let doc: [String: Any] = ["cold": marks(cold), "warm": marks(warm), "budget_s": 5,
+                                  "xctest_clock": ["cold": seconds(xctest.cold), "warm": seconds(xctest.warm)]]
+        guard let data = try? JSONSerialization.data(withJSONObject: doc, options: [.sortedKeys]) else { return }
+        let a = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
+        a.name = "D10 launch timeline"
+        a.lifetime = .keepAlways
+        add(a)
+    }
 
     /// The app's own launch timeline (`launchMetrics` on the Nitnem screen; Debug builds only).
     private func launchTimeline(_ app: XCUIApplication, _ name: String) throws -> LaunchTimeline {
