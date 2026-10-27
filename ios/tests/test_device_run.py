@@ -650,22 +650,27 @@ class CheckAndRebuildTests(Base):
                  "failure": "angField missing", "cause": "unknown", "reruns": [{"bundle": "rerun", "outcome": "Passed"}]}
         self.backfill("1.4.9", "20261025T1200Z-abcdef0", [flake])
         self.backfill("1.4.9", "20261026T0130Z-abcdef1", [flake])
+        self.assertEqual(dr.cmd_rebuild(ns(check=False), runs_dir=self.runs), 0)
+        self.assertNotIn("chronic: fix it", (self.runs / "HISTORY.md").read_text())
+        self.backfill("1.4.9", "20261026T0230Z-abcdef2", [flake])
         self.assertEqual(dr.cmd_check(ns(run_dirs=[]), runs_dir=self.runs), 0)
         self.assertEqual(dr.cmd_rebuild(ns(check=True), runs_dir=self.runs), 1)
         self.assertEqual(dr.cmd_rebuild(ns(check=False), runs_dir=self.runs), 0)
         self.assertEqual(dr.cmd_rebuild(ns(check=True), runs_dir=self.runs), 0)
         index = json.loads((self.runs / "index.json").read_text())
-        self.assertEqual([r["verdict"] for r in index["runs"]], ["RECORDED-NO-BUNDLES", "RECORDED-NO-BUNDLES", "PASS"])
+        self.assertEqual([r["verdict"] for r in index["runs"]], ["RECORDED-NO-BUNDLES"] * 3 + ["PASS"])
         flakes = json.loads((self.runs / "flakes.json").read_text())["tests"]
         jump = flakes["SGGSUITests/testReaderJumpAndSwipe()"]
-        self.assertEqual((jump["fails"], jump["fail_then_pass"], jump["chronic"]), (3, 3, True))
+        self.assertEqual((jump["fails"], jump["fail_then_pass"], jump["flake_events"], jump["chronic"]), (4, 4, 3, True))
+        themes = flakes["SGGSUITests/testThemesIndexSearch()"]       # a landscape failure: the bench, not a flake
+        self.assertEqual((themes["env_fails"], themes["flake_events"], themes["chronic"]), (1, 0, False))
         self.assertEqual(jump["sources"], ["backfill", "device"])
         trends = json.loads((self.runs / "trends.json").read_text())["runs"]
         self.assertEqual(trends[-1]["d10"], {"cold": 1.31, "warm": 0.88})
         self.assertLessEqual(len(trends[-1]["slowest"]), 20)
         history = (self.runs / "HISTORY.md").read_text()
         self.assertIn("chronic: fix it", history)
-        self.assertIn("| 1.4.9 | [20261025T1200Z-abcdef0]", history)
+        self.assertIn("| 1.4.9 | [20261025T1200Z-abcdef0](1.4.9/20261025T1200Z-abcdef0/summary.md) | RECORDED-NO-BUNDLES | `abcdef0` | S-iPhone · iOS 27.0.1 | — | — |", history)
         self.assertEqual(dr.cmd_check(ns(run_dirs=[]), runs_dir=self.runs), 0)
         (self.runs / "HISTORY.md").write_text(history + "edited\n")
         self.assertEqual(dr.cmd_rebuild(ns(check=True), runs_dir=self.runs), 1)

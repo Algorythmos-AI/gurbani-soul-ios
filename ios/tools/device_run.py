@@ -862,7 +862,7 @@ def build_flakes(docs):
             if t["outcome"] == "Skipped":
                 continue
             s = stats.setdefault(t["id"], {"runs": 0, "fails": 0, "env_fails": 0, "fail_then_pass": 0,
-                                           "sources": set(), "last_failure": None})
+                                           "flake_events": 0, "sources": set(), "last_failure": None})
             s["runs"] += 1
             if "failure" in t or t["outcome"] == "Failed":
                 causes = [t.get("cause")] + [r.get("cause") for r in t.get("reruns", []) if r["outcome"] == "Failed"]
@@ -870,6 +870,10 @@ def build_flakes(docs):
                 s["env_fails"] += sum(1 for c in causes if (c or "").startswith("env:"))
                 if t["outcome"] in ("Passed", "Expected Failure"):
                     s["fail_then_pass"] += 1
+                    # A flake is an unexplained failure that passed on a rerun: not the bench (env:*)
+                    # and not a bug someone found and fixed (code).
+                    if t.get("cause") == "unknown":
+                        s["flake_events"] += 1
                 s["sources"].add(origin)
                 s["last_failure"] = {"run": d["run_id"], "version": d["version"], "cause": t.get("cause"),
                                      "text": t.get("failure", "")[:200]}
@@ -878,11 +882,11 @@ def build_flakes(docs):
         s = stats[tid]
         if not s["fails"]:
             continue
-        events = s["fail_then_pass"] + s["env_fails"]
+        chronic = s["flake_events"] >= 3
         tests[tid] = {**{k: v for k, v in s.items() if k != "sources"}, "sources": sorted(s["sources"]),
-                      "flake_events": events, "chronic": events >= 3,
-                      **({"action": "chronic: fix it"} if events >= 3 else {})}
-    return {"schema": SCHEMA, "_comment": "Derived by `device_run.py rebuild`; a test with ≥3 flake events is chronic.",
+                      "chronic": chronic, **({"action": "chronic: fix it"} if chronic else {})}
+    return {"schema": SCHEMA, "_comment": "Derived by `device_run.py rebuild`. A flake event is an unexplained "
+            "(cause unknown) failure that passed on a rerun; a test with 3 or more is chronic.",
             "tests": tests}
 
 
@@ -905,6 +909,10 @@ def build_trends(docs):
 
 
 def counts(d, kind):
+    """passed / failed / skipped for one bundle kind; a backfill's come from its documents (— when unknown)."""
+    if d.get("origin") == "backfill":
+        c = (d.get("backfill_counts") or {}).get(kind)
+        return f"{c['passed']}/{c['failed']}/{c['skipped']}" if c else "—"
     tot = {"passed": 0, "failed": 0, "skipped": 0}
     for b in d.get("bundles", []):
         if b.get("kind") == kind:
@@ -912,7 +920,7 @@ def counts(d, kind):
             tot["passed"] += c.get("passedTests", 0)
             tot["failed"] += c.get("failedTests", 0)
             tot["skipped"] += c.get("skippedTests", 0)
-    return tot
+    return f"{tot['passed']}/{tot['failed']}/{tot['skipped']}"
 
 
 def build_history(docs, flakes):
@@ -924,8 +932,6 @@ def build_history(docs, flakes):
            "|---|---|---|---|---|---|---|---|---|"]
     for d in reversed(docs):
         u, ui = counts(d, "unit"), counts(d, "ui")
-        if d.get("origin") == "backfill":
-            u, ui = d.get("backfill_counts", {}).get("unit", u), d.get("backfill_counts", {}).get("ui", ui)
         cl = d.get("checklist", {})
         passed = sum(1 for e in cl.values() if e.get("result") == "pass")
         launch = d.get("launch") or {}
@@ -935,17 +941,19 @@ def build_history(docs, flakes):
         out.append(f"| {d['version']} | [{d['run_id']}]({d['version']}/{d['run_id']}/summary.md) | "
                    f"{d['verdict']} | `{(d['source'].get('tree') or '')[:7]}` | "
                    f"{dev.get('name') or '—'} · iOS {dev.get('ios') or '?'} | "
-                   f"{u['passed']}/{u['failed']}/{u['skipped']} | {ui['passed']}/{ui['failed']}/{ui['skipped']} | "
+                   f"{u} | {ui} | "
                    f"{passed}/{len(cl)} | {d10} |")
     out += ["", "Unit and UI columns are passed / failed / skipped.", "", "## Flaky on the device", ""]
     tests = flakes["tests"]
     if not tests:
         out.append("None recorded.")
     else:
-        out += ["| Test | Runs | Fails | Fail then pass | Env fails | Last | |", "|---|---|---|---|---|---|---|"]
+        out += ["Flake events are unexplained failures that passed on a rerun; bench (env) failures and fixed bugs",
+                "(code) are counted but are not flakes.", "",
+                "| Test | Runs | Fails | Flake events | Env fails | Last | |", "|---|---|---|---|---|---|---|"]
         for tid, s in sorted(tests.items(), key=lambda kv: (-kv[1]["flake_events"], kv[0])):
             last = s.get("last_failure") or {}
-            out.append(f"| `{tid}` | {s['runs']} | {s['fails']} | {s['fail_then_pass']} | {s['env_fails']} | "
+            out.append(f"| `{tid}` | {s['runs']} | {s['fails']} | {s['flake_events']} | {s['env_fails']} | "
                        f"{last.get('version', '')} {last.get('cause') or ''} | {'**chronic: fix it**' if s['chronic'] else ''} |")
     return "\n".join(out) + "\n"
 
