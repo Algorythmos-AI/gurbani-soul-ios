@@ -184,8 +184,10 @@
     }
   },
   "launch": {
-    "xctest_clock": {
-      "cold": 5.83
+    "xctest": {
+      "xctest_clock": {
+        "cold": 5.83
+      }
     }
   },
   "sources": [
