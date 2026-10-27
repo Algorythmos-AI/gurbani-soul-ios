@@ -1652,6 +1652,11 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(readout.label.contains("4:40 PM"), "readout should show the pinned local time, got: \(readout.label)")
         XCTAssertTrue(readout.label.contains("4th pahar of day"), "readout should name the current watch")
         XCTAssertTrue(readout.label.contains("Next watch, 1st pahar of night"), "readout should name the next watch")
+        // one 12-hour scale: at 4:40 PM the ring shows the afternoon half, as the hour hand does
+        let dial = app.descendants(matching: .any)["raagDial"].firstMatch
+        XCTAssertTrue(dial.waitForExistence(timeout: 8), "the dial is not an accessibility element")
+        XCTAssertTrue(dial.label.contains("12 PM to 12 AM"), "the dial should name its half, got: \(dial.label)")
+        XCTAssertTrue(dial.label.contains("Lit: 4th pahar of day, 3 to 6 PM"), "the dial should name the lit watch, got: \(dial.label)")
         // the current watch's raags are a readable list under the clock (never clipped chips)
         let raagRow = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Raag ")).firstMatch
         XCTAssertTrue(raagRow.waitForExistence(timeout: 8), "\"Sung in this watch\" list missing")
@@ -1756,6 +1761,27 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(caption.waitForExistence(timeout: 8), "a kept place must still be named")
         XCTAssertTrue(caption.label.contains("33.87 degrees south"), "the caption names the place, got: \(caption.label)")
         attachShot(app, "clock_travel_kept")
+    }
+
+    /// The owner's report (2026-10-27): the pahar ring was a 24-hour dial around a 12-hour face.
+    /// Now one scale: at 8:18 AM the ring shows 12 AM–12 PM, its labels are the dial's own hours
+    /// and the hour hand points into the lit watch. Captured for review (`clock_am`).
+    func testRaagClockMorningHalf() {
+        let app = XCUIApplication()
+        app.launchEnvironment["SGGS_UITEST"] = "1"
+        app.launchEnvironment["SGGS_CLOCK_NOW"] = "498"                 // 08:18
+        app.launchEnvironment["SGGS_CLOCK_MODE"] = "fixed"
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        openClock(app)
+        XCTAssertTrue(app.staticTexts["1st pahar of day  ·  6–9 AM"].waitForExistence(timeout: 20),
+                      "pinned pahar/window line missing")
+        let dial = app.descendants(matching: .any)["raagDial"].firstMatch
+        XCTAssertTrue(dial.waitForExistence(timeout: 8), "the dial is not an accessibility element")
+        XCTAssertTrue(dial.label.contains("12 AM to 12 PM"), "the morning face shows 12 AM–12 PM, got: \(dial.label)")
+        XCTAssertTrue(dial.label.contains("Lit: 1st pahar of day, 6 to 9 AM"), "got: \(dial.label)")
+        captureIfRequested(app, "clock_am")
+        attachShot(app, "clock_am")
     }
 
     /// The Explore hub reaches every browse surface (nav-restructure gate).

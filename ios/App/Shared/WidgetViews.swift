@@ -217,11 +217,13 @@ struct RaagNowView: View {
     }
 
     /// Ring + static face, then the hands at the entry's minute (WidgetKit cannot animate, so
-    /// no seconds hand; the minute-dense timeline keeps them current).
+    /// no seconds hand; the minute-dense timeline keeps them current). The ring is on the face's
+    /// 12-hour scale and shows the entry's half of the day; the lock-screen ring (no face) draws
+    /// its own needle at the hour hand's angle.
     private func dial(_ style: DialStyle) -> some View {
         ZStack {
             PaharDialRenderer(model: entry.model, style: style, palette: palette,
-                              numerals: style == .full ? PaharFormat.dialNumerals() : [], monochrome: mono,
+                              numerals: style == .full ? PaharFormat.dialNumerals(half: entry.model.half) : [], monochrome: mono,
                               faceDate: entry.date)
             ClockHandsLayer(date: entry.date, style: style, palette: palette, showSeconds: false, monochrome: mono)
         }
