@@ -64,10 +64,12 @@ DEFAULT_STAGING = Path.home() / "SGGS-device-evidence"
 RUN_CAP_BYTES = 256 * 1024
 MIN_FREE_GB = 8
 LAUNCH_BUDGET_S = 5.0
-# D10's rule (docs/ios/device-evidence.md, "D10"). The launch is judged ONLY by the bench's launches
-# outside XCTest (device_bench.sh d10 → <run>/d10/{cold,warm}.json). The XCTest test still runs and
-# must pass; a failure of only its 5 s budget while that launch reached the first app code after
-# PRE_MAIN_LIMIT_S is XCTest's bootstrap over the connection: env:tunnel, recorded, exempt.
+# D10's rule (docs/ios/device-evidence.md, "D10"). The judge is the bench's launches outside XCTest
+# (device_bench.sh d10 → <run>/d10/{cold,warm}.json, d10_method "out-of-xctest"); a build without
+# that hook leaves no d10/, and then the app's own timeline from the latest PASSING XCTest D10 attempt
+# judges (d10_method "in-xctest"). A failure of only XCTest's 5 s budget while that launch reached the
+# first app code after PRE_MAIN_LIMIT_S is XCTest's bootstrap over the connection: env:tunnel, which
+# like every env failure needs a passing rerun on the same tree and build stamp. Otherwise it is code.
 PRE_MAIN_LIMIT_S = 2.0
 D10_BUDGET_RE = re.compile(r"\b(cold|warm) launch must (?:finish verifying in under|be under) 5 s")
 RUN_ID_RE = re.compile(r"^\d{8}T\d{4}Z-[0-9a-f]{7}$")
@@ -464,6 +466,7 @@ def case_attempts(node):
         fails = messages(r, "Failure Message")
         skips = [skip_reason(m) for m in messages(r, "Skip Message") or messages(node, "Skip Message")]
         out.append({"outcome": r.get("result", "unknown"),
+                    "repetition": int(r.get("nodeIdentifier") or 1) if r is not node else 1,
                     "duration": round(float(r.get("durationInSeconds") or 0), 3),
                     "failure": fails[0] if fails else None,
                     "skip": skips[0] if skips else None})
@@ -538,6 +541,8 @@ def parse_launch(attachments):
             for k in ("cold", "warm"):
                 if isinstance(doc.get(k), dict):
                     launch[k] = doc[k].get("since_process_start", doc[k])
+                    if "cached_hash" in doc[k]:
+                        launch.setdefault("cached_hash", {})[k] = doc[k]["cached_hash"]
             if isinstance(doc.get("xctest_clock"), dict):
                 launch["xctest_clock"] = doc["xctest_clock"]
             return launch
@@ -547,39 +552,84 @@ def parse_launch(attachments):
             for k in ("cold", "warm"):
                 m = re.search(rf"^\s*{k} (\{{.*\}})\s*$", text, re.M)
                 if m:
-                    launch[k] = json.loads(m.group(1)).get("since_process_start", {})
+                    doc = json.loads(m.group(1))
+                    launch[k] = doc.get("since_process_start", {})
+                    if "cached_hash" in doc:
+                        launch.setdefault("cached_hash", {})[k] = doc["cached_hash"]
             m = re.search(r"cold ([\d.]+) s, warm ([\d.]+) s", text)
             if m:
                 launch["xctest_clock"] = {"cold": float(m.group(1)), "warm": float(m.group(2))}
     return launch
 
 
-def read_d10(run_dir, started):
-    """The bench's launches outside XCTest (device_bench.sh d10): (launch, problem). launch holds the
-    judged cold/warm timelines; problem is ("incomplete" | "fail", why) or None."""
-    launch = {"budget_s": LAUNCH_BUDGET_S, "judge": "outside XCTest (device_bench.sh d10)"}
-    docs = {}
+def d10_evidence(atts, repetition):
+    """D10's attachments from one attempt (xcodebuild's own retries number their attachments)."""
+    return [a for a in atts.get(D10_TEST, []) if a["name"].startswith("D10 ") and a["repetition"] == repetition]
+
+
+def judge_timeline(timeline, where):
+    """(judged, problem) for a cold + warm timeline: both under budget, the cold launch re-hashed and
+    the warm one used the fingerprint. problem is ("incomplete" | "fail", why) or None."""
+    judged = {k: timeline.get(k) or {} for k in ("cold", "warm")}
+    judged["cached_hash"] = {k: (timeline.get("cached_hash") or {}).get(k) for k in ("cold", "warm")}
     for k in ("cold", "warm"):
-        f = Path(run_dir) / "d10" / f"{k}.json"
-        if f.exists():
-            docs[k] = read_json(f)
-    if len(docs) < 2:
-        return launch, ("incomplete", "no launch outside XCTest — run `device_bench.sh d10 <worktree> <run>`")
-    for k, doc in docs.items():
-        launch[k] = doc.get("since_process_start", {})
-        launch.setdefault("cached_hash", {})[k] = doc.get("cached_hash")
-        if doc.get("written_at", 0) < started.timestamp():
-            return launch, ("incomplete", f"the {k} launch timeline was written before `begin`")
-        if "nitnemDrawn" not in launch[k]:
-            return launch, ("incomplete", f"the {k} launch never drew Nitnem")
-    if launch["cached_hash"] != {"cold": False, "warm": True}:
-        return launch, ("incomplete", "the cold launch must re-hash and the warm one use the fingerprint "
-                                      f"(cached_hash {launch['cached_hash']})")
-    slow = [k for k in ("cold", "warm") if launch[k]["nitnemDrawn"] >= LAUNCH_BUDGET_S]
+        if "nitnemDrawn" not in judged[k]:
+            return judged, ("incomplete", f"the {k} launch {where} never drew Nitnem")
+    if judged["cached_hash"] != {"cold": False, "warm": True}:
+        return judged, ("incomplete", "the cold launch must re-hash and the warm one use the fingerprint "
+                                      f"(cached_hash {judged['cached_hash']}, {where})")
+    slow = [k for k in ("cold", "warm") if judged[k]["nitnemDrawn"] >= LAUNCH_BUDGET_S]
     if slow:
-        return launch, ("fail", ", ".join(f"{k} {launch[k]['nitnemDrawn']:.2f} s" for k in slow)
-                        + f" ≥ {LAUNCH_BUDGET_S:.0f} s outside XCTest")
-    return launch, None
+        return judged, ("fail", ", ".join(f"{k} {judged[k]['nitnemDrawn']:.2f} s" for k in slow)
+                        + f" ≥ {LAUNCH_BUDGET_S:.0f} s {where}")
+    return judged, None
+
+
+def read_d10(run_dir, started):
+    """The bench's launches outside XCTest (device_bench.sh d10): None when the run has no d10/ (a
+    build without the hook), else (judged, problem) as judge_timeline gives them."""
+    folder = Path(run_dir) / "d10"
+    if not folder.is_dir():
+        return None
+    timeline = {"cached_hash": {}}
+    for k in ("cold", "warm"):
+        f = folder / f"{k}.json"
+        if not f.exists():
+            return {}, ("incomplete", f"d10/ has no {k}.json — run `device_bench.sh d10` again in a new run")
+        doc = read_json(f)
+        if doc.get("written_at", 0) < started.timestamp():
+            return {}, ("incomplete", f"the {k} launch timeline was written before `begin`")
+        timeline[k] = doc.get("since_process_start", {})
+        timeline["cached_hash"][k] = doc.get("cached_hash")
+    return judge_timeline(timeline, "outside XCTest")
+
+
+def d10_launch(run_dir, started, bundles, attempts, evid):
+    """(launch, problem) for D10: the out-of-XCTest launches when the run has them, else the latest
+    PASSING XCTest attempt's own timeline; plus what XCTest saw on its latest attempt (recorded only)."""
+    def timeline_of(attempt):
+        b = next(x for x in bundles if x["name"] == attempt["bundle"])
+        return parse_launch(d10_evidence(b["atts"], attempt.get("repetition", 1)))
+    launch = {"budget_s": LAUNCH_BUDGET_S}
+    out = read_d10(run_dir, started)
+    if out is not None:
+        launch["d10_method"] = "out-of-xctest"
+        judged, problem = out
+    else:
+        launch["d10_method"] = "in-xctest"
+        ok = next((a for a in reversed(attempts) if a["outcome"] in ("Passed", "Expected Failure")), None)
+        judged, problem = (judge_timeline(timeline_of(ok), "in XCTest (the app's own clock)") if ok
+                           else ({}, ("incomplete", "no passing D10 attempt to read the launch from")))
+    launch.update({k: v for k, v in judged.items() if v})
+    xctest = parse_launch(evid)
+    for k in ("cold", "warm"):
+        marks = xctest.get(k) or {}
+        if "appInit" in marks and "nitnemDrawn" in marks:
+            xctest.setdefault("pre_main", {})[k] = marks["appInit"]
+            xctest.setdefault("app_work", {})[k] = round(marks["nitnemDrawn"] - marks["appInit"], 3)
+    if xctest:
+        launch["xctest"] = xctest
+    return launch, problem
 
 
 def merge_tests(bundles):
@@ -610,23 +660,18 @@ def judge_test(tid, rows):
         first = failed[0]
         rec["failure"] = scrub_text(first["failure"] or "")
         rec["cause"] = first["cause"]
-        if first.get("exempt"):
-            rec["exempt"] = first["exempt"]
         later = ran[ran.index(first) + 1:]
         if later:
             rec["reruns"] = [{"bundle": a.get("bundle"), "outcome": a["outcome"],
                               **({"failure": scrub_text(a["failure"] or ""), "cause": a["cause"]}
-                                 if a["outcome"] == "Failed" else {}),
-                              **({"exempt": a["exempt"]} if a.get("exempt") else {})} for a in later]
-    # An exempt failure is recorded but never judged (D10's budget under XCTest's bootstrap).
-    judged = [a for a in ran if not a.get("exempt")]
-    if any(a.get("cause") == "code" for a in judged if a["outcome"] == "Failed"):
+                                 if a["outcome"] == "Failed" else {})} for a in later]
+    if any(a.get("cause") == "code" for a in failed):
         return rec, ("FAIL", f"{tid} failed (cause: code)")
-    for x, y in zip(judged, judged[1:]):
+    for x, y in zip(ran, ran[1:]):
         if x["outcome"] == "Failed" and y["outcome"] == "Failed":
             return rec, ("FAIL", f"{tid} failed twice in a row ({x.get('cause')}, {y.get('cause')})")
-    if judged and judged[-1]["outcome"] == "Failed":
-        return rec, ("INCOMPLETE", f"{tid} failed ({judged[-1].get('cause')}) and has no passing rerun yet")
+    if last["outcome"] == "Failed":
+        return rec, ("INCOMPLETE", f"{tid} failed ({last.get('cause')}) and has no passing rerun yet")
     return rec, None
 
 
@@ -685,17 +730,12 @@ def cmd_summarize(args, host=HOST, runs_dir=None):
                         a["cause"] = probe
         # D10: a failure of only the 5 s budget, judged by when the app's first code ran
         if D10_TEST in cases and D10_TEST not in overrides:
-            timeline = parse_launch([a for a in atts.get(D10_TEST, []) if a["name"].startswith("D10 ")])
             for a in cases[D10_TEST]:
                 m = a["outcome"] == "Failed" and D10_BUDGET_RE.search(a["failure"] or "")
-                pre = m and (timeline.get(m.group(1)) or {}).get("appInit")
+                pre = m and (parse_launch(d10_evidence(atts, a["repetition"])).get(m.group(1)) or {}).get("appInit")
                 if m and pre is not None:
-                    if pre > PRE_MAIN_LIMIT_S:
-                        a["cause"] = "env:tunnel"
-                        a["exempt"] = (f"XCTest's {m.group(1)} launch reached the first app code only at {pre:.2f} s "
-                                       f"(> {PRE_MAIN_LIMIT_S:.0f} s: its bootstrap, not the app); D10 is judged outside XCTest")
-                    else:
-                        a["cause"] = "code"
+                    # the first app code came late: XCTest's bootstrap over the connection, not the app
+                    a["cause"] = "env:tunnel" if pre > PRE_MAIN_LIMIT_S else "code"
         kind = BUNDLE_RE.match(path.name).group(1)
         system = [{"name": scrub_text(n.get("name", "")),
                    "failure": scrub_text((messages(n, "Failure Message") or [""])[0]),
@@ -740,7 +780,7 @@ def cmd_summarize(args, host=HOST, runs_dir=None):
                 warnings.append(f"{b['name']}: identical image under {len(names)} names: "
                                 + ", ".join(sorted(names)))
     manual = read_json(run_dir / "manual.json") if (run_dir / "manual.json").exists() else {}
-    launch, d10_problem = read_d10(run_dir, started)
+    launch, d10_problem = {}, None
     checklist, public_files = {}, []
     for row, (title, test) in CHECKLIST.items():
         if test is None:
@@ -759,11 +799,14 @@ def cmd_summarize(args, host=HOST, runs_dir=None):
         evid = []
         if last:
             b = next(x for x in bundles if x["name"] == last["bundle"])
-            evid = [a for a in b["atts"].get(test, []) if a["name"].startswith(row + " ")]
+            evid = [a for a in b["atts"].get(test, []) if a["name"].startswith(row + " ")
+                    and a["repetition"] == last.get("repetition", 1)]
         entry = {"mode": "auto", "title": title, "test": test,
                  "attachments": [{"name": a["name"], "sha256": a["sha256"]} for a in evid]}
         img = [a["sha256"] for a in evid if a["image"]]
         test_ok = t is not None and t["outcome"] != "Skipped" and problem_of.get(test) is None
+        if row == "D10":
+            launch, d10_problem = d10_launch(run_dir, started, bundles, attempts.get(test, []), evid)
         if t is None:
             entry["result"] = "missing"
         elif row == "D10" and test_ok and evid and d10_problem:
@@ -778,15 +821,6 @@ def cmd_summarize(args, host=HOST, runs_dir=None):
                 entry["note"] = "passed but attached no evidence"
             elif len(img) != len(set(img)):
                 entry["note"] = "two evidence images are byte-identical"
-        if row == "D10":
-            xctest = parse_launch(evid)
-            if xctest:
-                for k in ("cold", "warm"):
-                    marks = xctest.get(k) or {}
-                    if "appInit" in marks and "nitnemDrawn" in marks:
-                        xctest.setdefault("pre_main", {})[k] = marks["appInit"]
-                        xctest.setdefault("app_work", {})[k] = round(marks["nitnemDrawn"] - marks["appInit"], 3)
-                launch["xctest"] = xctest
         if row in PUBLIC_ROWS and entry["result"] == "pass":
             public_files += [a for a in evid if a["image"]]
         checklist[row] = entry
@@ -877,7 +911,8 @@ def compute_verdict(s):
     for k in ("cold", "warm"):
         v = (launch.get(k) or {}).get("nitnemDrawn")
         if v is not None and v >= LAUNCH_BUDGET_S:
-            fail.append(f"D10 {k} launch {v:.2f} s ≥ {LAUNCH_BUDGET_S:.0f} s (process start → Nitnem, outside XCTest)")
+            fail.append(f"D10 {k} launch {v:.2f} s ≥ {LAUNCH_BUDGET_S:.0f} s (process start → Nitnem, "
+                        f"{launch.get('d10_method', 'in-xctest')})")
     restore = (s.get("env") or {}).get("restore_launch")
     if not restore or restore.get("result") != "pass":
         incomplete.append("the restore launch (the phone's real data back) is not recorded")
@@ -895,10 +930,9 @@ def _attempts_from_record(t):
         return [{"outcome": "Skipped", "skip": t.get("skip", ""), "duration": 0}]
     if "failure" not in t:
         return [{"outcome": t["outcome"], "duration": t.get("duration", 0)}]
-    return [{"outcome": "Failed", "failure": t["failure"], "cause": t.get("cause"), "duration": 0,
-             "exempt": t.get("exempt")}] + [
-        {"outcome": r["outcome"], "failure": r.get("failure"), "cause": r.get("cause"), "duration": 0,
-         "exempt": r.get("exempt")} for r in t.get("reruns", [])]
+    return [{"outcome": "Failed", "failure": t["failure"], "cause": t.get("cause"), "duration": 0}] + [
+        {"outcome": r["outcome"], "failure": r.get("failure"), "cause": r.get("cause"), "duration": 0}
+        for r in t.get("reruns", [])]
 
 
 # ---------------------------------------------------------------- record-manual
@@ -938,6 +972,7 @@ def build_index(docs):
                       "origin": d.get("origin", "device"), "commit": d["source"]["commit"],
                       "tree": d["source"].get("tree"), "started_at": d.get("started_at"),
                       "device": (d.get("device") or {}).get("name"), "ios": (d.get("device") or {}).get("ios"),
+                      "d10_method": (d.get("launch") or {}).get("d10_method"),
                       "evidence_lost": bool(d.get("evidence_lost"))} for d in docs]}
 
 
@@ -990,6 +1025,7 @@ def build_trends(docs):
                       key=lambda t: (-t.get("duration", 0), t["id"]))[:20]
         rows.append({"version": d["version"], "run_id": d["run_id"], "verdict": d["verdict"],
                      "d10": {k: (launch.get(k) or {}).get("nitnemDrawn") for k in ("cold", "warm")},
+                     "d10_method": launch.get("d10_method"),
                      "d10_xctest_pre_main": (launch.get("xctest") or {}).get("pre_main"),
                      "suite_seconds": suites,
                      "slowest": [[t["id"], t.get("duration", 0)] for t in slow]})
@@ -1016,7 +1052,7 @@ def build_history(docs, flakes):
            "Derived by `python3 ios/tools/device_run.py rebuild` from every `summary.json` here; never edit.",
            "Runbook: `docs/ios/device-evidence.md`. `RECORDED-NO-BUNDLES` rows were backfilled from documents",
            "after their result bundles were lost; they never pass a gate.", "",
-           "| Version | Run | Verdict | Tree | Device | Unit | UI | Checklist | D10 cold / warm (in-app) |",
+           "| Version | Run | Verdict | Tree | Device | Unit | UI | Checklist | D10 cold / warm (method) |",
            "|---|---|---|---|---|---|---|---|---|"]
     for d in reversed(docs):
         u, ui = counts(d, "unit"), counts(d, "ui")
@@ -1025,6 +1061,8 @@ def build_history(docs, flakes):
         launch = d.get("launch") or {}
         d10 = " / ".join(f"{(launch.get(k) or {}).get('nitnemDrawn'):.2f} s"
                          if (launch.get(k) or {}).get("nitnemDrawn") is not None else "—" for k in ("cold", "warm"))
+        if launch.get("d10_method"):
+            d10 += f" ({launch['d10_method']})"
         dev = d.get("device") or {}
         out.append(f"| {d['version']} | [{d['run_id']}]({d['version']}/{d['run_id']}/summary.md) | "
                    f"{d['verdict']} | `{(d['source'].get('tree') or '')[:7]}` | "
@@ -1268,10 +1306,14 @@ def render_md(s):
     if launch.get("cold") or launch.get("warm") or xct:
         lines += ["", "## D10 launch (seconds since process start)", ""]
         if launch.get("cold") or launch.get("warm"):
-            lines.append(f"Judged ({launch.get('judge', 'outside XCTest')}), budget {launch.get('budget_s', LAUNCH_BUDGET_S):.0f} s:")
+            how = {"out-of-xctest": "the bench's launches outside XCTest",
+                   "in-xctest": "the app's own clock in the latest passing XCTest attempt (this build has no "
+                                "out-of-XCTest hook)"}.get(launch.get("d10_method"), launch.get("d10_method"))
+            lines.append(f"Judged by {how} (`d10_method: {launch.get('d10_method')}`), budget "
+                         f"{launch.get('budget_s', LAUNCH_BUDGET_S):.0f} s:")
             lines += [marks_line(k, launch.get(k) or {}) for k in ("cold", "warm")]
         if xct.get("cold") or xct.get("warm"):
-            lines += ["", "Under XCTest (recorded, never judged):"]
+            lines += ["", "XCTest's latest attempt (recorded):"]
             lines += [marks_line(k, xct.get(k) or {}) for k in ("cold", "warm") if xct.get(k)]
             if xct.get("pre_main"):
                 lines.append(f"- before the first app code (pre_main): {xct['pre_main']}; app work: {xct.get('app_work')}")
@@ -1291,8 +1333,7 @@ def render_md(s):
         for t in bad:
             reruns = ", ".join(f"{r['outcome']} ({r['bundle']})" for r in t.get("reruns", []))
             text = (t.get("failure") or t.get("skip") or "").replace("|", "\\|").replace("\n", " ")[:160]
-            final = t["outcome"] + (" (exempt: not judged)" if t.get("exempt") else "")
-            lines.append(f"| `{t['id']}` | {text} | {t.get('cause', '')} | {reruns} | {final} |")
+            lines.append(f"| `{t['id']}` | {text} | {t.get('cause', '')} | {reruns} | {t['outcome']} |")
     if s.get("not_run"):
         lines += ["", f"## Planned but never run ({len(s['not_run'])})", ""] + [f"- `{t}`" for t in s["not_run"]]
     if s.get("warnings"):

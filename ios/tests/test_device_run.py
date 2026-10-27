@@ -78,7 +78,7 @@ class FixtureHost(dr.Host):
                 for f in (src / "attachments").iterdir():
                     shutil.copyfile(f, out / f.name)
             for name, text in self.mutate.get(path.stem, {}).get("files", {}).items():
-                (out / name).write_text(text)
+                (out / name).write_bytes(text.encode("latin-1") if name.endswith(".png") else text.encode())
             return ""
         kind = args[2]
         doc = json.loads((src / f"{kind}.json").read_text())
@@ -296,13 +296,6 @@ class JudgeTests(unittest.TestCase):
         rec, problem = dr.judge_test("T/t()", [other, self.a("Passed", bundle="checklist")])
         self.assertEqual((rec["outcome"], problem), ("Passed", None))
 
-    def test_an_exempt_failure_is_recorded_not_judged(self):
-        rec, problem = dr.judge_test("T/t()", [dict(self.a("Failed", "env:tunnel"), exempt="XCTest bootstrap")])
-        self.assertIsNone(problem)
-        self.assertEqual((rec["outcome"], rec["exempt"]), ("Failed", "XCTest bootstrap"))
-        problem = dr.judge_test("T/t()", [dict(self.a("Failed", "env:tunnel"), exempt="x"), self.a("Failed", "unknown")])[1]
-        self.assertEqual(problem[0], "INCOMPLETE")
-
     def test_expected_failure_counts_as_passed(self):
         self.assertIsNone(dr.judge_test("T/t()", [self.a("Expected Failure")])[1])
 
@@ -464,44 +457,83 @@ class SummarizeTests(Base):
         self.assertEqual((s["verdict"], s["checklist"]["D10"]["result"]), ("FAIL", "fail"))
         self.assertTrue(any("D10 cold launch 5.40 s" in r for r in s["verdict_reasons"]))
 
-    def test_d10_needs_the_launches_outside_xctest(self):
-        rd = self.full_run(d10=False)
+    def test_without_the_hook_d10_is_judged_by_the_passing_xctest_attempt(self):
+        rd = self.full_run(d10=False)                 # a build before the out-of-XCTest hook
         self.summarize(rd, no_tar=True)
         s = self.summary(rd)
-        self.assertEqual((s["verdict"], s["checklist"]["D10"]["result"]), ("INCOMPLETE", "incomplete"))
-        self.assertIn("device_bench.sh d10", s["checklist"]["D10"]["note"])
+        self.assertEqual((s["verdict"], s["checklist"]["D10"]["result"]), ("PASS", "pass"), s["verdict_reasons"])
+        self.assertEqual((s["launch"]["d10_method"], s["launch"]["cold"]["nitnemDrawn"]), ("in-xctest", 1.31))
+        self.assertEqual(s["launch"]["cached_hash"], {"cold": False, "warm": True})
+
+    def test_a_d10_folder_must_be_whole_fresh_and_right(self):
+        rd = self.full_run()
         for bad in ({"cached": (True, True)}, {"written": T0 - 3600}):
-            shutil.rmtree(rd / "d10", ignore_errors=True)
+            shutil.rmtree(rd / "d10")
             self.write_d10(rd, **bad)
             self.summarize(rd, no_tar=True)
-            self.assertEqual(self.summary(rd)["checklist"]["D10"]["result"], "incomplete", bad)
+            s = self.summary(rd)
+            self.assertEqual((s["launch"]["d10_method"], s["checklist"]["D10"]["result"]), ("out-of-xctest", "incomplete"), bad)
+        (rd / "d10" / "warm.json").unlink()
+        self.summarize(rd, no_tar=True)
+        self.assertEqual(self.summary(rd)["checklist"]["D10"]["result"], "incomplete")
 
-    def d10_budget_failure(self, app_init):
-        """The XCTest D10 failing only its 5 s budget, with the first app code at `app_init` s."""
+    def d10_budget_failure(self, app_init, retry_passes=False):
+        """XCTest's D10 failing only its 5 s budget, with the first app code at `app_init` s; with
+        retry_passes, xcodebuild's own retry of it passes on a fast launch."""
         note = next(p for p in (FIX / "checklist" / "attachments").iterdir()
                     if p.suffix == ".txt" and "process start" in p.read_text())
-        text = note.read_text().replace('"appInit":0.214', f'"appInit":{app_init}').replace('"nitnemDrawn":1.31', '"nitnemDrawn":5.054')
+        fast = note.read_text()
+        slow = fast.replace('"appInit":0.214', f'"appInit":{app_init}').replace('"nitnemDrawn":1.31', '"nitnemDrawn":5.054')
+        failure = {"nodeType": "Failure Message", "name": 'XCTAssertLessThan failed: ("5.054") is not less than '
+                   '("5.0") - a cold launch must finish verifying in under 5 s'}
 
-        def fail(doc):
+        def tests(doc):
             for c in dr.walk_cases(doc["testNodes"]):
                 if c["name"] == "testD10ColdAndWarmLaunchTimes()":
-                    c["result"] = "Failed"
-                    c["children"] = [{"nodeType": "Failure Message", "name": 'XCTAssertLessThan failed: ("5.054") is not '
-                                      'less than ("5.0") - a cold launch must finish verifying in under 5 s'}]
+                    if retry_passes:
+                        c["children"] = [{"nodeType": "Repetition", "nodeIdentifier": "1", "name": "First Run",
+                                          "result": "Failed", "durationInSeconds": 30, "children": [failure]},
+                                         {"nodeType": "Repetition", "nodeIdentifier": "2", "name": "Retry 1",
+                                          "result": "Passed", "durationInSeconds": 20, "children": []}]
+                    else:
+                        c["result"], c["children"] = "Failed", [failure]
             return doc
-        self.host.mutate["checklist"] = {"tests": fail, "files": {note.name: text}}
 
-    def test_an_xctest_budget_failure_after_a_late_first_app_code_is_exempt(self):
-        rd = self.full_run()
+        def manifest(m):
+            for entry in m:
+                if entry["testIdentifier"] == dr.D10_TEST and retry_passes:
+                    entry["attachments"] += [dict(a, repetitionNumber=2, exportedFileName="R2-" + a["exportedFileName"])
+                                             for a in entry["attachments"]]
+            return m
+        files = {note.name: slow}
+        if retry_passes:
+            files["R2-" + note.name] = fast
+            for p in (FIX / "checklist" / "attachments").iterdir():
+                if p.suffix == ".png":
+                    files["R2-" + p.name] = p.read_bytes().decode("latin-1")
+        self.host.mutate["checklist"] = {"tests": tests, "manifest": manifest, "files": files}
+
+    def test_a_late_first_app_code_is_the_tunnel_and_still_needs_a_passing_rerun(self):
+        rd = self.full_run(d10=False)
         self.d10_budget_failure(4.786)
-        self.summarize(rd)
+        self.summarize(rd, no_tar=True)
         s = self.summary(rd)
         d10 = next(t for t in s["tests"] if t["id"] == dr.D10_TEST)
         self.assertEqual((d10["outcome"], d10["cause"]), ("Failed", "env:tunnel"))
-        self.assertIn("4.79 s", d10["exempt"])
-        self.assertEqual((s["verdict"], s["checklist"]["D10"]["result"]), ("PASS", "pass"), s["verdict_reasons"])
+        self.assertEqual(s["verdict"], "INCOMPLETE")
+        self.assertTrue(any("testD10ColdAndWarmLaunchTimes() failed (env:tunnel) and has no passing rerun" in r
+                            for r in s["verdict_reasons"]))
         self.assertEqual(s["launch"]["xctest"]["pre_main"]["cold"], 4.786)
-        self.assertIn("exempt: not judged", (rd / "summary.md").read_text())
+
+    def test_with_a_passing_rerun_the_in_xctest_judge_reads_the_rerun(self):
+        rd = self.full_run(d10=False)
+        self.d10_budget_failure(4.786, retry_passes=True)
+        self.summarize(rd)
+        s = self.summary(rd)
+        d10 = next(t for t in s["tests"] if t["id"] == dr.D10_TEST)
+        self.assertEqual((d10["cause"], d10["reruns"][0]["outcome"]), ("env:tunnel", "Passed"))
+        self.assertEqual((s["verdict"], s["launch"]["d10_method"], s["launch"]["cold"]["nitnemDrawn"]),
+                         ("PASS", "in-xctest", 1.31), s["verdict_reasons"])
         self.assertEqual(dr.cmd_check(ns(run_dirs=[]), runs_dir=self.runs), 0)
 
     def test_an_xctest_budget_failure_with_an_early_first_app_code_is_the_app(self):
@@ -622,7 +654,8 @@ class RealCandidateRunTests(Base):
         self.assertEqual(self.summarize(rd), 0)
         s = self.summary(rd)
         self.assertEqual(s["verdict"], "INCOMPLETE", s["verdict_reasons"])
-        self.assertFalse(any("D10" in r and "failed" in r for r in s["verdict_reasons"]))
+        self.assertTrue(any("testD10ColdAndWarmLaunchTimes() failed (env:tunnel) and has no passing rerun" in r
+                            for r in s["verdict_reasons"]))
         self.assertTrue(any("never ran: SGGSUITests/testSearchOpensShabad()" in r for r in s["verdict_reasons"]))
         runner = s["bundles"][1]["system_failures"]
         self.assertEqual((len(runner), runner[0]["cause"]), (1, "env:tunnel"))
@@ -634,10 +667,10 @@ class RealCandidateRunTests(Base):
         self.assertIn("skip_allowed", tests["SGGSUITests/testAccessibilityAuditReport()"])
         d10 = tests[dr.D10_TEST]
         self.assertEqual((d10["outcome"], d10["cause"]), ("Failed", "env:tunnel"))   # appInit 4.786 s > 2 s
-        self.assertIn("exempt", d10)
         for row in ("D2", "D3", "D6", "D11", "D12"):
             self.assertEqual(s["checklist"][row]["result"], "pass", row)
-        self.assertEqual(s["checklist"]["D10"]["result"], "incomplete")    # no launch outside XCTest yet
+        self.assertEqual(s["checklist"]["D10"]["result"], "incomplete")    # no passing attempt yet
+        self.assertEqual(s["launch"]["d10_method"], "in-xctest")
         self.assertEqual(len(s["checklist"]["D3"]["attachments"]), 10)
         xct = s["launch"]["xctest"]
         self.assertEqual((xct["cold"]["appInit"], xct["cold"]["nitnemDrawn"]), (4.786, 5.054))
@@ -645,6 +678,24 @@ class RealCandidateRunTests(Base):
         self.assertEqual(xct["xctest_clock"], {"cold": 19.37, "warm": 4.39})
         self.assertIn("## Test-runner failures", (rd / "summary.md").read_text())
         self.assertEqual(dr.cmd_check(ns(run_dirs=[]), runs_dir=self.runs), 0)
+
+
+    def test_the_real_d10_rerun_passes_d10_in_xctest(self):
+        """The supervisor's rerun of D10 alone on the same tree and build: 1.777 s cold, 1.76 s warm."""
+        planned = fixture_ids(("unit", "rc150-ui", "rc150-checklist")) + ["SGGSUITests/testSearchOpensShabad()"]
+        self.planned.write_text("\n".join(planned) + "\n")
+        self.host.source = {"ui": "rc150-ui", "checklist": "rc150-checklist", "rerun-d10": "rc150-d10-rerun"}
+        rd = self.full_run(bundles=("unit", "ui", "checklist", "rerun-d10"), d10=False)
+        self.summarize(rd)
+        s = self.summary(rd)
+        d10 = next(t for t in s["tests"] if t["id"] == dr.D10_TEST)
+        self.assertEqual((d10["cause"], d10["reruns"][0]["bundle"], d10["outcome"]), ("env:tunnel", "rerun-d10", "Passed"))
+        self.assertEqual(s["checklist"]["D10"]["result"], "pass")
+        self.assertEqual(s["launch"]["d10_method"], "in-xctest")
+        self.assertLess(s["launch"]["cold"]["nitnemDrawn"], 1.8)
+        self.assertLess(s["launch"]["warm"]["nitnemDrawn"], 1.8)
+        self.assertEqual(s["verdict"], "INCOMPLETE")        # the UI runner lost its connection before this test
+        self.assertFalse(any("D10" in r for r in s["verdict_reasons"]), s["verdict_reasons"])
 
 
 # ---------------------------------------------------------------- record-manual

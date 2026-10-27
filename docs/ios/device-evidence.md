@@ -41,25 +41,33 @@ Failure causes: `code`, `env:locked`, `env:landscape`, `env:foreground`, `env:tu
 screenshot. If `BenchGuardTests` (the probe that runs first) failed, its cause explains the other
 unknown failures of that bundle. Only an operator says `code` (`summarize --cause ID=code`).
 
-## D10: the launch is judged outside XCTest
+## D10: how the launch is judged
 
 On the 1.5.0 release candidate, D10 read 5.054 s from process start to the drawn Nitnem home, but
 the app's first code ran only at 4.786 s. The app's own work, including the full re-hash, took
-0.27 s; the rest was XCTest's bootstrap over the Wi-Fi tunnel, which no user pays. So:
+0.27 s; the rest was XCTest's bootstrap over the Wi-Fi tunnel, which no user pays. A rerun of the
+same build read 1.78 s. So:
 
-1. **The judge**: `device_bench.sh d10 <worktree> <run>` launches the installed Debug build with
-   devicectl, not XCTest, first cold (the verified fingerprint dropped, so the whole database is
-   re-hashed) and then warm, and copies each launch's timeline into `<run>/d10/`. D10 passes when
-   both read process start → `nitnemDrawn` **< 5 s**, the cold launch re-hashed (`cached_hash`
-   false) and the warm one used the fingerprint (true). 5 s or more is **FAIL**. No `d10/`, a
-   timeline written before `begin`, or a wrong `cached_hash` is **INCOMPLETE**.
-2. **The XCTest test still runs** (`testD10ColdAndWarmLaunchTimes`) and must pass its other
-   assertions; its own < 5 s assertion is unchanged. When it fails *only* that budget and that
-   launch reached the first app code (`appInit`) after **2 s**, the failure is XCTest's bootstrap:
-   it is classified `env:tunnel`, recorded and **exempt** from the verdict. The same failure with
-   `appInit` at 2 s or less is the app itself: `code`, so **FAIL**.
-3. **Recorded, never judged**: the XCTest timeline split into `pre_main` (process start → first app
-   code) and `app_work` (first app code → Nitnem drawn), and XCTest's own clock.
+1. **Preferred judge, outside XCTest** (`d10_method: out-of-xctest`). `device_bench.sh d10
+   <worktree> <run>` launches the installed Debug build with devicectl, first cold (the verified
+   fingerprint dropped, so the whole database is re-hashed) and then warm, and copies each launch's
+   timeline into `<run>/d10/`. D10 passes when both read process start → `nitnemDrawn` **< 5 s**,
+   the cold launch re-hashed (`cached_hash` false) and the warm one used the fingerprint (true).
+   5 s or more is **FAIL**; a missing file, a timeline written before `begin` or a wrong
+   `cached_hash` is **INCOMPLETE**.
+2. **Fallback, in XCTest** (`d10_method: in-xctest`), for a build without the out-of-XCTest hook
+   (every build before it shipped, 1.5.0 included). `device_bench.sh d10` then skips with a notice
+   and leaves no `d10/`. The app's own timeline from the latest **passing** attempt of
+   `testD10ColdAndWarmLaunchTimes` judges, with the same conditions: both < 5 s, the cold launch
+   re-hashed, the warm one on the fingerprint. The method is recorded in every summary, the index,
+   the trends and the history.
+3. **The XCTest test** still runs and its own < 5 s assertion is unchanged. When it fails *only*
+   that budget and that launch reached the first app code (`appInit`) after **2 s**, the failure
+   is XCTest's bootstrap: `env:tunnel`. Like every env failure it **needs a passing rerun on the
+   same tree and build stamp**, and two in a row fail the run. With `appInit` at 2 s or less it is
+   the app itself: `code`, so **FAIL**.
+4. **Recorded, never the judge**: XCTest's latest attempt split into `pre_main` (process start →
+   first app code) and `app_work` (first app code → Nitnem drawn), and XCTest's own clock.
 
 ## Pre-run (ask the owner; record their answers with `--attest`)
 
@@ -97,7 +105,8 @@ folder that exists. It prints the run folder, `~/SGGS-device-evidence/<version>/
 every bundle into its `bundles/`, one fresh name each:
 
 1. `unit.xcresult`: the unit tests (this also installs the build).
-2. `device_bench.sh d10 "$PWD" <run>`: D10's cold and warm launches outside XCTest, into `<run>/d10/`.
+2. `device_bench.sh d10 "$PWD" <run>`: D10's cold and warm launches outside XCTest, into `<run>/d10/`
+   (it skips with a notice on a build without the hook; D10 then falls back to the XCTest attempt).
 3. `ui-01.xcresult`, `ui-02.xcresult`, …: the UI tests in batches of 12, each in a fresh bundle.
 4. `checklist.xcresult`: `DeviceChecklistTests` with `TEST_RUNNER_SGGS_DEVICE_CHECKLIST=1`.
 5. The restore launch (one ordinary launch hands the phone's real data back from `UITestVault`),
