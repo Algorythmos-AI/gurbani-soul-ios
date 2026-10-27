@@ -139,7 +139,7 @@ struct VoicePage: View {
                 VStack(alignment: .leading, spacing: 4) {
                     if let g = contributor.gurmukhi { GurmukhiText(verbatim: g, size: 30) }
                     Text(contributor.kindTag)
-                        .font(.caption.weight(.semibold)).kerning(0.6)
+                        .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
                 }
             }
