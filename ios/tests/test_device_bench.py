@@ -97,6 +97,26 @@ class DeviceBenchTests(unittest.TestCase):
         self.assertIn("dirty", r.stdout)
         self.assertTrue(json.loads((self.dd / "sggs-build-stamp.json").read_text())["dirty"])
 
+    def test_an_untracked_file_makes_the_build_dirty(self):
+        (self.wt / "New.swift").write_text("// not committed\n")
+        self.bench("build", str(self.wt))
+        self.assertTrue(json.loads((self.dd / "sggs-build-stamp.json").read_text())["dirty"])
+
+    def test_every_test_command_refuses_a_dirty_build(self):
+        (self.wt / "a.txt").write_text("changed\n")
+        self.bench("build", str(self.wt))
+        (self.wt / "a.txt").write_text("one\n")         # clean again, but the build products are not
+        calls = [("unit", str(self.run_dir / "unit.xcresult")), ("ui", str(self.run_dir / "ui-01.xcresult")),
+                 ("checklist", str(self.run_dir / "checklist.xcresult")),
+                 ("shots", str(self.run_dir)),
+                 ("d10", str(self.run_dir.parent))]
+        for cmd, arg in calls:
+            r = self.bench(cmd, str(self.wt), arg)
+            self.assertEqual(r.returncode, 2, (cmd, r.stdout, r.stderr))
+            self.assertIn("dirty worktree", r.stderr, cmd)
+        self.assertFalse(self.log.exists() and "test-without-building" in self.log.read_text())
+        self.assertFalse(self.log.exists() and "process launch" in self.log.read_text())
+
     def test_tests_keep_xcodebuilds_exit_code(self):
         self.bench("build", str(self.wt))
         ok = self.bench("unit", str(self.wt), str(self.run_dir / "unit.xcresult"))

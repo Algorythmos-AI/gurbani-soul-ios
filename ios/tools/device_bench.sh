@@ -22,8 +22,8 @@
 # The App Store Connect key is passed by path only and never printed.
 #
 # `build` writes <derived data>/sggs-build-stamp.json (HEAD, tree, dirty, Xcode). Every test command
-# refuses to run when the worktree's HEAD tree is not the stamp's tree, so the build under test is
-# always the commit under test. Each test command exits with xcodebuild's own status; the full log
+# refuses to run when the worktree's HEAD tree is not the stamp's tree, or when the stamp says the
+# build was dirty (uncommitted or untracked files), so the build under test is always the commit under test. Each test command exits with xcodebuild's own status; the full log
 # is kept next to the bundle (<bundle>.log).
 #
 # `d10` launches the installed Debug build (install it first: run `unit` or `ui`) with devicectl,
@@ -62,11 +62,13 @@ need() {
 in_worktree() { [ -d "${1:-}" ] || die "no worktree ${1:-(missing)}"; cd "$1"; }
 tree_of_head() { git rev-parse 'HEAD^{tree}'; }
 
-# The build under test must be the worktree's HEAD.
+# The build under test must be the worktree's HEAD, built from a clean worktree.
 stamp_matches() {
   [ -f "$STAMP" ] || die "no build stamp at $STAMP — run: device_bench.sh build <worktree>"
-  local want; want=$(python3 -c 'import json,sys;print(json.load(open(sys.argv[1]))["tree"])' "$STAMP")
+  local want dirty
+  read -r want dirty < <(python3 -c 'import json,sys;s=json.load(open(sys.argv[1]));print(s["tree"],str(s.get("dirty") is not False).lower())' "$STAMP")
   [ "$want" = "$(tree_of_head)" ] || die "the build is for tree $want, but HEAD's tree is $(tree_of_head) — rebuild first"
+  [ "$dirty" = false ] || die "the build was made from a dirty worktree (uncommitted or untracked files) — commit or remove them, then rebuild"
 }
 
 fresh_bundle() {
@@ -107,7 +109,8 @@ case "$cmd" in
     grep -E "error:|BUILD (SUCCEEDED|FAILED)" "$log" | tail -5 || true
     if [ "$rc" -ne 0 ]; then rm -f "$STAMP"; echo "build failed (xcodebuild exit $rc) · log: $log"; exit "$rc"; fi
     dirty=false
-    [ -z "$(git status --porcelain --untracked-files=no)" ] || dirty=true
+    # Untracked files count, as in device_run.py begin: XcodeGen builds them.
+    [ -z "$(git status --porcelain)" ] || dirty=true
     python3 - "$STAMP" "$(git rev-parse HEAD)" "$(tree_of_head)" "$dirty" "$(xcodebuild -version | head -1)" <<'PY'
 import json, sys
 from datetime import datetime, timezone
@@ -117,7 +120,7 @@ json.dump({"head": head, "tree": tree, "dirty": dirty == "true", "configuration"
            "built_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")},
           open(path, "w"), indent=2)
 PY
-    [ "$dirty" = false ] || echo "WARNING: built from a dirty worktree — device_run.py begin will refuse this stamp"
+    [ "$dirty" = false ] || echo "WARNING: built from a dirty worktree — every test command and device_run.py begin will refuse this stamp"
     echo "stamp: $STAMP" ;;
   unit)
     need; in_worktree "${1:-}"; fresh_bundle "${2:-}"; stamp_matches
