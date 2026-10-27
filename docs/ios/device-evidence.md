@@ -135,7 +135,8 @@ A deferred row is printed in capitals in every summary.
 
 ## Publish (owner)
 
-The supervisor prepares; the owner approves and runs each upload.
+The supervisor prepares; the owner approves and runs each upload with their own `gh` login. CI
+never holds a write token: it only reads, with `SGGS_EVIDENCE_TOKEN`.
 
 ```bash
 gh release create ios-1.5.0-<run-id> --repo Algorythmos-AI/gurbani-soul-device-evidence \
