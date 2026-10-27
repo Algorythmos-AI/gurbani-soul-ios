@@ -191,17 +191,38 @@ class AngNumbersArePlain(unittest.TestCase):
     # os.Logger interpolation (`privacy:`) and explicit never-grouped formats are already plain
     PLAIN = re.compile(r"privacy:|grouping\(\.never\)")
 
+    @staticmethod
+    def interpolation(lit, start):
+        """The body of the interpolation that opens just before `start`, up to its own `)`."""
+        depth, i = 1, start
+        while i < len(lit) and depth:
+            depth += {"(": 1, ")": -1}.get(lit[i], 0)
+            i += 1
+        return lit[start:i - 1]
+
+    def grouped_angs(self, lit):
+        """Each bare Ang interpolation in `lit` that may be grouped. The exemption is read from
+        that interpolation alone, so a plain format on a later count cannot excuse the Ang."""
+        if "Ang" not in lit:
+            return []
+        return [m.start() for m in self.BARE.finditer(lit)
+                if not self.PLAIN.search(self.interpolation(lit, m.end()))]
+
+    def test_the_exemption_belongs_to_its_own_interpolation(self):
+        self.assertEqual(len(self.grouped_angs(r"Ang \(ang), count \(count.formatted(.number.grouping(.never)))")), 1)
+        self.assertEqual(self.grouped_angs(r"Ang \(ang.formatted(.number.grouping(.never)))"), [])
+        self.assertEqual(self.grouped_angs(r"Ang \(String(ang))–\(String(last))"), [])
+        self.assertEqual(len(self.grouped_angs(r"Angs \(String(first))–\(last)")), 1)
+        self.assertEqual(self.grouped_angs(r"opened Ang \(ang, privacy: .public)"), [])
+
     def test_ang_numbers_are_interpolated_through_string(self):
         found = []
         for base in (APP / "Sources", APP / "Shared", APP / "Widgets"):
             for path in sorted(base.rglob("*.swift")):
                 for no, code, _ in code_lines(path):
                     for lit in self.LITERAL.findall(code):
-                        if "Ang" not in lit:
-                            continue
-                        for m in self.BARE.finditer(lit):
-                            if not self.PLAIN.search(lit[m.end():m.end() + 60]):
-                                found.append(f"{path.relative_to(ROOT)}:{no}: {code.strip()}")
+                        if self.grouped_angs(lit):
+                            found.append(f"{path.relative_to(ROOT)}:{no}: {code.strip()}")
         self.assertEqual(found, [], 'write an Ang as "Ang \\(String(n))" so it is never grouped')
 
 
