@@ -1,0 +1,202 @@
+[
+ {
+  "testIdentifier": "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
+  "attachments": [
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "00000002-0A2D-421D-9C5F-3F0466EDAD11.txt",
+    "isAssociatedWithFailure": false,
+    "repetitionNumber": 1,
+    "suggestedHumanReadableName": "D2 paste with saroop on_0_00000002-B0F7-4B71-BE5B-D087617059AA.txt",
+    "timestamp": 1793117858.572
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "00000003-0A2D-421D-9C5F-3F0466EDAD11.txt",
+    "isAssociatedWithFailure": false,
+    "repetitionNumber": 1,
+    "suggestedHumanReadableName": "D2 paste with saroop off_0_00000003-B0F7-4B71-BE5B-D087617059AA.txt",
+    "timestamp": 1793117858.572
+   }
+  ]
+ },
+ {
+  "testIdentifier": "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
+  "attachments": [
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "00000004-0A2D-421D-9C5F-3F0466EDAD11.png",
+    "isAssociatedWithFailure": false,
+    "repetitionNumber": 1,
+    "suggestedHumanReadableName": "D3 Ang 1 light AX3_0_00000004-B0F7-4B71-BE5B-D087617059AA.png",
+    "timestamp": 1793117858.572
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "00000005-0A2D-421D-9C5F-3F0466EDAD11.png",
+    "isAssociatedWithFailure": false,
+    "repetitionNumber": 1,
+    "suggestedHumanReadableName": "D3 Ang 1 dark AX3_0_00000005-B0F7-4B71-BE5B-D087617059AA.png",
+    "timestamp": 1793117858.572
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "00000006-0A2D-421D-9C5F-3F0466EDAD11.png",
+    "isAssociatedWithFailure": false,
+    "repetitionNumber": 1,
+    "suggestedHumanReadableName": "D3 Ang 1354 light AX3_0_00000006-B0F7-4B71-BE5B-D087617059AA.png",
+    "timestamp": 1793117858.572
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "00000007-0A2D-421D-9C5F-3F0466EDAD11.png",
+    "isAssociatedWithFailure": false,
+    "repetitionNumber": 1,
+    "suggestedHumanReadableName": "D3 Ang 1354 dark AX3_0_00000007-B0F7-4B71-BE5B-D087617059AA.png",
+    "timestamp": 1793117858.572
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "00000008-0A2D-421D-9C5F-3F0466EDAD11.png",
+    "isAssociatedWithFailure": false,
+    "repetitionNumber": 1,
+    "suggestedHumanReadableName": "D3 Ang 1359 light AX3_0_00000008-B0F7-4B71-BE5B-D087617059AA.png",
+    "timestamp": 1793117858.572
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "00000009-0A2D-421D-9C5F-3F0466EDAD11.png",
+    "isAssociatedWithFailure": false,
+    "repetitionNumber": 1,
+    "suggestedHumanReadableName": "D3 Ang 1359 dark AX3_0_00000009-B0F7-4B71-BE5B-D087617059AA.png",
+    "timestamp": 1793117858.572
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "0000000A-0A2D-421D-9C5F-3F0466EDAD11.png",
+    "isAssociatedWithFailure": false,
+    "repetitionNumber": 1,
+    "suggestedHumanReadableName": "D3 Ang 1400 light AX3_0_0000000A-B0F7-4B71-BE5B-D087617059AA.png",
+    "timestamp": 1793117858.572
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "0000000B-0A2D-421D-9C5F-3F0466EDAD11.png",
+    "isAssociatedWithFailure": false,
+    "repetitionNumber": 1,
+    "suggestedHumanReadableName": "D3 Ang 1400 dark AX3_0_0000000B-B0F7-4B71-BE5B-D087617059AA.png",
+    "timestamp": 1793117858.572
+   }
+  ]
+ },
+ {
+  "testIdentifier": "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
+  "attachments": [
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "0000000C-0A2D-421D-9C5F-3F0466EDAD11.png",
+    "isAssociatedWithFailure": false,
+    "repetitionNumber": 1,
+    "suggestedHumanReadableName": "D6 after cancel_0_0000000C-B0F7-4B71-BE5B-D087617059AA.png",
+    "timestamp": 1793117858.572
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "0000000D-0A2D-421D-9C5F-3F0466EDAD11.png",
+    "isAssociatedWithFailure": false,
+    "repetitionNumber": 1,
+    "suggestedHumanReadableName": "D6 after confirm_0_0000000D-B0F7-4B71-BE5B-D087617059AA.png",
+    "timestamp": 1793117858.572
+   }
+  ]
+ },
+ {
+  "testIdentifier": "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
+  "attachments": [
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "0000000E-0A2D-421D-9C5F-3F0466EDAD11.png",
+    "isAssociatedWithFailure": false,
+    "repetitionNumber": 1,
+    "suggestedHumanReadableName": "D10 after a cold launch_0_0000000E-B0F7-4B71-BE5B-D087617059AA.png",
+    "timestamp": 1793117858.572
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "0000000F-0A2D-421D-9C5F-3F0466EDAD11.txt",
+    "isAssociatedWithFailure": false,
+    "repetitionNumber": 1,
+    "suggestedHumanReadableName": "D10 timings_0_0000000F-B0F7-4B71-BE5B-D087617059AA.txt",
+    "timestamp": 1793117858.572
+   }
+  ]
+ },
+ {
+  "testIdentifier": "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()",
+  "attachments": [
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "00000010-0A2D-421D-9C5F-3F0466EDAD11.png",
+    "isAssociatedWithFailure": false,
+    "repetitionNumber": 1,
+    "suggestedHumanReadableName": "D11 resumed on Ang 700_0_00000010-B0F7-4B71-BE5B-D087617059AA.png",
+    "timestamp": 1793117858.572
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "00000011-0A2D-421D-9C5F-3F0466EDAD11.png",
+    "isAssociatedWithFailure": false,
+    "repetitionNumber": 1,
+    "suggestedHumanReadableName": "D11 force quit during verify_0_00000011-B0F7-4B71-BE5B-D087617059AA.png",
+    "timestamp": 1793117858.572
+   }
+  ]
+ },
+ {
+  "testIdentifier": "DeviceChecklistTests/testD12HostileLinksNeverCrash()",
+  "attachments": [
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "00000012-0A2D-421D-9C5F-3F0466EDAD11.png",
+    "isAssociatedWithFailure": false,
+    "repetitionNumber": 1,
+    "suggestedHumanReadableName": "D12 stayed on Ang 500_0_00000012-B0F7-4B71-BE5B-D087617059AA.png",
+    "timestamp": 1793117858.572
+   }
+  ]
+ }
+]
