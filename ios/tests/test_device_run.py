@@ -868,7 +868,7 @@ class VerifyAssetsTests(Base):
 
     def verify(self, host, **kw):
         args = ns(summaries=[self.path], sizes=kw.get("sizes", False), skip_if_unavailable=kw.get("skip", False))
-        with mock.patch.dict(os.environ, {"SGGS_READ_TOKEN": "t"}):
+        with mock.patch.dict(os.environ, {"SGGS_EVIDENCE_TOKEN": "t"}):
             return dr.cmd_verify_assets(args, host=host)
 
     def test_verify(self):

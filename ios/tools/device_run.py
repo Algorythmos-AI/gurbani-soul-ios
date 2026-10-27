@@ -26,7 +26,8 @@ Commands
       --check exits 1 when the committed files differ (CI).
   verify-assets SUMMARY… [--sizes] [--skip-if-unavailable]
       Re-download every bundle asset and compare its sha256 (default), or compare names and sizes
-      through the API (--sizes, CI). Token: SGGS_READ_TOKEN or GH_TOKEN.
+      through the API (--sizes, CI). Token: SGGS_EVIDENCE_TOKEN (CI: read-only, the evidence repository
+      only), else GH_TOKEN / GITHUB_TOKEN (a local gh login).
   check [RUN_DIR…]
       Every run under ios/device-runs (or the given ones): schema, verdict recomputed, the scrub scan,
       text only, ≤ 256 KB per run.
@@ -1210,7 +1211,7 @@ def cmd_check(args, runs_dir=None):
 # ---------------------------------------------------------------- verify-assets
 
 def token():
-    return os.environ.get("SGGS_READ_TOKEN") or os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    return os.environ.get("SGGS_EVIDENCE_TOKEN") or os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
 
 
 def cmd_verify_assets(args, host=HOST):

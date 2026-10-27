@@ -8,7 +8,7 @@ on a real iPhone. A tree, not a commit, survives a squash merge.
 |---|---|---|
 | `summary.json` + `summary.md` for each run (text, ≤ 256 KB) | this repo, `ios/device-runs/<version>/<run-id>/` | everyone |
 | `index.json`, `flakes.json`, `trends.json`, `HISTORY.md` | `ios/device-runs/`, derived by `device_run.py rebuild` | everyone |
-| the raw `.xcresult` bundles (tar.gz) + `SHA256SUMS` | release `ios-<version>-<run-id>` of the private repo `Algorythmos-AI/gurbani-soul-device-evidence` | the owner and CI (`SGGS_READ_TOKEN`) |
+| the raw `.xcresult` bundles (tar.gz) + `SHA256SUMS` | release `ios-<version>-<run-id>` of the private repo `Algorythmos-AI/gurbani-soul-device-evidence` | the owner, and CI through `SGGS_EVIDENCE_TOKEN` (a fine-grained token: this repository only, Contents read-only) |
 | D2, D3 and D11 screens (`checklist-evidence-<run-id>.tar.gz`) | the public iOS release `v<version>`, after the owner has looked at every picture | everyone |
 
 The bundles are private because they hold the device UDID, host paths and screen recordings
