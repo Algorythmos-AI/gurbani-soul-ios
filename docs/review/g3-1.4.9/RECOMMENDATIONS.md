@@ -14,9 +14,9 @@ numbers.
 Two companion pages hold the parts of this review that live in other repositories:
 
 - **The four dataset decisions** (A-07, A-08, A-10, A-11) are in sggs-data, beside the held pull request #17:
-  [`validation/attribution-g3-review/RECOMMENDATIONS.md`](https://github.com/Algorythmos-AI/sggs-data/blob/claude/loving-bohr-n5am3s/validation/attribution-g3-review/RECOMMENDATIONS.md).
+  [`validation/attribution-g3-review/RECOMMENDATIONS.md`](https://github.com/Algorythmos-AI/sggs-data/pull/18).
 - **The 36 life paragraphs (R-01 to R-36) and the roster pack's six questions** are in sggs-platform:
-  [`docs/review/lineage-roster-v2-recommendations.md`](https://github.com/Algorythmos-AI/sggs-platform/blob/claude/loving-bohr-n5am3s/docs/review/lineage-roster-v2-recommendations.md).
+  [`docs/review/lineage-roster-v2-recommendations.md`](https://github.com/Algorythmos-AI/sggs-platform/pull/321).
 
 ## How the evidence was gathered
 
@@ -602,7 +602,7 @@ the pins do not hide each other. The same city is labelled three ways: "Kashi (V
 ### R-01 to R-36 · The 36-voice roster
 
 The full evidence for each life paragraph, and for the roster pack's six questions, is on the platform page:
-[`docs/review/lineage-roster-v2-recommendations.md`](https://github.com/Algorythmos-AI/sggs-platform/blob/claude/loving-bohr-n5am3s/docs/review/lineage-roster-v2-recommendations.md).
+[`docs/review/lineage-roster-v2-recommendations.md`](https://github.com/Algorythmos-AI/sggs-platform/pull/321).
 In short:
 
 - **One factual error.** R-16 (Bhagat Dhanna Ji) says that Dhanna himself, in a hymn in Asa, tells how
@@ -757,7 +757,7 @@ what it counts is disputed.
 ## 6. Bhagat attribution findings
 
 The four items still open in the dataset are set out, with their evidence, on the sggs-data page:
-[`RECOMMENDATIONS.md`](https://github.com/Algorythmos-AI/sggs-data/blob/claude/loving-bohr-n5am3s/validation/attribution-g3-review/RECOMMENDATIONS.md).
+[`RECOMMENDATIONS.md`](https://github.com/Algorythmos-AI/sggs-data/pull/18).
 
 - **A-07:** credit line 53935 to Bhagat Surdas Ji. SS says the line is Surdas's, and that it is counted as a whole
   shabad, which is why the printed count reaches ੮.
