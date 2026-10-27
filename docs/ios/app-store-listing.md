@@ -112,7 +112,7 @@ For version 1.4.3. Rewritten for every version; limit 4000 characters.
 
 > The subjoined ya now looks as it does in the printed Bir.
 >
-> • Words such as ਜਲੵਨ (Ang 1400) show the ya tucked under the letter, as the Bir prints it. The traditional saroop is a display choice: one tap in More shows the stored characters, and Copy and search always use them.
+> • Words such as `ਜਲੵਨ` (Ang 1400) show the ya tucked under the letter, as the Bir prints it. The traditional saroop is a display choice: one tap in More shows the stored characters, and Copy and search always use them.
 > • Larger text: the Reader's page bar stays on one line at the largest text sizes, and VoiceOver reads each Ang number clearly.
 > • Rate and share Gurbani Soul from More.
 > • Steadier everyday use: your Rehras choice now applies to the standard Nitnem set, the reading journey shows the right day in every time zone, and saved verses, Home Screen search and Nitnem progress are better protected.
