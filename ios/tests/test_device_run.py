@@ -43,8 +43,8 @@ def fixture_ids(names=("unit", "ui", "checklist", "rerun-1")):
 class FixtureHost(dr.Host):
     """git, devicectl and xcresulttool answered from fixtures; `mutate[stem]` edits a bundle's JSON."""
 
-    def __init__(self, head=HEAD, tree=TREE, dirty="", locked=False, free=50.0, name="S-iPhone"):
-        self.head, self.tree, self.dirty, self.free = head, tree, dirty, free
+    def __init__(self, head=HEAD, tree=TREE, dirty="", untracked="", locked=False, free=50.0, name="S-iPhone"):
+        self.head, self.tree, self.dirty, self.untracked, self.free = head, tree, dirty, untracked, free
         self.dev = {"name": name, "model": "iPhone 17 Pro Max", "ios": "27.0.1", "transport": "wired",
                     "tunnel": "connected", "locked": locked}
         self.mutate = {}
@@ -52,6 +52,9 @@ class FixtureHost(dr.Host):
         self.http_calls = []
 
     def git(self, *args, cwd=None):
+        if args[:2] == ("status", "--porcelain"):
+            # like git: --untracked-files=no hides the untracked files (ignored ones are never listed)
+            return self.dirty if "--untracked-files=no" in args else "\n".join(filter(None, (self.dirty, self.untracked)))
         return {("rev-parse", "HEAD"): self.head, ("rev-parse", "HEAD^{tree}"): self.tree,
                 ("rev-parse", "--abbrev-ref", "HEAD"): "release/1.5.0"}.get(args, self.dirty)
 
@@ -336,6 +339,10 @@ class BeginTests(Base):
         self.assertIn("not 'S-iPhone'", self.refused(host=FixtureHost(name="Other iPhone")))
         self.assertIn("MARKETING_VERSION", self.refused(version="0.0.1"))
         self.assertFalse(self.staging.joinpath(self.version).exists() and any(self.staging.joinpath(self.version).iterdir()))
+
+    def test_an_untracked_file_is_refused(self):
+        # XcodeGen builds every Swift file under a source folder, tracked or not.
+        self.assertIn("untracked", self.refused(host=FixtureHost(untracked="?? ios/App/Sources/New.swift")))
 
     def test_a_dirty_stamp_is_refused(self):
         self.stamp.write_text(json.dumps({"head": HEAD, "tree": TREE, "dirty": True}))

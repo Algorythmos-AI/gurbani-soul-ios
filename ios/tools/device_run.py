@@ -377,8 +377,10 @@ def cmd_begin(args, host=HOST, root=ROOT, now=None):
     if head != args.expect:
         raise Refusal(f"HEAD is {head}, not the expected {args.expect} — the wrong commit would be tested")
     tree = host.git("rev-parse", "HEAD^{tree}", cwd=root)
-    if host.git("status", "--porcelain", "--untracked-files=no", cwd=root):
-        raise Refusal("the worktree has uncommitted changes — evidence is for a committed tree only")
+    # Untracked files count: one under an XcodeGen source folder is built, yet HEAD's tree is recorded.
+    if host.git("status", "--porcelain", cwd=root):
+        raise Refusal("the worktree has uncommitted changes or untracked files — evidence is for a committed "
+                      "tree only")
     stamp = read_json(args.stamp)
     if stamp.get("tree") != tree or stamp.get("head") != head:
         raise Refusal(f"the build stamp is for {stamp.get('head')} (tree {stamp.get('tree')}), but HEAD is "
