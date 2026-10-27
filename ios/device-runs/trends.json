@@ -233,6 +233,75 @@
           0
         ]
       ]
+    },
+    {
+      "version": "1.5.0",
+      "run_id": "20261027T1605Z-63d7386",
+      "verdict": "RECORDED-NO-BUNDLES",
+      "d10": {
+        "cold": 1.777,
+        "warm": 1.761
+      },
+      "d10_method": "in-xctest",
+      "d10_xctest_pre_main": {
+        "cold": 1.495,
+        "warm": 1.547
+      },
+      "suite_seconds": {},
+      "slowest": [
+        [
+          "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
+          0
+        ],
+        [
+          "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()",
+          0
+        ],
+        [
+          "DeviceChecklistTests/testD12HostileLinksNeverCrash()",
+          0
+        ],
+        [
+          "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
+          0
+        ],
+        [
+          "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
+          0
+        ],
+        [
+          "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
+          0
+        ],
+        [
+          "SGGSUITests/testBaniContentsJumpsToPauri()",
+          0
+        ],
+        [
+          "SGGSUITests/testCaptureJaapPauri79()",
+          0
+        ],
+        [
+          "SGGSUITests/testIndexContinueCardResumes()",
+          0
+        ],
+        [
+          "SGGSUITests/testNitnemOpensJapjiAndCompletes()",
+          0
+        ],
+        [
+          "SGGSUITests/testNitnemRemindersScreenOpens()",
+          0
+        ],
+        [
+          "SGGSUITests/testSavedVerseRoundTrip()",
+          0
+        ],
+        [
+          "SGGSUITests/testSehajFocusHidesChromeAndExits()",
+          0
+        ]
+      ]
     }
   ]
 }

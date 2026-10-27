@@ -1,0 +1,305 @@
+{
+  "schema": 1,
+  "tool_version": "1",
+  "origin": "device-pretag",
+  "evidence_lost": false,
+  "version": "1.5.0",
+  "run_id": "20261027T1605Z-63d7386",
+  "app": {
+    "version": "1.5.0",
+    "build": "1",
+    "build_config": "Debug"
+  },
+  "source": {
+    "commit": "28856fb48d5477695ffe698e90193209b98e76ab",
+    "tree": "63d7386a02ce0d81d88aa64e89d0586e098c4cc0",
+    "dirty": false
+  },
+  "device": {
+    "name": "S-iPhone",
+    "model": "iPhone 17 Pro Max",
+    "ios": "27.0.1"
+  },
+  "connection": {
+    "transport": "localNetwork"
+  },
+  "started_at": "2026-10-27T16:05:00Z",
+  "ended_at": null,
+  "operator": {
+    "role": "supervisor"
+  },
+  "bundles": [],
+  "backfill_counts": {
+    "unit": {
+      "passed": 445,
+      "failed": 0,
+      "skipped": 0
+    },
+    "ui": {
+      "passed": 82,
+      "failed": 0,
+      "skipped": 3
+    }
+  },
+  "tests": [
+    {
+      "id": "SGGSUITests/testBaniContentsJumpsToPauri()",
+      "outcome": "Passed",
+      "duration": 0,
+      "failure": "the Contents sheet did not open",
+      "cause": "unknown",
+      "reruns": [
+        {
+          "bundle": "rerun alone",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "id": "SGGSUITests/testCaptureJaapPauri79()",
+      "outcome": "Passed",
+      "duration": 0,
+      "failure": "verse 79 was not hittable",
+      "cause": "unknown",
+      "reruns": [
+        {
+          "bundle": "rerun alone",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "id": "SGGSUITests/testIndexContinueCardResumes()",
+      "outcome": "Passed",
+      "duration": 0,
+      "failure": "the Continue card did not appear",
+      "cause": "unknown",
+      "reruns": [
+        {
+          "bundle": "rerun alone",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "id": "SGGSUITests/testNitnemOpensJapjiAndCompletes()",
+      "outcome": "Passed",
+      "duration": 0,
+      "failure": "Failed to terminate the app (Wi-Fi tunnel)",
+      "cause": "env:tunnel",
+      "reruns": [
+        {
+          "bundle": "rerun alone",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "id": "SGGSUITests/testNitnemRemindersScreenOpens()",
+      "outcome": "Passed",
+      "duration": 0,
+      "failure": "Failed to launch the app via Xcode (Wi-Fi tunnel)",
+      "cause": "env:tunnel",
+      "reruns": [
+        {
+          "bundle": "rerun alone",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "id": "SGGSUITests/testSavedVerseRoundTrip()",
+      "outcome": "Passed",
+      "duration": 0,
+      "failure": "the composition did not open from Saved",
+      "cause": "unknown",
+      "reruns": [
+        {
+          "bundle": "rerun alone",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "id": "SGGSUITests/testSehajFocusHidesChromeAndExits()",
+      "outcome": "Passed",
+      "duration": 0,
+      "failure": "the page bar did not return",
+      "cause": "unknown",
+      "reruns": [
+        {
+          "bundle": "rerun alone",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "id": "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
+      "outcome": "Passed",
+      "duration": 0,
+      "failure": "XCTAssertLessThan failed: (\"5.054\") is not less than (\"5.0\") - a cold launch must finish verifying in under 5 s (appInit 4.786 s: XCTest's bootstrap over the tunnel)",
+      "cause": "env:tunnel",
+      "reruns": [
+        {
+          "bundle": "rerun-d10",
+          "outcome": "Passed"
+        }
+      ]
+    },
+    {
+      "id": "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
+      "outcome": "Passed",
+      "duration": 0
+    },
+    {
+      "id": "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
+      "outcome": "Passed",
+      "duration": 0
+    },
+    {
+      "id": "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
+      "outcome": "Passed",
+      "duration": 0
+    },
+    {
+      "id": "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()",
+      "outcome": "Passed",
+      "duration": 0
+    },
+    {
+      "id": "DeviceChecklistTests/testD12HostileLinksNeverCrash()",
+      "outcome": "Passed",
+      "duration": 0
+    }
+  ],
+  "checklist": {
+    "D1": {
+      "mode": "backfill",
+      "title": "Charter S",
+      "result": "deferred",
+      "note": "owner; not yet done"
+    },
+    "D2": {
+      "mode": "backfill",
+      "title": "Copy fidelity",
+      "result": "pass",
+      "note": ""
+    },
+    "D3": {
+      "mode": "backfill",
+      "title": "Gurmukhi rendering",
+      "result": "pass",
+      "note": ""
+    },
+    "D4": {
+      "mode": "backfill",
+      "title": "Update from the store build",
+      "result": "deferred",
+      "note": "owner; not yet done"
+    },
+    "D5": {
+      "mode": "backfill",
+      "title": "Forget location (widget half)",
+      "result": "deferred",
+      "note": "owner; not yet done"
+    },
+    "D6": {
+      "mode": "backfill",
+      "title": "Clear reading history",
+      "result": "pass",
+      "note": ""
+    },
+    "D7": {
+      "mode": "backfill",
+      "title": "Spotlight",
+      "result": "deferred",
+      "note": "owner; not yet done"
+    },
+    "D8": {
+      "mode": "backfill",
+      "title": "Widgets",
+      "result": "deferred",
+      "note": "owner; not yet done"
+    },
+    "D9": {
+      "mode": "backfill",
+      "title": "Airplane Mode",
+      "result": "deferred",
+      "note": "owner; not yet done"
+    },
+    "D10": {
+      "mode": "backfill",
+      "title": "Launch time (this device)",
+      "result": "pass",
+      "note": "in-xctest, from the rerun on the same tree and build: cold 1.777 s, warm 1.761 s"
+    },
+    "D11": {
+      "mode": "backfill",
+      "title": "Force quit and relaunch",
+      "result": "pass",
+      "note": ""
+    },
+    "D12": {
+      "mode": "backfill",
+      "title": "Hostile links",
+      "result": "pass",
+      "note": ""
+    }
+  },
+  "launch": {
+    "budget_s": 5.0,
+    "d10_method": "in-xctest",
+    "cold": {
+      "appInit": 1.495,
+      "containerReady": 1.544,
+      "integrityStart": 1.613,
+      "rootShown": 1.613,
+      "integrityHashed": 1.667,
+      "integrityDone": 1.675,
+      "tabsShown": 1.7,
+      "nitnemDrawn": 1.777
+    },
+    "warm": {
+      "appInit": 1.547,
+      "containerReady": 1.585,
+      "integrityStart": 1.644,
+      "rootShown": 1.644,
+      "integrityHashed": 1.645,
+      "integrityDone": 1.659,
+      "tabsShown": 1.677,
+      "nitnemDrawn": 1.761
+    },
+    "cached_hash": {
+      "cold": false,
+      "warm": true
+    },
+    "xctest": {
+      "pre_main": {
+        "cold": 1.495,
+        "warm": 1.547
+      },
+      "app_work": {
+        "cold": 0.282,
+        "warm": 0.214
+      },
+      "xctest_clock": {
+        "cold": 8.52,
+        "warm": 4.12
+      }
+    }
+  },
+  "sources": [
+    "supervisor's report, 2026-10-27; bundles kept on the supervisor's Mac (~/.claude/plans/rc150-device), not uploaded"
+  ],
+  "notes": [
+    "Triage run of release/1.5.0 (#104) at 28856fb before the v1.5.0 tag. It does not gate the release: 1.5.0 is recorded by a fresh run at the tag.",
+    "The first UI attempt lost the Wi-Fi tunnel after 13 tests (a runner failure, env:tunnel); the suite was re-run in 8 batches of 12, the 7th and 8th after a pause the owner asked for.",
+    "Unit 445/445; UI 85 planned: 82 passed and 3 skipped after 7 batch failures each passed on a single rerun.",
+    "D10's first XCTest attempt read 5.054 s cold with the first app code at 4.786 s (0.27 s of the app's own work); the rerun read 1.777 s.",
+    "Real data restored after each run (ordinary launch)."
+  ],
+  "verdict": "RECORDED-NO-BUNDLES",
+  "verdict_reasons": [
+    "a pre-tag triage run recorded from notes; its bundles were not uploaded"
+  ]
+}
