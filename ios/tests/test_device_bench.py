@@ -149,8 +149,17 @@ class DeviceBenchTests(unittest.TestCase):
             self.assertNotIn(UDID, out)
             self.assertNotIn("key-file", out)
 
+    def built_app(self, hook=True):
+        """What build-for-testing leaves: the Debug app, whose dylib names the hook's file when it has one."""
+        app = self.dd / "Build" / "Products" / "Debug-iphoneos" / "SGGS.app"
+        app.mkdir(parents=True, exist_ok=True)
+        for i in range(40):                      # many files, the hook in one of them only
+            (app / f"Asset{i:02}.car").write_bytes(b"\x00asset")
+        (app / "SGGS.debug.dylib").write_bytes(b"\x00code" + (b"sggs-launch-metrics.json\x00" if hook else b"\x00"))
+
     def test_d10_launches_cold_then_warm_outside_xctest_and_keeps_both_timelines(self):
         self.bench("build", str(self.wt))
+        self.built_app()
         run = self.run_dir.parent
         r = self.bench("d10", str(self.wt), str(run))
         self.assertEqual(r.returncode, 0, r.stderr)
@@ -168,8 +177,18 @@ class DeviceBenchTests(unittest.TestCase):
         self.assertEqual(again.returncode, 2)
         self.assertIn("once per run", again.stderr)
 
+    def test_d10_skips_with_a_notice_on_a_build_without_the_hook(self):
+        self.bench("build", str(self.wt))
+        self.built_app(hook=False)
+        r = self.bench("d10", str(self.wt), str(self.run_dir.parent))
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("NOTICE: this build has no out-of-XCTest launch hook", r.stdout)
+        self.assertFalse((self.run_dir.parent / "d10").exists())
+        self.assertNotIn("process launch", self.log.read_text())
+
     def test_d10_without_a_timeline_fails(self):
         self.bench("build", str(self.wt))
+        self.built_app()
         r = self.bench("d10", str(self.wt), str(self.run_dir.parent), FAKE_NO_TIMELINE="1")
         self.assertEqual(r.returncode, 2)
         self.assertIn("no timeline", r.stderr)

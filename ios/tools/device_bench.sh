@@ -31,6 +31,8 @@
 # verified fingerprint dropped, so the whole database is re-hashed), then a warm one. Each time the
 # app leaves its launch timeline in its container and the bench copies it to <run>/d10/<cold|warm>.json,
 # which `device_run.py summarize` judges. No data is touched: an ordinary launch never seals or wipes.
+# A build without that hook (before it shipped, e.g. 1.5.0) is detected in the built app: `d10` then
+# skips with a notice, writes nothing, and D10 is judged from the XCTest attempt instead.
 set -euo pipefail
 
 die() { echo "device_bench: $*" >&2; exit 2; }
@@ -142,6 +144,15 @@ PY
   d10)
     need; in_worktree "${1:-}"; run=${2:-}; stamp_matches
     [ -d "$run/bundles" ] || die "give the run folder from device_run.py begin (it holds bundles/)"
+    app="$DD/Build/Products/Debug-iphoneos/SGGS.app"
+    [ -d "$app" ] || die "no built app at $app — run: device_bench.sh build <worktree>"
+    # Debug keeps the Swift code in SGGS.debug.dylib, so every file of the bundle is searched
+    hook=$(LC_ALL=C grep -r -a -l -F --exclude='*.sqlite' -- sggs-launch-metrics "$app" 2>/dev/null | head -1 || true)
+    if [ -z "$hook" ]; then
+      echo "NOTICE: this build has no out-of-XCTest launch hook (sggs-launch-metrics); D10 is skipped here and"
+      echo "        judged from the latest passing XCTest attempt (d10_method in-xctest). Nothing written."
+      exit 0
+    fi
     out="$run/d10"
     [ ! -e "$out" ] || die "$out exists — a D10 measurement is made once per run"
     mkdir -p "$out"
