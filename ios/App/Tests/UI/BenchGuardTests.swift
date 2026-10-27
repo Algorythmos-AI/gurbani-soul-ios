@@ -29,15 +29,23 @@ final class BenchGuardTests: XCTestCase {
         let foreground = app.wait(for: .runningForeground, timeout: 30)
         let window = app.windows.firstMatch
         let frame = window.waitForExistence(timeout: 10) ? window.frame : .zero
-        // Another app taking the screen during the run shows up as the app leaving the foreground.
-        RunLoop.current.run(until: Date().addingTimeInterval(3))
-        let stayed = app.state == .runningForeground
+        // Another app taking the screen shows up as the app leaving the foreground, if only for a
+        // moment: sample the state every 250 ms through the 3 s hold, not once at its end.
+        let foregroundState = Int(XCUIApplication.State.runningForeground.rawValue)
+        var samples: [Int] = []          // XCUIApplication.State raw values, in order
+        for _ in 0..<12 {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.25))
+            samples.append(Int(app.state.rawValue))
+        }
+        let away = samples.filter { $0 != foregroundState }.count
 
         let facts: [String: Any] = [
             "window": [Int(frame.width), Int(frame.height)],
             "device_orientation": XCUIDevice.shared.orientation.rawValue,
             "foreground_at_launch": foreground,
-            "foreground_after_3s": stayed,
+            "foreground_state": foregroundState,
+            "hold_samples": samples,          // every 250 ms for 3 s
+            "hold_samples_away": away,
         ]
         if let data = try? JSONSerialization.data(withJSONObject: facts, options: [.sortedKeys]) {
             let a = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
@@ -47,7 +55,7 @@ final class BenchGuardTests: XCTestCase {
         }
 
         XCTAssertTrue(foreground, "BENCH: org.sggs.app did not reach the foreground — another app is in front, or the screen is off")
-        XCTAssertTrue(stayed, "BENCH: org.sggs.app left the foreground within 3 s — another app took the screen; quit it and keep hands off")
+        XCTAssertEqual(away, 0, "BENCH: org.sggs.app left the foreground during the 3 s hold (\(away) of \(samples.count) samples, every 250 ms) — another app took the screen; quit it and keep hands off")
         XCTAssertGreaterThan(frame.height, 0, "BENCH: the app has no window")
         XCTAssertLessThan(frame.width, frame.height,
                           "BENCH: the orientation is landscape (window \(Int(frame.width))×\(Int(frame.height))) — set portrait and turn the orientation lock on")
