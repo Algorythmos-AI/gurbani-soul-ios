@@ -34,11 +34,13 @@ jobs:
           python3 ios/tools/device_run.py check
           python3 ios/tools/device_run.py rebuild --check
       # Each run's raw bundles exist, at the recorded sizes, in the private evidence repository.
-      # Until that repository exists (or when the token cannot read it) this is a notice, not a failure;
-      # once it can be read, a missing release or asset fails.
+      # SGGS_EVIDENCE_TOKEN is its own fine-grained token (that repository only, Contents read-only);
+      # uploads stay with the owner's gh login. Until the repository exists, or while the token is unset
+      # or cannot read it, this is a notice, not a failure; once it can be read, a missing release or
+      # asset fails.
       - name: Device-run bundles exist in the evidence repository (name + size)
         env:
-          SGGS_READ_TOKEN: ${{ secrets.SGGS_READ_TOKEN }}
+          SGGS_EVIDENCE_TOKEN: ${{ secrets.SGGS_EVIDENCE_TOKEN }}
         run: |
           set -o pipefail   # the default `bash -e` has no pipefail: `| tee` would hide the exit code
           shopt -s nullglob
