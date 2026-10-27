@@ -63,6 +63,21 @@ final class RaagNowTimelineTests: XCTestCase {
         XCTAssertLessThan(dates.last!.timeIntervalSince(now), 24 * 3600)
     }
 
+    /// The ring shows the hour hand's half of the day, so noon and midnight are entries: the
+    /// face turns from AM to PM (and back) on the instant, in solar mode too.
+    func testTimelineTurnsTheRingAtNoonAndMidnight() {
+        let amritsar = RaagClockConfig(solar: true, lat: 31.63, lon: 74.87)
+        let now = date(2026, 9, 18, 9, 7, tz: utc).addingTimeInterval(11)
+        let dates = RaagNowTimeline.dates(from: now, config: amritsar, tz: utc)
+        let noon = date(2026, 9, 18, 12, 0, tz: utc), midnight = date(2026, 9, 19, 0, 0, tz: utc)
+        XCTAssertTrue(dates.contains(noon)); XCTAssertTrue(dates.contains(midnight))
+        let before = RaagNowTimeline.entry(at: noon.addingTimeInterval(-60), config: amritsar, snapshot: nil, tz: utc)
+        let at = RaagNowTimeline.entry(at: noon, config: amritsar, snapshot: nil, tz: utc)
+        XCTAssertEqual(before.model.half, .am)
+        XCTAssertEqual(at.model.half, .pm)
+        XCTAssertEqual(RaagNowTimeline.entry(at: midnight, config: amritsar, snapshot: nil, tz: utc).model.half, .am)
+    }
+
     /// Sydney spring-forward (2026-10-04 02:00 → 03:00): the 03:00 boundary must be the real
     /// 03:00 AEDT instant, i.e. only two hours after 01:00 AEST, never "midnight + 180 min".
     func testDSTBoundariesAreWallClock() {

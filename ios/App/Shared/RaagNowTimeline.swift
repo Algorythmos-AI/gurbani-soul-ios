@@ -24,13 +24,16 @@ struct RaagNowEntry: TimelineEntry {
     /// "33.9°S 151.2°E" when the solar watches are drawn for a place clearly off this phone's
     /// time zone (`SolarPlace`) — the widget then names whose sky it shows. nil otherwise.
     var skyPlace: String? = nil
+    /// The zone the entry was resolved in — the hand's minute (and so the ring's half of the
+    /// day) is read on the same clock as the pahar.
+    var timeZone: TimeZone = .current
 
-    var minutesNow: Int { PaharFormat.minutesOfDay(date) }
+    var minutesNow: Int { PaharFormat.minutesOfDay(date, tz: timeZone) }
     var model: PaharDialModel {
         PaharDialModel(windows: windows, current: pahar, minutesNow: minutesNow,
                        sunrise: sunrise, sunset: sunset, beads: beads)
     }
-    var windowText: String { PaharFormat.window(windows[pahar - 1], on: date) }
+    var windowText: String { PaharFormat.window(windows[pahar - 1], on: date, tz: timeZone) }
 }
 
 /// The reader's clock configuration as the widget sees it: the App-Group suite first
@@ -89,7 +92,8 @@ enum RaagNowTimeline {
                             raags: snapshot?.paharRaags[p] ?? [],
                             raagsGurmukhi: snapshot?.paharRaagsGurmukhi?[p] ?? [],
                             beads: beads, hasSnapshot: snapshot != nil, solar: sun != nil,
-                            skyPlace: skyPlace(config: config, solarLive: sun != nil, tz: tz, at: date))
+                            skyPlace: skyPlace(config: config, solarLive: sun != nil, tz: tz, at: date),
+                            timeZone: tz)
     }
 
     /// Named whenever the mismatch holds, kept or not: a glance surface has no notice to read.
@@ -99,8 +103,9 @@ enum RaagNowTimeline {
         return SolarPlace.label(lat: lat, lon: lon, short: true)
     }
 
-    /// Entry dates for the next 24 h: now, every pahar boundary (wall-clock, DST-safe) and a
-    /// 15-minute cadence — merged, sorted, de-duplicated, capped.
+    /// Entry dates for the next 24 h: now, every pahar boundary and every noon/midnight (the
+    /// ring turns to the other half of the day there; all wall-clock, DST-safe) and a 15-minute
+    /// cadence — merged, sorted, de-duplicated, capped.
     static func dates(from now: Date, config: RaagClockConfig, tz: TimeZone = .current) -> [Date] {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = tz
@@ -121,9 +126,11 @@ enum RaagNowTimeline {
         for dayOffset in 0...1 {
             guard let day = cal.date(byAdding: .day, value: dayOffset, to: now) else { continue }
             let sun = config.sun(on: day, tz: tz)
-            for p in 1...8 {
-                let w = sun.map { Pahar.solarWindow(p, sunrise: $0.sunrise, sunset: $0.sunset) } ?? Pahar.window(p)
-                if let d = PaharFormat.date(minuteOfDay: w.start, on: day, tz: tz), d > now, d < horizon {
+            let starts = (1...8).map { p in
+                (sun.map { Pahar.solarWindow(p, sunrise: $0.sunrise, sunset: $0.sunset) } ?? Pahar.window(p)).start
+            }
+            for minute in starts + [Pahar.HalfDay.am.start, Pahar.HalfDay.pm.start] {
+                if let d = PaharFormat.date(minuteOfDay: minute, on: day, tz: tz), d > now, d < horizon {
                     set.insert(d)
                 }
             }

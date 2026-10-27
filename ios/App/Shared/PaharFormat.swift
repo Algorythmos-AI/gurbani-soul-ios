@@ -150,12 +150,29 @@ enum PaharFormat {
         return "in " + parts.joined(separator: " ")
     }
 
-    /// The four cardinal numerals of the 24-hour dial (minute-of-day → label), in the reader's
-    /// hour cycle. 12-h faces say "6 AM · 12 PM · 6 PM · 12 AM"; 24-h faces "06 · 12 · 18 · 00".
-    static func dialNumerals(locale: Locale = .current) -> [(minute: Int, label: String)] {
-        if hourCycleIs12(locale) {
-            return [(0, "12 AM"), (360, "6 AM"), (720, "12 PM"), (1080, "6 PM")]
+    /// The name of the half a 12-hour face shows: "AM" / "PM" on a 12-hour clock, "00–12" /
+    /// "12–24" on a 24-hour one (where AM/PM is not how the reader tells the time).
+    static func halfName(_ half: Pahar.HalfDay, locale: Locale = .current) -> String {
+        if hourCycleIs12(locale) { return half == .am ? "AM" : "PM" }
+        return half == .am ? "00–12" : "12–24"
+    }
+
+    /// Spoken: "12 AM to 12 PM" / "00:00 to 12:00", for VoiceOver.
+    static func halfSpoken(_ half: Pahar.HalfDay, locale: Locale = .current) -> String {
+        if hourCycleIs12(locale) { return half == .am ? "12 AM to 12 PM" : "12 PM to 12 AM" }
+        return half == .am ? "00:00 to 12:00" : "12:00 to 24:00"
+    }
+
+    /// The ring's labels for one half, at the dial's own hours (minute-of-day → label): the
+    /// half's name on the 12, then the 3 · 6 · 9 of that half — so each sits beside the face's
+    /// own 3 · 6 · 9. 12-h: "AM · 3 AM · 6 AM · 9 AM"; 24-h PM: "12–24 · 15 · 18 · 21".
+    static func dialNumerals(half: Pahar.HalfDay, locale: Locale = .current) -> [(minute: Int, label: String)] {
+        let h0 = half.start / 60
+        let hours = [3, 6, 9].map { h -> (minute: Int, label: String) in
+            let h24 = h0 + h
+            let label = hourCycleIs12(locale) ? "\(h) \(h24 < 12 ? "AM" : "PM")" : String(format: "%02d", h24)
+            return (h24 * 60, label)
         }
-        return [(0, "00"), (360, "06"), (720, "12"), (1080, "18")]
+        return [(half.start, halfName(half, locale: locale))] + hours
     }
 }

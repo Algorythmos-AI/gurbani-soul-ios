@@ -159,6 +159,9 @@ struct RaagNowView: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(a11y)
+        // One clock for the whole entry: the live time, the face's date and the window texts
+        // read in the zone the ring and hands were resolved in, even after the phone changes zone.
+        .environment(\.timeZone, entry.timeZone)
         .widgetURL(URL(string: "sggs://clock"))
     }
 
@@ -218,13 +221,18 @@ struct RaagNowView: View {
     }
 
     /// Ring + static face, then the hands at the entry's minute (WidgetKit cannot animate, so
-    /// no seconds hand; the minute-dense timeline keeps them current).
+    /// no seconds hand; the minute-dense timeline keeps them current). The ring is on the face's
+    /// 12-hour scale and shows the entry's half of the day; the lock-screen ring (no face) draws
+    /// its own needle at the hour hand's angle. Ring, half and hands all read `entry.timeZone`:
+    /// an entry saved before a time-zone change must not put the hands in one zone and the lit
+    /// watch in another.
     private func dial(_ style: DialStyle) -> some View {
         ZStack {
             PaharDialRenderer(model: entry.model, style: style, palette: palette,
-                              numerals: style == .full ? PaharFormat.dialNumerals() : [], monochrome: mono,
-                              faceDate: entry.date)
-            ClockHandsLayer(date: entry.date, style: style, palette: palette, showSeconds: false, monochrome: mono)
+                              numerals: style == .full ? PaharFormat.dialNumerals(half: entry.model.half) : [], monochrome: mono,
+                              faceDate: entry.date, faceTimeZone: entry.timeZone)
+            ClockHandsLayer(date: entry.date, style: style, palette: palette, showSeconds: false, monochrome: mono,
+                            timeZone: entry.timeZone)
         }
     }
 
@@ -350,7 +358,7 @@ struct RaagNowView: View {
                     Text(Pahar.label(p)).font(.system(size: 10, weight: current ? .semibold : .regular))
                         .lineLimit(1).minimumScaleFactor(0.8)
                     Spacer(minLength: 4)
-                    Text(PaharFormat.window(entry.windows[p - 1], on: entry.date))
+                    Text(PaharFormat.window(entry.windows[p - 1], on: entry.date, tz: entry.timeZone))
                         .font(.system(size: 9)).monospacedDigit().foregroundStyle(.secondary)
                         .lineLimit(1).minimumScaleFactor(0.8)
                     Text(n == 0 ? (p == 7 ? "silent" : "—") : "\(n)")
@@ -415,7 +423,7 @@ struct RaagNowView: View {
 
     private var a11y: String {
         let names = entry.raagsGurmukhi.isEmpty ? entry.raags.map { $0.capitalized } : entry.raagsGurmukhi
-        return "Raag now. \(PaharFormat.time(entry.date)). \(Pahar.label(entry.pahar)), \(entry.windowText). "
+        return "Raag now. \(PaharFormat.time(entry.date, tz: entry.timeZone)). \(Pahar.label(entry.pahar)), \(entry.windowText). "
             + (names.isEmpty ? "No raags named." : names.joined(separator: ", "))
             + (entry.skyPlace.map { ". Sky over \($0), not this phone's time zone." } ?? "")
     }

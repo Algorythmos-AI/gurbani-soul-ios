@@ -199,7 +199,8 @@ struct ClockScreen: View {
             VStack(alignment: .leading, spacing: Theme.Space.l) {
                 nowCard(clock: clock, pahar: p, boundary: boundary, solarLive: solar != nil)
                 RaagDial(clock: clock, currentPahar: p, minutesNow: minutesNow, now: nowDate,
-                         sun: solar, handsFrozen: handsFrozen, epoch: clockEpoch) { tapped in
+                         sun: solar, currentWindow: windowText(p),
+                         handsFrozen: handsFrozen, epoch: clockEpoch) { tapped in
                     Haptics.tap()
                     detailPahar = PaharSelection(p: tapped)
                 }
@@ -485,8 +486,9 @@ struct ClockScreen: View {
             }
             .accessibilityIdentifier("divergenceLink")
             Text("Pahars were traditionally solar — four equal watches of daylight and four of night. "
-                 + "Solar is the default; the fixed-clock view anchors pahar 1 at 6 AM as a modern rendering. The dial is a "
-                 + "24-hour face on your local clock: noon at the top, midnight at the bottom. Every placement "
+                 + "Solar is the default; the fixed-clock view anchors pahar 1 at 6 AM as a modern rendering. The dial is "
+                 + "your local 12-hour clock: the ring shows the half of the day the hour hand is in (AM or PM), "
+                 + "and each watch sits where the hand points at that time. Every placement "
                  + "here is an attributed scholarly claim with its citation — where traditions disagree, "
                  + "both are kept.")
                 .font(.caption2).foregroundStyle(.tertiary)
@@ -497,17 +499,20 @@ struct ClockScreen: View {
 /// sheet(item:) target for a tapped pahar (never conform Int to Identifiable globally).
 struct PaharSelection: Identifiable { let p: Int; var id: Int { p } }
 
-/// The dial: the shared 24-hour face (`PaharDialRenderer`) with the live LOCAL clock in its
-/// hollow — the reader's own time, the current watch and the countdown to the next one — so
-/// one glance answers "what time is it here, and which raags belong to it". The painted face
-/// is decorative for accessibility; the hollow readout is a real element and the pahar LIST
-/// below remains the full-content path. Taps on a wedge open that pahar's detail sheet.
+/// The dial: the shared face (`PaharDialRenderer`) — the pahar ring and the live 12-hour analog
+/// clock on ONE scale, so the hour hand points into the watch it is in and every ring label sits
+/// beside the dial number it names. The ring shows the half of the day the hour hand is in.
+/// For accessibility the face is one image element that names its half and the lit watch; the
+/// readout row under it and the pahar LIST below remain the full-content path. Taps on a wedge
+/// open that pahar's detail sheet.
 struct RaagDial: View {
     let clock: TimingClock
     let currentPahar: Int
     let minutesNow: Int
     let now: Date
     let sun: (sunrise: Int, sunset: Int)?
+    /// The current watch's window on the reader's clock ("8:18–10:59 AM"), for VoiceOver.
+    var currentWindow = ""
     /// Pinned clock / UI tests: hands at `now`, seconds 0, no animation.
     var handsFrozen = false
     /// Bumped on a system time-zone/clock change so the hands restart from the new clock.
@@ -535,15 +540,19 @@ struct RaagDial: View {
             let m = DialMetrics(size: size, center: center, style: .full)
             ZStack {
                 PaharDialRenderer(model: model, style: .full, palette: palette,
-                                  numerals: PaharFormat.dialNumerals(locale: locale), faceDate: now)
+                                  numerals: PaharFormat.dialNumerals(half: model.half, locale: locale), faceDate: now)
                 hands
             }
-            .accessibilityHidden(true)      // decorative: the readout row + lists carry the content
+            // one image element: the scale it shows and the lit watch (the lists carry the rest)
+            .accessibilityElement(children: .ignore)
+            .accessibilityAddTraits(.isImage)
+            .accessibilityLabel(accessibilityText)
+            .accessibilityIdentifier("raagDial")
             .contentShape(Circle())
             .onTapGesture { pt in
-                // hit-test: angle → minutes → pahar (respect the active mode's windows);
-                // the face in the hollow is not a target
-                guard let minute = m.minute(at: pt) else { return }
+                // hit-test: angle → minutes in the half shown → pahar (respect the active mode's
+                // windows); the face in the hollow is not a target
+                guard let minute = m.minute(at: pt, half: model.half) else { return }
                 if let s = sun {
                     onTap(Pahar.paharSolar(minute, sunrise: s.sunrise, sunset: s.sunset))
                 } else {
@@ -553,6 +562,15 @@ struct RaagDial: View {
         }
         .onAppear { visible = true }
         .onDisappear { visible = false }
+    }
+
+    /// "Clock face, 12 AM to 12 PM. Lit: 1st pahar of night, 8:18 to 10:59 AM."
+    private var accessibilityText: String {
+        var s = "Clock face, \(PaharFormat.halfSpoken(model.half, locale: locale)), on the same scale as the clock hands."
+        if !currentWindow.isEmpty {
+            s += " Lit: \(Pahar.label(currentPahar)), \(currentWindow.replacingOccurrences(of: "–", with: " to "))."
+        }
+        return s
     }
 
     /// ONLY this layer animates. Smooth sweep at ≤30 fps while the dial is on screen and the app

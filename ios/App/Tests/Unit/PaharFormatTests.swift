@@ -1,4 +1,5 @@
 import XCTest
+import SwiftUI
 import GurbaniPahar
 @testable import SGGS
 
@@ -123,25 +124,55 @@ final class PaharFormatTests: XCTestCase {
         XCTAssertEqual(PaharFormat.weekdayDay(date(2026, 9, 19, 20, 0, tz: utc), locale: us, tz: sydney).weekday, "SUN")
     }
 
-    func testDialNumerals() {
-        XCTAssertEqual(PaharFormat.dialNumerals(locale: us).map(\.label), ["12 AM", "6 AM", "12 PM", "6 PM"])
-        XCTAssertEqual(PaharFormat.dialNumerals(locale: gb).map(\.label), ["00", "06", "12", "18"])
+    /// The ring's labels sit at the dial's own 12 · 3 · 6 · 9 and name the half on the 12.
+    func testDialNumeralsFollowTheHalf() {
+        XCTAssertEqual(PaharFormat.dialNumerals(half: .am, locale: us).map(\.label), ["AM", "3 AM", "6 AM", "9 AM"])
+        XCTAssertEqual(PaharFormat.dialNumerals(half: .pm, locale: us).map(\.label), ["PM", "3 PM", "6 PM", "9 PM"])
+        XCTAssertEqual(PaharFormat.dialNumerals(half: .am, locale: gb).map(\.label), ["00–12", "03", "06", "09"])
+        XCTAssertEqual(PaharFormat.dialNumerals(half: .pm, locale: gb).map(\.label), ["12–24", "15", "18", "21"])
+        XCTAssertEqual(PaharFormat.dialNumerals(half: .pm, locale: us).map(\.minute), [720, 900, 1080, 1260])
+        // every label is at the angle of the face numeral it sits beside (12, 3, 6, 9)
+        for half in [Pahar.HalfDay.am, .pm] {
+            let degs = PaharFormat.dialNumerals(half: half, locale: us).map { Pahar.faceDegrees($0.minute) }
+            XCTAssertEqual(degs, [0, 90, 180, 270])
+        }
+        XCTAssertEqual(PaharFormat.halfSpoken(.pm, locale: us), "12 PM to 12 AM")
     }
 
     // MARK: dial geometry
 
-    func testDialAnglesNoonTopMidnightBottom() {
-        XCTAssertEqual(DialMetrics.angle(720).degrees, 270, accuracy: 0.001)   // noon → top
-        XCTAssertEqual(DialMetrics.angle(0).degrees, 90, accuracy: 0.001)      // midnight → bottom
+    /// One 12-hour scale: 12 at the top, 6 at the bottom, for both halves of the day — the ring's
+    /// angle for a minute is the hour hand's angle at that minute.
+    func testDialAnglesMatchTheTwelveHourFace() {
+        func norm(_ a: Angle) -> Double { (a.degrees.truncatingRemainder(dividingBy: 360) + 360).truncatingRemainder(dividingBy: 360) }
+        XCTAssertEqual(norm(DialMetrics.angle(0)), 270, accuracy: 0.001)       // 12 AM → top
+        XCTAssertEqual(norm(DialMetrics.angle(720)), 270, accuracy: 0.001)     // 12 PM → top
+        XCTAssertEqual(norm(DialMetrics.angle(360)), 90, accuracy: 0.001)      // 6 AM → bottom (screen y-down)
+        XCTAssertEqual(norm(DialMetrics.angle(1080)), 90, accuracy: 0.001)     // 6 PM → bottom
+        XCTAssertEqual(norm(DialMetrics.angle(540)), 180, accuracy: 0.001)     // 9 AM → left
+        // the ring and the hands layer agree at every minute (08:18 = the owner's screenshot)
+        for m in [0, 359, 360, 498, 719, 720, 1080, 1439] {
+            let d = PaharFormat.date(minuteOfDay: m, on: date(2026, 10, 27, 0, 0, tz: utc), tz: utc)!
+            let hand = ClockHands.angles(for: d, tz: utc, wholeMinutes: true).hour * 180 / .pi
+            XCTAssertEqual(norm(DialMetrics.angle(m)), norm(.degrees(hand - 90)), accuracy: 0.001, "minute \(m)")
+        }
         let m = DialMetrics(size: 300, style: .full)
         XCTAssertGreaterThan(m.hollowWidth, 100)
         XCTAssertLessThan(m.numeralRadius + 6, 150, "numerals must not clip the canvas")
-        // hit-test round trip for every 3-hour boundary
+        // hit-test round trip for every 3-hour boundary, in the half the face shows
         for h in stride(from: 0, to: 24, by: 3) {
+            let half = Pahar.HalfDay(minute: h * 60)
             let pt = m.point(minute: Double(h * 60) + 0.5, radius: (m.inner + m.outer) / 2)
-            XCTAssertEqual(m.minute(at: pt)!, h * 60, accuracy: 1)
+            XCTAssertEqual(m.minute(at: pt, half: half)!, h * 60, accuracy: 1)
         }
-        XCTAssertNil(m.minute(at: m.center), "the hollow is not a tap target")
+        XCTAssertNil(m.minute(at: m.center, half: .am), "the hollow is not a tap target")
+    }
+
+    func testDialModelShowsTheHourHandsHalf() {
+        XCTAssertEqual(PaharDialModel.fixed(current: 2, minutesNow: 719).half, .am)
+        XCTAssertEqual(PaharDialModel.fixed(current: 3, minutesNow: 720).half, .pm)
+        XCTAssertEqual(PaharDialModel.fixed(current: 6, minutesNow: 1439).half, .pm)
+        XCTAssertEqual(PaharDialModel.fixed(current: 7, minutesNow: 0).half, .am)
     }
 
     func testDialModelsCoverTheDay() {

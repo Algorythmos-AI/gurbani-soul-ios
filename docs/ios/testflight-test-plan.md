@@ -122,8 +122,11 @@ Expected: zero deviations. Sign in the build log: name, build (version + number)
    time matches the status bar and keeps ticking; the hand is never more than 15 min stale; switching
    Fixed/Solar in the app re-renders the widget (solar needs a stored location); the tinted lock
    screen stays legible.
-2. Clock tab: the time in the dial's hollow equals the status-bar clock; a 24-hour device shows
-   `14:51` and `06 · 12 · 18 · 00` numerals; a 12-hour device `2:51 PM` and `6 AM · 12 PM · 6 PM · 12 AM`.
+2. Clock tab: the time under the dial equals the status-bar clock. One 12-hour scale: the ring shows
+   the half of the day the hour hand is in, and the hour hand points into the lit watch. At 2:51 PM a
+   12-hour device labels the ring `PM · 3 PM · 6 PM · 9 PM` (each beside the face's 12 · 3 · 6 · 9), a
+   24-hour device `12–24 · 15 · 18 · 21` and shows `14:51`; before noon `AM · 3 AM · 6 AM · 9 AM`.
+   The ring turns to the other half exactly at noon and midnight.
    Change the time zone in Settings while the Clock is open — the face redraws.
 3. Analog face: the seconds hand sweeps smoothly; it pauses when the Clock is scrolled off-screen
    and when the app is backgrounded; with Reduce Motion on it ticks once a second. The day/date

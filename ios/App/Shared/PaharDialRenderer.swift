@@ -1,13 +1,17 @@
 import SwiftUI
 import GurbaniPahar
 
-/// The 24-hour Raag Clock face, drawn once for the app and every widget family (compiled into
-/// both targets; no `TimingClock`/DB dependency — the widget links only `GurbaniPahar`).
+/// The Raag Clock face, drawn once for the app and every widget family (compiled into both
+/// targets; no `TimingClock`/DB dependency — the widget links only `GurbaniPahar`).
 ///
-/// Geometry contract (unchanged since v1): noon at the top, midnight at the bottom, clockwise,
-/// `angle(m) = m/1440·360° + 90°` in screen coordinates. From the centre outwards:
-///   hollow (the live readout, drawn by the caller) · pahar band `inner…outer` (8 watches,
-///   raag beads, current-watch glow) · hour ring (24 ticks, a major every 3 h) · numerals.
+/// Geometry contract (since 1.5.0): ONE 12-hour scale for the ring and the analog face — 12 at
+/// the top, 3 right, 6 bottom, 9 left, 30° per hour (`Pahar.faceDegrees`), so every boundary,
+/// sunrise/sunset mark and the "now" point sit exactly where the hour hand points at that time.
+/// The ring shows the half of the day the hour hand is in (`Pahar.HalfDay`, 12 AM–12 PM or
+/// 12 PM–12 AM) with every watch clipped to it, and says which half. From the centre outwards:
+///   hollow (the 12-hour face, or the half's name when there is no face) · pahar band
+///   `inner…outer` (the watches in this half, raag beads, current-watch glow) · hour ring
+///   (12 ticks, a major every 3 h, on the dial's own hours) · labels (the half, then 3 · 6 · 9).
 /// Colours are brand tokens only (brand book §3): the current watch is `accentFill` with an
 /// `accent` stroke, the hand is `accent`, day watches sit on `accentDeep`, night on `Ink.info`;
 /// pahar 7 stays faint on purpose — its silence is content.
@@ -21,6 +25,9 @@ struct PaharDialModel: Equatable {
     var sunset: Int? = nil
     /// Primary raag count per pahar → beads along the arc.
     var beads: [Int: Int] = [:]
+
+    /// The half of the day the face shows — the one the hour hand is in.
+    var half: Pahar.HalfDay { Pahar.HalfDay(minute: minutesNow) }
 
     static func fixed(current: Int, minutesNow: Int, beads: [Int: Int] = [:]) -> PaharDialModel {
         PaharDialModel(windows: (1...8).map { Pahar.window($0) }, current: current,
@@ -72,23 +79,25 @@ struct DialMetrics {
     var tickMajor: CGFloat { outer + 10 }
     var numeralRadius: CGFloat { outer + 19 }
 
-    /// minutes → angle, noon at top, clockwise.
-    static func angle(_ m: Int) -> Angle { .degrees(Double(m) / 1440 * 360 + 90) }
-    static func angle(_ m: Double) -> Angle { .degrees(m / 1440 * 360 + 90) }
+    /// minutes → screen angle on the 12-hour face (12 at the top, clockwise): the hour hand's
+    /// angle at that wall-clock minute, so 06:00 and 18:00 both point at the 6.
+    static func angle(_ m: Int) -> Angle { angle(Double(m)) }
+    static func angle(_ m: Double) -> Angle { .degrees(Pahar.faceDegrees(m) - 90) }
 
     func point(minute m: Double, radius r: CGFloat) -> CGPoint {
         let a = Self.angle(m).radians
         return CGPoint(x: center.x + CGFloat(cos(a)) * r, y: center.y + CGFloat(sin(a)) * r)
     }
 
-    /// Inverse of the geometry for taps: a point inside the pahar band → minute-of-day.
-    func minute(at pt: CGPoint) -> Int? {
+    /// Inverse of the geometry for taps: a point inside the pahar band → minute-of-day within
+    /// the half the face shows.
+    func minute(at pt: CGPoint, half: Pahar.HalfDay) -> Int? {
         let dx = pt.x - center.x, dy = pt.y - center.y
         let r = sqrt(dx * dx + dy * dy)
         guard r >= inner * 0.8, r <= outer + 12 else { return nil }
-        var deg = atan2(Double(dy), Double(dx)) * 180 / .pi - 90       // undo the +90° offset
+        var deg = atan2(Double(dy), Double(dx)) * 180 / .pi + 90       // 0° = 12 o'clock
         deg = (deg.truncatingRemainder(dividingBy: 360) + 360).truncatingRemainder(dividingBy: 360)
-        return Int(deg / 360 * 1440) % 1440
+        return half.start + Int(deg / 360 * 720) % 720
     }
 }
 
@@ -96,15 +105,20 @@ struct PaharDialRenderer: View {
     let model: PaharDialModel
     var style: DialStyle = .full
     var palette: AccentPalette = .brandDefault
-    /// Cardinal numerals (`PaharFormat.dialNumerals`); ignored unless `style == .full`.
+    /// The ring's labels (`PaharFormat.dialNumerals(half:)`): the half's name at the 12, then
+    /// the 3 · 6 · 9 hours of that half; ignored unless `style == .full`.
     var numerals: [(minute: Int, label: String)] = []
     /// Tinted/vibrant widget rendering: everything becomes `.primary` strokes.
     var monochrome = false
-    /// Draw the classic 12-hour analog face (numerals 1–12, hour + minute hands) in the hollow,
-    /// so the modern clock and the eight Sikhi watches read on one face. Off for `.mono`.
+    /// Draw the classic 12-hour analog face (numerals 1–12; the caller adds `ClockHandsLayer`)
+    /// in the hollow, so the modern clock and the eight Sikhi watches read on one face. Off for
+    /// `.mono`. With a face, its hour hand is the one "now" mark; without one the ring draws a
+    /// needle at the same angle instead.
     var analogFace = true
     /// The date shown by the face's day/date complication (nil hides it).
     var faceDate: Date? = nil
+    /// The zone `faceDate` is read in (a widget entry's own, so its date matches its ring).
+    var faceTimeZone: TimeZone = .current
 
     private var mono: Bool { monochrome || style == .mono }
 
@@ -116,9 +130,22 @@ struct PaharDialRenderer: View {
             drawWatches(&ctx, m)
             drawSolarMarks(&ctx, m)
             drawNumerals(&ctx, m)
-            if analogFace && style != .mono { drawAnalogFace(&ctx, m) }
-            drawHand(&ctx, m)
+            if hasFace(m) { drawAnalogFace(&ctx, m) } else { drawHalfName(&ctx, m); drawHand(&ctx, m) }
         }
+    }
+
+    /// True when the hollow holds the 12-hour face — then the caller's hour hand marks now.
+    private func hasFace(_ m: DialMetrics) -> Bool {
+        analogFace && style != .mono && FaceMetrics(dial: m).drawsFace
+    }
+
+    /// Without a face (Explore's preview) the hollow names the half the ring shows.
+    private func drawHalfName(_ ctx: inout GraphicsContext, _ m: DialMetrics) {
+        guard style != .mono, m.inner > 18 else { return }
+        let t = Text(PaharFormat.halfName(model.half))
+            .font(.system(size: max(9, min(15, m.inner * 0.42)), weight: .semibold, design: .rounded))
+            .foregroundStyle(Color.secondary)
+        ctx.draw(ctx.resolve(t), at: m.center, anchor: .center)
     }
 
     // MARK: the 12-hour face (static part — the hands live in `ClockHandsLayer`)
@@ -157,7 +184,7 @@ struct PaharDialRenderer: View {
         }
         // day/date complication between the hub and the "3"
         if f.showsDate, let faceDate {
-            let (weekday, day) = PaharFormat.weekdayDay(faceDate)
+            let (weekday, day) = PaharFormat.weekdayDay(faceDate, tz: faceTimeZone)
             let size = max(9, r * 0.105)
             let t = Text(weekday + " ").font(.system(size: size, weight: .medium)).foregroundStyle(Color.secondary)
                 + Text(day).font(.system(size: size, weight: .semibold)).monospacedDigit()
@@ -168,22 +195,28 @@ struct PaharDialRenderer: View {
 
     // MARK: layers
 
-    private func wedge(_ w: Pahar.Window, _ m: DialMetrics) -> (path: Path, start: Int, end: Int) {
-        let end = w.end <= w.start ? w.end + 1440 : w.end
-        let path = Path { p in
-            p.addArc(center: m.center, radius: m.outer, startAngle: DialMetrics.angle(w.start),
-                     endAngle: DialMetrics.angle(end), clockwise: false)
-            p.addArc(center: m.center, radius: m.inner, startAngle: DialMetrics.angle(end),
-                     endAngle: DialMetrics.angle(w.start), clockwise: true)
+    /// The band between two minutes of one half. The sweep is the span's own length (720 min =
+    /// 360°), never an end angle, so a span ending on the 12 (noon or midnight) closes cleanly.
+    private func wedge(_ s: Pahar.Span, _ m: DialMetrics) -> Path {
+        let a0 = DialMetrics.angle(s.start)
+        let a1 = Angle.degrees(a0.degrees + Double(s.minutes) / 2)
+        return Path { p in
+            p.addArc(center: m.center, radius: m.outer, startAngle: a0, endAngle: a1, clockwise: false)
+            p.addArc(center: m.center, radius: m.inner, startAngle: a1, endAngle: a0, clockwise: true)
             p.closeSubpath()
         }
-        return (path, w.start, end)
     }
 
     private func drawWatches(_ ctx: inout GraphicsContext, _ m: DialMetrics) {
         guard model.windows.count == 8 else { return }
+        let half = model.half
         for p in 1...8 {
-            let (path, start, end) = wedge(model.windows[p - 1], m)
+            let w = model.windows[p - 1]
+            let spans = Pahar.clip(w, to: half)
+            guard !spans.isEmpty else { continue }      // this watch lies in the other half
+            var path = Path()
+            for s in spans { path.addPath(wedge(s, m)) }
+            let start = w.start, end = w.end <= w.start ? w.end + 1440 : w.end
             let isCurrent = p == model.current
             let day = p <= 4
             if mono {
@@ -199,7 +232,8 @@ struct PaharDialRenderer: View {
                 ctx.stroke(path, with: .color(Ink.hairline), lineWidth: 0.5)
                 if isCurrent { ctx.stroke(path, with: .color(palette.accent), lineWidth: 2) }
             }
-            // raag beads along the arc's middle radius
+            // raag beads along the arc's middle radius, spaced over the WHOLE watch; a watch cut
+            // at noon or midnight shows only the beads that fall in this half
             let n = min(model.beads[p] ?? 0, 8)
             if n > 0 {
                 let midR = (m.outer + m.inner) / 2
@@ -207,7 +241,9 @@ struct PaharDialRenderer: View {
                 let r: CGFloat = style == .full ? 2.6 : 1.8
                 for i in 0..<n {
                     let t = (Double(i) + 1) / (Double(n) + 1)
-                    let pt = m.point(minute: Double(start) + span * t, radius: midR)
+                    let bm = Double(start) + span * t
+                    guard Pahar.isIn(Int(bm.rounded(.down)) % 1440, half: half) else { continue }
+                    let pt = m.point(minute: bm, radius: midR)
                     let bead = Path(ellipseIn: CGRect(x: pt.x - r, y: pt.y - r, width: r * 2, height: r * 2))
                     let c: Color = mono ? .primary : (isCurrent ? palette.onAccent : .white)
                     ctx.fill(bead, with: .color(c.opacity(isCurrent ? 0.95 : 0.85)))
@@ -216,9 +252,12 @@ struct PaharDialRenderer: View {
         }
     }
 
+    /// Twelve hour ticks on the dial's own hours; the 12 · 3 · 6 · 9 are major. An hour that
+    /// carries a label gives its tick up to the label (they collided at the 3 and the 9).
     private func drawHourRing(_ ctx: inout GraphicsContext, _ m: DialMetrics) {
         guard style != .mono else { return }
-        for h in 0..<24 {
+        let labelled = Set(drawsLabels(m) ? numerals.map { Int(Pahar.faceDegrees($0.minute).rounded()) / 30 } : [])
+        for h in 0..<12 where !labelled.contains(h) {
             let major = h % 3 == 0
             let a = m.point(minute: Double(h * 60), radius: m.tickInner)
             let b = m.point(minute: Double(h * 60), radius: major ? m.tickMajor : m.tickMinor)
@@ -229,22 +268,31 @@ struct PaharDialRenderer: View {
         }
     }
 
+    private func drawsLabels(_ m: DialMetrics) -> Bool { style == .full && m.inner > 40 }
+
+    /// Each label sits on its hour's angle with its inner edge just outside the band — measured,
+    /// so "9 AM" at the side clears the band and the canvas edge alike.
     private func drawNumerals(_ ctx: inout GraphicsContext, _ m: DialMetrics) {
-        guard style == .full, m.inner > 40 else { return }
+        guard drawsLabels(m) else { return }
         for n in numerals {
-            let pt = m.point(minute: Double(n.minute), radius: m.numeralRadius)
-            let text = Text(n.label).font(.system(size: 10, weight: .semibold, design: .rounded))
-                .monospacedDigit().foregroundStyle(mono ? Color.primary : Color.secondary)
-            ctx.draw(ctx.resolve(text), at: pt, anchor: .center)
+            // the label on the 12 names the half (AM / PM) and reads first; the hours recede
+            let top = n.minute % 720 == 0
+            let text = Text(n.label).font(.system(size: top ? 11 : 10, weight: top ? .bold : .semibold, design: .rounded))
+                .monospacedDigit().foregroundStyle(mono || top ? Color.primary : Color.secondary)
+            let resolved = ctx.resolve(text)
+            let size = resolved.measure(in: CGSize(width: 200, height: 60))
+            let a = DialMetrics.angle(n.minute).radians
+            let r = m.tickInner + 2 + abs(CGFloat(cos(a))) * size.width / 2 + abs(CGFloat(sin(a))) * size.height / 2
+            ctx.draw(resolved, at: m.point(minute: Double(n.minute), radius: r), anchor: .center)
         }
     }
 
     /// Sunrise/sunset badges sit INSIDE the band on the day/night seam (never on the hour
-    /// ring, where they would collide with the 6 AM / 6 PM numerals).
+    /// ring, where they would collide with the labels) — only the one in this half.
     private func drawSolarMarks(_ ctx: inout GraphicsContext, _ m: DialMetrics) {
         guard style != .compact, let sr = model.sunrise, let ss = model.sunset else { return }
         let r: CGFloat = style == .full ? 8 : 5.5
-        for (minute, symbol) in [(sr, "sunrise.fill"), (ss, "sunset.fill")] {
+        for (minute, symbol) in [(sr, "sunrise.fill"), (ss, "sunset.fill")] where Pahar.isIn(minute, half: model.half) {
             let pt = m.point(minute: Double(minute), radius: (m.outer + m.inner) / 2)
             let badge = Path(ellipseIn: CGRect(x: pt.x - r, y: pt.y - r, width: r * 2, height: r * 2))
             if mono {
@@ -259,8 +307,9 @@ struct PaharDialRenderer: View {
         }
     }
 
-    /// The "now" pointer lives in the pahar band only — it never crosses the hollow, which
-    /// belongs to the readout. A pip at the inner edge marks where it starts.
+    /// The "now" pointer for a ring with no face (Explore, lock screen) — at the hour hand's
+    /// angle, in the pahar band only. A pip at the inner edge marks where it starts. With a
+    /// face, the hour hand is the one "now" mark and this is not drawn.
     private func drawHand(_ ctx: inout GraphicsContext, _ m: DialMetrics) {
         let now = Double(model.minutesNow)
         let tip = m.point(minute: now, radius: m.outer + (style == .full ? 4 : 2))

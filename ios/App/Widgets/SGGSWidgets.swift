@@ -21,7 +21,7 @@ struct SGGSWidgetsBundle: WidgetBundle {
     }
 }
 
-// MARK: - Raag now (the 24-hour dial, fixed or solar — mirrors the app's clock mode)
+// MARK: - Raag now (the 12-hour dial, fixed or solar — mirrors the app's clock mode)
 
 struct RaagNowProvider: TimelineProvider {
     func placeholder(in context: Context) -> RaagNowEntry {
@@ -55,7 +55,7 @@ struct RaagNowWidget: Widget {
                 .containerBackground(for: .widget) { RaagNowGround() }
         }
         .configurationDisplayName("Raag now")
-        .description("Your local time on the 24-hour Raag Clock — the current watch and its raags. Follows the app's Fixed/Solar setting.")
+        .description("Your local time on the Raag Clock — the current watch and its raags, on the clock's own 12-hour face. Follows the app's Fixed/Solar setting.")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge,
                             .accessoryCircular, .accessoryRectangular, .accessoryInline])
     }

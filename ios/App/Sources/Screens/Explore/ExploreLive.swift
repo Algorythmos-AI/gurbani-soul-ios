@@ -58,11 +58,12 @@ struct ExploreClockNow: Equatable {
     /// (`SolarPlace`): the card then names whose sky it shows, as the widget does.
     let skyPlace: String?
 
-    init(entry: RaagNowEntry, locale: Locale = .current, tz: TimeZone = .current) {
+    /// `tz` defaults to the entry's own zone, so the window text reads on the ring's clock.
+    init(entry: RaagNowEntry, locale: Locale = .current, tz: TimeZone? = nil) {
         pahar = entry.pahar
         label = Pahar.label(entry.pahar)
         let w = entry.windows.indices.contains(entry.pahar - 1) ? entry.windows[entry.pahar - 1] : Pahar.window(entry.pahar)
-        window = PaharFormat.window(w, on: entry.date, locale: locale, tz: tz)
+        window = PaharFormat.window(w, on: entry.date, locale: locale, tz: tz ?? entry.timeZone)
         model = entry.model
         raagsGurmukhi = entry.raagsGurmukhi
         raagsRoman = entry.raags
