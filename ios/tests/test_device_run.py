@@ -173,6 +173,8 @@ class HelperTests(unittest.TestCase):
             "Lost connection to the test runner": "env:tunnel",
             "BENCH: the device orientation is landscape": "env:landscape",
             "BENCH: org.sggs.app is not in the foreground (another app is)": "env:foreground",
+            "Failed to terminate org.sggs.app:4211": "env:tunnel",
+            "Failed to launch org.sggs.app (pid 812) via Xcode": "env:tunnel",
             "XCTAssertTrue failed - Saved verses row missing": "unknown",
         }
         for text, cause in cases.items():
@@ -748,9 +750,10 @@ class VerdictTests(unittest.TestCase):
         s = self.base(); s["tests"].append({"id": "B/t()", "outcome": "Failed", "failure": "x", "cause": "unknown"})
         self.assertEqual(dr.compute_verdict(s)[0], "INCOMPLETE")
 
-    def test_a_backfill_never_passes(self):
-        s = self.base(); s.update(origin="backfill", evidence_lost=True)
-        self.assertEqual(dr.compute_verdict(s)[0], "RECORDED-NO-BUNDLES")
+    def test_a_record_from_notes_never_passes(self):
+        for extra in ({"origin": "backfill", "evidence_lost": True}, {"origin": "device-pretag"}):
+            s = self.base(); s.update(extra)
+            self.assertEqual(dr.compute_verdict(s)[0], "RECORDED-NO-BUNDLES", extra)
 
 
 # ---------------------------------------------------------------- check, rebuild, verify-assets
@@ -792,16 +795,26 @@ class CheckAndRebuildTests(Base):
         self.assertTrue(any("bytes >" in p for p in problems))
         self.assertTrue(any("source.commit" in p for p in problems))
 
-    def backfill(self, version, run_id, tests):
+    def backfill(self, version, run_id, tests, origin="backfill"):
         d = self.runs / version / run_id
         d.mkdir(parents=True)
-        s = {"schema": 1, "tool_version": "1", "origin": "backfill", "evidence_lost": True, "version": version,
+        s = {"schema": 1, "tool_version": "1", "origin": origin, "evidence_lost": origin == "backfill", "version": version,
              "run_id": run_id, "app": {"version": version}, "source": {"commit": "e" * 40, "tree": run_id[-7:] + "f" * 33},
              "device": {"name": "S-iPhone", "ios": "27.0.1"}, "started_at": "2026-10-25T12:00:00Z",
              "bundles": [], "tests": tests, "checklist": {}, "launch": {}}
         s["verdict"], s["verdict_reasons"] = dr.compute_verdict(s)
         (d / "summary.json").write_text(json.dumps(s, indent=2))
         (d / "summary.md").write_text(dr.render_md(s))
+
+    def test_records_from_notes(self):
+        self.backfill("1.5.0", "20261027T1605Z-63d7386", [], origin="device-pretag")
+        out = self.runs / "1.5.0" / "20261027T1605Z-63d7386"
+        self.assertEqual(dr.check_run(out), [])
+        doc = json.loads((out / "summary.json").read_text())
+        self.assertEqual((doc["verdict"], doc["evidence_lost"]), ("RECORDED-NO-BUNDLES", False))
+        self.assertIn("pre-tag triage run", (out / "summary.md").read_text())
+        self.backfill("1.4.9", "20261025T1200Z-abcdef0", [], origin="hearsay")
+        self.assertTrue(any("origin 'hearsay'" in p for p in dr.check_run(self.runs / "1.4.9" / "20261025T1200Z-abcdef0")))
 
     def test_rebuild_and_check(self):
         self.passed_run()
