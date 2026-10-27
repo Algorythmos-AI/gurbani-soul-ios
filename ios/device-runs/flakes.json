@@ -3,7 +3,7 @@
   "_comment": "Derived by `device_run.py rebuild`. A flake event is an unexplained (cause unknown) failure that passed on a rerun; a test with 3 or more is chronic.",
   "tests": {
     "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()": {
-      "runs": 4,
+      "runs": 5,
       "fails": 3,
       "env_fails": 2,
       "fail_then_pass": 1,

@@ -237,7 +237,7 @@
     {
       "version": "1.5.0",
       "run_id": "20261027T1605Z-63d7386",
-      "verdict": "RECORDED-NO-BUNDLES",
+      "verdict": "RECORDED",
       "d10": {
         "cold": 1.777,
         "warm": 1.761
@@ -299,6 +299,31 @@
         ],
         [
           "SGGSUITests/testSehajFocusHidesChromeAndExits()",
+          0
+        ]
+      ]
+    },
+    {
+      "version": "1.4.9",
+      "run_id": "20261027T1750Z-79b5f96",
+      "verdict": "RECORDED",
+      "d10": {
+        "cold": 0.559,
+        "warm": 0.521
+      },
+      "d10_method": "in-xctest",
+      "d10_xctest_pre_main": {
+        "cold": 0.229,
+        "warm": 0.189
+      },
+      "suite_seconds": {},
+      "slowest": [
+        [
+          "BenchGuardTests/testBenchIsReadyForADeviceRun()",
+          0
+        ],
+        [
+          "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
           0
         ]
       ]

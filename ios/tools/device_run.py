@@ -32,8 +32,8 @@ Commands
       Every run under ios/device-runs (or the given ones): schema, verdict recomputed, the scrub scan,
       text only, ≤ 256 KB per run.
 
-Verdicts: PASS · INCOMPLETE · FAIL · RECORDED-NO-BUNDLES (backfilled from documents; never passes a
-gate). The verdict is always recomputed from the facts, never typed.
+Verdicts: PASS · INCOMPLETE · FAIL · RECORDED / RECORDED-NO-BUNDLES (a record written from notes, with
+or without published bundles: a backfill, a pre-tag triage run, a PR's check; never passes a gate). The verdict is always recomputed from the facts, never typed.
 
 Exit codes: 0 ok · 1 refusal / gate / drift · 2 usage or I/O error. Stdlib only.
 """
@@ -77,12 +77,16 @@ RUN_ID_RE = re.compile(r"^\d{8}T\d{4}Z-[0-9a-f]{7}$")
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 BUNDLE_RE = re.compile(r"^(unit|ui|checklist|rerun|shots)(-[a-z0-9-]+)?\.xcresult$")
 REQUIRED_KINDS = ("unit", "ui", "checklist")
-VERDICTS = ("PASS", "INCOMPLETE", "FAIL", "RECORDED-NO-BUNDLES")
-# Records written from notes rather than by `summarize`: never a gate, always RECORDED-NO-BUNDLES.
-#   backfill       the result bundles were lost (evidence_lost: true);
-#   device-pretag  a release candidate's triage run before its tag: bundles kept locally, not uploaded.
+VERDICTS = ("PASS", "INCOMPLETE", "FAIL", "RECORDED", "RECORDED-NO-BUNDLES")
+# Records written from notes rather than by `summarize`: never a gate. RECORDED when its bundles are
+# published (verify-assets checks them like any run's), RECORDED-NO-BUNDLES when there are none.
+#   backfill          the result bundles were lost (evidence_lost: true);
+#   device-pretag     a release candidate's triage run before its tag;
+#   pr-verification   a pull request's check on the device (not a release run).
 NOTE_ORIGINS = {"backfill": "backfilled from documents; the result bundles were lost",
-                "device-pretag": "a pre-tag triage run recorded from notes; its bundles were not uploaded"}
+                "device-pretag": "a release candidate's pre-tag triage run, recorded from notes; never a release gate",
+                "pr-verification": "a pull request's device verification, recorded from notes; never a release gate"}
+ASSET_TAG_RE = re.compile(r"^ios-[0-9A-Za-z.]+-\d{8}T\d{4}Z-[0-9a-f]{7}$")
 
 # The owner's word on the bench, given before every run (docs/ios/device-evidence.md, "Pre-run").
 ATTESTATIONS = ("unlocked", "auto-lock-never", "portrait-lock", "dnd", "no-other-apps", "hands-off",
@@ -498,25 +502,30 @@ def read_attachments(manifest, att_dir):
     return by_test
 
 
-def deterministic_tar(src_dir, dest):
-    """tar.gz of a bundle with fixed order, owners and times, so a re-summarize gives the same sha256.
-    xcresulttool's own cache (database.sqlite3) is left out: it is rebuilt on every read."""
+def deterministic_tar(src_dir, dest, root=None):
+    """A reproducible tar.gz of one bundle, byte for byte the format of every published evidence
+    asset: file entries only, under `<root>/` (default `<bundle name>.xcresult/`), in os.walk order
+    (each folder's files sorted, then its sorted subfolders), mtime 0, uid/gid 0, PAX headers, gzip
+    level 9 with mtime 0. xcresulttool's own cache (database.sqlite3*) is left out: it is rebuilt on
+    every read. The same input gives the same sha256, so a re-summarize or a re-pack never drifts."""
     src_dir = Path(src_dir)
+    root = root or f"{src_dir.stem}.xcresult"
     Path(dest).parent.mkdir(parents=True, exist_ok=True)
-    with open(dest, "wb") as out, gzip.GzipFile(filename="", mode="wb", fileobj=out, mtime=0) as gz, \
+    with open(dest, "wb") as out, \
+            gzip.GzipFile(filename="", mode="wb", fileobj=out, mtime=0, compresslevel=9) as gz, \
             tarfile.open(fileobj=gz, mode="w", format=tarfile.PAX_FORMAT) as tar:
-        for p in [src_dir] + sorted(src_dir.rglob("*")):
-            if p.name in ("database.sqlite3", "database.sqlite3-wal", "database.sqlite3-shm"):
-                continue
-            ti = tar.gettarinfo(str(p), arcname=p.relative_to(src_dir.parent).as_posix())
-            ti.uid = ti.gid = 0
-            ti.uname = ti.gname = ""
-            ti.mtime = 0
-            if ti.isreg():
-                with open(p, "rb") as f:
-                    tar.addfile(ti, f)
-            else:
-                tar.addfile(ti)
+        for here, dirs, files in os.walk(src_dir):
+            dirs.sort()
+            for f in sorted(files):
+                if f.startswith("database.sqlite3"):
+                    continue
+                path = os.path.join(here, f)
+                ti = tar.gettarinfo(path, arcname=os.path.join(root, os.path.relpath(path, src_dir)))
+                ti.mtime = 0
+                ti.uid = ti.gid = 0
+                ti.uname = ti.gname = ""
+                with open(path, "rb") as fh:
+                    tar.addfile(ti, fh)
     return sha256_file(dest), Path(dest).stat().st_size
 
 
@@ -536,8 +545,8 @@ def asset_tag(version, run_id):
     return f"ios-{version}-{run_id}"
 
 
-def asset_url(version, run_id, name):
-    return f"https://github.com/{EVIDENCE_REPO}/releases/download/{asset_tag(version, run_id)}/{name}"
+def asset_url(version, run_id, name, tag=None):
+    return f"https://github.com/{EVIDENCE_REPO}/releases/download/{tag or asset_tag(version, run_id)}/{name}"
 
 
 def parse_launch(attachments):
@@ -759,8 +768,8 @@ def cmd_summarize(args, host=HOST, runs_dir=None):
         if system:
             rec["system_failures"] = system
         if not args.no_tar:
-            name = f"{path.stem}.tar.gz"
-            digest, size = deterministic_tar(real, run_dir / "upload" / name)
+            name = f"{path.stem}.xcresult.tar.gz"
+            digest, size = deterministic_tar(real, run_dir / "upload" / name, root=f"{path.stem}.xcresult")
             rec.update({"asset": name, "tar_sha256": digest, "size": size,
                         "asset_url": asset_url(run["version"], run["run_id"], name)})
         bundles.append({**rec, "cases": cases, "atts": atts, "_start": b_start})
@@ -860,7 +869,7 @@ def cmd_summarize(args, host=HOST, runs_dir=None):
         pub.mkdir(parents=True)
         for a in public_files:
             shutil.copyfile(a["file"], pub / (re.sub(r"[^\w .-]", "_", a["name"]) + ".png"))
-        digest, size = deterministic_tar(pub, run_dir / "upload-public" / f"{pub.name}.tar.gz")
+        digest, size = deterministic_tar(pub, run_dir / "upload-public" / f"{pub.name}.tar.gz", root=pub.name)
         summary["public_evidence"] = {"asset": f"{pub.name}.tar.gz", "sha256": digest, "size": size,
                                       "release": f"{PUBLIC_REPO}@v{run['version']}",
                                       "files": sorted(p.name for p in pub.iterdir())}
@@ -891,7 +900,8 @@ def cmd_summarize(args, host=HOST, runs_dir=None):
 def compute_verdict(s):
     """(verdict, reasons) from a summary's facts. FAIL beats INCOMPLETE beats PASS."""
     if s.get("origin") in NOTE_ORIGINS or s.get("evidence_lost"):
-        return "RECORDED-NO-BUNDLES", [NOTE_ORIGINS.get(s.get("origin"), NOTE_ORIGINS["backfill"])]
+        why = NOTE_ORIGINS.get(s.get("origin"), NOTE_ORIGINS["backfill"])
+        return ("RECORDED", [why + "; its bundles are published"]) if s.get("bundles") else ("RECORDED-NO-BUNDLES", [why])
     fail, incomplete = [], []
     src = s.get("source", {})
     if src.get("dirty") or src.get("stamp_tree") != src.get("tree"):
@@ -1059,8 +1069,9 @@ def counts(d, kind):
 def build_history(docs, flakes):
     out = ["# Device-run history", "",
            "Derived by `python3 ios/tools/device_run.py rebuild` from every `summary.json` here; never edit.",
-           "Runbook: `docs/ios/device-evidence.md`. `RECORDED-NO-BUNDLES` rows were backfilled from documents",
-           "after their result bundles were lost; they never pass a gate.", "",
+           "Runbook: `docs/ios/device-evidence.md`. `RECORDED` and `RECORDED-NO-BUNDLES` rows were written from",
+           "notes (a backfill whose bundles were lost, a pre-tag triage run, a pull request's check); they never",
+           "pass a gate. `RECORDED` ones have their bundles published in the evidence repository.", "",
            "| Version | Run | Verdict | Tree | Device | Unit | UI | Checklist | D10 cold / warm (method) |",
            "|---|---|---|---|---|---|---|---|---|"]
     for d in reversed(docs):
@@ -1170,14 +1181,20 @@ def check_run(run_dir):
         problems.append("a backfilled run must say evidence_lost: true")
     elif s["origin"] not in NOTE_ORIGINS and s["origin"] != "device":
         problems.append(f"origin {s['origin']!r} is not device, {', '.join(NOTE_ORIGINS)}")
-    elif s["origin"] == "device":
-        if not s["bundles"]:
-            problems.append("a device run lists its result bundles")
-        for b in s["bundles"]:
-            if not re.match(r"^[0-9a-f]{64}$", b.get("tar_sha256") or ""):
-                problems.append(f"bundle {b.get('name')}: tar_sha256 missing")
-            if b.get("asset_url") != asset_url(s["version"], s["run_id"], b.get("asset", "")):
-                problems.append(f"bundle {b.get('name')}: asset_url is not the evidence release's")
+    elif s["origin"] == "device" and not s["bundles"]:
+        problems.append("a device run lists its result bundles")
+    tag = s.get("asset_tag") or asset_tag(s["version"], s["run_id"])
+    if s["origin"] == "device" and tag != asset_tag(s["version"], s["run_id"]):
+        problems.append(f"asset_tag {tag!r} is not {asset_tag(s['version'], s['run_id'])!r}")
+    if s["bundles"] and not (ASSET_TAG_RE.match(tag) and tag.endswith(s["run_id"])):
+        problems.append(f"asset_tag {tag!r} must be ios-<version or label>-<run id>")
+    for b in s["bundles"]:
+        if not re.match(r"^[0-9a-f]{64}$", b.get("tar_sha256") or ""):
+            problems.append(f"bundle {b.get('name')}: tar_sha256 missing")
+        if not isinstance(b.get("size"), int) or b["size"] <= 0:
+            problems.append(f"bundle {b.get('name')}: size missing")
+        if b.get("asset_url") != asset_url(s["version"], s["run_id"], b.get("asset", ""), tag):
+            problems.append(f"bundle {b.get('name')}: asset_url is not the evidence release's")
     for t in s["tests"]:
         if t.get("cause") and t["cause"] not in CAUSE_VALUES:
             problems.append(f"{t['id']}: cause {t['cause']!r} is not one of {', '.join(CAUSE_VALUES)}")
@@ -1228,8 +1245,8 @@ def cmd_verify_assets(args, host=HOST):
     problems, checked = [], 0
     for path in args.summaries:
         s = read_json(path)
-        if s.get("origin") in NOTE_ORIGINS:
-            continue
+        if not s.get("bundles"):
+            continue                     # a record from notes with nothing published
         tag = s.get("asset_tag") or asset_tag(s["version"], s["run_id"])
         api = f"https://api.github.com/repos/{EVIDENCE_REPO}/releases/tags/{tag}"
         try:

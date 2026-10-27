@@ -246,9 +246,11 @@ class HelperTests(unittest.TestCase):
             two = dr.deterministic_tar(b, Path(t) / "two.tar.gz")
             self.assertEqual(one, two)
             with tarfile.open(Path(t) / "two.tar.gz") as tar:
-                names = tar.getnames()
-            self.assertIn("unit.xcresult/Info.plist", names)
-            self.assertNotIn("unit.xcresult/database.sqlite3", names)
+                members = tar.getmembers()
+            # the published assets' format: files only, os.walk order (a folder's files, then its subfolders)
+            self.assertEqual([m.name for m in members], ["unit.xcresult/Info.plist", "unit.xcresult/Data/data.0"])
+            self.assertTrue(all(m.isfile() and m.mtime == 0 and m.uid == 0 for m in members))
+            self.assertNotEqual(dr.deterministic_tar(b, Path(t) / "three.tar.gz", root="d10-rerun.xcresult")[0], one[0])
 
     def test_parse_launch_from_the_timings_note(self):
         f = next(p for p in (FIX / "checklist" / "attachments").iterdir() if p.suffix == ".txt"
@@ -257,6 +259,14 @@ class HelperTests(unittest.TestCase):
         self.assertEqual(launch["cold"]["nitnemDrawn"], 1.31)
         self.assertEqual(launch["warm"]["nitnemDrawn"], 0.88)
         self.assertEqual(launch["xctest_clock"], {"cold": 4.02, "warm": 2.11})
+
+    def test_parse_launch_reads_the_timeline_d10_attaches_on_the_device(self):
+        """The real "D10 launch timeline" from PR #107's device run (S-iPhone, 2026-10-27)."""
+        launch = dr.parse_launch([{"name": "D10 launch timeline", "file": str(FIX / "pr107-d10-launch-timeline.json")}])
+        self.assertEqual((launch["cold"]["nitnemDrawn"], launch["warm"]["nitnemDrawn"]), (0.559, 0.521))
+        self.assertEqual(launch["cached_hash"], {"cold": False, "warm": True})
+        self.assertEqual(launch["xctest_clock"], {"cold": 5.543, "warm": 2.52})
+        self.assertEqual(dr.judge_timeline(launch, "in XCTest")[1], None)
 
     def test_parse_launch_prefers_the_json_attachment(self):
         with TemporaryDirectory() as t:
@@ -394,7 +404,7 @@ class SummarizeTests(Base):
         for b in s["bundles"]:
             self.assertEqual(dr.sha256_file(rd / "upload" / b["asset"]), b["tar_sha256"])
             self.assertEqual(b["asset_url"], f"https://github.com/{dr.EVIDENCE_REPO}/releases/download/"
-                                             f"ios-{self.version}-{rd.name}/{b['name']}.tar.gz")
+                                             f"ios-{self.version}-{rd.name}/{b['name']}.xcresult.tar.gz")
         self.assertEqual(len(s["public_evidence"]["files"]), 10)    # D2 has no images; D3 8, D11 2
         self.assertEqual(dr.cmd_check(ns(run_dirs=[]), runs_dir=self.runs), 0)
 
@@ -758,8 +768,11 @@ class VerdictTests(unittest.TestCase):
         self.assertEqual(dr.compute_verdict(s)[0], "INCOMPLETE")
 
     def test_a_record_from_notes_never_passes(self):
-        for extra in ({"origin": "backfill", "evidence_lost": True}, {"origin": "device-pretag"}):
+        for extra in ({"origin": "backfill", "evidence_lost": True}, {"origin": "device-pretag"},
+                      {"origin": "pr-verification"}):
             s = self.base(); s.update(extra)
+            self.assertEqual(dr.compute_verdict(s)[0], "RECORDED", extra)            # bundles published
+            s["bundles"] = []
             self.assertEqual(dr.compute_verdict(s)[0], "RECORDED-NO-BUNDLES", extra)
 
 
@@ -822,6 +835,29 @@ class CheckAndRebuildTests(Base):
         self.assertIn("pre-tag triage run", (out / "summary.md").read_text())
         self.backfill("1.4.9", "20261025T1200Z-abcdef0", [], origin="hearsay")
         self.assertTrue(any("origin 'hearsay'" in p for p in dr.check_run(self.runs / "1.4.9" / "20261025T1200Z-abcdef0")))
+
+    def test_a_record_from_notes_can_carry_published_bundles(self):
+        self.backfill("1.4.9", "20261027T1750Z-79b5f96", [], origin="pr-verification")
+        out = self.runs / "1.4.9" / "20261027T1750Z-79b5f96"
+        s = json.loads((out / "summary.json").read_text())
+        tag = "ios-pr107-20261027T1750Z-79b5f96"
+        s.update(asset_tag=tag, bundles=[{"name": "d10", "asset": "d10.xcresult.tar.gz", "size": 1234, "tar_sha256": "a" * 64,
+                                          "asset_url": dr.asset_url("1.4.9", s["run_id"], "d10.xcresult.tar.gz", tag)}])
+        s["verdict"], s["verdict_reasons"] = dr.compute_verdict(s)
+        (out / "summary.json").write_text(json.dumps(s, indent=2))
+        (out / "summary.md").write_text(dr.render_md(s))
+        self.assertEqual(dr.check_run(out), [])
+        self.assertEqual(dr.compute_verdict(s)[0], "RECORDED")
+        seen = []
+        self.host.http = lambda url, token, accept=None, dest=None: seen.append(url) or {
+            "assets": [{"name": "d10.xcresult.tar.gz", "size": 1234}, {"name": "SHA256SUMS", "size": 1}]}
+        args = ns(summaries=[str(out / "summary.json")], sizes=True, skip_if_unavailable=False)
+        with mock.patch.dict(os.environ, {"SGGS_EVIDENCE_TOKEN": "t"}):
+            self.assertEqual(dr.cmd_verify_assets(args, host=self.host), 0)
+        self.assertTrue(seen[0].endswith("/releases/tags/" + tag))
+        s["asset_tag"] = "pr107-anything"
+        (out / "summary.json").write_text(json.dumps(s, indent=2))
+        self.assertTrue(any("asset_tag" in p for p in dr.check_run(out)))
 
     def test_rebuild_and_check(self):
         self.passed_run()
@@ -894,9 +930,9 @@ class VerifyAssetsTests(Base):
     def test_verify(self):
         self.assertEqual(self.verify(self.host_with(self.release())), 0)
         self.assertEqual(self.verify(self.host_with(self.release()), sizes=True), 0)
-        self.assertEqual(self.verify(self.host_with(self.release(drop="ui.tar.gz")), sizes=True), 1)
-        self.assertEqual(self.verify(self.host_with(self.release(resize="unit.tar.gz")), sizes=True), 1)
-        self.assertEqual(self.verify(self.host_with(self.release(), corrupt="checklist.tar.gz")), 1)
+        self.assertEqual(self.verify(self.host_with(self.release(drop="ui.xcresult.tar.gz")), sizes=True), 1)
+        self.assertEqual(self.verify(self.host_with(self.release(resize="unit.xcresult.tar.gz")), sizes=True), 1)
+        self.assertEqual(self.verify(self.host_with(self.release(), corrupt="checklist.xcresult.tar.gz")), 1)
 
     def test_an_unreadable_evidence_repo_is_a_notice_only_when_asked(self):
         err = dr.urllib.error.HTTPError("u", 404, "Not Found", {}, None)
