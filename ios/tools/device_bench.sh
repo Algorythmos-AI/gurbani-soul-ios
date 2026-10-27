@@ -7,6 +7,7 @@
 #   device_bench.sh ui        <worktree> <bundle> [-only-testing:…]   SGGSUITests (all, or the given tests)
 #   device_bench.sh checklist <worktree> <bundle>       DeviceChecklistTests (TEST_RUNNER_SGGS_DEVICE_CHECKLIST=1)
 #   device_bench.sh shots     <worktree> <bundles-dir>  testCaptureScreens light + dark
+#   device_bench.sh d10       <worktree> <run>          D10 outside XCTest: a cold then a warm devicectl launch
 #   device_bench.sh restore                             one ordinary launch (UITestVault hands real data back)
 #
 # <bundle> is the full path of a NEW .xcresult, normally <run>/bundles/<name>.xcresult from
@@ -24,6 +25,12 @@
 # refuses to run when the worktree's HEAD tree is not the stamp's tree, so the build under test is
 # always the commit under test. Each test command exits with xcodebuild's own status; the full log
 # is kept next to the bundle (<bundle>.log).
+#
+# `d10` launches the installed Debug build (install it first: run `unit` or `ui`) with devicectl,
+# not XCTest, so XCTest's bootstrap over the connection is not in the reading: a cold launch (the
+# verified fingerprint dropped, so the whole database is re-hashed), then a warm one. Each time the
+# app leaves its launch timeline in its container and the bench copies it to <run>/d10/<cold|warm>.json,
+# which `device_run.py summarize` judges. No data is touched: an ordinary launch never seals or wipes.
 set -euo pipefail
 
 die() { echo "device_bench: $*" >&2; exit 2; }
@@ -132,10 +139,39 @@ PY
         run_tests "$dir/shots-$look.xcresult" -only-testing:SGGSUITests/SGGSUITests/testCaptureScreens || rc=$?
     done
     exit "$rc" ;;
+  d10)
+    need; in_worktree "${1:-}"; run=${2:-}; stamp_matches
+    [ -d "$run/bundles" ] || die "give the run folder from device_run.py begin (it holds bundles/)"
+    out="$run/d10"
+    [ ! -e "$out" ] || die "$out exists — a D10 measurement is made once per run"
+    mkdir -p "$out"
+    for kind in cold warm; do
+      envs='{"SGGS_UITEST_LAUNCH_METRICS":"1"}'
+      [ "$kind" = warm ] || envs='{"SGGS_UITEST_LAUNCH_METRICS":"1","SGGS_UITEST_COLD_VERIFY":"1"}'
+      launched=$(date +%s)
+      xcrun devicectl device process launch --device "$SGGS_DEVICE_UDID" --terminate-existing \
+        --environment-variables "$envs" org.sggs.app >/dev/null
+      got=0
+      for _ in $(seq 1 15); do
+        sleep 2
+        # the app deletes an older timeline at its first code; written_at proves this one is new
+        if xcrun devicectl device copy from --device "$SGGS_DEVICE_UDID" --domain-type appDataContainer \
+             --domain-identifier org.sggs.app --source Library/Caches/sggs-launch-metrics.json \
+             --destination "$out/$kind.json" >/dev/null 2>&1 &&
+           python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d.get("written_at",0) >= float(sys.argv[2])-5 and "nitnemDrawn" in d.get("since_process_start",{}) else 1)' \
+             "$out/$kind.json" "$launched"; then
+          got=1; break
+        fi
+        rm -f "$out/$kind.json"
+      done
+      [ "$got" = 1 ] || die "D10 $kind: no timeline from the app within 30 s — is the installed app a Debug build of this tree, and the phone unlocked?"
+      python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); s=d["since_process_start"]; print("D10 %s: process start -> Nitnem %.3f s (first app code at %.3f s), cached_hash=%s" % (sys.argv[2], s["nitnemDrawn"], s.get("appInit", 0), d.get("cached_hash")))' \
+        "$out/$kind.json" "$kind"
+    done ;;
   restore)
     need
     xcrun devicectl device process launch --device "$SGGS_DEVICE_UDID" --terminate-existing org.sggs.app >/dev/null
     echo "ordinary launch done (UITestVault restores the real data) — record it: device_run.py record-manual <run> restore pass" ;;
   *)
-    sed -n '2,9p' "$0"; exit 64 ;;
+    sed -n '2,10p' "$0"; exit 64 ;;
 esac

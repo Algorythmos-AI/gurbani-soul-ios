@@ -26,6 +26,15 @@ exit "${FAKE_RC:-0}"
 FAKE_XCRUN = """#!/usr/bin/env bash
 echo "xcrun $@" >> "$FAKE_LOG"
 if [ "$1 $2 $3" = "devicectl list devices" ]; then echo "S-iPhone   ${FAKE_UDID}   available (paired)   iPhone 17 Pro Max"; fi
+if [ "$1 $2 $3 $4" = "devicectl device process launch" ]; then
+  case "$*" in *SGGS_UITEST_COLD_VERIFY*) echo cold > "$FAKE_STATE" ;; *) echo warm > "$FAKE_STATE" ;; esac
+fi
+if [ "$1 $2 $3 $4" = "devicectl device copy from" ] && [ -z "${FAKE_NO_TIMELINE:-}" ]; then
+  for a in "$@"; do [ "$prev" = --destination ] && dest=$a; prev=$a; done
+  kind=$(cat "$FAKE_STATE"); cached=true; [ "$kind" = cold ] && cached=false
+  echo "{\\"cached_hash\\": $cached, \\"written_at\\": $(date +%s), \\"since_process_start\\": {\\"appInit\\": 0.21, \\"nitnemDrawn\\": 1.3}}" > "$dest"
+fi
+[ "$1 $2 $3 $4" = "devicectl device copy from" ] && [ -n "${FAKE_NO_TIMELINE:-}" ] && exit 1
 exit 0
 """
 
@@ -63,7 +72,7 @@ class DeviceBenchTests(unittest.TestCase):
 
     def bench(self, *args, **env):
         e = {**os.environ, "PATH": f"{self.bin}:{os.environ['PATH']}", "SGGS_DEVICE_BENCH_ENV": str(self.env_file),
-             "FAKE_LOG": str(self.log), "FAKE_UDID": UDID, **env}
+             "FAKE_LOG": str(self.log), "FAKE_UDID": UDID, "FAKE_STATE": str(self.log) + ".state", **env}
         return subprocess.run(["bash", str(SCRIPT), *args], capture_output=True, text=True, env=e)
 
     def head_tree(self):
@@ -139,6 +148,32 @@ class DeviceBenchTests(unittest.TestCase):
         for out in (r.stdout + r.stderr, r2.stdout + r2.stderr):
             self.assertNotIn(UDID, out)
             self.assertNotIn("key-file", out)
+
+    def test_d10_launches_cold_then_warm_outside_xctest_and_keeps_both_timelines(self):
+        self.bench("build", str(self.wt))
+        run = self.run_dir.parent
+        r = self.bench("d10", str(self.wt), str(run))
+        self.assertEqual(r.returncode, 0, r.stderr)
+        cold = json.loads((run / "d10" / "cold.json").read_text())
+        warm = json.loads((run / "d10" / "warm.json").read_text())
+        self.assertEqual((cold["cached_hash"], warm["cached_hash"]), (False, True))
+        launches = [line for line in self.log.read_text().splitlines() if "process launch" in line]
+        self.assertEqual(len(launches), 2)
+        self.assertIn("SGGS_UITEST_COLD_VERIFY", launches[0])
+        self.assertNotIn("SGGS_UITEST_COLD_VERIFY", launches[1])
+        self.assertTrue(all("--terminate-existing" in x and "SGGS_UITEST_LAUNCH_METRICS" in x for x in launches))
+        self.assertNotIn("SGGS_UITEST\"", self.log.read_text(), "an XCUITest session flag would seal and wipe data")
+        self.assertIn("process start -> Nitnem 1.300 s", r.stdout)
+        again = self.bench("d10", str(self.wt), str(run))
+        self.assertEqual(again.returncode, 2)
+        self.assertIn("once per run", again.stderr)
+
+    def test_d10_without_a_timeline_fails(self):
+        self.bench("build", str(self.wt))
+        r = self.bench("d10", str(self.wt), str(self.run_dir.parent), FAKE_NO_TIMELINE="1")
+        self.assertEqual(r.returncode, 2)
+        self.assertIn("no timeline", r.stderr)
+        self.assertFalse((self.run_dir.parent / "d10" / "cold.json").exists())
 
     def test_tmp_bundle_paths_are_refused(self):
         self.bench("build", str(self.wt))
