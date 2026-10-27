@@ -18,9 +18,10 @@ file that proves it. Audit and plan: 2026-09-20.
 | M3 | Repo gates green on the RC commit | `make gates` (vendored inputs, versions, iOS source/listing/archive gates) |
 | M4 | The RC is an **App Store channel** build from green trunk | `make testflight TEAM_ID=… BUILD=N CHANNEL=appstore UPLOAD=1` — refuses a dirty tree, an off-trunk commit, red CI, Xcode < 26, or an unsigned Nitnem review |
 | M5 | The ledger row is committed | `ios/testflight-builds.json` has the build with `channel: appstore`, `sdk: iphoneos26.x`; PR merged |
-| M6 | This version may be submitted | `make appstore-preflight` exits 0 |
+| M6 | This version may be submitted | `make appstore-preflight` exits 0 (it includes M9) |
 | M7 | Listing text is within limits and true | listing lint (part of M3); paste from `docs/ios/app-store-listing.md` only |
 | M8 | App Store Connect holds exactly the listing doc | `make asc-diff` prints `RESULT: NO DRIFT` (GET only; run after pasting and again on submission day) |
+| M9 | A physical-device run of the archived tree PASSED | `ios/device-runs/index.json` has a `PASS` run for the version whose tree is the tree of the ledger row's `source_commit` (preflight condition 7); recorded in a follow-up PR, never in the release commit — `docs/ios/device-evidence.md` |
 
 ## 2. Owner gates (only a person can close these — record name + date in the build log)
 

@@ -936,11 +936,15 @@ class VerifyAssetsTests(Base):
                    "url": f"api://{b['asset']}"} for b in self.s["bundles"] if b["asset"] != drop]
         return {"assets": assets + [{"name": "SHA256SUMS", "size": 10, "url": "api://SHA256SUMS"}]}
 
-    def host_with(self, release, corrupt=None, error=None):
+    def host_with(self, release, corrupt=None, error=None, repo_error=None):
         host = self.host
         rd = self.rd
 
         def http(url, token, accept=None, dest=None):
+            if url.endswith(dr.EVIDENCE_REPO):
+                if repo_error:
+                    raise repo_error
+                return {"private": True}
             if error:
                 raise error
             if dest is None:
@@ -966,8 +970,16 @@ class VerifyAssetsTests(Base):
 
     def test_an_unreadable_evidence_repo_is_a_notice_only_when_asked(self):
         err = dr.urllib.error.HTTPError("u", 404, "Not Found", {}, None)
-        self.assertEqual(self.verify(self.host_with(None, error=err), sizes=True, skip=True), 0)
-        self.assertEqual(self.verify(self.host_with(None, error=err), sizes=True), 1)
+        self.assertEqual(self.verify(self.host_with(None, error=err, repo_error=err), sizes=True, skip=True), 0)
+        self.assertEqual(self.verify(self.host_with(None, error=err, repo_error=err), sizes=True), 1)
+
+    def test_a_missing_release_in_a_readable_repo_still_fails(self):
+        err = dr.urllib.error.HTTPError("u", 404, "Not Found", {}, None)
+        self.assertEqual(self.verify(self.host_with(None, error=err), sizes=True, skip=True), 1)
+
+    def test_rebuild_check_with_no_runs_yet(self):
+        empty = self.tmp / "empty-runs"
+        self.assertEqual(dr.cmd_rebuild(ns(check=True), runs_dir=empty), 0)
 
 
 if __name__ == "__main__":
