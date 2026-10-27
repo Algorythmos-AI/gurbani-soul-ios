@@ -1028,6 +1028,9 @@ def check_run(run_dir):
     verdict, reasons = compute_verdict(s)
     if (verdict, reasons) != (s["verdict"], s["verdict_reasons"]):
         problems.append(f"verdict recomputes to {verdict}, the file says {s['verdict']} — never edit a verdict")
+    md = run_dir / "summary.md"
+    if md.exists() and md.read_text(encoding="utf-8") != render_md(s):
+        problems.append("summary.md is not what summary.json renders to — never edit it; re-run summarize")
     if s["origin"] == "backfill":
         if not s.get("evidence_lost"):
             problems.append("a backfilled run must say evidence_lost: true")
@@ -1191,8 +1194,10 @@ def render_md(s):
         lines += ["", "## Warnings", ""] + [f"- {w}" for w in s["warnings"]]
     if s.get("notes"):
         lines += ["", "## Notes", ""] + [f"- {n}" for n in s["notes"]]
-    tot = len(s.get("tests", []))
-    lines += ["", f"{tot} tests recorded; {s.get('planned_count', 0)} planned."]
+    if s.get("sources"):
+        lines += ["", "## Sources", ""] + [f"- {n}" for n in s["sources"]]
+    if s.get("origin") != "backfill":
+        lines += ["", f"{len(s.get('tests', []))} tests recorded; {s.get('planned_count', 0)} planned."]
     return "\n".join(lines) + "\n"
 
 
