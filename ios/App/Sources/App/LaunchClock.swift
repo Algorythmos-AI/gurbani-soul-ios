@@ -23,8 +23,29 @@ enum LaunchClock {
         case nitnemDrawn        // the Nitnem home appeared with its banis loaded (not the skeleton)
     }
 
-    /// Set by D10 only: the Nitnem screen then carries the timeline as an accessibility value.
+    /// Set by D10 only: the Nitnem screen then carries the timeline as an accessibility value, and
+    /// the app leaves it in `persistedURL` for a launch made outside XCTest.
     static var exposed: Bool { DebugHooks.environment["SGGS_UITEST_LAUNCH_METRICS"] == "1" }
+
+    /// Where the timeline is left for the bench (`device_bench.sh d10` copies it out of the app's
+    /// container with devicectl): XCTest's own bootstrap over the connection is then not in it.
+    static var persistedURL: URL {
+        FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("sggs-launch-metrics.json")
+    }
+
+    /// At the first app code, so a timeline left by an earlier launch is never read as this one's.
+    static func discardPersisted() {
+        try? FileManager.default.removeItem(at: persistedURL)
+    }
+
+    /// The report plus when it was written (Unix time), written once Nitnem is drawn.
+    static func persist(_ report: String) {
+        guard var object = (try? JSONSerialization.jsonObject(with: Data(report.utf8))) as? [String: Any] else { return }
+        object["written_at"] = (Date().timeIntervalSince1970 * 1000).rounded() / 1000
+        guard let data = try? JSONSerialization.data(withJSONObject: object, options: [.sortedKeys]) else { return }
+        try? data.write(to: persistedURL, options: .atomic)
+    }
 
     private static let marks = OSAllocatedUnfairLock<[String: Double]>(initialState: [:])
     private static let signposter = OSSignposter(subsystem: "org.sggs.app", category: .pointsOfInterest)
@@ -80,7 +101,10 @@ struct LaunchMetricsProbe: View {
             .accessibilityHidden(!LaunchClock.exposed)
             .onAppear {
                 LaunchClock.mark(.nitnemDrawn)
-                if LaunchClock.exposed { json = LaunchClock.report(cachedHash: container.integrity?.usedCachedHash) }
+                if LaunchClock.exposed {
+                    json = LaunchClock.report(cachedHash: container.integrity?.usedCachedHash)
+                    LaunchClock.persist(json)
+                }
             }
     }
 }
