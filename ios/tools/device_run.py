@@ -64,6 +64,12 @@ DEFAULT_STAGING = Path.home() / "SGGS-device-evidence"
 RUN_CAP_BYTES = 256 * 1024
 MIN_FREE_GB = 8
 LAUNCH_BUDGET_S = 5.0
+# D10's rule (docs/ios/device-evidence.md, "D10"). The launch is judged ONLY by the bench's launches
+# outside XCTest (device_bench.sh d10 → <run>/d10/{cold,warm}.json). The XCTest test still runs and
+# must pass; a failure of only its 5 s budget while that launch reached the first app code after
+# PRE_MAIN_LIMIT_S is XCTest's bootstrap over the connection: env:tunnel, recorded, exempt.
+PRE_MAIN_LIMIT_S = 2.0
+D10_BUDGET_RE = re.compile(r"\b(cold|warm) launch must (?:finish verifying in under|be under) 5 s")
 RUN_ID_RE = re.compile(r"^\d{8}T\d{4}Z-[0-9a-f]{7}$")
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 BUNDLE_RE = re.compile(r"^(unit|ui|checklist|rerun|shots)(-[a-z0-9-]+)?\.xcresult$")
@@ -92,6 +98,7 @@ CHECKLIST = {
     "D12": ("Hostile links", "DeviceChecklistTests/testD12HostileLinksNeverCrash()"),
 }
 D5_APP_HALF = "SGGSUITests/testForgetLocationReturnsToTheLocationCard()"
+D10_TEST = CHECKLIST["D10"][1]
 MANUAL_ROWS = tuple(r for r, (_, t) in CHECKLIST.items() if t is None)
 # Screens that may go public (eyeballed first): UI-test data only.
 PUBLIC_ROWS = ("D2", "D3", "D11")
@@ -547,6 +554,34 @@ def parse_launch(attachments):
     return launch
 
 
+def read_d10(run_dir, started):
+    """The bench's launches outside XCTest (device_bench.sh d10): (launch, problem). launch holds the
+    judged cold/warm timelines; problem is ("incomplete" | "fail", why) or None."""
+    launch = {"budget_s": LAUNCH_BUDGET_S, "judge": "outside XCTest (device_bench.sh d10)"}
+    docs = {}
+    for k in ("cold", "warm"):
+        f = Path(run_dir) / "d10" / f"{k}.json"
+        if f.exists():
+            docs[k] = read_json(f)
+    if len(docs) < 2:
+        return launch, ("incomplete", "no launch outside XCTest — run `device_bench.sh d10 <worktree> <run>`")
+    for k, doc in docs.items():
+        launch[k] = doc.get("since_process_start", {})
+        launch.setdefault("cached_hash", {})[k] = doc.get("cached_hash")
+        if doc.get("written_at", 0) < started.timestamp():
+            return launch, ("incomplete", f"the {k} launch timeline was written before `begin`")
+        if "nitnemDrawn" not in launch[k]:
+            return launch, ("incomplete", f"the {k} launch never drew Nitnem")
+    if launch["cached_hash"] != {"cold": False, "warm": True}:
+        return launch, ("incomplete", "the cold launch must re-hash and the warm one use the fingerprint "
+                                      f"(cached_hash {launch['cached_hash']})")
+    slow = [k for k in ("cold", "warm") if launch[k]["nitnemDrawn"] >= LAUNCH_BUDGET_S]
+    if slow:
+        return launch, ("fail", ", ".join(f"{k} {launch[k]['nitnemDrawn']:.2f} s" for k in slow)
+                        + f" ≥ {LAUNCH_BUDGET_S:.0f} s outside XCTest")
+    return launch, None
+
+
 def merge_tests(bundles):
     """Every attempt of every test across bundles (in start order) → one record per test."""
     attempts = {}
@@ -575,18 +610,23 @@ def judge_test(tid, rows):
         first = failed[0]
         rec["failure"] = scrub_text(first["failure"] or "")
         rec["cause"] = first["cause"]
+        if first.get("exempt"):
+            rec["exempt"] = first["exempt"]
         later = ran[ran.index(first) + 1:]
         if later:
             rec["reruns"] = [{"bundle": a.get("bundle"), "outcome": a["outcome"],
                               **({"failure": scrub_text(a["failure"] or ""), "cause": a["cause"]}
-                                 if a["outcome"] == "Failed" else {})} for a in later]
-    if any(a.get("cause") == "code" for a in failed):
+                                 if a["outcome"] == "Failed" else {}),
+                              **({"exempt": a["exempt"]} if a.get("exempt") else {})} for a in later]
+    # An exempt failure is recorded but never judged (D10's budget under XCTest's bootstrap).
+    judged = [a for a in ran if not a.get("exempt")]
+    if any(a.get("cause") == "code" for a in judged if a["outcome"] == "Failed"):
         return rec, ("FAIL", f"{tid} failed (cause: code)")
-    for x, y in zip(ran, ran[1:]):
+    for x, y in zip(judged, judged[1:]):
         if x["outcome"] == "Failed" and y["outcome"] == "Failed":
             return rec, ("FAIL", f"{tid} failed twice in a row ({x.get('cause')}, {y.get('cause')})")
-    if last["outcome"] == "Failed":
-        return rec, ("INCOMPLETE", f"{tid} failed ({last.get('cause')}) and has no passing rerun yet")
+    if judged and judged[-1]["outcome"] == "Failed":
+        return rec, ("INCOMPLETE", f"{tid} failed ({judged[-1].get('cause')}) and has no passing rerun yet")
     return rec, None
 
 
@@ -643,6 +683,19 @@ def cmd_summarize(args, host=HOST, runs_dir=None):
                 for a in rows:
                     if a["outcome"] == "Failed" and a["cause"] == "unknown" and t not in overrides:
                         a["cause"] = probe
+        # D10: a failure of only the 5 s budget, judged by when the app's first code ran
+        if D10_TEST in cases and D10_TEST not in overrides:
+            timeline = parse_launch([a for a in atts.get(D10_TEST, []) if a["name"].startswith("D10 ")])
+            for a in cases[D10_TEST]:
+                m = a["outcome"] == "Failed" and D10_BUDGET_RE.search(a["failure"] or "")
+                pre = m and (timeline.get(m.group(1)) or {}).get("appInit")
+                if m and pre is not None:
+                    if pre > PRE_MAIN_LIMIT_S:
+                        a["cause"] = "env:tunnel"
+                        a["exempt"] = (f"XCTest's {m.group(1)} launch reached the first app code only at {pre:.2f} s "
+                                       f"(> {PRE_MAIN_LIMIT_S:.0f} s: its bootstrap, not the app); D10 is judged outside XCTest")
+                    else:
+                        a["cause"] = "code"
         kind = BUNDLE_RE.match(path.name).group(1)
         system = [{"name": scrub_text(n.get("name", "")),
                    "failure": scrub_text((messages(n, "Failure Message") or [""])[0]),
@@ -665,9 +718,11 @@ def cmd_summarize(args, host=HOST, runs_dir=None):
     bundles.sort(key=lambda b: (b["_start"], b["name"]))
     attempts = merge_tests(bundles)
     tests, problems = [], []
+    problem_of = {}
     for tid in sorted(attempts):
         rec, problem = judge_test(tid, attempts[tid])
         tests.append(rec)
+        problem_of[tid] = problem
         if problem:
             problems.append(problem)
     by_id = {t["id"]: t for t in tests}
@@ -685,7 +740,8 @@ def cmd_summarize(args, host=HOST, runs_dir=None):
                 warnings.append(f"{b['name']}: identical image under {len(names)} names: "
                                 + ", ".join(sorted(names)))
     manual = read_json(run_dir / "manual.json") if (run_dir / "manual.json").exists() else {}
-    checklist, launch, public_files = {}, {}, []
+    launch, d10_problem = read_d10(run_dir, started)
+    checklist, public_files = {}, []
     for row, (title, test) in CHECKLIST.items():
         if test is None:
             m = manual.get(row)
@@ -707,22 +763,30 @@ def cmd_summarize(args, host=HOST, runs_dir=None):
         entry = {"mode": "auto", "title": title, "test": test,
                  "attachments": [{"name": a["name"], "sha256": a["sha256"]} for a in evid]}
         img = [a["sha256"] for a in evid if a["image"]]
+        test_ok = t is not None and t["outcome"] != "Skipped" and problem_of.get(test) is None
         if t is None:
             entry["result"] = "missing"
-        elif t["outcome"] in ("Passed", "Expected Failure") and evid and len(img) == len(set(img)):
+        elif row == "D10" and test_ok and evid and d10_problem:
+            entry["result"], entry["note"] = d10_problem
+        elif test_ok and evid and len(img) == len(set(img)):
             entry["result"] = "pass"
         elif any(p[0] == "FAIL" and p[1].startswith(test) for p in problems):
             entry["result"] = "fail"
         else:
             entry["result"] = "incomplete"
-            if t["outcome"] == "Passed" and not evid:
+            if test_ok and not evid:
                 entry["note"] = "passed but attached no evidence"
             elif len(img) != len(set(img)):
                 entry["note"] = "two evidence images are byte-identical"
         if row == "D10":
-            launch = parse_launch(evid)
-            if launch:
-                launch["budget_s"] = LAUNCH_BUDGET_S
+            xctest = parse_launch(evid)
+            if xctest:
+                for k in ("cold", "warm"):
+                    marks = xctest.get(k) or {}
+                    if "appInit" in marks and "nitnemDrawn" in marks:
+                        xctest.setdefault("pre_main", {})[k] = marks["appInit"]
+                        xctest.setdefault("app_work", {})[k] = round(marks["nitnemDrawn"] - marks["appInit"], 3)
+                launch["xctest"] = xctest
         if row in PUBLIC_ROWS and entry["result"] == "pass":
             public_files += [a for a in evid if a["image"]]
         checklist[row] = entry
@@ -813,7 +877,7 @@ def compute_verdict(s):
     for k in ("cold", "warm"):
         v = (launch.get(k) or {}).get("nitnemDrawn")
         if v is not None and v >= LAUNCH_BUDGET_S:
-            fail.append(f"D10 {k} launch {v:.2f} s ≥ {LAUNCH_BUDGET_S:.0f} s (in-app nitnemDrawn)")
+            fail.append(f"D10 {k} launch {v:.2f} s ≥ {LAUNCH_BUDGET_S:.0f} s (process start → Nitnem, outside XCTest)")
     restore = (s.get("env") or {}).get("restore_launch")
     if not restore or restore.get("result") != "pass":
         incomplete.append("the restore launch (the phone's real data back) is not recorded")
@@ -831,9 +895,10 @@ def _attempts_from_record(t):
         return [{"outcome": "Skipped", "skip": t.get("skip", ""), "duration": 0}]
     if "failure" not in t:
         return [{"outcome": t["outcome"], "duration": t.get("duration", 0)}]
-    return [{"outcome": "Failed", "failure": t["failure"], "cause": t.get("cause"), "duration": 0}] + [
-        {"outcome": r["outcome"], "failure": r.get("failure"), "cause": r.get("cause"), "duration": 0}
-        for r in t.get("reruns", [])]
+    return [{"outcome": "Failed", "failure": t["failure"], "cause": t.get("cause"), "duration": 0,
+             "exempt": t.get("exempt")}] + [
+        {"outcome": r["outcome"], "failure": r.get("failure"), "cause": r.get("cause"), "duration": 0,
+         "exempt": r.get("exempt")} for r in t.get("reruns", [])]
 
 
 # ---------------------------------------------------------------- record-manual
@@ -925,6 +990,7 @@ def build_trends(docs):
                       key=lambda t: (-t.get("duration", 0), t["id"]))[:20]
         rows.append({"version": d["version"], "run_id": d["run_id"], "verdict": d["verdict"],
                      "d10": {k: (launch.get(k) or {}).get("nitnemDrawn") for k in ("cold", "warm")},
+                     "d10_xctest_pre_main": (launch.get("xctest") or {}).get("pre_main"),
                      "suite_seconds": suites,
                      "slowest": [[t["id"], t.get("duration", 0)] for t in slow]})
     return {"schema": SCHEMA, "_comment": "Derived by `device_run.py rebuild`.", "runs": rows}
@@ -1194,15 +1260,24 @@ def render_md(s):
             ev = (ev + "; " if ev else "") + f"app half: {e['app_half']['outcome']}"
         lines.append(f"| {row} | {e.get('title')} | {e.get('mode')} | {res} | {ev} |")
     launch = s.get("launch") or {}
-    if launch.get("cold") or launch.get("warm"):
-        lines += ["", "## D10 launch (in-app clock, seconds since process start)", ""]
-        for k in ("cold", "warm"):
-            marks = launch.get(k) or {}
-            lines.append(f"- {k}: nitnemDrawn **{marks.get('nitnemDrawn')}** s · " +
-                         ", ".join(f"{m} {v}" for m, v in sorted(marks.items(), key=lambda kv: kv[1]) if m != "nitnemDrawn"))
-        if launch.get("xctest_clock"):
-            x = launch["xctest_clock"]
-            lines.append(f"- XCTest's clock (recorded, not judged): cold {x.get('cold')} s, warm {x.get('warm')} s")
+
+    def marks_line(label, marks):
+        rest = ", ".join(f"{m} {v}" for m, v in sorted(marks.items(), key=lambda kv: kv[1]) if m != "nitnemDrawn")
+        return f"- {label}: nitnemDrawn **{marks.get('nitnemDrawn')}** s" + (f" · {rest}" if rest else "")
+    xct = launch.get("xctest") or {}
+    if launch.get("cold") or launch.get("warm") or xct:
+        lines += ["", "## D10 launch (seconds since process start)", ""]
+        if launch.get("cold") or launch.get("warm"):
+            lines.append(f"Judged ({launch.get('judge', 'outside XCTest')}), budget {launch.get('budget_s', LAUNCH_BUDGET_S):.0f} s:")
+            lines += [marks_line(k, launch.get(k) or {}) for k in ("cold", "warm")]
+        if xct.get("cold") or xct.get("warm"):
+            lines += ["", "Under XCTest (recorded, never judged):"]
+            lines += [marks_line(k, xct.get(k) or {}) for k in ("cold", "warm") if xct.get(k)]
+            if xct.get("pre_main"):
+                lines.append(f"- before the first app code (pre_main): {xct['pre_main']}; app work: {xct.get('app_work')}")
+        if xct.get("xctest_clock"):
+            x = xct["xctest_clock"]
+            lines.append(f"- XCTest's clock (recorded, never judged): cold {x.get('cold')} s, warm {x.get('warm')} s")
     sysf = [(b["name"], f) for b in s.get("bundles", []) for f in b.get("system_failures", [])]
     if sysf:
         lines += ["", "## Test-runner failures", "", "Not tests: the runner itself failed, and the tests it had not reached "
@@ -1216,7 +1291,8 @@ def render_md(s):
         for t in bad:
             reruns = ", ".join(f"{r['outcome']} ({r['bundle']})" for r in t.get("reruns", []))
             text = (t.get("failure") or t.get("skip") or "").replace("|", "\\|").replace("\n", " ")[:160]
-            lines.append(f"| `{t['id']}` | {text} | {t.get('cause', '')} | {reruns} | {t['outcome']} |")
+            final = t["outcome"] + (" (exempt: not judged)" if t.get("exempt") else "")
+            lines.append(f"| `{t['id']}` | {text} | {t.get('cause', '')} | {reruns} | {final} |")
     if s.get("not_run"):
         lines += ["", f"## Planned but never run ({len(s['not_run'])})", ""] + [f"- `{t}`" for t in s["not_run"]]
     if s.get("warnings"):

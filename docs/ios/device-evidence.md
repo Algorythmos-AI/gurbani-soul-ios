@@ -26,13 +26,13 @@ The verdict is recomputed by the tool from the facts every time; it is never typ
   `SKIP_ALLOWLIST`. A test that failed for an environment or unknown cause passed on a rerun of
   the same tree and build stamp (the first failure stays in the record with its cause). Every
   automated checklist row (D2 D3 D6 D10 D11 D12) passed and attached its evidence; D10 is judged
-  only by the app's own clock (`nitnemDrawn` < 5 s, cold and warm). Every manual row (D1 D4 D5
+  only by the launches outside XCTest (see "D10" below). Every manual row (D1 D4 D5
   D7 D8 D9) is `pass`, or `deferred` with the owner's note. The restore launch is recorded.
 - **INCOMPLETE**: something is missing: a bundle kind (`unit`, `ui`, `checklist`), a planned test
   that never ran, a failure with no rerun yet, a skip outside the allowlist, a row without
   evidence, a manual row not recorded.
 - **FAIL**: a test failed twice in a row, or a failure was classified `code`, or a manual row
-  failed, or D10 was over budget, or the build stamp's tree is not the tested tree.
+  failed, or D10 was over budget outside XCTest, or the build stamp's tree is not the tested tree.
 - **RECORDED-NO-BUNDLES**: backfilled from documents after the bundles were lost
   (`evidence_lost: true`). It never passes a gate.
 
@@ -40,6 +40,26 @@ Failure causes: `code`, `env:locked`, `env:landscape`, `env:foreground`, `env:tu
 `env:cert`, `unknown`. `summarize` classifies from the failure text and from a landscape failure
 screenshot. If `BenchGuardTests` (the probe that runs first) failed, its cause explains the other
 unknown failures of that bundle. Only an operator says `code` (`summarize --cause ID=code`).
+
+## D10: the launch is judged outside XCTest
+
+On the 1.5.0 release candidate, D10 read 5.054 s from process start to the drawn Nitnem home, but
+the app's first code ran only at 4.786 s. The app's own work, including the full re-hash, took
+0.27 s; the rest was XCTest's bootstrap over the Wi-Fi tunnel, which no user pays. So:
+
+1. **The judge**: `device_bench.sh d10 <worktree> <run>` launches the installed Debug build with
+   devicectl, not XCTest, first cold (the verified fingerprint dropped, so the whole database is
+   re-hashed) and then warm, and copies each launch's timeline into `<run>/d10/`. D10 passes when
+   both read process start → `nitnemDrawn` **< 5 s**, the cold launch re-hashed (`cached_hash`
+   false) and the warm one used the fingerprint (true). 5 s or more is **FAIL**. No `d10/`, a
+   timeline written before `begin`, or a wrong `cached_hash` is **INCOMPLETE**.
+2. **The XCTest test still runs** (`testD10ColdAndWarmLaunchTimes`) and must pass its other
+   assertions; its own < 5 s assertion is unchanged. When it fails *only* that budget and that
+   launch reached the first app code (`appInit`) after **2 s**, the failure is XCTest's bootstrap:
+   it is classified `env:tunnel`, recorded and **exempt** from the verdict. The same failure with
+   `appInit` at 2 s or less is the app itself: `code`, so **FAIL**.
+3. **Recorded, never judged**: the XCTest timeline split into `pre_main` (process start → first app
+   code) and `app_work` (first app code → Nitnem drawn), and XCTest's own clock.
 
 ## Pre-run (ask the owner; record their answers with `--attest`)
 
@@ -76,10 +96,11 @@ missing attestations, a staging folder under `/tmp` or the scratchpad (they get 
 folder that exists. It prints the run folder, `~/SGGS-device-evidence/<version>/<run-id>/`. Write
 every bundle into its `bundles/`, one fresh name each:
 
-1. `unit.xcresult`: the unit tests.
-2. `ui-01.xcresult`, `ui-02.xcresult`, …: the UI tests in batches of 12, each in a fresh bundle.
-3. `checklist.xcresult`: `DeviceChecklistTests` with `TEST_RUNNER_SGGS_DEVICE_CHECKLIST=1`.
-4. The restore launch (one ordinary launch hands the phone's real data back from `UITestVault`),
+1. `unit.xcresult`: the unit tests (this also installs the build).
+2. `device_bench.sh d10 "$PWD" <run>`: D10's cold and warm launches outside XCTest, into `<run>/d10/`.
+3. `ui-01.xcresult`, `ui-02.xcresult`, …: the UI tests in batches of 12, each in a fresh bundle.
+4. `checklist.xcresult`: `DeviceChecklistTests` with `TEST_RUNNER_SGGS_DEVICE_CHECKLIST=1`.
+5. The restore launch (one ordinary launch hands the phone's real data back from `UITestVault`),
    then `device_run.py record-manual <run> restore pass --note "<time>"`.
 
 ## Summarize, rerun, record
@@ -143,7 +164,7 @@ commit: the release commit's tree must be the tree that was tested.
 | A fresh folder per bundle; reused bundles are refused | A batch reused the previous result path and failed at once |
 | Planned tests that never ran ⇒ INCOMPLETE | The Wi-Fi tunnel dropped and about 40 tests never ran |
 | Attested bench, `BenchGuardTests` first | Locked phone (CoreDeviceError 10003), landscape (four false failures), another app in front (eleven false failures) |
-| D10 judged by the app's clock | XCTest's clock over the tunnel added about 3 s ± 2 s and once 7.4 s of terminate |
+| D10 judged outside XCTest | XCTest's clock over the tunnel added about 3 s ± 2 s and once 7.4 s of terminate; on 1.5.0 its bootstrap put the app's first code at 4.8 s |
 | Staging never in `/tmp`; private release, verified by re-download | The scratchpad was wiped twice and a full disk forced bundles to be deleted |
 | Identical images under two names flagged | Checksums ≠ correctness: wrong screens with valid sums, duplicates |
 | Full SHAs; trees, not commits | Short SHAs in merges; a squash merge changes the commit, not the tree |
