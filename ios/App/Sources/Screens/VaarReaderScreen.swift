@@ -38,7 +38,7 @@ struct VaarReaderScreen: View {
                 } description: {
                     Text("Its layout could not be read from this edition.")
                 } actions: {
-                    if let s = summary { Button("Open Ang \(s.firstAng)") { container.router.openAng(s.firstAng) } }
+                    if let s = summary { Button("Open Ang \(String(s.firstAng))") { container.router.openAng(s.firstAng) } }
                 }
             } else {
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -102,7 +102,7 @@ struct VaarReaderScreen: View {
                     }
                     Section("Go to pauri") {
                         ForEach(t.pauris) { p in
-                            Button("Pauri \(p.pauriNo ?? 0) · Ang \(p.firstAng)") { jump(to: p) }
+                            Button("Pauri \(p.pauriNo ?? 0) · Ang \(String(p.firstAng))") { jump(to: p) }
                         }
                     }
                 } label: { Image(systemName: "list.bullet.indent") }
@@ -161,10 +161,10 @@ struct VaarReaderScreen: View {
     }
 
     private func angMark(_ ang: Int) -> some View {
-        Text("Ang \(ang)").font(.caption2.weight(.medium)).foregroundStyle(.tertiary).monospacedDigit()
+        Text("Ang \(String(ang))").font(.caption2.weight(.medium)).foregroundStyle(.tertiary).monospacedDigit()
             .frame(maxWidth: .infinity)
             .padding(.vertical, 2)
-            .accessibilityLabel("Ang \(ang) begins")
+            .accessibilityLabel("Ang \(String(ang)) begins")
     }
 
     private func ending(_ s: VaarSummary, _ t: VaarText) -> some View {
@@ -206,7 +206,7 @@ struct VaarReaderScreen: View {
             VStack(spacing: 1) {
                 Text(group.map { "Pauri \($0.pauriNo ?? 0) of \(t.nPauris)" } ?? "Heading")
                     .font(.subheadline.weight(.semibold)).monospacedDigit()
-                Text("Ang \(ang)").font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                Text("Ang \(String(ang))").font(.caption).foregroundStyle(.secondary).monospacedDigit()
             }
             .frame(minWidth: 140)
             .accessibilityElement(children: .combine)

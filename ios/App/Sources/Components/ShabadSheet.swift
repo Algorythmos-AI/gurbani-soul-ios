@@ -134,20 +134,20 @@ struct ShabadSheet: View {
             switch presentation {
             case .shabad(let compId, _):
                 let s = try await corpus.shabad(compId: compId)
-                title = s.lines.first.map { "Ang \($0.ang)" } ?? "Composition not found"
+                title = s.lines.first.map { "Ang \(String($0.ang))" } ?? "Composition not found"
                 openAng = s.lines.first?.ang
                 state = s.lines.isEmpty ? .empty : .loaded(s.lines)
             case .hukam:
                 let h = try await corpus.randomHukam()
                 // the Ang of the first verse (a header can sit at the foot of the Ang before)
-                title = (h.lines.first(where: { !$0.isHeader }) ?? h.lines.first).map { "Hukam · Ang \($0.ang)" } ?? "Hukam"
+                title = (h.lines.first(where: { !$0.isHeader }) ?? h.lines.first).map { "Hukam · Ang \(String($0.ang))" } ?? "Hukam"
                 openAng = h.lines.first?.ang
                 state = h.lines.isEmpty ? .empty : .loaded(h.lines)
             case .hukamOfTheDay:
                 // the reader's local date, exactly as the widget snapshot computes it
                 let h = try await corpus.hukamOfTheDay(day: HukamOfTheDay.dayNumber(of: Date(), calendar: .current))
                 // the first verse's Ang: the same Ang the widget cites
-                title = (h.lines.first(where: { !$0.isHeader }) ?? h.lines.first).map { "Hukam of the day · Ang \($0.ang)" } ?? "Hukam of the day"
+                title = (h.lines.first(where: { !$0.isHeader }) ?? h.lines.first).map { "Hukam of the day · Ang \(String($0.ang))" } ?? "Hukam of the day"
                 openAng = h.lines.first?.ang
                 state = h.lines.isEmpty ? .empty : .loaded(h.lines)
             }

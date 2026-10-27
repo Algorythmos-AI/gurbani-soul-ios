@@ -70,8 +70,8 @@ private struct BarcodeAccessibility: ViewModifier {
             content
                 .accessibilityElement()
                 .accessibilityLabel("Their Bani across the Granth")
-                .accessibilityValue(focusAng.map { "Ang \($0)" }
-                    ?? "on \(list.count) of \(GranthAngs.count.formatted()) Angs, from Ang \(list.first ?? 0) to Ang \(list.last ?? 0)")
+                .accessibilityValue(focusAng.map { "Ang \(String($0))" }
+                    ?? "on \(list.count) of \(GranthAngs.count.formatted()) Angs, from Ang \(String(list.first ?? 0)) to Ang \(String(list.last ?? 0))")
                 .accessibilityHint("Swipe up or down to move through those Angs; double-tap to open one.")
                 .accessibilityAddTraits(.isButton)
                 .accessibilityAdjustableAction { direction in

@@ -24,7 +24,7 @@ struct VerseQuoteBlock: View {
                     Text(line.translit).font(.callout).foregroundStyle(Ink.muted)
                         .multilineTextAlignment(.leading)
                 }
-                Text("Sri Guru Granth Sahib Ji · Ang \(line.ang)\(isRefrain ? " · a Rahao line" : "")")
+                Text("Sri Guru Granth Sahib Ji · Ang \(String(line.ang))\(isRefrain ? " · a Rahao line" : "")")
                     .font(.caption).foregroundStyle(palette.accentText)
             }
             .frame(maxWidth: .infinity, alignment: .leading)

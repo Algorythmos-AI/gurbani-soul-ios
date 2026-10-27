@@ -85,5 +85,5 @@ struct VoiceDots: View {
 
 /// The Ang span of a Vaar: "Ang 1193" for a single Ang, "Angs 137–150" otherwise.
 func angSpan(_ first: Int, _ last: Int) -> String {
-    first == last ? "Ang \(first)" : "Angs \(first)–\(last)"
+    first == last ? "Ang \(String(first))" : "Angs \(String(first))–\(String(last))"
 }

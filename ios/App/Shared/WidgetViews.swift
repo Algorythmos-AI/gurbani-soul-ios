@@ -32,14 +32,15 @@ struct PaperGround: View {
     }
 }
 
-/// Small-caps label in the accent — "HUKAM", "RAAG NOW".
+/// Small label in the accent, in sentence case as written ("Hukam of the day", "Raag now"):
+/// the brand book's "No all-caps", as `SectionEyebrow` in the app.
 struct Eyebrow: View {
     let text: String
     var symbol: String? = nil
     var body: some View {
         HStack(spacing: 5) {
             if let symbol { Image(systemName: symbol).font(.system(size: 10, weight: .semibold)) }
-            Text(text).font(WidgetType.eyebrow).tracking(1.4)
+            Text(text).font(WidgetType.eyebrow)
         }
         .foregroundStyle(AccentPalette.brandDefault.accentText)
         .accessibilityHidden(true)
@@ -248,7 +249,7 @@ struct RaagNowView: View {
     private var small: some View {
         VStack(spacing: 2) {
             HStack {
-                Eyebrow(text: "RAAG NOW", symbol: isDay ? "sun.max.fill" : "moon.stars.fill")
+                Eyebrow(text: "Raag now", symbol: isDay ? "sun.max.fill" : "moon.stars.fill")
                 Spacer()
                 solarBadge
                 Mark(size: 14)
@@ -273,7 +274,7 @@ struct RaagNowView: View {
                 .aspectRatio(1, contentMode: .fit)
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
-                    Eyebrow(text: "RAAG NOW", symbol: isDay ? "sun.max.fill" : "moon.stars.fill")
+                    Eyebrow(text: "Raag now", symbol: isDay ? "sun.max.fill" : "moon.stars.fill")
                     Spacer()
                     solarBadge
                     Mark(size: 15)
@@ -303,7 +304,7 @@ struct RaagNowView: View {
     private var large: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Eyebrow(text: "RAAG NOW", symbol: isDay ? "sun.max.fill" : "moon.stars.fill")
+                Eyebrow(text: "Raag now", symbol: isDay ? "sun.max.fill" : "moon.stars.fill")
                 Spacer()
                 solarBadge
                 Mark(size: 18)

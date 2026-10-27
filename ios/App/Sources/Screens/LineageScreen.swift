@@ -273,7 +273,7 @@ struct LineageScreen: View {
                 }
                 GurmukhiText(verbatim: v.verse.gurmukhi, size: 22)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                Text("Ang \(v.verse.ang)").font(.caption).foregroundStyle(.secondary)
+                Text("Ang \(String(v.verse.ang))").font(.caption).foregroundStyle(.secondary)
             }
             .padding(Theme.Space.l)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -453,7 +453,7 @@ struct LineageScreen: View {
     static func countLine(_ s: VoiceSummary) -> String {
         let verses = s.nVerses == 1 ? "1 verse" : "\(s.nVerses.formatted()) verses"
         let comps = s.nCompositions == 1 ? "1 composition" : "\(s.nCompositions.formatted()) compositions"
-        let angs = s.firstAng == s.lastAng ? "Ang \(s.firstAng)" : "Angs \(s.firstAng)–\(s.lastAng)"
+        let angs = s.firstAng == s.lastAng ? "Ang \(String(s.firstAng))" : "Angs \(String(s.firstAng))–\(String(s.lastAng))"
         return "\(verses) · \(comps) · \(angs)"
     }
 }

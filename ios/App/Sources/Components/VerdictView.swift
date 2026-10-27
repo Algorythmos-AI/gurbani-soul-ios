@@ -56,7 +56,7 @@ struct VerdictView: View {
                 Divider()
                 Text("Canonical line").font(.caption).foregroundStyle(.tertiary)
                 LineRow(gurmukhi: g, translit: "",
-                        meta: ["Ang \(ang)", result.raag, result.author].compactMap { $0 }.joined(separator: " · "),
+                        meta: ["Ang \(String(ang))", result.raag, result.author].compactMap { $0 }.joined(separator: " · "),
                         en: en, ang: ang) {
                     onOpenAng(ang)
                 }

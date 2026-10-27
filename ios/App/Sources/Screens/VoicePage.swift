@@ -190,7 +190,7 @@ struct VoicePage: View {
             AngBarcode(angs: s.angs, color: k, height: 32, marksRaagEnd: true) { ang in
                 container.router.openAng(ang)
             }
-            Text("On \(s.angs.count.formatted()) of \(GranthAngs.count.formatted()) Angs, from Ang \(s.firstAng) to Ang \(s.lastAng). Tap a mark to open that Ang; the thin line is Ang 1353, where the raag sections end.")
+            Text("On \(s.angs.count.formatted()) of \(GranthAngs.count.formatted()) Angs, from Ang \(String(s.firstAng)) to Ang \(String(s.lastAng)). Tap a mark to open that Ang; the thin line is Ang 1353, where the raag sections end.")
                 .font(.caption).foregroundStyle(.secondary)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 120))], spacing: Theme.Space.s) {
                 StatTile(value: s.nVerses.formatted(), caption: s.nVerses == 1 ? "verse" : "verses")
@@ -317,7 +317,7 @@ struct VoicePage: View {
                 GurmukhiText(verbatim: v.gurmukhi, size: 21)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Spacer(minLength: 0)
-                Text("Ang \(v.ang)").font(.caption).foregroundStyle(.secondary)
+                Text("Ang \(String(v.ang))").font(.caption).foregroundStyle(.secondary)
             }
             .padding(Theme.Space.m)
             .frame(maxWidth: .infinity, minHeight: 132, alignment: .topLeading)
@@ -338,7 +338,7 @@ struct VoicePage: View {
             VStack(alignment: .leading, spacing: 2) {
                 GurmukhiText(verbatim: v.gurmukhi, size: 19)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                Text("Ang \(v.ang)").font(.caption2).foregroundStyle(.secondary)
+                Text("Ang \(String(v.ang))").font(.caption2).foregroundStyle(.secondary)
             }
             .contentShape(Rectangle())
         }
@@ -642,7 +642,7 @@ struct RaagCompositionsSheet: View {
                         } label: {
                             VStack(alignment: .leading, spacing: 4) {
                                 GurmukhiText(verbatim: c.opening, size: 19)
-                                Text("Ang \(c.ang) · \(c.nVerses) \(c.nVerses == 1 ? "verse" : "verses")")
+                                Text("Ang \(String(c.ang)) · \(c.nVerses) \(c.nVerses == 1 ? "verse" : "verses")")
                                     .font(.caption).foregroundStyle(.secondary)
                             }
                         }

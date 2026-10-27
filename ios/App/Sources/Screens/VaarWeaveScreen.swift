@@ -139,7 +139,7 @@ struct VaarWeaveScreen: View {
         } description: {
             Text("Its layout could not be read from this edition, so it is shown as printed, Ang by Ang.")
         } actions: {
-            Button("Open Ang \(s.firstAng)") { container.router.openAng(s.firstAng) }
+            Button("Open Ang \(String(s.firstAng))") { container.router.openAng(s.firstAng) }
                 .buttonStyle(.borderedProminent)
         }
     }
@@ -241,7 +241,7 @@ private struct WeaveGroupRow: View {
                         Text(u.kind == .pauri ? "Pauri" : "Salok").font(.caption).foregroundStyle(.secondary)
                     }
                     Spacer(minLength: Theme.Space.xs)
-                    Text("Ang \(u.firstAng)").font(.caption2).foregroundStyle(.tertiary).monospacedDigit()
+                    Text("Ang \(String(u.firstAng))").font(.caption2).foregroundStyle(.tertiary).monospacedDigit()
                 }
                 if let first = u.firstVerse {
                     GurmukhiText(verbatim: first.gurmukhi, size: u.kind == .pauri ? 18 : 16)
@@ -267,7 +267,7 @@ private struct WeaveGroupRow: View {
         let head = u.kind == .pauri ? "Pauri \(u.pauriNo ?? 0)" : "Salok"
         var verse = AttributedString(u.firstVerse?.gurmukhi ?? "")
         verse.languageIdentifier = "pa"
-        return Text("\(head)\(u.author.map { ", \($0)" } ?? ""), Ang \(u.firstAng). ") + Text(verse)
+        return Text("\(head)\(u.author.map { ", \($0)" } ?? ""), Ang \(String(u.firstAng)). ") + Text(verse)
     }
 }
 

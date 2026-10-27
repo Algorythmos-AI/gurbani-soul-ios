@@ -158,6 +158,9 @@ serve_frames() {  # udid, dir
         ht=$(sips -g pixelHeight "$tmp" | awk '/pixelHeight/{print $2}')
         if [ "$ht" -gt "$w" ]; then sips -r 270 "$tmp" >/dev/null; fi
         mv -f "$tmp" "$dir/$name.png"
+      else
+        echo "::warning::ipad-landscape $name: the settled frame is empty, nothing written" >&2
+        rm -f "$tmp"
       fi
       rm -f "$r"
     done

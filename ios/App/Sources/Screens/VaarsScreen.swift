@@ -256,7 +256,7 @@ private struct DhuniSheet: View {
         VStack(alignment: .leading, spacing: Theme.Space.m) {
             SectionEyebrow(text: "As printed")
             GurmukhiText(verbatim: item.line.gurmukhi, size: 22)
-            Text("Sri Guru Granth Sahib Ji · Ang \(item.line.ang)")
+            Text("Sri Guru Granth Sahib Ji · Ang \(String(item.line.ang))")
                 .font(.footnote).foregroundStyle(.secondary)
             if EditorialGate.aboutCopy {
                 // About (explanation, not scripture) — shown only after scholar review G3

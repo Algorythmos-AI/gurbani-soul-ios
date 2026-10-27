@@ -194,7 +194,7 @@ struct ThemeChapterScreen: View {
     }
 
     private func steepedMeta(_ s: SteepedShabad) -> String {
-        var bits = ["\(s.n) of \(s.total) verses", "Ang \(s.ang)"]
+        var bits = ["\(s.n) of \(s.total) verses", "Ang \(String(s.ang))"]
         if let r = s.raag { bits.append(raagName(r)) }
         if let a = s.author { bits.append(a.replacingOccurrences(of: " Ji", with: "")) }
         return bits.joined(separator: " · ")
@@ -210,11 +210,11 @@ struct ThemeChapterScreen: View {
                 let r = ConstellationFocus.angRange(bin: bin)
                 if bins[bin] > 0 {
                     NavigationLink(value: Route.themeVerses(concept, ThemeFilter(term: term, lens: ConstellationLens(angMin: r.lowerBound, angMax: r.upperBound)))) {
-                        seeAll("See the \(bins[bin].formatted()) \(bins[bin] == 1 ? "verse" : "verses") in Angs \(r.lowerBound)–\(r.upperBound)")
+                        seeAll("See the \(bins[bin].formatted()) \(bins[bin] == 1 ? "verse" : "verses") in Angs \(String(r.lowerBound))–\(String(r.upperBound))")
                     }
                     .buttonStyle(.plain)
                 } else {
-                    Text("No verse in Angs \(r.lowerBound)–\(r.upperBound) carries it\(term == nil ? "" : " in this form").")
+                    Text("No verse in Angs \(String(r.lowerBound))–\(String(r.upperBound)) carries it\(term == nil ? "" : " in this form").")
                         .font(.caption).foregroundStyle(Ink.muted)
                 }
             }
@@ -330,7 +330,7 @@ struct ThemeChapterScreen: View {
     }
 
     private func verseMeta(_ l: SearchLine) -> String {
-        var bits = ["Ang \(l.ang)"]
+        var bits = ["Ang \(String(l.ang))"]
         if let r = l.raag { bits.append(raagName(r)) }
         if let a = l.author { bits.append(a.replacingOccurrences(of: " Ji", with: "")) }
         return bits.joined(separator: " · ")

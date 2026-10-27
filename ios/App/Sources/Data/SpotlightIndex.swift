@@ -19,7 +19,7 @@ enum SpotlightIndex {
     static func item(lineId: Int, compId: Int, gurmukhi: String, translit: String, ang: Int) -> CSSearchableItem {
         let attrs = CSSearchableItemAttributeSet(contentType: .text)
         attrs.title = gurmukhi                       // verbatim — never the saroop display form
-        attrs.contentDescription = "\(translit)\nSri Guru Granth Sahib Ji · Ang \(ang)"
+        attrs.contentDescription = "\(translit)\nSri Guru Granth Sahib Ji · Ang \(String(ang))"
         attrs.keywords = ["Gurbani", "SGGS", translit]
         return CSSearchableItem(uniqueIdentifier: identifier(lineId: lineId, compId: compId),
                                 domainIdentifier: domain, attributeSet: attrs)

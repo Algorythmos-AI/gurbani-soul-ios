@@ -112,7 +112,7 @@ enum ThemeIndexModel {
     static func peakPhrase(_ bins: [Int]) -> String? {
         guard let peak = bins.max(), peak > 0, let i = bins.firstIndex(of: peak) else { return nil }
         let r = ConstellationFocus.angRange(bin: i)
-        return "Most in Angs \(r.lowerBound)–\(r.upperBound)"
+        return "Most in Angs \(String(r.lowerBound))–\(String(r.upperBound))"
     }
 
     /// The VoiceOver summary of a card: the counts a sighted reader gets from the card's text.

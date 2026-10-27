@@ -2,7 +2,7 @@ import SwiftUI
 import WidgetKit
 
 /// The Nitnem widget views (in `Shared` so `WidgetRenderTests` can render every family). Warm
-/// paper, one gold accent, a small-caps eyebrow, scripture in ink Sant Lipi — the same
+/// paper, one gold accent, a sentence-case eyebrow, scripture in ink Sant Lipi — the same
 /// vocabulary as the Raag Now and Hukam widgets (brand book §6, "Widgets").
 struct NitnemWidgetView: View {
     let entry: NitnemEntry
@@ -11,8 +11,8 @@ struct NitnemWidgetView: View {
     private var family: WidgetFamily { familyOverride ?? envFamily }
     private var palette: AccentPalette { .brandDefault }
 
-    private var eyebrow: String { entry.band.setKey == "morning" ? "MORNING BANIS"
-        : entry.band.setKey == "evening" ? "REHRAS" : "SOHILA" }
+    private var eyebrow: String { entry.band.setKey == "morning" ? "Morning banis"
+        : entry.band.setKey == "evening" ? "Rehras" : "Sohila" }
     private var symbol: String { entry.band.setKey == "morning" ? "sunrise"
         : entry.band.setKey == "evening" ? "sunset" : "moon.stars" }
 

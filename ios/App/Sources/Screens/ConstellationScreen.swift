@@ -461,7 +461,7 @@ struct PairSheet: View {
                             ForEach(sh.verses) { v in
                                 VStack(alignment: .leading, spacing: 4) {
                                     LineRow(gurmukhi: v.gurmukhi, translit: v.translit,
-                                            meta: (v.isRahao ? "ਰਹਾਉ · refrain · " : "") + "Ang \(v.ang)",
+                                            meta: (v.isRahao ? "ਰਹਾਉ · refrain · " : "") + "Ang \(String(v.ang))",
                                             lineId: v.id, ang: v.ang, compId: sh.compId, shareContext: title) {
                                         container.present(.shabad(compId: sh.compId, focusLineId: v.id))
                                     }
@@ -501,7 +501,7 @@ struct PairSheet: View {
         var parts: [String] = []
         if let r = sh.raag { parts.append("Raag " + (container.meta?.raags.first { $0.name == r }?.roman ?? r)) }
         if let a = sh.author { parts.append(a) }
-        parts.append("Ang \(sh.ang)")
+        parts.append("Ang \(String(sh.ang))")
         return parts.joined(separator: " · ")
     }
 

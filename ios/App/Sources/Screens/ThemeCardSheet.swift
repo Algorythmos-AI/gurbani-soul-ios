@@ -146,7 +146,7 @@ struct AngStrip: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Angs \(range.lowerBound) to \(range.upperBound): \(n) verses")
+                    .accessibilityLabel("Angs \(String(range.lowerBound)) to \(String(range.upperBound)): \(n) verses")
                     .accessibilityAddTraits(selected == i ? .isSelected : [])
                 }
             }

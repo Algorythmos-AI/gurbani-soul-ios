@@ -151,7 +151,7 @@ struct YourThemeVersesScreen: View {
         List {
             Section {
                 ForEach(verses) { v in
-                    LineRow(gurmukhi: v.gurmukhi, translit: v.translit, meta: "Ang \(v.ang)",
+                    LineRow(gurmukhi: v.gurmukhi, translit: v.translit, meta: "Ang \(String(v.ang))",
                             lineId: v.lineId, ang: v.ang, compId: v.compId) {
                         container.present(.shabad(compId: v.compId, focusLineId: v.lineId))
                     }

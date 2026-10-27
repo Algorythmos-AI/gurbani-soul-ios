@@ -219,13 +219,13 @@ struct JumpToAngSheet: View {
                 Button {
                     setTarget(r.firstAng)
                 } label: {
-                    Text([r.roman, r.name].compactMap { $0 }.first ?? r.name) + Text("  ·  Ang \(r.firstAng)")
+                    Text([r.roman, r.name].compactMap { $0 }.first ?? r.name) + Text("  ·  Ang \(String(r.firstAng))")
                 }
             }
             if let sections = container.meta?.sections, !sections.isEmpty {
                 Divider()
                 ForEach(sections) { s in
-                    Button { setTarget(s.firstAng) } label: { Text("\(s.name)  ·  Ang \(s.firstAng)") }
+                    Button { setTarget(s.firstAng) } label: { Text("\(s.name)  ·  Ang \(String(s.firstAng))") }
                 }
             }
         } label: {
@@ -249,8 +249,8 @@ struct JumpToAngSheet: View {
         VStack(spacing: 0) {
             Divider().overlay(Ink.hairline)
             Button { go() } label: {
-                Text(canGo ? "Go to Ang \(effectiveTarget)"
-                           : (invalidTyped ? "Enter an Ang from 1 to \(String(GranthAngs.count))" : "You're on Ang \(current)"))
+                Text(canGo ? "Go to Ang \(String(effectiveTarget))"
+                           : (invalidTyped ? "Enter an Ang from 1 to \(String(GranthAngs.count))" : "You're on Ang \(String(current))"))
                     .contentTransition(.numericText())
                     .frame(maxWidth: .infinity, minHeight: 56)
             }

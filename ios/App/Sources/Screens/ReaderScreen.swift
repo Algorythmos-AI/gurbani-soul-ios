@@ -195,7 +195,7 @@ struct ReaderScreen: View {
             .onChange(of: router.readerAng) { _, n in
                 justTurned = true          // re-baseline scroll tracking for the new page (C5)
                 showChrome()               // page turn: chrome back
-                UIAccessibility.post(notification: .pageScrolled, argument: "Ang \(n)")
+                UIAccessibility.post(notification: .pageScrolled, argument: "Ang \(String(n))")
             }
             .onChange(of: focusMode) { _, _ in showChrome() }
             // Sehaj focus hides the tab bar (once, on the toggle — never from scroll offsets, which

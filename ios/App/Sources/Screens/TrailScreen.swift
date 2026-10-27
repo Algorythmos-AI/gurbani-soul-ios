@@ -91,7 +91,7 @@ struct TrailScreen: View {
             GurmukhiText(verbatim: n.gurmukhi, size: 20)
             HStack(spacing: 8) {
                 RelatednessBadge(score: n.score)
-                Text(["Ang \(n.ang)", n.raag, n.author].compactMap { $0 }.joined(separator: " · "))
+                Text(["Ang \(String(n.ang))", n.raag, n.author].compactMap { $0 }.joined(separator: " · "))
                     .font(.caption).foregroundStyle(.tertiary)
             }
         }
