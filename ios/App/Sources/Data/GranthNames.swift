@@ -32,11 +32,13 @@ enum GranthNames {
         "kaanarhaa": "ਕਾਨੜਾ", "kaliaan": "ਕਲਿਆਨੁ", "prabhaatee": "ਪ੍ਰਭਾਤੀ", "jaijaavantee": "ਜੈਜਾਵੰਤੀ",
     ]
 
-    /// The banis before and after the raags, by their corpus Gurmukhi section name. The two
-    /// salok collections are listed ahead of the sggs-data section fix that will name them.
+    /// The banis before and after the raags, by their corpus Gurmukhi section name. Dataset 1.3.0
+    /// (G3) names the Chaubole as printed, ਚਉਬੋਲੇ ਮਹਲਾ ੫, and opens the two salok collections;
+    /// the bare ਚਉਬੋਲੇ key stays for older data.
     static let sections: [String: String] = [
         "ਜਪੁ": "Japji Sahib", "ਸੋ ਦਰੁ": "So Dar", "ਸੋ ਪੁਰਖੁ": "So Purakh", "ਸੋਹਿਲਾ": "Sohila",
         "ਸਲੋਕ ਸਹਸਕ੍ਰਿਤੀ": "Salok Sehskriti", "ਗਾਥਾ": "Gatha", "ਫੁਨਹੇ": "Funhe", "ਚਉਬੋਲੇ": "Chaubole",
+        "ਚਉਬੋਲੇ ਮਹਲਾ ੫": "Chaubole Mahalla 5",
         "ਸਲੋਕ ਭਗਤ ਕਬੀਰ ਜੀਉ ਕੇ": "Salok Bhagat Kabir Ji", "ਸਲੋਕ ਸੇਖ ਫਰੀਦ ਕੇ": "Salok Sheikh Farid Ji",
         "ਸਵਈਏ": "Savaiye", "ਸਲੋਕ ਵਾਰਾਂ ਤੇ ਵਧੀਕ": "Salok Varan Te Vadheek",
         "ਸਲੋਕ ਮਹਲਾ ੯": "Salok Mahalla 9", "ਮੁੰਦਾਵਣੀ": "Mundavani", "ਰਾਗ ਮਾਲਾ": "Raagmala",
