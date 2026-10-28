@@ -10,6 +10,7 @@ struct SGGSApp: App {
     init() {
         #if DEBUG
         LaunchClock.mark(.appInit)
+        if LaunchClock.exposed { LaunchClock.discardPersisted() }   // never read an earlier launch's timeline
         // XCUITest launches set SGGS_UITEST=1: clear per-launch residue that would otherwise
         // leak between tests (resume-last-Ang, the transliteration toggle). Never the accent —
         // its persistence across a relaunch is itself under test. Debug builds only.
@@ -29,10 +30,12 @@ struct SGGSApp: App {
             NitnemProgressStore.wipe()
             NitnemPlanStore.wipe()
             VaarProgressStore.wipe()
-            // D10: a cold integrity verify (full re-hash), as after an install or an update
-            if ProcessInfo.processInfo.environment["SGGS_UITEST_COLD_VERIFY"] == "1" {
-                UserDefaults.standard.removeObject(forKey: LaunchIntegrity.cacheKey)
-            }
+        }
+        // D10: a cold integrity verify (full re-hash), as after an install or an update. It drops the
+        // verified fingerprint only, never any data, so it also applies to an ordinary launch: the
+        // bench's D10 outside XCTest (ios/tools/device_bench.sh d10) launches the app that way.
+        if ProcessInfo.processInfo.environment["SGGS_UITEST_COLD_VERIFY"] == "1" {
+            UserDefaults.standard.removeObject(forKey: LaunchIntegrity.cacheKey)
         }
         #endif
         Brand.applyNavigationTitleFonts()
