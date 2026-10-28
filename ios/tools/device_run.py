@@ -1031,6 +1031,12 @@ def build_flakes(docs):
             "tests": tests}
 
 
+def measured(t):
+    """A test with a duration a bundle measured; a record from notes keeps null (unknown), never 0."""
+    d = t.get("duration")
+    return isinstance(d, (int, float)) and not isinstance(d, bool)
+
+
 def build_trends(docs):
     rows = []
     for d in docs:
@@ -1040,14 +1046,14 @@ def build_trends(docs):
                 secs = (parse_iso(b["finished_at"]) - parse_iso(b["started_at"])).total_seconds()
                 suites[b["kind"]] = suites.get(b["kind"], 0) + int(secs)
         launch = d.get("launch") or {}
-        slow = sorted((t for t in d.get("tests", []) if t["outcome"] != "Skipped"),
-                      key=lambda t: (-t.get("duration", 0), t["id"]))[:20]
+        slow = sorted((t for t in d.get("tests", []) if t["outcome"] != "Skipped" and measured(t)),
+                      key=lambda t: (-t["duration"], t["id"]))[:20]
         rows.append({"version": d["version"], "run_id": d["run_id"], "verdict": d["verdict"],
                      "d10": {k: (launch.get(k) or {}).get("nitnemDrawn") for k in ("cold", "warm")},
                      "d10_method": launch.get("d10_method"),
                      "d10_xctest_pre_main": (launch.get("xctest") or {}).get("pre_main"),
                      "suite_seconds": suites,
-                     "slowest": [[t["id"], t.get("duration", 0)] for t in slow]})
+                     "slowest": [[t["id"], t["duration"]] for t in slow]})
     return {"schema": SCHEMA, "_comment": "Derived by `device_run.py rebuild`.", "runs": rows}
 
 
@@ -1089,7 +1095,13 @@ def build_history(docs, flakes):
                    f"{dev.get('name') or '—'} · iOS {dev.get('ios') or '?'} | "
                    f"{u} | {ui} | "
                    f"{passed}/{len(cl)} | {d10} |")
-    out += ["", "Unit and UI columns are passed / failed / skipped.", "", "## Flaky on the device", ""]
+    out += ["", "Unit and UI columns are passed / failed / skipped."]
+    unmeasured = [f"`{d['version']}/{d['run_id']}`" for d in reversed(docs)
+                  if not any(measured(t) for t in d.get("tests", []) if t["outcome"] != "Skipped")]
+    if unmeasured:
+        out += ["", "No per-test durations recorded for " + ", ".join(unmeasured) +
+                " (written from notes); `trends.json` gives them `slowest: []`."]
+    out += ["", "## Flaky on the device", ""]
     tests = flakes["tests"]
     if not tests:
         out.append("None recorded.")
@@ -1198,6 +1210,14 @@ def check_run(run_dir):
     for t in s["tests"]:
         if t.get("cause") and t["cause"] not in CAUSE_VALUES:
             problems.append(f"{t['id']}: cause {t['cause']!r} is not one of {', '.join(CAUSE_VALUES)}")
+        # Unknown is null, never 0, and only in a record from notes: a device run's bundles timed every test.
+        if "duration" not in t:
+            problems.append(f"{t['id']}: duration missing (seconds, or null when no bundle measured it)")
+        elif t["duration"] is None:
+            if s["origin"] not in NOTE_ORIGINS:
+                problems.append(f"{t['id']}: duration null, but a device run's bundles measured every test")
+        elif not measured(t) or t["duration"] < 0:
+            problems.append(f"{t['id']}: duration {t['duration']!r} is not seconds (a number ≥ 0) or null")
     return problems
 
 

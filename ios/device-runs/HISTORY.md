@@ -16,6 +16,8 @@ pass a gate. `RECORDED` ones have their bundles published in the evidence reposi
 
 Unit and UI columns are passed / failed / skipped.
 
+No per-test durations recorded for `1.4.9/20261027T1750Z-79b5f96`, `1.5.0/20261027T1605Z-63d7386`, `1.4.9/20261026T0024Z-bc36c9b`, `1.4.9/20261025T0822Z-844e172`, `1.4.8/20261024T1705Z-0fd2439`, `1.4.2/20261017T0020Z-ee0c379` (written from notes); `trends.json` gives them `slowest: []`.
+
 ## Flaky on the device
 
 Flake events are unexplained failures that passed on a rerun; bench (env) failures and fixed bugs

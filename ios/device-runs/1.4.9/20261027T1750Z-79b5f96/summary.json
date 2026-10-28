@@ -57,12 +57,12 @@
     {
       "id": "BenchGuardTests/testBenchIsReadyForADeviceRun()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     }
   ],
   "evidence_repo": "Algorythmos-AI/gurbani-soul-device-evidence",

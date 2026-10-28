@@ -13,72 +13,7 @@
       "d10_method": null,
       "d10_xctest_pre_main": null,
       "suite_seconds": {},
-      "slowest": [
-        [
-          "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
-          0
-        ],
-        [
-          "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()",
-          0
-        ],
-        [
-          "DeviceChecklistTests/testD12HostileLinksNeverCrash()",
-          0
-        ],
-        [
-          "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
-          0
-        ],
-        [
-          "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
-          0
-        ],
-        [
-          "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
-          0
-        ],
-        [
-          "SGGSUITests/testAccentPickerSwitchesAndPersists()",
-          0
-        ],
-        [
-          "SGGSUITests/testChevronsTurnPagesRepeatedly()",
-          0
-        ],
-        [
-          "SGGSUITests/testDeepLinkAngBeatsResume()",
-          0
-        ],
-        [
-          "SGGSUITests/testForgetLocationReturnsToTheLocationCard()",
-          0
-        ],
-        [
-          "SGGSUITests/testLiveActivityToggleDefaultsOff()",
-          0
-        ],
-        [
-          "SGGSUITests/testPageBarStaysOnOneLineAtLargeText()",
-          0
-        ],
-        [
-          "SGGSUITests/testRapidChevronTapsStayInSync()",
-          0
-        ],
-        [
-          "SGGSUITests/testReaderBoundsAndRubberBand()",
-          0
-        ],
-        [
-          "SGGSUITests/testRehrasVariantPersists()",
-          0
-        ],
-        [
-          "SGGSUITests/testSavedVerseRoundTrip()",
-          0
-        ]
-      ]
+      "slowest": []
     },
     {
       "version": "1.4.8",
@@ -91,40 +26,7 @@
       "d10_method": null,
       "d10_xctest_pre_main": null,
       "suite_seconds": {},
-      "slowest": [
-        [
-          "SGGSUITests/testForgetLocationReturnsToTheLocationCard()",
-          0
-        ],
-        [
-          "SGGSUITests/testGutkaSwitchTogglesTheLayout()",
-          0
-        ],
-        [
-          "SGGSUITests/testInsights()",
-          0
-        ],
-        [
-          "SGGSUITests/testLineageAndVaars()",
-          0
-        ],
-        [
-          "SGGSUITests/testPrivacyPolicyReachableFromMore()",
-          0
-        ],
-        [
-          "SGGSUITests/testReaderChromeReturnsOnScrollUp()",
-          0
-        ],
-        [
-          "SGGSUITests/testThemesIndexSearchFindsByMeaningAndGurmukhi()",
-          0
-        ],
-        [
-          "SGGSUITests/testVerifyShowsVerdict()",
-          0
-        ]
-      ]
+      "slowest": []
     },
     {
       "version": "1.4.9",
@@ -137,56 +39,7 @@
       "d10_method": null,
       "d10_xctest_pre_main": null,
       "suite_seconds": {},
-      "slowest": [
-        [
-          "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
-          0
-        ],
-        [
-          "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()",
-          0
-        ],
-        [
-          "DeviceChecklistTests/testD12HostileLinksNeverCrash()",
-          0
-        ],
-        [
-          "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
-          0
-        ],
-        [
-          "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
-          0
-        ],
-        [
-          "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
-          0
-        ],
-        [
-          "SGGSUITests/testCaptureScreens()",
-          0
-        ],
-        [
-          "SGGSUITests/testLineageAndVaars()",
-          0
-        ],
-        [
-          "SGGSUITests/testSearchOpensShabad()",
-          0
-        ],
-        [
-          "SGGSUITests/testThemeListStatesItsTrueTotal()",
-          0
-        ],
-        [
-          "SGGSUITests/testThemesIndexSearchFindsByMeaningAndGurmukhi()",
-          0
-        ],
-        [
-          "SGGSUITests/testVerifyShowsVerdict()",
-          0
-        ]
-      ]
+      "slowest": []
     },
     {
       "version": "1.4.9",
@@ -199,40 +52,7 @@
       "d10_method": null,
       "d10_xctest_pre_main": null,
       "suite_seconds": {},
-      "slowest": [
-        [
-          "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
-          0
-        ],
-        [
-          "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()",
-          0
-        ],
-        [
-          "DeviceChecklistTests/testD12HostileLinksNeverCrash()",
-          0
-        ],
-        [
-          "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
-          0
-        ],
-        [
-          "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
-          0
-        ],
-        [
-          "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
-          0
-        ],
-        [
-          "SGGSUITests/testRaagPageFromTheIndex()",
-          0
-        ],
-        [
-          "SGGSUITests/testReaderJumpAndSwipe()",
-          0
-        ]
-      ]
+      "slowest": []
     },
     {
       "version": "1.5.0",
@@ -248,60 +68,7 @@
         "warm": 1.547
       },
       "suite_seconds": {},
-      "slowest": [
-        [
-          "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
-          0
-        ],
-        [
-          "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()",
-          0
-        ],
-        [
-          "DeviceChecklistTests/testD12HostileLinksNeverCrash()",
-          0
-        ],
-        [
-          "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
-          0
-        ],
-        [
-          "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
-          0
-        ],
-        [
-          "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
-          0
-        ],
-        [
-          "SGGSUITests/testBaniContentsJumpsToPauri()",
-          0
-        ],
-        [
-          "SGGSUITests/testCaptureJaapPauri79()",
-          0
-        ],
-        [
-          "SGGSUITests/testIndexContinueCardResumes()",
-          0
-        ],
-        [
-          "SGGSUITests/testNitnemOpensJapjiAndCompletes()",
-          0
-        ],
-        [
-          "SGGSUITests/testNitnemRemindersScreenOpens()",
-          0
-        ],
-        [
-          "SGGSUITests/testSavedVerseRoundTrip()",
-          0
-        ],
-        [
-          "SGGSUITests/testSehajFocusHidesChromeAndExits()",
-          0
-        ]
-      ]
+      "slowest": []
     },
     {
       "version": "1.4.9",
@@ -317,16 +84,7 @@
         "warm": 0.189
       },
       "suite_seconds": {},
-      "slowest": [
-        [
-          "BenchGuardTests/testBenchIsReadyForADeviceRun()",
-          0
-        ],
-        [
-          "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
-          0
-        ]
-      ]
+      "slowest": []
     }
   ]
 }

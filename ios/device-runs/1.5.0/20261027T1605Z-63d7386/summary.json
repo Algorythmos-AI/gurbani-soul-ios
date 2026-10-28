@@ -206,7 +206,7 @@
     {
       "id": "SGGSUITests/testBaniContentsJumpsToPauri()",
       "outcome": "Passed",
-      "duration": 0,
+      "duration": null,
       "failure": "the Contents sheet did not open",
       "cause": "unknown",
       "reruns": [
@@ -219,7 +219,7 @@
     {
       "id": "SGGSUITests/testCaptureJaapPauri79()",
       "outcome": "Passed",
-      "duration": 0,
+      "duration": null,
       "failure": "verse 79 was not hittable",
       "cause": "unknown",
       "reruns": [
@@ -232,7 +232,7 @@
     {
       "id": "SGGSUITests/testIndexContinueCardResumes()",
       "outcome": "Passed",
-      "duration": 0,
+      "duration": null,
       "failure": "the Continue card did not appear",
       "cause": "unknown",
       "reruns": [
@@ -245,7 +245,7 @@
     {
       "id": "SGGSUITests/testNitnemOpensJapjiAndCompletes()",
       "outcome": "Passed",
-      "duration": 0,
+      "duration": null,
       "failure": "Failed to terminate the app (Wi-Fi tunnel)",
       "cause": "env:tunnel",
       "reruns": [
@@ -258,7 +258,7 @@
     {
       "id": "SGGSUITests/testNitnemRemindersScreenOpens()",
       "outcome": "Passed",
-      "duration": 0,
+      "duration": null,
       "failure": "Failed to launch the app via Xcode (Wi-Fi tunnel)",
       "cause": "env:tunnel",
       "reruns": [
@@ -271,7 +271,7 @@
     {
       "id": "SGGSUITests/testSavedVerseRoundTrip()",
       "outcome": "Passed",
-      "duration": 0,
+      "duration": null,
       "failure": "the composition did not open from Saved",
       "cause": "unknown",
       "reruns": [
@@ -284,7 +284,7 @@
     {
       "id": "SGGSUITests/testSehajFocusHidesChromeAndExits()",
       "outcome": "Passed",
-      "duration": 0,
+      "duration": null,
       "failure": "the page bar did not return",
       "cause": "unknown",
       "reruns": [
@@ -297,7 +297,7 @@
     {
       "id": "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
       "outcome": "Passed",
-      "duration": 0,
+      "duration": null,
       "failure": "XCTAssertLessThan failed: (\"5.054\") is not less than (\"5.0\") - a cold launch must finish verifying in under 5 s (appInit 4.786 s: XCTest's bootstrap over the tunnel)",
       "cause": "env:tunnel",
       "reruns": [
@@ -310,27 +310,27 @@
     {
       "id": "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "DeviceChecklistTests/testD12HostileLinksNeverCrash()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     }
   ],
   "evidence_repo": "Algorythmos-AI/gurbani-soul-device-evidence",

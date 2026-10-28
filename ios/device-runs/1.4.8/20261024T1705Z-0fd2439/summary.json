@@ -45,7 +45,7 @@
     {
       "id": "SGGSUITests/testGutkaSwitchTogglesTheLayout()",
       "outcome": "Passed",
-      "duration": 0,
+      "duration": null,
       "failure": "failed in the full suite; passed alone",
       "cause": "unknown",
       "reruns": [
@@ -58,7 +58,7 @@
     {
       "id": "SGGSUITests/testInsights()",
       "outcome": "Passed",
-      "duration": 0,
+      "duration": null,
       "failure": "terminate failed in the full suite; passed alone",
       "cause": "unknown",
       "reruns": [
@@ -71,7 +71,7 @@
     {
       "id": "SGGSUITests/testReaderChromeReturnsOnScrollUp()",
       "outcome": "Passed",
-      "duration": 0,
+      "duration": null,
       "failure": "failed in the full suite; passed alone",
       "cause": "unknown",
       "reruns": [
@@ -84,7 +84,7 @@
     {
       "id": "SGGSUITests/testThemesIndexSearchFindsByMeaningAndGurmukhi()",
       "outcome": "Passed",
-      "duration": 0,
+      "duration": null,
       "failure": "keyboard focus; passed alone",
       "cause": "unknown",
       "reruns": [
@@ -97,7 +97,7 @@
     {
       "id": "SGGSUITests/testLineageAndVaars()",
       "outcome": "Failed",
-      "duration": 0,
+      "duration": null,
       "failure": "voice page did not load (Farid card tapped before counts loaded; a real bug: a voice page opened early never showed its verses tile)",
       "cause": "code",
       "reruns": [
@@ -112,7 +112,7 @@
     {
       "id": "SGGSUITests/testPrivacyPolicyReachableFromMore()",
       "outcome": "Failed",
-      "duration": 0,
+      "duration": null,
       "failure": "Support row queried as a Button; a SwiftUI Link has another type on iOS 27 (test-side)",
       "cause": "code",
       "reruns": [
@@ -127,7 +127,7 @@
     {
       "id": "SGGSUITests/testVerifyShowsVerdict()",
       "outcome": "Failed",
-      "duration": 0,
+      "duration": null,
       "failure": "Verify pill half off-screen; the tap did not switch mode (test-side)",
       "cause": "code",
       "reruns": [
@@ -142,7 +142,7 @@
     {
       "id": "SGGSUITests/testForgetLocationReturnsToTheLocationCard()",
       "outcome": "Failed",
-      "duration": 0,
+      "duration": null,
       "failure": "'Use these coordinates' tapped with the number keyboard up; the sheet stayed (test-side)",
       "cause": "code",
       "reruns": [

@@ -44,7 +44,9 @@ The verdict is recomputed by the tool from the facts every time; it is never typ
   never passes a gate. Its `origin` says what it is: `backfill` (the bundles were lost,
   `evidence_lost: true`), `device-pretag` (a release candidate's triage run before its tag) or
   `pr-verification` (a pull request checked on the device). `RECORDED` means its bundles are
-  published, under its own `asset_tag`, and `verify-assets` checks them like any run's.
+  published, under its own `asset_tag`, and `verify-assets` checks them like any run's. A test no
+  bundle timed has `duration: null` (unknown, never 0); `check` allows null only in these records,
+  and `trends.json` leaves such tests out of `slowest`.
 
 Failure causes: `code`, `env:locked`, `env:landscape`, `env:foreground`, `env:tunnel`,
 `env:cert`, `unknown`. `summarize` classifies from the failure text and from a landscape failure

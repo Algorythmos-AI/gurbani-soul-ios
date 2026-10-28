@@ -40,82 +40,82 @@
     {
       "id": "SGGSUITests/testPageBarStaysOnOneLineAtLargeText()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "SGGSUITests/testRehrasVariantPersists()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "SGGSUITests/testDeepLinkAngBeatsResume()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "SGGSUITests/testLiveActivityToggleDefaultsOff()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "SGGSUITests/testForgetLocationReturnsToTheLocationCard()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "SGGSUITests/testAccentPickerSwitchesAndPersists()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "SGGSUITests/testSavedVerseRoundTrip()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "SGGSUITests/testChevronsTurnPagesRepeatedly()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "SGGSUITests/testReaderBoundsAndRubberBand()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "SGGSUITests/testRapidChevronTapsStayInSync()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "DeviceChecklistTests/testD12HostileLinksNeverCrash()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     }
   ],
   "checklist": {

@@ -45,7 +45,7 @@
     {
       "id": "SGGSUITests/testRaagPageFromTheIndex()",
       "outcome": "Passed",
-      "duration": 0,
+      "duration": null,
       "failure": "'Back must return to the Index'",
       "cause": "unknown",
       "reruns": [
@@ -62,7 +62,7 @@
     {
       "id": "SGGSUITests/testReaderJumpAndSwipe()",
       "outcome": "Passed",
-      "duration": 0,
+      "duration": null,
       "failure": "'angField missing'",
       "cause": "unknown",
       "reruns": [
@@ -79,34 +79,34 @@
     {
       "id": "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
       "outcome": "Failed",
-      "duration": 0,
+      "duration": null,
       "failure": "5.83 s on XCTest's clock (the in-app clock, #88, was not merged yet)",
       "cause": "code"
     },
     {
       "id": "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "DeviceChecklistTests/testD12HostileLinksNeverCrash()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     }
   ],
   "checklist": {

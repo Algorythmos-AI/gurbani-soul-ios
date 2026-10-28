@@ -34,7 +34,7 @@
     {
       "id": "SGGSUITests/testThemesIndexSearchFindsByMeaningAndGurmukhi()",
       "outcome": "Passed",
-      "duration": 0,
+      "duration": null,
       "failure": "failed with the phone in landscape (app window 956×440)",
       "cause": "env:landscape",
       "reruns": [
@@ -47,7 +47,7 @@
     {
       "id": "SGGSUITests/testVerifyShowsVerdict()",
       "outcome": "Passed",
-      "duration": 0,
+      "duration": null,
       "failure": "failed with the phone in landscape (app window 956×440)",
       "cause": "env:landscape",
       "reruns": [
@@ -60,7 +60,7 @@
     {
       "id": "SGGSUITests/testCaptureScreens()",
       "outcome": "Passed",
-      "duration": 0,
+      "duration": null,
       "failure": "failed with the phone in landscape (app window 956×440)",
       "cause": "env:landscape",
       "reruns": [
@@ -73,7 +73,7 @@
     {
       "id": "SGGSUITests/testThemeListStatesItsTrueTotal()",
       "outcome": "Passed",
-      "duration": 0,
+      "duration": null,
       "failure": "failed with the phone in landscape (app window 956×440)",
       "cause": "env:landscape",
       "reruns": [
@@ -86,7 +86,7 @@
     {
       "id": "SGGSUITests/testSearchOpensShabad()",
       "outcome": "Passed",
-      "duration": 0,
+      "duration": null,
       "failure": "failed with the phone in landscape (app window 956×440)",
       "cause": "env:landscape",
       "reruns": [
@@ -99,7 +99,7 @@
     {
       "id": "SGGSUITests/testLineageAndVaars()",
       "outcome": "Passed",
-      "duration": 0,
+      "duration": null,
       "failure": "failed with the phone in landscape (app window 956×440)",
       "cause": "env:landscape",
       "reruns": [
@@ -122,7 +122,7 @@
     {
       "id": "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
       "outcome": "Passed",
-      "duration": 0,
+      "duration": null,
       "failure": "iOS 27 'Paste' menu item not found (test-side)",
       "cause": "code",
       "reruns": [
@@ -141,7 +141,7 @@
     {
       "id": "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
       "outcome": "Passed",
-      "duration": 0,
+      "duration": null,
       "failure": "XCTest could not terminate the app (tearDown, Wi-Fi tunnel); every step had passed",
       "cause": "env:tunnel",
       "reruns": [
@@ -154,7 +154,7 @@
     {
       "id": "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
       "outcome": "Failed",
-      "duration": 0,
+      "duration": null,
       "failure": "cold 8.35 s > 5 s on XCTest's clock; 7.4 s of a reading was XCTest terminating a leftover app",
       "cause": "code",
       "reruns": [
@@ -169,17 +169,17 @@
     {
       "id": "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     },
     {
       "id": "DeviceChecklistTests/testD12HostileLinksNeverCrash()",
       "outcome": "Passed",
-      "duration": 0
+      "duration": null
     }
   ],
   "checklist": {

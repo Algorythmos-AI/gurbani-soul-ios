@@ -859,9 +859,39 @@ class CheckAndRebuildTests(Base):
         (out / "summary.json").write_text(json.dumps(s, indent=2))
         self.assertTrue(any("asset_tag" in p for p in dr.check_run(out)))
 
+    def test_an_unknown_duration_is_null_and_only_in_a_record_from_notes(self):
+        self.backfill("1.4.9", "20261025T1200Z-abcdef0", [{"id": "A/t()", "outcome": "Passed", "duration": None}])
+        self.assertEqual(dr.check_run(self.runs / "1.4.9" / "20261025T1200Z-abcdef0"), [])
+        out = self.passed_run()
+        s = json.loads((out / "summary.json").read_text())
+        for value, problem in ((None, "duration null"), ("0.5 s", "not seconds"), (-1, "not seconds"),
+                               (True, "not seconds"), ("missing", "duration missing")):
+            t = dict(s["tests"][0])
+            if value == "missing":
+                del t["duration"]
+            else:
+                t["duration"] = value
+            (out / "summary.json").write_text(json.dumps({**s, "tests": [t] + s["tests"][1:]}))
+            self.assertTrue(any(problem in p for p in dr.check_run(out)), value)
+
+    def test_trends_and_history_leave_unknown_durations_out(self):
+        self.passed_run()
+        self.backfill("1.4.9", "20261025T1200Z-abcdef0", [{"id": "A/t()", "outcome": "Passed", "duration": None},
+                                                          {"id": "B/t()", "outcome": "Passed"}])
+        self.assertEqual(dr.cmd_rebuild(ns(check=False), runs_dir=self.runs), 0)
+        trends = {r["run_id"]: r for r in json.loads((self.runs / "trends.json").read_text())["runs"]}
+        self.assertEqual(trends["20261025T1200Z-abcdef0"]["slowest"], [])
+        device = next(r for r in trends.values() if r["verdict"] == "PASS")
+        self.assertTrue(device["slowest"])
+        self.assertTrue(all(isinstance(sec, (int, float)) for _, sec in device["slowest"]))
+        history = (self.runs / "HISTORY.md").read_text()
+        line = next(l for l in history.splitlines() if l.startswith("No per-test durations recorded"))
+        self.assertIn("`1.4.9/20261025T1200Z-abcdef0`", line)
+        self.assertNotIn(device["run_id"], line)
+
     def test_rebuild_and_check(self):
         self.passed_run()
-        flake = {"id": "SGGSUITests/testReaderJumpAndSwipe()", "outcome": "Passed", "duration": 0,
+        flake = {"id": "SGGSUITests/testReaderJumpAndSwipe()", "outcome": "Passed", "duration": None,
                  "failure": "angField missing", "cause": "unknown", "reruns": [{"bundle": "rerun", "outcome": "Passed"}]}
         self.backfill("1.4.9", "20261025T1200Z-abcdef0", [flake])
         self.backfill("1.4.9", "20261026T0130Z-abcdef1", [flake])
