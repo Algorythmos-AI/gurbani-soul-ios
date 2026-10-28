@@ -27,3 +27,26 @@ jobs:
         run: python3 scripts/release/check_versions.py
       - name: iOS gates (source, listing, archive tooling)
         run: python3 -m unittest discover -s ios/tests -v
+      # Device-run evidence (docs/ios/device-evidence.md): every recorded run is well-formed, its
+      # verdict recomputes, nothing identifying is published, and the derived files are current.
+      - name: Device-run records (ios/device-runs)
+        run: |
+          python3 ios/tools/device_run.py check
+          python3 ios/tools/device_run.py rebuild --check
+      # Each run's raw bundles exist, at the recorded sizes, in the private evidence repository.
+      # SGGS_EVIDENCE_TOKEN is its own fine-grained token (that repository only, Contents read-only);
+      # uploads stay with the owner's gh login. Until the repository exists, or while the token is unset
+      # or cannot read it, this is a notice, not a failure; once it can be read, a missing release or
+      # asset fails.
+      - name: Device-run bundles exist in the evidence repository (name + size)
+        env:
+          SGGS_EVIDENCE_TOKEN: ${{ secrets.SGGS_EVIDENCE_TOKEN }}
+        run: |
+          set -o pipefail   # the default `bash -e` has no pipefail: `| tee` would hide the exit code
+          shopt -s nullglob
+          runs=(ios/device-runs/*/*/summary.json)
+          if [ ${#runs[@]} -eq 0 ]; then echo "no device runs recorded yet"; exit 0; fi
+          python3 ios/tools/device_run.py verify-assets --sizes --skip-if-unavailable "${runs[@]}" | tee "$RUNNER_TEMP/assets.txt"
+          if grep -q '^NOTICE:' "$RUNNER_TEMP/assets.txt"; then
+            echo "::notice title=device-run assets::$(grep '^NOTICE:' "$RUNNER_TEMP/assets.txt" | head -1)"
+          fi

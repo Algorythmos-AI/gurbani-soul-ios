@@ -136,6 +136,43 @@ class AppStorePreflight(unittest.TestCase):
         self.assertEqual(len(problems), 1)
 
 
+class DeviceRunGate(unittest.TestCase):
+    """Condition 7: a PASS device run of the archived tree."""
+    TREE = "b" * 40
+
+    def rows(self):
+        return [{"version": "1.3.1", "build": 2, "channel": "appstore", "sdk": "iphoneos26.5", "source_commit": "a" * 40}]
+
+    def run_row(self, **over):
+        return dict({"version": "1.3.1", "run_id": "20261027T1604Z-bbbbbbb", "verdict": "PASS", "tree": self.TREE}, **over)
+
+    def evaluate(self, runs, tree=TREE):
+        return preflight.evaluate("1.3.1", self.rows(), SIGNED, LABEL_OFF, device_runs=runs,
+                                  tree_of=lambda commit: tree)[1]
+
+    def test_a_pass_of_the_archived_tree_is_enough(self):
+        self.assertEqual(self.evaluate([self.run_row()]), [])
+
+    def test_anything_else_is_refused(self):
+        for runs in ([], [self.run_row(verdict="INCOMPLETE")], [self.run_row(verdict="RECORDED-NO-BUNDLES")],
+                     [self.run_row(tree="c" * 40)], [self.run_row(version="1.3.0")]):
+            problems = self.evaluate(runs)
+            self.assertEqual(len(problems), 1, runs)
+            self.assertIn("no PASS device run of tree bbbbbbb", problems[0])
+
+    def test_an_unknown_commit_or_no_commit(self):
+        self.assertIn("git fetch", self.evaluate([self.run_row()], tree=None)[0])
+        problems = preflight.evaluate("1.3.1", [dict(self.rows()[0], source_commit=None)], SIGNED, LABEL_OFF,
+                                      device_runs=[self.run_row()], tree_of=lambda c: self.TREE)[1]
+        self.assertIn("no source_commit", problems[0])
+
+    def test_the_index_is_what_rebuild_writes(self):
+        index = ROOT / "ios" / "device-runs" / "index.json"
+        if index.exists():
+            for r in json.loads(index.read_text())["runs"]:
+                self.assertTrue({"version", "run_id", "verdict", "tree"} <= set(r))
+
+
 class LedgerRecordsTheChannel(LedgerTests):
     def test_channel_and_toolchain_are_recorded(self):
         cand = Path(self._tmp.name) / "cand.json"

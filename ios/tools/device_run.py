@@ -27,7 +27,9 @@ Commands
   verify-assets SUMMARY… [--sizes] [--skip-if-unavailable]
       Re-download every bundle asset and compare its sha256 (default), or compare names and sizes
       through the API (--sizes, CI). Token: SGGS_EVIDENCE_TOKEN (CI: read-only, the evidence repository
-      only), else GH_TOKEN / GITHUB_TOKEN (a local gh login).
+      only), else GH_TOKEN / GITHUB_TOKEN (a local gh login). --skip-if-unavailable turns an
+      unreadable evidence repository (not created yet, no token) into a notice; a missing release is
+      still a failure.
   check [RUN_DIR…]
       Every run under ios/device-runs (or the given ones): schema, verdict recomputed, the scrub scan,
       text only, ≤ 256 KB per run.
@@ -1127,6 +1129,10 @@ def derived(runs_dir):
 
 def cmd_rebuild(args, runs_dir=None):
     runs_dir = Path(runs_dir or RUNS)
+    if args.check and not load_summaries(runs_dir) and not any((runs_dir / n).exists() for n in
+                                                               ("index.json", "flakes.json", "trends.json", "HISTORY.md")):
+        print("no device runs recorded yet")
+        return 0
     files = derived(runs_dir)
     if args.check:
         drift = [n for n, text in files.items()
@@ -1263,6 +1269,18 @@ def token():
 def cmd_verify_assets(args, host=HOST):
     tok = token()
     problems, checked = [], 0
+    if args.skip_if_unavailable:
+        # Only an unreadable evidence REPO is a notice (not created yet, or no token here). Once it can
+        # be read, a missing release or asset is a failure like any other.
+        try:
+            host.http(f"https://api.github.com/repos/{EVIDENCE_REPO}", tok)
+        except (urllib.error.HTTPError, urllib.error.URLError) as e:
+            code = getattr(e, "code", None)
+            if not tok or code in (401, 403, 404):
+                print(f"NOTICE: {EVIDENCE_REPO} is not readable here ({'no token' if not tok else f'HTTP {code}'}); "
+                      "asset check skipped — it runs once the repository exists and SGGS_EVIDENCE_TOKEN can read it")
+                return 0
+            raise Refusal(f"{EVIDENCE_REPO}: {e}")
     for path in args.summaries:
         s = read_json(path)
         if not s.get("bundles"):
@@ -1272,12 +1290,7 @@ def cmd_verify_assets(args, host=HOST):
         try:
             release = host.http(api, tok)
         except (urllib.error.HTTPError, urllib.error.URLError) as e:
-            code = getattr(e, "code", None)
-            if args.skip_if_unavailable and (not tok or code in (401, 403, 404)):
-                print(f"NOTICE: {EVIDENCE_REPO} release {tag} is not readable here "
-                      f"({'no token' if not tok else f'HTTP {code}'}); asset check skipped")
-                continue
-            problems.append(f"{tag}: release not readable ({code or e})")
+            problems.append(f"{tag}: release not readable ({getattr(e, 'code', None) or e})")
             continue
         assets = {a["name"]: a for a in release.get("assets", [])}
         for b in s["bundles"]:
