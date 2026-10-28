@@ -117,10 +117,12 @@ MANUAL_ROWS = tuple(r for r, (_, t) in CHECKLIST.items() if t is None)
 # Screens that may go public (eyeballed first): UI-test data only.
 PUBLIC_ROWS = ("D2", "D3", "D11")
 # Rows whose proof is that the screen did NOT change: D11 resumes on the Ang it left, D12's hostile
-# links leave the screen as it was. Inside one minute their captures are byte-identical by design,
-# so identical images do not hold these rows back (the warning is still printed). Every other row
-# still needs distinct images: a duplicate there means a capture that never happened.
-UNCHANGED_ROWS = ("D11", "D12")
+# links leave the screen as it was. Inside one minute those captures are byte-identical by design,
+# so duplicates do not hold these rows back (the warning is still printed); each row still needs
+# this many DISTINCT images — D11's force-quit and interrupted-verify screens differ from the reader,
+# so a D11 whose captures are all one image is still a capture that never happened. Every other
+# row needs all its images distinct.
+UNCHANGED_ROWS = {"D11": 2, "D12": 1}
 
 # A test that only ever SKIPPED is allowed when its skip message starts with one of these.
 SKIP_ALLOWLIST = {
@@ -836,7 +838,7 @@ def cmd_summarize(args, host=HOST, runs_dir=None):
             entry["result"] = "missing"
         elif row == "D10" and test_ok and evid and d10_problem:
             entry["result"], entry["note"] = d10_problem
-        elif test_ok and evid and (len(img) == len(set(img)) or row in UNCHANGED_ROWS):
+        elif test_ok and evid and (len(img) == len(set(img)) or len(set(img)) >= UNCHANGED_ROWS.get(row, len(img) + 1)):
             entry["result"] = "pass"
         elif any(p[0] == "FAIL" and p[1].startswith(test) for p in problems):
             entry["result"] = "fail"

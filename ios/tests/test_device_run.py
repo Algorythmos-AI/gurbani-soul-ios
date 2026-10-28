@@ -584,7 +584,8 @@ class SummarizeTests(Base):
             for entry in manifest:
                 atts = entry["attachments"]
                 if entry["testIdentifier"].endswith("testD11ResumeAndAnInterruptedVerify()"):
-                    atts[1]["exportedFileName"] = atts[0]["exportedFileName"]
+                    atts.append({**atts[0], "suggestedHumanReadableName":
+                                 atts[0]["suggestedHumanReadableName"].replace("D11 resumed", "D11 reading")})
                 if entry["testIdentifier"].endswith("testD12HostileLinksNeverCrash()"):
                     atts.append({**atts[0], "suggestedHumanReadableName":
                                  atts[0]["suggestedHumanReadableName"].replace("D12 stayed", "D12 still stayed")})
@@ -596,6 +597,20 @@ class SummarizeTests(Base):
         self.assertEqual(len(s["checklist"]["D12"]["attachments"]), 2)
         self.assertTrue(any("identical image" in w and "D11" in w for w in s["warnings"]))
         self.assertTrue(any("identical image" in w and "D12" in w for w in s["warnings"]))
+
+    def test_a_d11_whose_captures_are_all_one_image_is_still_incomplete(self):
+        rd = self.full_run()
+
+        def frozen(manifest):
+            for entry in manifest:
+                if entry["testIdentifier"].endswith("testD11ResumeAndAnInterruptedVerify()"):
+                    entry["attachments"][1]["exportedFileName"] = entry["attachments"][0]["exportedFileName"]
+            return manifest
+        self.host.mutate["checklist"] = {"manifest": frozen}
+        self.summarize(rd)
+        s = self.summary(rd)
+        self.assertEqual(s["checklist"]["D11"]["result"], "incomplete")
+        self.assertEqual(s["checklist"]["D11"]["note"], "two evidence images are byte-identical")
 
     def test_planned_tests_that_never_ran_make_it_incomplete(self):
         self.planned.write_text("\n".join(fixture_ids() + ["SGGSUITests/testNeverRan()"]) + "\n")
