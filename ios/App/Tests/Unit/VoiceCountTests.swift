@@ -57,23 +57,16 @@ final class VoiceCountTests: XCTestCase {
         }
     }
 
-    /// Tagged figures (verses, shares, dots) cover the voices with tagged lines; the note under
-    /// them names the voice under review and its Ang, and that voice's page and row cite the Ang
-    /// instead of a zero.
-    func testTheTaggedFigureNoteNamesSurdas() throws {
+    /// Dataset 1.3.0 (G3 ruling): Bhagat Surdas Ji's line at Ang 1253 is tagged to him, so every
+    /// roster voice has tagged lines, no voice is under review and no note sits under the figures.
+    /// His page shows his verse, never a review line or "0 verses".
+    func testEveryRosterVoiceIsTaggedSinceTheG3Ruling() throws {
         let (_, roster, summaries) = try shipped()
         let split = LineageCount.split(roster, withBani: Set(summaries.map(\.author)))
-        XCTAssertEqual(split.underReview.map(\.name), ["Bhagat Surdas Ji"],
-                       "dataset 1.2.0: Surdas's line at Ang 1253 is tagged to another voice pending G3")
-        XCTAssertEqual(split.tagged, summaries.count)
-        let note = try XCTUnwrap(LineageCount.taggedNote(split, locale: Locale(identifier: "en_US")))
-        XCTAssertEqual(note, "Figures count the lines tagged to each voice. Bhagat Surdas Ji (Ang 1253): attribution under scholarly review.")
-        let surdas = split.underReview[0]
-        XCTAssertEqual(surdas.reviewAng, 1253)
-        XCTAssertEqual(LineageCount.reviewLine(surdas), "Ang 1253 · attribution under scholarly review")
+        XCTAssertEqual(split.underReview.map(\.name), [], "dataset 1.3.0: every roster voice has tagged lines")
+        XCTAssertEqual(split.tagged, roster.count)
+        XCTAssertNil(LineageCount.taggedNote(split, locale: Locale(identifier: "en_US")))
         let page = try XCTUnwrap(VoiceRouteView.resolve(slug: "bhagat-surdas-ji", roster: roster, summaries: summaries))
-        XCTAssertNil(page.summary, "no tagged lines: the page shows the review line, never 0 verses")
-        // Every voice under review carries the roster's note, so none is shown without its Ang.
-        XCTAssertTrue(split.underReview.allSatisfy { $0.reviewAng != nil })
+        XCTAssertNotNil(page.summary, "Surdas's page reads his tagged line")
     }
 }
