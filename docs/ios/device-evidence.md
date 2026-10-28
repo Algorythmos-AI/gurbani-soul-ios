@@ -18,6 +18,13 @@ expire) or Git LFS (this repo does not use it).
 `run-id` is `YYYYMMDDTHHMMZ-<tree7>`: when `begin` ran, in UTC, and the first seven characters of
 the tested tree.
 
+Every bundle asset is `<name>.xcresult.tar.gz` in one reproducible format, whether `summarize` or
+the supervisor's packer made it: file entries only, under `<name>.xcresult/`, in `os.walk` order
+(each folder's files sorted, then its sorted subfolders), mtime 0, uid/gid 0, PAX headers, gzip
+level 9 with mtime 0, and without xcresulttool's own cache (`database.sqlite3*`, rebuilt on every
+read). The same bundle always gives the same sha256: re-packing published 1.5.0 bundles reproduced
+their published sums.
+
 ## Verdicts
 
 The verdict is recomputed by the tool from the facts every time; it is never typed.
@@ -33,8 +40,13 @@ The verdict is recomputed by the tool from the facts every time; it is never typ
   evidence, a manual row not recorded.
 - **FAIL**: a test failed twice in a row, or a failure was classified `code`, or a manual row
   failed, or D10 was over budget outside XCTest, or the build stamp's tree is not the tested tree.
-- **RECORDED-NO-BUNDLES**: backfilled from documents after the bundles were lost
-  (`evidence_lost: true`). It never passes a gate.
+- **RECORDED** / **RECORDED-NO-BUNDLES**: a record written from notes, not by `summarize`, so it
+  never passes a gate. Its `origin` says what it is: `backfill` (the bundles were lost,
+  `evidence_lost: true`), `device-pretag` (a release candidate's triage run before its tag) or
+  `pr-verification` (a pull request checked on the device). `RECORDED` means its bundles are
+  published, under its own `asset_tag`, and `verify-assets` checks them like any run's. A test no
+  bundle timed has `duration: null` (unknown, never 0); `check` allows null only in these records,
+  and `trends.json` leaves such tests out of `slowest`.
 
 Failure causes: `code`, `env:locked`, `env:landscape`, `env:foreground`, `env:tunnel`,
 `env:cert`, `unknown`. `summarize` classifies from the failure text and from a landscape failure

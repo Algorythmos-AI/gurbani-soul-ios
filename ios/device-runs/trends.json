@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "_comment": "Derived by `device_run.py rebuild`.",
+  "runs": [
+    {
+      "version": "1.4.2",
+      "run_id": "20261017T0020Z-ee0c379",
+      "verdict": "RECORDED-NO-BUNDLES",
+      "d10": {
+        "cold": null,
+        "warm": null
+      },
+      "d10_method": null,
+      "d10_xctest_pre_main": null,
+      "suite_seconds": {},
+      "slowest": []
+    },
+    {
+      "version": "1.4.8",
+      "run_id": "20261024T1705Z-0fd2439",
+      "verdict": "RECORDED-NO-BUNDLES",
+      "d10": {
+        "cold": null,
+        "warm": null
+      },
+      "d10_method": null,
+      "d10_xctest_pre_main": null,
+      "suite_seconds": {},
+      "slowest": []
+    },
+    {
+      "version": "1.4.9",
+      "run_id": "20261025T0822Z-844e172",
+      "verdict": "RECORDED-NO-BUNDLES",
+      "d10": {
+        "cold": null,
+        "warm": null
+      },
+      "d10_method": null,
+      "d10_xctest_pre_main": null,
+      "suite_seconds": {},
+      "slowest": []
+    },
+    {
+      "version": "1.4.9",
+      "run_id": "20261026T0024Z-bc36c9b",
+      "verdict": "RECORDED-NO-BUNDLES",
+      "d10": {
+        "cold": null,
+        "warm": null
+      },
+      "d10_method": null,
+      "d10_xctest_pre_main": null,
+      "suite_seconds": {},
+      "slowest": []
+    },
+    {
+      "version": "1.5.0",
+      "run_id": "20261027T1605Z-63d7386",
+      "verdict": "RECORDED",
+      "d10": {
+        "cold": 1.777,
+        "warm": 1.761
+      },
+      "d10_method": "in-xctest",
+      "d10_xctest_pre_main": {
+        "cold": 1.495,
+        "warm": 1.547
+      },
+      "suite_seconds": {},
+      "slowest": []
+    },
+    {
+      "version": "1.4.9",
+      "run_id": "20261027T1750Z-79b5f96",
+      "verdict": "RECORDED",
+      "d10": {
+        "cold": 0.559,
+        "warm": 0.521
+      },
+      "d10_method": "in-xctest",
+      "d10_xctest_pre_main": {
+        "cold": 0.229,
+        "warm": 0.189
+      },
+      "suite_seconds": {},
+      "slowest": []
+    }
+  ]
+}

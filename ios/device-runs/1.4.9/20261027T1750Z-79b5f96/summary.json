@@ -1,0 +1,196 @@
+{
+  "schema": 1,
+  "tool_version": "1",
+  "origin": "pr-verification",
+  "evidence_lost": false,
+  "version": "1.4.9",
+  "run_id": "20261027T1750Z-79b5f96",
+  "app": {
+    "version": "1.4.9",
+    "build": "1",
+    "build_config": "Debug"
+  },
+  "source": {
+    "commit": "ca4a19c0e9d13abac938caa7b8509a124afbab29",
+    "tree": "79b5f9676e9176d4a610eb051431203ca68ddbf5",
+    "dirty": false
+  },
+  "device": {
+    "name": "S-iPhone",
+    "model": "iPhone 17 Pro Max",
+    "ios": "27.0.1"
+  },
+  "connection": {
+    "transport": "localNetwork"
+  },
+  "started_at": "2026-10-27T17:50:00Z",
+  "ended_at": null,
+  "operator": {
+    "role": "supervisor"
+  },
+  "bundles": [
+    {
+      "name": "bench-guard",
+      "kind": "ui",
+      "asset": "bench-guard.xcresult.tar.gz",
+      "tar_sha256": "9523ec7990e9a96fba879dade35f20377e6902bfa0db2ebe71d1fb44024407e2",
+      "size": 46014,
+      "asset_url": "https://github.com/Algorythmos-AI/gurbani-soul-device-evidence/releases/download/ios-pr107-20261027T1750Z-79b5f96/bench-guard.xcresult.tar.gz"
+    },
+    {
+      "name": "d10",
+      "kind": "rerun",
+      "asset": "d10.xcresult.tar.gz",
+      "tar_sha256": "3ad9a9c0c3936deea4675cb75f9cbe3ba1b9b7163f02ba62da7fe8d27015b6dc",
+      "size": 523080,
+      "asset_url": "https://github.com/Algorythmos-AI/gurbani-soul-device-evidence/releases/download/ios-pr107-20261027T1750Z-79b5f96/d10.xcresult.tar.gz"
+    }
+  ],
+  "backfill_counts": {
+    "ui": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "tests": [
+    {
+      "id": "BenchGuardTests/testBenchIsReadyForADeviceRun()",
+      "outcome": "Passed",
+      "duration": null
+    },
+    {
+      "id": "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
+      "outcome": "Passed",
+      "duration": null
+    }
+  ],
+  "evidence_repo": "Algorythmos-AI/gurbani-soul-device-evidence",
+  "asset_tag": "ios-pr107-20261027T1750Z-79b5f96",
+  "checklist": {
+    "D1": {
+      "mode": "backfill",
+      "title": "Charter S",
+      "result": "not-run",
+      "note": "not part of this verification"
+    },
+    "D2": {
+      "mode": "backfill",
+      "title": "Copy fidelity",
+      "result": "not-run",
+      "note": "not part of this verification"
+    },
+    "D3": {
+      "mode": "backfill",
+      "title": "Gurmukhi rendering",
+      "result": "not-run",
+      "note": "not part of this verification"
+    },
+    "D4": {
+      "mode": "backfill",
+      "title": "Update from the store build",
+      "result": "not-run",
+      "note": "not part of this verification"
+    },
+    "D5": {
+      "mode": "backfill",
+      "title": "Forget location (widget half)",
+      "result": "not-run",
+      "note": "not part of this verification"
+    },
+    "D6": {
+      "mode": "backfill",
+      "title": "Clear reading history",
+      "result": "not-run",
+      "note": "not part of this verification"
+    },
+    "D7": {
+      "mode": "backfill",
+      "title": "Spotlight",
+      "result": "not-run",
+      "note": "not part of this verification"
+    },
+    "D8": {
+      "mode": "backfill",
+      "title": "Widgets",
+      "result": "not-run",
+      "note": "not part of this verification"
+    },
+    "D9": {
+      "mode": "backfill",
+      "title": "Airplane Mode",
+      "result": "not-run",
+      "note": "not part of this verification"
+    },
+    "D10": {
+      "mode": "backfill",
+      "title": "Launch time (this device)",
+      "result": "pass",
+      "note": "in-xctest: cold 0.559 s (re-hashed), warm 0.521 s (fingerprint)"
+    },
+    "D11": {
+      "mode": "backfill",
+      "title": "Force quit and relaunch",
+      "result": "not-run",
+      "note": "not part of this verification"
+    },
+    "D12": {
+      "mode": "backfill",
+      "title": "Hostile links",
+      "result": "not-run",
+      "note": "not part of this verification"
+    }
+  },
+  "launch": {
+    "budget_s": 5.0,
+    "d10_method": "in-xctest",
+    "cold": {
+      "appInit": 0.229,
+      "containerReady": 0.29,
+      "integrityStart": 0.361,
+      "rootShown": 0.361,
+      "integrityHashed": 0.418,
+      "integrityDone": 0.428,
+      "tabsShown": 0.451,
+      "nitnemDrawn": 0.559
+    },
+    "warm": {
+      "appInit": 0.189,
+      "containerReady": 0.222,
+      "integrityStart": 0.285,
+      "rootShown": 0.285,
+      "integrityHashed": 0.286,
+      "integrityDone": 0.377,
+      "tabsShown": 0.403,
+      "nitnemDrawn": 0.521
+    },
+    "cached_hash": {
+      "cold": false,
+      "warm": true
+    },
+    "xctest": {
+      "pre_main": {
+        "cold": 0.229,
+        "warm": 0.189
+      },
+      "app_work": {
+        "cold": 0.33,
+        "warm": 0.332
+      },
+      "xctest_clock": {
+        "cold": 5.543,
+        "warm": 2.52
+      }
+    }
+  },
+  "sources": [
+    "RUN-NOTES.md of release ios-pr107-20261027T1750Z-79b5f96 of the evidence repository"
+  ],
+  "notes": [
+    "PR #107 head ca4a19c (tree 79b5f96) on S-iPhone over the Wi-Fi tunnel, Debug build. BenchGuardTests passed (portrait 440×956, foreground at launch and after 3 s); D10 passed and attached its JSON timeline. Not a release run."
+  ],
+  "verdict": "RECORDED",
+  "verdict_reasons": [
+    "a pull request's device verification, recorded from notes; never a release gate; its bundles are published"
+  ]
+}

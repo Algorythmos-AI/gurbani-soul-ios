@@ -1,0 +1,215 @@
+{
+  "schema": 1,
+  "tool_version": "1",
+  "origin": "backfill",
+  "evidence_lost": true,
+  "version": "1.4.2",
+  "run_id": "20261017T0020Z-ee0c379",
+  "app": {
+    "version": "1.4.2",
+    "build": "1",
+    "build_config": "Debug"
+  },
+  "source": {
+    "commit": "021e780ebf8752e1b5a3daf5b109efdcebc0f220",
+    "tree": "ee0c37932ecbf527f514ce92b26d1e0eb3b3b3f1",
+    "dirty": false
+  },
+  "device": {
+    "name": "S-iPhone",
+    "model": "iPhone 17 Pro Max",
+    "ios": "26.6.2"
+  },
+  "connection": {
+    "transport": null
+  },
+  "started_at": "2026-10-17T00:20:00Z",
+  "ended_at": null,
+  "operator": {
+    "role": "supervisor"
+  },
+  "bundles": [],
+  "backfill_counts": {
+    "unit": {
+      "passed": 257,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "tests": [
+    {
+      "id": "SGGSUITests/testPageBarStaysOnOneLineAtLargeText()",
+      "outcome": "Passed",
+      "duration": null
+    },
+    {
+      "id": "SGGSUITests/testRehrasVariantPersists()",
+      "outcome": "Passed",
+      "duration": null
+    },
+    {
+      "id": "SGGSUITests/testDeepLinkAngBeatsResume()",
+      "outcome": "Passed",
+      "duration": null
+    },
+    {
+      "id": "SGGSUITests/testLiveActivityToggleDefaultsOff()",
+      "outcome": "Passed",
+      "duration": null
+    },
+    {
+      "id": "SGGSUITests/testForgetLocationReturnsToTheLocationCard()",
+      "outcome": "Passed",
+      "duration": null
+    },
+    {
+      "id": "SGGSUITests/testAccentPickerSwitchesAndPersists()",
+      "outcome": "Passed",
+      "duration": null
+    },
+    {
+      "id": "SGGSUITests/testSavedVerseRoundTrip()",
+      "outcome": "Passed",
+      "duration": null
+    },
+    {
+      "id": "SGGSUITests/testChevronsTurnPagesRepeatedly()",
+      "outcome": "Passed",
+      "duration": null
+    },
+    {
+      "id": "SGGSUITests/testReaderBoundsAndRubberBand()",
+      "outcome": "Passed",
+      "duration": null
+    },
+    {
+      "id": "SGGSUITests/testRapidChevronTapsStayInSync()",
+      "outcome": "Passed",
+      "duration": null
+    },
+    {
+      "id": "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
+      "outcome": "Passed",
+      "duration": null
+    },
+    {
+      "id": "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
+      "outcome": "Passed",
+      "duration": null
+    },
+    {
+      "id": "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
+      "outcome": "Passed",
+      "duration": null
+    },
+    {
+      "id": "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
+      "outcome": "Passed",
+      "duration": null
+    },
+    {
+      "id": "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()",
+      "outcome": "Passed",
+      "duration": null
+    },
+    {
+      "id": "DeviceChecklistTests/testD12HostileLinksNeverCrash()",
+      "outcome": "Passed",
+      "duration": null
+    }
+  ],
+  "checklist": {
+    "D1": {
+      "mode": "backfill",
+      "title": "Charter S",
+      "result": "needs-reference",
+      "note": "needs a person with a printed Bir"
+    },
+    "D2": {
+      "mode": "backfill",
+      "title": "Copy fidelity",
+      "result": "pass",
+      "note": "Ang 1400, saroop on and off: both pastes verbatim, no U+0A75"
+    },
+    "D3": {
+      "mode": "backfill",
+      "title": "Gurmukhi rendering",
+      "result": "pass",
+      "note": "Angs 1, 1354, 1359, 1400, light and dark, AX3"
+    },
+    "D4": {
+      "mode": "backfill",
+      "title": "Update from the store build",
+      "result": "not-run",
+      "note": "manual; not run"
+    },
+    "D5": {
+      "mode": "backfill",
+      "title": "Forget location (widget half)",
+      "result": "pass",
+      "note": "app half (testForgetLocationReturnsToTheLocationCard); the widget half is manual"
+    },
+    "D6": {
+      "mode": "backfill",
+      "title": "Clear reading history",
+      "result": "pass",
+      "note": "cancel kept everything; confirm cleared history; saved verse and Rehras survived"
+    },
+    "D7": {
+      "mode": "backfill",
+      "title": "Spotlight",
+      "result": "not-run",
+      "note": "manual; not run"
+    },
+    "D8": {
+      "mode": "backfill",
+      "title": "Widgets",
+      "result": "not-run",
+      "note": "manual; not run"
+    },
+    "D9": {
+      "mode": "backfill",
+      "title": "Airplane Mode",
+      "result": "not-run",
+      "note": "manual; not run"
+    },
+    "D10": {
+      "mode": "backfill",
+      "title": "Launch time (this device)",
+      "result": "pass",
+      "note": "XCTest's clock: cold 2.95 s, warm 2.83 s (before the in-app clock existed)"
+    },
+    "D11": {
+      "mode": "backfill",
+      "title": "Force quit and relaunch",
+      "result": "pass",
+      "note": "resumed on Ang 700; a force quit during a held cold verify re-verified fully"
+    },
+    "D12": {
+      "mode": "backfill",
+      "title": "Hostile links",
+      "result": "pass",
+      "note": "four hostile sggs:// forms, no crash"
+    }
+  },
+  "launch": {
+    "xctest": {
+      "xctest_clock": {
+        "cold": 2.95,
+        "warm": 2.83
+      }
+    }
+  },
+  "sources": [
+    "docs/ios/device-checklist-2026-10-17.md"
+  ],
+  "notes": [
+    "Debug build of main 9000542 plus the ios/uitest-isolation PR; final run on 021e780 (the PR head, later squash-merged). Run time is approximate (after the commit at 00:19Z).",
+    "device_checklist_report.py: every automated row PASS with evidence (exit 0).",
+    "UI-test data safety: UITestVault proven on the device in this pass."
+  ],
+  "verdict": "RECORDED-NO-BUNDLES",
+  "verdict_reasons": [
+    "backfilled from documents; the result bundles were lost"
+  ]
+}
