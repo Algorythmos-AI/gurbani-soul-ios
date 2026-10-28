@@ -1,0 +1,4078 @@
+{
+ "devices": [
+  {
+   "architecture": "arm64",
+   "deviceId": "FIXTURE-DEVICE-ID",
+   "deviceName": "S-iPhone",
+   "modelName": "iPhone 17 Pro Max",
+   "osBuildNumber": "24A446",
+   "osVersion": "27.0.1",
+   "platform": "iOS"
+  }
+ ],
+ "testNodes": [
+  {
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "duration": "0.00096s",
+         "durationInSeconds": 0.0009629726409912109,
+         "name": "testAHiddenChromeReturnsAtTheTopWhateverMovedThePage()",
+         "nodeIdentifier": "AmbientChromeTests/testAHiddenChromeReturnsAtTheTopWhateverMovedThePage()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0003s",
+         "durationInSeconds": 0.0002980232238769531,
+         "name": "testALandingScrollNeverHidesTheChrome()",
+         "nodeIdentifier": "AmbientChromeTests/testALandingScrollNeverHidesTheChrome()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00027s",
+         "durationInSeconds": 0.00027298927307128906,
+         "name": "testAnEarlierLandingsTimerNeverEndsALaterLanding()",
+         "nodeIdentifier": "AmbientChromeTests/testAnEarlierLandingsTimerNeverEndsALaterLanding()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00026s",
+         "durationInSeconds": 0.00026297569274902344,
+         "name": "testAnUpwardReadRestoresTheChrome()",
+         "nodeIdentifier": "AmbientChromeTests/testAnUpwardReadRestoresTheChrome()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00026s",
+         "durationInSeconds": 0.0002620220184326172,
+         "name": "testMovementTheReaderDidNotMakeNeverHidesTheChrome()",
+         "nodeIdentifier": "AmbientChromeTests/testMovementTheReaderDidNotMakeNeverHidesTheChrome()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00025s",
+         "durationInSeconds": 0.0002530813217163086,
+         "name": "testReadingDownHidesTheChrome()",
+         "nodeIdentifier": "AmbientChromeTests/testReadingDownHidesTheChrome()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "AmbientChromeTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00029s",
+         "durationInSeconds": 0.0002859830856323242,
+         "name": "testAngOneResolvesToJapjiSection()",
+         "nodeIdentifier": "AngLocatorTests/testAngOneResolvesToJapjiSection()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00027s",
+         "durationInSeconds": 0.0002739429473876953,
+         "name": "testRaagBoundariesSortedAndDeduped()",
+         "nodeIdentifier": "AngLocatorTests/testRaagBoundariesSortedAndDeduped()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00026s",
+         "durationInSeconds": 0.0002570152282714844,
+         "name": "testRaagSpanWins()",
+         "nodeIdentifier": "AngLocatorTests/testRaagSpanWins()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00025s",
+         "durationInSeconds": 0.00025093555450439453,
+         "name": "testSectionAnswersAfterRaagFramework()",
+         "nodeIdentifier": "AngLocatorTests/testSectionAnswersAfterRaagFramework()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00025s",
+         "durationInSeconds": 0.00024902820587158203,
+         "name": "testUnmatchedAngIsNil()",
+         "nodeIdentifier": "AngLocatorTests/testUnmatchedAngIsNil()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "AngLocatorTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.0024s",
+         "durationInSeconds": 0.002434968948364258,
+         "name": "testBoundsClampedAtTheEnds()",
+         "nodeIdentifier": "AngPagerHostedTests/testBoundsClampedAtTheEnds()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0013s",
+         "durationInSeconds": 0.0013250112533569336,
+         "name": "testFarJumpConverges()",
+         "nodeIdentifier": "AngPagerHostedTests/testFarJumpConverges()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0011s",
+         "durationInSeconds": 0.001134037971496582,
+         "name": "testInitialPageIsShown()",
+         "nodeIdentifier": "AngPagerHostedTests/testInitialPageIsShown()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00064s",
+         "durationInSeconds": 0.0006430149078369141,
+         "name": "testParentUpdateRefreshesTheVisiblePageInPlace()",
+         "nodeIdentifier": "AngPagerHostedTests/testParentUpdateRefreshesTheVisiblePageInPlace()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0012s",
+         "durationInSeconds": 0.0011749267578125,
+         "name": "testReverseTurnConverges()",
+         "nodeIdentifier": "AngPagerHostedTests/testReverseTurnConverges()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00065s",
+         "durationInSeconds": 0.0006508827209472656,
+         "name": "testSetWithNoWindowStillLands()",
+         "nodeIdentifier": "AngPagerHostedTests/testSetWithNoWindowStillLands()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0014s",
+         "durationInSeconds": 0.001447916030883789,
+         "name": "testThreeConsecutiveAdjacentTurnsConverge()",
+         "nodeIdentifier": "AngPagerHostedTests/testThreeConsecutiveAdjacentTurnsConverge()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "AngPagerHostedTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00033s",
+         "durationInSeconds": 0.0003319978713989258,
+         "name": "testBhattGurmukhiSuffixIsSplitOutOfTheEnglishLabel()",
+         "nodeIdentifier": "AuthorNameTests/testBhattGurmukhiSuffixIsSplitOutOfTheEnglishLabel()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00098s",
+         "durationInSeconds": 0.0009779930114746094,
+         "name": "testCompactLabelsAreDistinctAcrossTheRoster()",
+         "nodeIdentifier": "AuthorNameTests/testCompactLabelsAreDistinctAcrossTheRoster()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0012s",
+         "durationInSeconds": 0.0011559724807739258,
+         "name": "testCountsInflectForZeroOneAndTwo()",
+         "nodeIdentifier": "AuthorNameTests/testCountsInflectForZeroOneAndTwo()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00071s",
+         "durationInSeconds": 0.0007100105285644531,
+         "name": "testEveryRosterNameRendersCleanly()",
+         "nodeIdentifier": "AuthorNameTests/testEveryRosterNameRendersCleanly()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00029s",
+         "durationInSeconds": 0.00028705596923828125,
+         "name": "testGranthOrderFollowsFirstAngAndVolumeIsOptIn()",
+         "nodeIdentifier": "AuthorNameTests/testGranthOrderFollowsFirstAngAndVolumeIsOptIn()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00026s",
+         "durationInSeconds": 0.0002620220184326172,
+         "name": "testGuruNameSplitsIntoFullNameAndMahala()",
+         "nodeIdentifier": "AuthorNameTests/testGuruNameSplitsIntoFullNameAndMahala()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00048s",
+         "durationInSeconds": 0.00048089027404785156,
+         "name": "testNoRaagSaysOutsideTheRaagSections()",
+         "nodeIdentifier": "AuthorNameTests/testNoRaagSaysOutsideTheRaagSections()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00025s",
+         "durationInSeconds": 0.00025391578674316406,
+         "name": "testPlainNamesPassThrough()",
+         "nodeIdentifier": "AuthorNameTests/testPlainNamesPassThrough()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "AuthorNameTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00074s",
+         "durationInSeconds": 0.0007430315017700195,
+         "name": "testControllerStateMachine()",
+         "nodeIdentifier": "AutoScrollTests/testControllerStateMachine()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00027s",
+         "durationInSeconds": 0.00026798248291015625,
+         "name": "testEnvOverrideWins()",
+         "nodeIdentifier": "AutoScrollTests/testEnvOverrideWins()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00025s",
+         "durationInSeconds": 0.0002510547637939453,
+         "name": "testNextOffsetAdvancesByRate()",
+         "nodeIdentifier": "AutoScrollTests/testNextOffsetAdvancesByRate()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00025s",
+         "durationInSeconds": 0.00024700164794921875,
+         "name": "testNextOffsetClampsToEnd()",
+         "nodeIdentifier": "AutoScrollTests/testNextOffsetClampsToEnd()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00024s",
+         "durationInSeconds": 0.00024497509002685547,
+         "name": "testNextOffsetIgnoresStalledFrame()",
+         "nodeIdentifier": "AutoScrollTests/testNextOffsetIgnoresStalledFrame()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00025s",
+         "durationInSeconds": 0.0002459287643432617,
+         "name": "testPaceScalesWithFontAndLowPower()",
+         "nodeIdentifier": "AutoScrollTests/testPaceScalesWithFontAndLowPower()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "AutoScrollTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00028s",
+         "durationInSeconds": 0.0002809762954711914,
+         "name": "testAVerseNumberClosesTheVerse()",
+         "nodeIdentifier": "BaniGutkaTests/testAVerseNumberClosesTheVerse()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.019s",
+         "durationInSeconds": 0.019320011138916016,
+         "name": "testEveryDasamAndArdaasHeadingRendersAsAHeading()",
+         "nodeIdentifier": "BaniGutkaTests/testEveryDasamAndArdaasHeadingRendersAsAHeading()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00032s",
+         "durationInSeconds": 0.00031697750091552734,
+         "name": "testGutkaIsOnByDefaultOnlyForTheShortLineBanis()",
+         "nodeIdentifier": "BaniGutkaTests/testGutkaIsOnByDefaultOnlyForTheShortLineBanis()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00034s",
+         "durationInSeconds": 0.0003399848937988281,
+         "name": "testHalfLinesPairUpToTheVerseNumberAndNeverAcrossIt()",
+         "nodeIdentifier": "BaniGutkaTests/testHalfLinesPairUpToTheVerseNumberAndNeverAcrossIt()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0031s",
+         "durationInSeconds": 0.0031310319900512695,
+         "name": "testJaapOpensWithItsBhujangPrayaatPairs()",
+         "nodeIdentifier": "BaniGutkaTests/testJaapOpensWithItsBhujangPrayaatPairs()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.0003110170364379883,
+         "name": "testOffMeansOneLinePerRow()",
+         "nodeIdentifier": "BaniGutkaTests/testOffMeansOneLinePerRow()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.28s",
+         "durationInSeconds": 0.27630698680877686,
+         "name": "testPackingIsOrderPreservingAndLosslessForEveryBani()",
+         "nodeIdentifier": "BaniGutkaTests/testPackingIsOrderPreservingAndLosslessForEveryBani()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00029s",
+         "durationInSeconds": 0.0002859830856323242,
+         "name": "testPairsNeverCrossAHeadingASectionAGroupOrARahao()",
+         "nodeIdentifier": "BaniGutkaTests/testPairsNeverCrossAHeadingASectionAGroupOrARahao()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.00030601024627685547,
+         "name": "testSGGSLinesKeepTheirFilter()",
+         "nodeIdentifier": "BaniGutkaTests/testSGGSLinesKeepTheirFilter()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00027s",
+         "durationInSeconds": 0.00026798248291015625,
+         "name": "testTheAddakIsDrawnAfterTheConjunct()",
+         "nodeIdentifier": "BaniGutkaTests/testTheAddakIsDrawnAfterTheConjunct()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00027s",
+         "durationInSeconds": 0.00026595592498779297,
+         "name": "testTheJoinedTransliterationSplitsBackIntoEachLine()",
+         "nodeIdentifier": "BaniGutkaTests/testTheJoinedTransliterationSplitsBackIntoEachLine()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.35s",
+         "durationInSeconds": 0.3543360233306885,
+         "name": "testTheRepairTouchesOnlyTheTwoJaapLines()",
+         "nodeIdentifier": "BaniGutkaTests/testTheRepairTouchesOnlyTheTwoJaapLines()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00034s",
+         "durationInSeconds": 0.00034308433532714844,
+         "name": "testTheSwitchStoresOnlyRealOverrides()",
+         "nodeIdentifier": "BaniGutkaTests/testTheSwitchStoresOnlyRealOverrides()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "BaniGutkaTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.0003110170364379883,
+         "name": "testBackFromMidSectionReturnsToItsStart()",
+         "nodeIdentifier": "BaniPagerTests/testBackFromMidSectionReturnsToItsStart()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0003s",
+         "durationInSeconds": 0.0002969503402709961,
+         "name": "testForwardAndBackWalkTheSections()",
+         "nodeIdentifier": "BaniPagerTests/testForwardAndBackWalkTheSections()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00029s",
+         "durationInSeconds": 0.00028502941131591797,
+         "name": "testPositionBeforeTheFirstSection()",
+         "nodeIdentifier": "BaniPagerTests/testPositionBeforeTheFirstSection()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00029s",
+         "durationInSeconds": 0.00029397010803222656,
+         "name": "testStepsNeedMoreThanOneNumberedSection()",
+         "nodeIdentifier": "BaniPagerTests/testStepsNeedMoreThanOneNumberedSection()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "BaniPagerTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00036s",
+         "durationInSeconds": 0.00035703182220458984,
+         "name": "testGurmukhiFaceIsStillRegistered()",
+         "nodeIdentifier": "BrandFontTests/testGurmukhiFaceIsStillRegistered()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0004s",
+         "durationInSeconds": 0.0003979206085205078,
+         "name": "testHeadingScalesWithDynamicType()",
+         "nodeIdentifier": "BrandFontTests/testHeadingScalesWithDynamicType()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00029s",
+         "durationInSeconds": 0.0002859830856323242,
+         "name": "testHeadingSerifIsBundledAndRegistered()",
+         "nodeIdentifier": "BrandFontTests/testHeadingSerifIsBundledAndRegistered()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00033s",
+         "durationInSeconds": 0.00033092498779296875,
+         "name": "testHeadingUsesTheSerifNotTheFallback()",
+         "nodeIdentifier": "BrandFontTests/testHeadingUsesTheSerifNotTheFallback()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "BrandFontTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.0035s",
+         "durationInSeconds": 0.003504037857055664,
+         "name": "testEveryColourTokenMatchesTokensJSONInAllFourLegs()",
+         "nodeIdentifier": "BrandTokensParityTests/testEveryColourTokenMatchesTokensJSONInAllFourLegs()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00045s",
+         "durationInSeconds": 0.000453948974609375,
+         "name": "testSpacingAndRadiusMatchTokensJSON()",
+         "nodeIdentifier": "BrandTokensParityTests/testSpacingAndRadiusMatchTokensJSON()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "BrandTokensParityTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.0003s",
+         "durationInSeconds": 0.0002989768981933594,
+         "name": "testFaceTiersShedDetailOnSmallFaces()",
+         "nodeIdentifier": "ClockHandsTests/testFaceTiersShedDetailOnSmallFaces()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00026s",
+         "durationInSeconds": 0.00026106834411621094,
+         "name": "testFractionalSecondsSweep()",
+         "nodeIdentifier": "ClockHandsTests/testFractionalSecondsSweep()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00024s",
+         "durationInSeconds": 0.00023794174194335938,
+         "name": "testHandsCreepLikeARealMovement()",
+         "nodeIdentifier": "ClockHandsTests/testHandsCreepLikeARealMovement()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00024s",
+         "durationInSeconds": 0.00023603439331054688,
+         "name": "testMidnightAllHandsAtTwelve()",
+         "nodeIdentifier": "ClockHandsTests/testMidnightAllHandsAtTwelve()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00024s",
+         "durationInSeconds": 0.00023698806762695312,
+         "name": "testThreeOClockAndTwelveHourWrap()",
+         "nodeIdentifier": "ClockHandsTests/testThreeOClockAndTwelveHourWrap()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00023s",
+         "durationInSeconds": 0.00023305416107177734,
+         "name": "testTimeZoneDrivesTheFace()",
+         "nodeIdentifier": "ClockHandsTests/testTimeZoneDrivesTheFace()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00023s",
+         "durationInSeconds": 0.00023305416107177734,
+         "name": "testWholeMinutesFreezesSeconds()",
+         "nodeIdentifier": "ClockHandsTests/testWholeMinutesFreezesSeconds()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "ClockHandsTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00027s",
+         "durationInSeconds": 0.00027489662170410156,
+         "name": "testHeroKeysAreValidAndUnique()",
+         "nodeIdentifier": "CompositionCatalogTests/testHeroKeysAreValidAndUnique()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00025s",
+         "durationInSeconds": 0.00025200843811035156,
+         "name": "testMoreExcludesHeroesNonDefaultsAndTheExtraLayer()",
+         "nodeIdentifier": "CompositionCatalogTests/testMoreExcludesHeroesNonDefaultsAndTheExtraLayer()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00024s",
+         "durationInSeconds": 0.00023698806762695312,
+         "name": "testNextHeroWalksTheRailAndStopsAtTheEnd()",
+         "nodeIdentifier": "CompositionCatalogTests/testNextHeroWalksTheRailAndStopsAtTheEnd()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00024s",
+         "durationInSeconds": 0.0002371072769165039,
+         "name": "testResolvePicksTheExactVariantNotTheDefault()",
+         "nodeIdentifier": "CompositionCatalogTests/testResolvePicksTheExactVariantNotTheDefault()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00023s",
+         "durationInSeconds": 0.0002340078353881836,
+         "name": "testResolveReturnsNilWhenTheRegistryCannotAnswer()",
+         "nodeIdentifier": "CompositionCatalogTests/testResolveReturnsNilWhenTheRegistryCannotAnswer()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00023s",
+         "durationInSeconds": 0.00022900104522705078,
+         "name": "testResolveWithEmptyVariantTakesTheDefaultRow()",
+         "nodeIdentifier": "CompositionCatalogTests/testResolveWithEmptyVariantTakesTheDefaultRow()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "CompositionCatalogTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00025s",
+         "durationInSeconds": 0.00024890899658203125,
+         "name": "testFillFollowsTheSavedPosition()",
+         "nodeIdentifier": "CompositionShapeTests/testFillFollowsTheSavedPosition()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.077s",
+         "durationInSeconds": 0.07728695869445801,
+         "name": "testFindLandsOnFamiliarAndCorpusSpellings()",
+         "nodeIdentifier": "CompositionShapeTests/testFindLandsOnFamiliarAndCorpusSpellings()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.014s",
+         "durationInSeconds": 0.013762950897216797,
+         "name": "testHeroShapesMatchThePrintedRhythm()",
+         "nodeIdentifier": "CompositionShapeTests/testHeroShapesMatchThePrintedRhythm()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "CompositionShapeTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00032s",
+         "durationInSeconds": 0.00031697750091552734,
+         "name": "testDegenerateSlugsDoNotCrash()",
+         "nodeIdentifier": "ConceptNameTests/testDegenerateSlugsDoNotCrash()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.059s",
+         "durationInSeconds": 0.05888700485229492,
+         "name": "testEveryBundledConceptHasADistinctCleanLabel()",
+         "nodeIdentifier": "ConceptNameTests/testEveryBundledConceptHasADistinctCleanLabel()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0013s",
+         "durationInSeconds": 0.001271963119506836,
+         "name": "testLabelsComeFromTheDescriptionHead()",
+         "nodeIdentifier": "ConceptNameTests/testLabelsComeFromTheDescriptionHead()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.0003050565719604492,
+         "name": "testSlugsBecomeTitleCasedWords()",
+         "nodeIdentifier": "ConceptNameTests/testSlugsBecomeTitleCasedWords()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "ConceptNameTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00054s",
+         "durationInSeconds": 0.0005429983139038086,
+         "name": "testEveryCorpusThemeHasExactlyOneGroup()",
+         "nodeIdentifier": "ConstellationLayoutTests/testEveryCorpusThemeHasExactlyOneGroup()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0089s",
+         "durationInSeconds": 0.00892496109008789,
+         "name": "testSkyLayoutIsByteIdenticalAcrossRuns()",
+         "nodeIdentifier": "ConstellationLayoutTests/testSkyLayoutIsByteIdenticalAcrossRuns()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "ConstellationLayoutTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00073s",
+         "durationInSeconds": 0.0007339715957641602,
+         "name": "testBundledRosterDecodes()",
+         "nodeIdentifier": "ContributorsTests/testBundledRosterDecodes()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00034s",
+         "durationInSeconds": 0.0003370046615600586,
+         "name": "testContextIsGatedOnItsReviewStatus()",
+         "nodeIdentifier": "ContributorsTests/testContextIsGatedOnItsReviewStatus()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00055s",
+         "durationInSeconds": 0.0005511045455932617,
+         "name": "testCountLine()",
+         "nodeIdentifier": "ContributorsTests/testCountLine()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0003s",
+         "durationInSeconds": 0.0002980232238769531,
+         "name": "testGurmukhiInitialSkipsHonorifics()",
+         "nodeIdentifier": "ContributorsTests/testGurmukhiInitialSkipsHonorifics()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00065s",
+         "durationInSeconds": 0.0006469488143920898,
+         "name": "testGuruMedallionIsTheMahalaInGurmukhi()",
+         "nodeIdentifier": "ContributorsTests/testGuruMedallionIsTheMahalaInGurmukhi()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0007s",
+         "durationInSeconds": 0.0006999969482421875,
+         "name": "testKindTagIsSentenceCase()",
+         "nodeIdentifier": "ContributorsTests/testKindTagIsSentenceCase()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00028s",
+         "durationInSeconds": 0.0002790689468383789,
+         "name": "testMalformedV2FieldIsIgnored()",
+         "nodeIdentifier": "ContributorsTests/testMalformedV2FieldIsIgnored()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0013s",
+         "durationInSeconds": 0.0012769699096679688,
+         "name": "testSlugs()",
+         "nodeIdentifier": "ContributorsTests/testSlugs()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00026s",
+         "durationInSeconds": 0.0002570152282714844,
+         "name": "testV1EntryHasNoV2Fields()",
+         "nodeIdentifier": "ContributorsTests/testV1EntryHasNoV2Fields()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00026s",
+         "durationInSeconds": 0.0002620220184326172,
+         "name": "testV2FieldsDecode()",
+         "nodeIdentifier": "ContributorsTests/testV2FieldsDecode()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0026s",
+         "durationInSeconds": 0.002640962600708008,
+         "name": "testVoiceDeepLink()",
+         "nodeIdentifier": "ContributorsTests/testVoiceDeepLink()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "ContributorsTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00096s",
+         "durationInSeconds": 0.0009579658508300781,
+         "name": "testAngOneIsMoolMantar()",
+         "nodeIdentifier": "CorpusIntegrationTests/testAngOneIsMoolMantar()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.045s",
+         "durationInSeconds": 0.045014023780822754,
+         "name": "testDBHashWithinLaunchBudget()",
+         "nodeIdentifier": "CorpusIntegrationTests/testDBHashWithinLaunchBudget()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0016s",
+         "durationInSeconds": 0.001569986343383789,
+         "name": "testHukamUnitIsComplete()",
+         "nodeIdentifier": "CorpusIntegrationTests/testHukamUnitIsComplete()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0065s",
+         "durationInSeconds": 0.006508946418762207,
+         "name": "testThemeSearchReturnsLines()",
+         "nodeIdentifier": "CorpusIntegrationTests/testThemeSearchReturnsLines()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0012s",
+         "durationInSeconds": 0.0011600255966186523,
+         "name": "testVerifyExact()",
+         "nodeIdentifier": "CorpusIntegrationTests/testVerifyExact()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "CorpusIntegrationTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.0012s",
+         "durationInSeconds": 0.0012049674987792969,
+         "name": "testDeleteAll()",
+         "nodeIdentifier": "CrashMonitorTests/testDeleteAll()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00082s",
+         "durationInSeconds": 0.0008170604705810547,
+         "name": "testFilesAreFilteredAndOldestFirst()",
+         "nodeIdentifier": "CrashMonitorTests/testFilesAreFilteredAndOldestFirst()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00043s",
+         "durationInSeconds": 0.0004290342330932617,
+         "name": "testMissingFolderIsEmptyNotACrash()",
+         "nodeIdentifier": "CrashMonitorTests/testMissingFolderIsEmptyNotACrash()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0018s",
+         "durationInSeconds": 0.0017920732498168945,
+         "name": "testPruneKeepsOnlyTheNewest()",
+         "nodeIdentifier": "CrashMonitorTests/testPruneKeepsOnlyTheNewest()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0007s",
+         "durationInSeconds": 0.0006979703903198242,
+         "name": "testPruneUnderTheCapRemovesNothing()",
+         "nodeIdentifier": "CrashMonitorTests/testPruneUnderTheCapRemovesNothing()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "CrashMonitorTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00026s",
+         "durationInSeconds": 0.0002630949020385742,
+         "name": "testBandBoundaries()",
+         "nodeIdentifier": "DayArcModelTests/testBandBoundaries()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00024s",
+         "durationInSeconds": 0.00024402141571044922,
+         "name": "testDaylightFlag()",
+         "nodeIdentifier": "DayArcModelTests/testDaylightFlag()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00024s",
+         "durationInSeconds": 0.0002390146255493164,
+         "name": "testMarkerFractionWrapsAtThreeAM()",
+         "nodeIdentifier": "DayArcModelTests/testMarkerFractionWrapsAtThreeAM()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "DayArcModelTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.062s",
+         "durationInSeconds": 0.06164193153381348,
+         "name": "testCenturySpanComesFromTheRoster()",
+         "nodeIdentifier": "ExploreDigestTests/testCenturySpanComesFromTheRoster()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.06s",
+         "durationInSeconds": 0.060498952865600586,
+         "name": "testContinueNamesTheVaarInProgress()",
+         "nodeIdentifier": "ExploreDigestTests/testContinueNamesTheVaarInProgress()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.061s",
+         "durationInSeconds": 0.061450958251953125,
+         "name": "testMastheadCountsComeFromTheData()",
+         "nodeIdentifier": "ExploreDigestTests/testMastheadCountsComeFromTheData()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.00031006336212158203,
+         "name": "testNothingLoadedSaysLessNeverAGuess()",
+         "nodeIdentifier": "ExploreDigestTests/testNothingLoadedSaysLessNeverAGuess()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.061s",
+         "durationInSeconds": 0.06097400188446045,
+         "name": "testPreviewsHoldTheWholeGranth()",
+         "nodeIdentifier": "ExploreDigestTests/testPreviewsHoldTheWholeGranth()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "ExploreDigestTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.00030601024627685547,
+         "name": "testEveryDestinationHasOneUniqueTitle()",
+         "nodeIdentifier": "ExploreLayoutTests/testEveryDestinationHasOneUniqueTitle()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00047s",
+         "durationInSeconds": 0.00047397613525390625,
+         "name": "testEveryWidthFillsEveryRowWithEachDestinationOnce()",
+         "nodeIdentifier": "ExploreLayoutTests/testEveryWidthFillsEveryRowWithEachDestinationOnce()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00034s",
+         "durationInSeconds": 0.0003420114517211914,
+         "name": "testFeatureTurnsOverByDayAndCoversEveryEligibleDestination()",
+         "nodeIdentifier": "ExploreLayoutTests/testFeatureTurnsOverByDayAndCoversEveryEligibleDestination()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00028s",
+         "durationInSeconds": 0.00028204917907714844,
+         "name": "testOneColumnIsOneCardPerRow()",
+         "nodeIdentifier": "ExploreLayoutTests/testOneColumnIsOneCardPerRow()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00027s",
+         "durationInSeconds": 0.00027000904083251953,
+         "name": "testPinWinsOnlyWhenEligible()",
+         "nodeIdentifier": "ExploreLayoutTests/testPinWinsOnlyWhenEligible()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0003s",
+         "durationInSeconds": 0.0002969503402709961,
+         "name": "testSquaresPairUpBeforeStandingAlone()",
+         "nodeIdentifier": "ExploreLayoutTests/testSquaresPairUpBeforeStandingAlone()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "ExploreLayoutTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.58s",
+         "durationInSeconds": 0.5795329809188843,
+         "name": "testANewerDayWinsOverALoadInFlight()",
+         "nodeIdentifier": "ExploreLiveTests/testANewerDayWinsOverALoadInFlight()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0011s",
+         "durationInSeconds": 0.0010859966278076172,
+         "name": "testClockStatesTheWidgetsWatch()",
+         "nodeIdentifier": "ExploreLiveTests/testClockStatesTheWidgetsWatch()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0004s",
+         "durationInSeconds": 0.0004030466079711914,
+         "name": "testNightWatchAcrossMidnightReadsPMtoAM()",
+         "nodeIdentifier": "ExploreLiveTests/testNightWatchAcrossMidnightReadsPMtoAM()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.9s",
+         "durationInSeconds": 0.8981291055679321,
+         "name": "testSecondLoadSameDayReadsNothingNew()",
+         "nodeIdentifier": "ExploreLiveTests/testSecondLoadSameDayReadsNothingNew()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.6s",
+         "durationInSeconds": 0.6036150455474854,
+         "name": "testSkyIsTheSkyScreensLayout()",
+         "nodeIdentifier": "ExploreLiveTests/testSkyIsTheSkyScreensLayout()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00038s",
+         "durationInSeconds": 0.00038301944732666016,
+         "name": "testStoredLocationFarFromTheClocksZone()",
+         "nodeIdentifier": "ExploreLiveTests/testStoredLocationFarFromTheClocksZone()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.53s",
+         "durationInSeconds": 0.5314170122146606,
+         "name": "testThemeVerseIsTheCorpusLineByteForByte()",
+         "nodeIdentifier": "ExploreLiveTests/testThemeVerseIsTheCorpusLineByteForByte()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "ExploreLiveTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.0032s",
+         "durationInSeconds": 0.003249049186706543,
+         "name": "testEverythingSizedFromTheCountCoversIt()",
+         "nodeIdentifier": "GranthAngsTests/testEverythingSizedFromTheCountCoversIt()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.057s",
+         "durationInSeconds": 0.05661797523498535,
+         "name": "testTheBundledDatabaseCoversExactlyGranthAngs()",
+         "nodeIdentifier": "GranthAngsTests/testTheBundledDatabaseCoversExactlyGranthAngs()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "GranthAngsTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.0025s",
+         "durationInSeconds": 0.0024939775466918945,
+         "name": "testAngLabel()",
+         "nodeIdentifier": "GranthMapTests/testAngLabel()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0017s",
+         "durationInSeconds": 0.0016649961471557617,
+         "name": "testChauboleNamesWhatItsSpanHolds()",
+         "nodeIdentifier": "GranthMapTests/testChauboleNamesWhatItsSpanHolds()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.099s",
+         "durationInSeconds": 0.09922003746032715,
+         "name": "testEveryRaagAndSectionHasAnEnglishName()",
+         "nodeIdentifier": "GranthMapTests/testEveryRaagAndSectionHasAnEnglishName()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.057s",
+         "durationInSeconds": 0.05662798881530762,
+         "name": "testMovementsFollowTheSaroop()",
+         "nodeIdentifier": "GranthMapTests/testMovementsFollowTheSaroop()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00032s",
+         "durationInSeconds": 0.0003190040588378906,
+         "name": "testPrimaryPaharsKeepOnlyPrimaryClaimsInRange()",
+         "nodeIdentifier": "GranthMapTests/testPrimaryPaharsKeepOnlyPrimaryClaimsInRange()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00051s",
+         "durationInSeconds": 0.0005110502243041992,
+         "name": "testRaagDeepLinkValuesResolveWithoutTheDB()",
+         "nodeIdentifier": "GranthMapTests/testRaagDeepLinkValuesResolveWithoutTheDB()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.058s",
+         "durationInSeconds": 0.05789804458618164,
+         "name": "testRaagSlugsAreUniqueAndRoundTrip()",
+         "nodeIdentifier": "GranthMapTests/testRaagSlugsAreUniqueAndRoundTrip()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.057s",
+         "durationInSeconds": 0.05651998519897461,
+         "name": "testRomanTableMatchesTheDB()",
+         "nodeIdentifier": "GranthMapTests/testRomanTableMatchesTheDB()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00026s",
+         "durationInSeconds": 0.0002579689025878906,
+         "name": "testSliceRectStaysInsideTheTrack()",
+         "nodeIdentifier": "GranthMapTests/testSliceRectStaysInsideTheTrack()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "GranthMapTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.0026s",
+         "durationInSeconds": 0.0025969743728637695,
+         "name": "testAngDeepLinkCarriesLineAndClears()",
+         "nodeIdentifier": "HardeningTests/testAngDeepLinkCarriesLineAndClears()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0021s",
+         "durationInSeconds": 0.0020520687103271484,
+         "name": "testBaniDeepLinkRoutesByVariant()",
+         "nodeIdentifier": "HardeningTests/testBaniDeepLinkRoutesByVariant()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.002s",
+         "durationInSeconds": 0.001990079879760742,
+         "name": "testExplicitAngNavigationSetsTheFlag()",
+         "nodeIdentifier": "HardeningTests/testExplicitAngNavigationSetsTheFlag()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0019s",
+         "durationInSeconds": 0.0019199848175048828,
+         "name": "testHostDisappearReArmsPresenting()",
+         "nodeIdentifier": "HardeningTests/testHostDisappearReArmsPresenting()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00027s",
+         "durationInSeconds": 0.00026702880859375,
+         "name": "testHukamWidgetOpensTheVerseItShows()",
+         "nodeIdentifier": "HardeningTests/testHukamWidgetOpensTheVerseItShows()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00085s",
+         "durationInSeconds": 0.0008530616760253906,
+         "name": "testImpossibleCompositionIdReadsEmptyNotACrash()",
+         "nodeIdentifier": "HardeningTests/testImpossibleCompositionIdReadsEmptyNotACrash()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0019s",
+         "durationInSeconds": 0.0019019842147827148,
+         "name": "testMalformedAngLinkChangesNothing()",
+         "nodeIdentifier": "HardeningTests/testMalformedAngLinkChangesNothing()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00025s",
+         "durationInSeconds": 0.0002529621124267578,
+         "name": "testMalformedCompositionRequestChangesNothing()",
+         "nodeIdentifier": "HardeningTests/testMalformedCompositionRequestChangesNothing()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0017s",
+         "durationInSeconds": 0.0017380714416503906,
+         "name": "testNonexistentCompositionIdsReadEmpty()",
+         "nodeIdentifier": "HardeningTests/testNonexistentCompositionIdsReadEmpty()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00025s",
+         "durationInSeconds": 0.00025010108947753906,
+         "name": "testOpenCompositionPushesOnTheExploreStack()",
+         "nodeIdentifier": "HardeningTests/testOpenCompositionPushesOnTheExploreStack()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0019s",
+         "durationInSeconds": 0.0019240379333496094,
+         "name": "testOutOfRangeShabadLinkIsIgnored()",
+         "nodeIdentifier": "HardeningTests/testOutOfRangeShabadLinkIsIgnored()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0019s",
+         "durationInSeconds": 0.0018879175186157227,
+         "name": "testPresentBeforeSheetHostNeverLatches()",
+         "nodeIdentifier": "HardeningTests/testPresentBeforeSheetHostNeverLatches()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0019s",
+         "durationInSeconds": 0.0019168853759765625,
+         "name": "testPresentShowsImmediatelyWhenIdle()",
+         "nodeIdentifier": "HardeningTests/testPresentShowsImmediatelyWhenIdle()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0019s",
+         "durationInSeconds": 0.0019099712371826172,
+         "name": "testPresentSwapQueuesUntilDismissCompletes()",
+         "nodeIdentifier": "HardeningTests/testPresentSwapQueuesUntilDismissCompletes()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0019s",
+         "durationInSeconds": 0.0018739700317382812,
+         "name": "testRapidTriplePresentNeverStrandsTheQueue()",
+         "nodeIdentifier": "HardeningTests/testRapidTriplePresentNeverStrandsTheQueue()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0019s",
+         "durationInSeconds": 0.0019049644470214844,
+         "name": "testShabadDeepLinkCarriesLine()",
+         "nodeIdentifier": "HardeningTests/testShabadDeepLinkCarriesLine()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0084s",
+         "durationInSeconds": 0.008356928825378418,
+         "name": "testShabadLinkComponentsAreStrict()",
+         "nodeIdentifier": "HardeningTests/testShabadLinkComponentsAreStrict()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.002s",
+         "durationInSeconds": 0.0019599199295043945,
+         "name": "testUserDismissReArmsPresenting()",
+         "nodeIdentifier": "HardeningTests/testUserDismissReArmsPresenting()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.002s",
+         "durationInSeconds": 0.001958012580871582,
+         "name": "testWatchdogNeverPresentsMidDismiss()",
+         "nodeIdentifier": "HardeningTests/testWatchdogNeverPresentsMidDismiss()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "HardeningTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00094s",
+         "durationInSeconds": 0.0009380578994750977,
+         "name": "testANonGregorianCalendarDrawsTheSameDay()",
+         "nodeIdentifier": "HukamOfTheDayTimelineTests/testANonGregorianCalendarDrawsTheSameDay()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00033s",
+         "durationInSeconds": 0.00033402442932128906,
+         "name": "testAWestwardTripStillFindsTheDay()",
+         "nodeIdentifier": "HukamOfTheDayTimelineTests/testAWestwardTripStillFindsTheDay()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0003s",
+         "durationInSeconds": 0.0002980232238769531,
+         "name": "testDayKeysAreTheReadersLocalDate()",
+         "nodeIdentifier": "HukamOfTheDayTimelineTests/testDayKeysAreTheReadersLocalDate()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00027s",
+         "durationInSeconds": 0.00026607513427734375,
+         "name": "testMidnightFollowsDaylightSaving()",
+         "nodeIdentifier": "HukamOfTheDayTimelineTests/testMidnightFollowsDaylightSaving()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00026s",
+         "durationInSeconds": 0.00026106834411621094,
+         "name": "testNoVerseForTodayMeansNoSchedule()",
+         "nodeIdentifier": "HukamOfTheDayTimelineTests/testNoVerseForTodayMeansNoSchedule()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00025s",
+         "durationInSeconds": 0.0002529621124267578,
+         "name": "testPastDaysAreSkippedAndOrderIsByDate()",
+         "nodeIdentifier": "HukamOfTheDayTimelineTests/testPastDaysAreSkippedAndOrderIsByDate()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00027s",
+         "durationInSeconds": 0.00027000904083251953,
+         "name": "testSnapshotWithoutDaysStillDecodes()",
+         "nodeIdentifier": "HukamOfTheDayTimelineTests/testSnapshotWithoutDaysStillDecodes()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00045s",
+         "durationInSeconds": 0.000453948974609375,
+         "name": "testTheAppRewritesTheDaysWhenTheyRunLow()",
+         "nodeIdentifier": "HukamOfTheDayTimelineTests/testTheAppRewritesTheDaysWhenTheyRunLow()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00026s",
+         "durationInSeconds": 0.00026094913482666016,
+         "name": "testTodayAtOnceThenEachLocalMidnight()",
+         "nodeIdentifier": "HukamOfTheDayTimelineTests/testTodayAtOnceThenEachLocalMidnight()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.19s",
+         "durationInSeconds": 0.19460201263427734,
+         "name": "testTwoWeeksOfRealVersesStayInsideTheBudget()",
+         "nodeIdentifier": "HukamOfTheDayTimelineTests/testTwoWeeksOfRealVersesStayInsideTheBudget()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00039s",
+         "durationInSeconds": 0.00038695335388183594,
+         "name": "testWidgetFallsBackWithoutDays()",
+         "nodeIdentifier": "HukamOfTheDayTimelineTests/testWidgetFallsBackWithoutDays()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00035s",
+         "durationInSeconds": 0.0003529787063598633,
+         "name": "testWidgetTurnsAtMidnightWithoutTheApp()",
+         "nodeIdentifier": "HukamOfTheDayTimelineTests/testWidgetTurnsAtMidnightWithoutTheApp()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "HukamOfTheDayTimelineTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "1s",
+         "durationInSeconds": 1.488150954246521,
+         "name": "testCitationIsNeverTruncated()",
+         "nodeIdentifier": "HukamWidgetRenderTests/testCitationIsNeverTruncated()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.12s",
+         "durationInSeconds": 0.11794006824493408,
+         "name": "testHukamRendersMediumAndLarge()",
+         "nodeIdentifier": "HukamWidgetRenderTests/testHukamRendersMediumAndLarge()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "HukamWidgetRenderTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.0016s",
+         "durationInSeconds": 0.0016460418701171875,
+         "name": "testContinueSkipsAPositionThatNoLongerResumes()",
+         "nodeIdentifier": "IndexContinueAndHourTests/testContinueSkipsAPositionThatNoLongerResumes()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0035s",
+         "durationInSeconds": 0.0034890174865722656,
+         "name": "testInThisHourMatchesTheRaagClock()",
+         "nodeIdentifier": "IndexContinueAndHourTests/testInThisHourMatchesTheRaagClock()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0016s",
+         "durationInSeconds": 0.0016390085220336914,
+         "name": "testResumesWithoutLinesMatchesResumeSeq()",
+         "nodeIdentifier": "IndexContinueAndHourTests/testResumesWithoutLinesMatchesResumeSeq()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "IndexContinueAndHourTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00028s",
+         "durationInSeconds": 0.00028395652770996094,
+         "name": "testCacheHitRequiresEveryFieldToMatch()",
+         "nodeIdentifier": "LaunchCacheTests/testCacheHitRequiresEveryFieldToMatch()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.057s",
+         "durationInSeconds": 0.056967973709106445,
+         "name": "testFirstRunStreamsSecondRunUsesCache()",
+         "nodeIdentifier": "LaunchCacheTests/testFirstRunStreamsSecondRunUsesCache()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.051s",
+         "durationInSeconds": 0.05103099346160889,
+         "name": "testGarbageCacheForcesFullVerify()",
+         "nodeIdentifier": "LaunchCacheTests/testGarbageCacheForcesFullVerify()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "LaunchCacheTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00038s",
+         "durationInSeconds": 0.00037801265716552734,
+         "name": "testTheProcessStartIsKnownAndInThePast()",
+         "nodeIdentifier": "LaunchClockTests/testTheProcessStartIsKnownAndInThePast()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00045s",
+         "durationInSeconds": 0.0004500150680541992,
+         "name": "testTheReportCarriesEachMarkSinceProcessStart()",
+         "nodeIdentifier": "LaunchClockTests/testTheReportCarriesEachMarkSinceProcessStart()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "LaunchClockTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00074s",
+         "durationInSeconds": 0.0007399320602416992,
+         "name": "testAliveInAYearAndTheReadout()",
+         "nodeIdentifier": "LineageLogicTests/testAliveInAYearAndTheReadout()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00033s",
+         "durationInSeconds": 0.0003260374069213867,
+         "name": "testAMonthRotatesThroughEveryVoice()",
+         "nodeIdentifier": "LineageLogicTests/testAMonthRotatesThroughEveryVoice()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00055s",
+         "durationInSeconds": 0.0005459785461425781,
+         "name": "testCompareOverlapAndSharedAngs()",
+         "nodeIdentifier": "LineageLogicTests/testCompareOverlapAndSharedAngs()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00033s",
+         "durationInSeconds": 0.0003260374069213867,
+         "name": "testEveryRosterVoiceIsCounted()",
+         "nodeIdentifier": "LineageLogicTests/testEveryRosterVoiceIsCounted()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00055s",
+         "durationInSeconds": 0.0005549192428588867,
+         "name": "testFactsAreBuiltOnlyFromWhatTheDBGives()",
+         "nodeIdentifier": "LineageLogicTests/testFactsAreBuiltOnlyFromWhatTheDBGives()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00032s",
+         "durationInSeconds": 0.0003230571746826172,
+         "name": "testMilestonesWaitForTheScholar()",
+         "nodeIdentifier": "LineageLogicTests/testMilestonesWaitForTheScholar()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00029s",
+         "durationInSeconds": 0.00029098987579345703,
+         "name": "testNoRahaoFallsBackToTheOpeningVerse()",
+         "nodeIdentifier": "LineageLogicTests/testNoRahaoFallsBackToTheOpeningVerse()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00059s",
+         "durationInSeconds": 0.0005919933319091797,
+         "name": "testReviewLineAndNoteCiteTheAng()",
+         "nodeIdentifier": "LineageLogicTests/testReviewLineAndNoteCiteTheAng()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00026s",
+         "durationInSeconds": 0.00026106834411621094,
+         "name": "testRiverTapRows()",
+         "nodeIdentifier": "LineageLogicTests/testRiverTapRows()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00026s",
+         "durationInSeconds": 0.0002570152282714844,
+         "name": "testSameDaySameVoiceAndVerse()",
+         "nodeIdentifier": "LineageLogicTests/testSameDaySameVoiceAndVerse()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "LineageLogicTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.0007s",
+         "durationInSeconds": 0.0007040500640869141,
+         "name": "testLegacyFileWithoutAnchorStillResumes()",
+         "nodeIdentifier": "NitnemAnchorResumeTests/testLegacyFileWithoutAnchorStillResumes()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00043s",
+         "durationInSeconds": 0.0004329681396484375,
+         "name": "testNeverOverwritesANewerSchema()",
+         "nodeIdentifier": "NitnemAnchorResumeTests/testNeverOverwritesANewerSchema()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00063s",
+         "durationInSeconds": 0.0006250143051147461,
+         "name": "testResumeByAnchorWhenRegistryChanged()",
+         "nodeIdentifier": "NitnemAnchorResumeTests/testResumeByAnchorWhenRegistryChanged()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00058s",
+         "durationInSeconds": 0.0005829334259033203,
+         "name": "testResumeBySeqWhenRegistryUnchanged()",
+         "nodeIdentifier": "NitnemAnchorResumeTests/testResumeBySeqWhenRegistryUnchanged()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00064s",
+         "durationInSeconds": 0.0006350278854370117,
+         "name": "testResumeUnresolvableFallsToTop()",
+         "nodeIdentifier": "NitnemAnchorResumeTests/testResumeUnresolvableFallsToTop()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "NitnemAnchorResumeTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00028s",
+         "durationInSeconds": 0.00028204917907714844,
+         "name": "testDayRollsAtThreeAM()",
+         "nodeIdentifier": "NitnemDayClockTests/testDayRollsAtThreeAM()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00058s",
+         "durationInSeconds": 0.0005840063095092773,
+         "name": "testSohilaReadAtNightStaysDoneAfterMidnight()",
+         "nodeIdentifier": "NitnemDayClockTests/testSohilaReadAtNightStaysDoneAfterMidnight()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "NitnemDayClockTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.0003110170364379883,
+         "name": "testConsecutiveDays()",
+         "nodeIdentifier": "NitnemJourneyTests/testConsecutiveDays()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00039s",
+         "durationInSeconds": 0.0003859996795654297,
+         "name": "testDayNumbersFollowTheGridsCalendarNotTheDevices()",
+         "nodeIdentifier": "NitnemJourneyTests/testDayNumbersFollowTheGridsCalendarNotTheDevices()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00038s",
+         "durationInSeconds": 0.0003840923309326172,
+         "name": "testDSTMonthStaysContinuous()",
+         "nodeIdentifier": "NitnemJourneyTests/testDSTMonthStaysContinuous()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00033s",
+         "durationInSeconds": 0.00032508373260498047,
+         "name": "testMondayFirstWeekday()",
+         "nodeIdentifier": "NitnemJourneyTests/testMondayFirstWeekday()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00033s",
+         "durationInSeconds": 0.0003349781036376953,
+         "name": "testMonthGridHonoursFirstWeekday()",
+         "nodeIdentifier": "NitnemJourneyTests/testMonthGridHonoursFirstWeekday()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0014s",
+         "durationInSeconds": 0.0013810396194458008,
+         "name": "testPracticeDaysIntersection()",
+         "nodeIdentifier": "NitnemJourneyTests/testPracticeDaysIntersection()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00034s",
+         "durationInSeconds": 0.0003380775451660156,
+         "name": "testPracticesMarkedOnTheRightDay()",
+         "nodeIdentifier": "NitnemJourneyTests/testPracticesMarkedOnTheRightDay()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "NitnemJourneyTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00077s",
+         "durationInSeconds": 0.0007749795913696289,
+         "name": "testClearHistoryLeavesANewerSchemaFileAlone()",
+         "nodeIdentifier": "NitnemProgressTests/testClearHistoryLeavesANewerSchemaFileAlone()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0014s",
+         "durationInSeconds": 0.0013660192489624023,
+         "name": "testClearHistoryRemovesPositionsAndDaysAndNotifies()",
+         "nodeIdentifier": "NitnemProgressTests/testClearHistoryRemovesPositionsAndDaysAndNotifies()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.14s",
+         "durationInSeconds": 0.13995909690856934,
+         "name": "testCompletedDaysAreCapped()",
+         "nodeIdentifier": "NitnemProgressTests/testCompletedDaysAreCapped()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0053s",
+         "durationInSeconds": 0.005328059196472168,
+         "name": "testCorruptFileIsEmptyNeverCrashes()",
+         "nodeIdentifier": "NitnemProgressTests/testCorruptFileIsEmptyNeverCrashes()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00027s",
+         "durationInSeconds": 0.0002690553665161133,
+         "name": "testDayKeyIsLocalCalendarDay()",
+         "nodeIdentifier": "NitnemProgressTests/testDayKeyIsLocalCalendarDay()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0036s",
+         "durationInSeconds": 0.00356900691986084,
+         "name": "testNewerUndecodableFileIsLeftInPlace()",
+         "nodeIdentifier": "NitnemProgressTests/testNewerUndecodableFileIsLeftInPlace()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00099s",
+         "durationInSeconds": 0.000989079475402832,
+         "name": "testPersistsAcrossReload()",
+         "nodeIdentifier": "NitnemProgressTests/testPersistsAcrossReload()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0012s",
+         "durationInSeconds": 0.001237034797668457,
+         "name": "testPositionCompletionAndFraction()",
+         "nodeIdentifier": "NitnemProgressTests/testPositionCompletionAndFraction()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.02s",
+         "durationInSeconds": 0.019595980644226074,
+         "name": "testRecoveriesInTheSameSecondNeverCollide()",
+         "nodeIdentifier": "NitnemProgressTests/testRecoveriesInTheSameSecondNeverCollide()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.011s",
+         "durationInSeconds": 0.011249899864196777,
+         "name": "testStreakCountsConsecutiveDays()",
+         "nodeIdentifier": "NitnemProgressTests/testStreakCountsConsecutiveDays()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.011s",
+         "durationInSeconds": 0.01069796085357666,
+         "name": "testTruncatedFileIsKeptAside()",
+         "nodeIdentifier": "NitnemProgressTests/testTruncatedFileIsKeptAside()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0084s",
+         "durationInSeconds": 0.008385062217712402,
+         "name": "testUnreadableFileIsNeverOverwritten()",
+         "nodeIdentifier": "NitnemProgressTests/testUnreadableFileIsNeverOverwritten()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "NitnemProgressTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.0027s",
+         "durationInSeconds": 0.002726912498474121,
+         "name": "testAlreadyAuthorizedNeverPromptsAgain()",
+         "nodeIdentifier": "NitnemRemindersTests/testAlreadyAuthorizedNeverPromptsAgain()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00048s",
+         "durationInSeconds": 0.00048100948333740234,
+         "name": "testCopyHasNoDigitsOrGurmukhi()",
+         "nodeIdentifier": "NitnemRemindersTests/testCopyHasNoDigitsOrGurmukhi()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0017s",
+         "durationInSeconds": 0.0016700029373168945,
+         "name": "testDecliningTheUpgradePromptSnapsToggleBack()",
+         "nodeIdentifier": "NitnemRemindersTests/testDecliningTheUpgradePromptSnapsToggleBack()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0015s",
+         "durationInSeconds": 0.0014569759368896484,
+         "name": "testDeniedSnapsToggleBack()",
+         "nodeIdentifier": "NitnemRemindersTests/testDeniedSnapsToggleBack()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0017s",
+         "durationInSeconds": 0.0016629695892333984,
+         "name": "testDisableClearsPending()",
+         "nodeIdentifier": "NitnemRemindersTests/testDisableClearsPending()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0015s",
+         "durationInSeconds": 0.0014990568161010742,
+         "name": "testEnableSchedulesRescheduleReplaces()",
+         "nodeIdentifier": "NitnemRemindersTests/testEnableSchedulesRescheduleReplaces()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00046s",
+         "durationInSeconds": 0.0004570484161376953,
+         "name": "testPlanSchedules14PerEnabledBand()",
+         "nodeIdentifier": "NitnemRemindersTests/testPlanSchedules14PerEnabledBand()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0013s",
+         "durationInSeconds": 0.0013499259948730469,
+         "name": "testProvisionalIsUpgradedWithARealPrompt()",
+         "nodeIdentifier": "NitnemRemindersTests/testProvisionalIsUpgradedWithARealPrompt()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00046s",
+         "durationInSeconds": 0.0004609823226928711,
+         "name": "testThreeBandsStayUnder64()",
+         "nodeIdentifier": "NitnemRemindersTests/testThreeBandsStayUnder64()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0004s",
+         "durationInSeconds": 0.0004000663757324219,
+         "name": "testTodayDroppedWhenSetComplete()",
+         "nodeIdentifier": "NitnemRemindersTests/testTodayDroppedWhenSetComplete()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00038s",
+         "durationInSeconds": 0.0003820657730102539,
+         "name": "testTodayDroppedWhenTimePassed()",
+         "nodeIdentifier": "NitnemRemindersTests/testTodayDroppedWhenTimePassed()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0011s",
+         "durationInSeconds": 0.001089930534362793,
+         "name": "testTurningAReminderOffNeverPrompts()",
+         "nodeIdentifier": "NitnemRemindersTests/testTurningAReminderOffNeverPrompts()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "NitnemRemindersTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00038s",
+         "durationInSeconds": 0.00037598609924316406,
+         "name": "testBandFocusAndOrder()",
+         "nodeIdentifier": "NitnemScheduleTests/testBandFocusAndOrder()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00034s",
+         "durationInSeconds": 0.0003390312194824219,
+         "name": "testBandsAcrossTheDay()",
+         "nodeIdentifier": "NitnemScheduleTests/testBandsAcrossTheDay()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00033s",
+         "durationInSeconds": 0.00032699108123779297,
+         "name": "testBaniKeyAllowlist()",
+         "nodeIdentifier": "NitnemScheduleTests/testBaniKeyAllowlist()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00034s",
+         "durationInSeconds": 0.0003399848937988281,
+         "name": "testNextSkipsCompletedAndRespectsOrder()",
+         "nodeIdentifier": "NitnemScheduleTests/testNextSkipsCompletedAndRespectsOrder()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00033s",
+         "durationInSeconds": 0.00032699108123779297,
+         "name": "testRehrasVariantPreference()",
+         "nodeIdentifier": "NitnemScheduleTests/testRehrasVariantPreference()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "NitnemScheduleTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00048s",
+         "durationInSeconds": 0.00048100948333740234,
+         "name": "testAddableExcludesPresent()",
+         "nodeIdentifier": "NitnemSetsTests/testAddableExcludesPresent()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00037s",
+         "durationInSeconds": 0.00036597251892089844,
+         "name": "testAddedCrossCategoryBaniAppears()",
+         "nodeIdentifier": "NitnemSetsTests/testAddedCrossCategoryBaniAppears()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00072s",
+         "durationInSeconds": 0.0007239580154418945,
+         "name": "testCorruptFileIsEmptyNotCrash()",
+         "nodeIdentifier": "NitnemSetsTests/testCorruptFileIsEmptyNotCrash()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.00031197071075439453,
+         "name": "testEmptyPlanFallsBackToDefaults()",
+         "nodeIdentifier": "NitnemSetsTests/testEmptyPlanFallsBackToDefaults()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.0003110170364379883,
+         "name": "testHiddenExcluded()",
+         "nodeIdentifier": "NitnemSetsTests/testHiddenExcluded()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.00030994415283203125,
+         "name": "testNewDefaultAppendedForCustomisedSet()",
+         "nodeIdentifier": "NitnemSetsTests/testNewDefaultAppendedForCustomisedSet()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00063s",
+         "durationInSeconds": 0.0006340742111206055,
+         "name": "testNewerVersionReadOnly()",
+         "nodeIdentifier": "NitnemSetsTests/testNewerVersionReadOnly()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.00031495094299316406,
+         "name": "testRehrasVariantHonoured()",
+         "nodeIdentifier": "NitnemSetsTests/testRehrasVariantHonoured()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.00030994415283203125,
+         "name": "testRehrasVariantHonouredWithoutACustomisedSet()",
+         "nodeIdentifier": "NitnemSetsTests/testRehrasVariantHonouredWithoutACustomisedSet()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.00031197071075439453,
+         "name": "testReorderRespected()",
+         "nodeIdentifier": "NitnemSetsTests/testReorderRespected()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0014s",
+         "durationInSeconds": 0.001381993293762207,
+         "name": "testStoreRoundTripAndReset()",
+         "nodeIdentifier": "NitnemSetsTests/testStoreRoundTripAndReset()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.00031304359436035156,
+         "name": "testUnknownKeyDropped()",
+         "nodeIdentifier": "NitnemSetsTests/testUnknownKeyDropped()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "NitnemSetsTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00036s",
+         "durationInSeconds": 0.00035703182220458984,
+         "name": "testAllDone()",
+         "nodeIdentifier": "NitnemTimelineTests/testAllDone()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.0003110170364379883,
+         "name": "testCompletionFollowsThe0300NitnemDay()",
+         "nodeIdentifier": "NitnemTimelineTests/testCompletionFollowsThe0300NitnemDay()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00034s",
+         "durationInSeconds": 0.0003380775451660156,
+         "name": "testDatesIncludeBandBoundaries()",
+         "nodeIdentifier": "NitnemTimelineTests/testDatesIncludeBandBoundaries()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00029s",
+         "durationInSeconds": 0.00029397010803222656,
+         "name": "testEntryPicksBandAndSet()",
+         "nodeIdentifier": "NitnemTimelineTests/testEntryPicksBandAndSet()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0003s",
+         "durationInSeconds": 0.00029599666595458984,
+         "name": "testNextSkipsCompleted()",
+         "nodeIdentifier": "NitnemTimelineTests/testNextSkipsCompleted()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "NitnemTimelineTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.019s",
+         "durationInSeconds": 0.019389033317565918,
+         "name": "testRendersEveryFamily()",
+         "nodeIdentifier": "NitnemWidgetRenderTests/testRendersEveryFamily()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "NitnemWidgetRenderTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00029s",
+         "durationInSeconds": 0.00029098987579345703,
+         "name": "testBoundsAreClamped()",
+         "nodeIdentifier": "PagerSyncTests/testBoundsAreClamped()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00025s",
+         "durationInSeconds": 0.0002510547637939453,
+         "name": "testCancelledSwipeDoesNothing()",
+         "nodeIdentifier": "PagerSyncTests/testCancelledSwipeDoesNothing()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00024s",
+         "durationInSeconds": 0.0002429485321044922,
+         "name": "testConsecutiveAdjacentRequestsAllShow()",
+         "nodeIdentifier": "PagerSyncTests/testConsecutiveAdjacentRequestsAllShow()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00023s",
+         "durationInSeconds": 0.00023102760314941406,
+         "name": "testContinuesOnPillShows()",
+         "nodeIdentifier": "PagerSyncTests/testContinuesOnPillShows()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0023s",
+         "durationInSeconds": 0.0023080110549926758,
+         "name": "testFarJumpFades()",
+         "nodeIdentifier": "PagerSyncTests/testFarJumpFades()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0011s",
+         "durationInSeconds": 0.0011109113693237305,
+         "name": "testFirstMountShowsWithoutAnimation()",
+         "nodeIdentifier": "PagerSyncTests/testFirstMountShowsWithoutAnimation()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.049s",
+         "durationInSeconds": 0.048895955085754395,
+         "name": "testFuzzConvergence()",
+         "nodeIdentifier": "PagerSyncTests/testFuzzConvergence()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00055s",
+         "durationInSeconds": 0.0005489587783813477,
+         "name": "testJumpDuringDecelerationIsAppliedWithoutAHeal()",
+         "nodeIdentifier": "PagerSyncTests/testJumpDuringDecelerationIsAppliedWithoutAHeal()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0005s",
+         "durationInSeconds": 0.0004990100860595703,
+         "name": "testNoOpWhenAlreadyThere()",
+         "nodeIdentifier": "PagerSyncTests/testNoOpWhenAlreadyThere()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00043s",
+         "durationInSeconds": 0.000431060791015625,
+         "name": "testOffWindowShowsWithoutTransition()",
+         "nodeIdentifier": "PagerSyncTests/testOffWindowShowsWithoutTransition()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00041s",
+         "durationInSeconds": 0.00041496753692626953,
+         "name": "testPlainSwipeSettles()",
+         "nodeIdentifier": "PagerSyncTests/testPlainSwipeSettles()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00044s",
+         "durationInSeconds": 0.0004379749298095703,
+         "name": "testRapidTapsSkipAnimationAfterTheFirst()",
+         "nodeIdentifier": "PagerSyncTests/testRapidTapsSkipAnimationAfterTheFirst()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00042s",
+         "durationInSeconds": 0.0004220008850097656,
+         "name": "testReduceMotionFadesEvenWhenAdjacent()",
+         "nodeIdentifier": "PagerSyncTests/testReduceMotionFadesEvenWhenAdjacent()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00042s",
+         "durationInSeconds": 0.00042307376861572266,
+         "name": "testRequestDuringGestureIsParkedThenApplied()",
+         "nodeIdentifier": "PagerSyncTests/testRequestDuringGestureIsParkedThenApplied()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00041s",
+         "durationInSeconds": 0.00040900707244873047,
+         "name": "testRequestDuringGestureThatMatchesLandingIsANoOp()",
+         "nodeIdentifier": "PagerSyncTests/testRequestDuringGestureThatMatchesLandingIsANoOp()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00039s",
+         "durationInSeconds": 0.0003949403762817383,
+         "name": "testReverseAdjacentSlidesBackward()",
+         "nodeIdentifier": "PagerSyncTests/testReverseAdjacentSlidesBackward()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00041s",
+         "durationInSeconds": 0.00040900707244873047,
+         "name": "testSecondSwipeKeepsGestureActive()",
+         "nodeIdentifier": "PagerSyncTests/testSecondSwipeKeepsGestureActive()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00041s",
+         "durationInSeconds": 0.0004069805145263672,
+         "name": "testWatchdogHealsAfterLostCallback()",
+         "nodeIdentifier": "PagerSyncTests/testWatchdogHealsAfterLostCallback()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0004s",
+         "durationInSeconds": 0.0003980398178100586,
+         "name": "testWatchdogNoOpWhenNothingPending()",
+         "nodeIdentifier": "PagerSyncTests/testWatchdogNoOpWhenNothingPending()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00036s",
+         "durationInSeconds": 0.0003648996353149414,
+         "name": "testWatchdogReArmsWhileScrollBusy()",
+         "nodeIdentifier": "PagerSyncTests/testWatchdogReArmsWhileScrollBusy()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "PagerSyncTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00041s",
+         "durationInSeconds": 0.00041306018829345703,
+         "name": "testCountdown()",
+         "nodeIdentifier": "PaharFormatTests/testCountdown()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00045s",
+         "durationInSeconds": 0.00045299530029296875,
+         "name": "testDialAnglesMatchTheTwelveHourFace()",
+         "nodeIdentifier": "PaharFormatTests/testDialAnglesMatchTheTwelveHourFace()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00038s",
+         "durationInSeconds": 0.00037610530853271484,
+         "name": "testDialModelsCoverTheDay()",
+         "nodeIdentifier": "PaharFormatTests/testDialModelsCoverTheDay()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00036s",
+         "durationInSeconds": 0.0003609657287597656,
+         "name": "testDialModelShowsTheHourHandsHalf()",
+         "nodeIdentifier": "PaharFormatTests/testDialModelShowsTheHourHandsHalf()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.001s",
+         "durationInSeconds": 0.0010030269622802734,
+         "name": "testDialNumeralsFollowTheHalf()",
+         "nodeIdentifier": "PaharFormatTests/testDialNumeralsFollowTheHalf()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0005s",
+         "durationInSeconds": 0.000496983528137207,
+         "name": "testDSTFallBackDayRendersWallClock()",
+         "nodeIdentifier": "PaharFormatTests/testDSTFallBackDayRendersWallClock()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00038s",
+         "durationInSeconds": 0.00038301944732666016,
+         "name": "testDSTSpringForwardDayRendersWallClock()",
+         "nodeIdentifier": "PaharFormatTests/testDSTSpringForwardDayRendersWallClock()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00069s",
+         "durationInSeconds": 0.0006940364837646484,
+         "name": "testFixedWindowsMatchThePinnedStrings()",
+         "nodeIdentifier": "PaharFormatTests/testFixedWindowsMatchThePinnedStrings()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00032s",
+         "durationInSeconds": 0.0003199577331542969,
+         "name": "testHourCycle()",
+         "nodeIdentifier": "PaharFormatTests/testHourCycle()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00032s",
+         "durationInSeconds": 0.0003230571746826172,
+         "name": "testJSTimezoneOffsetSign()",
+         "nodeIdentifier": "PaharFormatTests/testJSTimezoneOffsetSign()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00032s",
+         "durationInSeconds": 0.0003190040588378906,
+         "name": "testMinutesOfDayRespectsTimeZone()",
+         "nodeIdentifier": "PaharFormatTests/testMinutesOfDayRespectsTimeZone()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00032s",
+         "durationInSeconds": 0.0003229379653930664,
+         "name": "testNextMinuteBoundary()",
+         "nodeIdentifier": "PaharFormatTests/testNextMinuteBoundary()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00039s",
+         "durationInSeconds": 0.0003910064697265625,
+         "name": "testSolarWindowKeepsMinutes()",
+         "nodeIdentifier": "PaharFormatTests/testSolarWindowKeepsMinutes()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00034s",
+         "durationInSeconds": 0.00033593177795410156,
+         "name": "testTimeFollowsLocale()",
+         "nodeIdentifier": "PaharFormatTests/testTimeFollowsLocale()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00036s",
+         "durationInSeconds": 0.00036394596099853516,
+         "name": "testUsableSunRejectsPolarAndDegenerate()",
+         "nodeIdentifier": "PaharFormatTests/testUsableSunRejectsPolarAndDegenerate()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0043s",
+         "durationInSeconds": 0.004320025444030762,
+         "name": "testWeekdayDayComplication()",
+         "nodeIdentifier": "PaharFormatTests/testWeekdayDayComplication()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.000308990478515625,
+         "name": "testWrapToNextDay()",
+         "nodeIdentifier": "PaharFormatTests/testWrapToNextDay()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "PaharFormatTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.0023s",
+         "durationInSeconds": 0.0022989511489868164,
+         "name": "testAngRenderDataBudget()",
+         "nodeIdentifier": "PerfBudgetTests/testAngRenderDataBudget()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.11s",
+         "durationInSeconds": 0.1099100112915039,
+         "name": "testForceLayoutSettleBudget()",
+         "nodeIdentifier": "PerfBudgetTests/testForceLayoutSettleBudget()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.016s",
+         "durationInSeconds": 0.015648961067199707,
+         "name": "testProgressionBudget()",
+         "nodeIdentifier": "PerfBudgetTests/testProgressionBudget()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.018s",
+         "durationInSeconds": 0.01772904396057129,
+         "name": "testSearchBudget()",
+         "nodeIdentifier": "PerfBudgetTests/testSearchBudget()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "PerfBudgetTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.0011s",
+         "durationInSeconds": 0.0011290311813354492,
+         "name": "testEveryHeadingIsAccountedForInSaroopOrder()",
+         "nodeIdentifier": "PoeticFormGroupsTests/testEveryHeadingIsAccountedForInSaroopOrder()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.081s",
+         "durationInSeconds": 0.08063197135925293,
+         "name": "testFindReachesForms()",
+         "nodeIdentifier": "PoeticFormGroupsTests/testFindReachesForms()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0011s",
+         "durationInSeconds": 0.0010761022567749023,
+         "name": "testRunsFoldButDistinctCompositionsStayApart()",
+         "nodeIdentifier": "PoeticFormGroupsTests/testRunsFoldButDistinctCompositionsStayApart()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "PoeticFormGroupsTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.0003s",
+         "durationInSeconds": 0.0003020763397216797,
+         "name": "testCountdownAcrossDSTIsRealElapsedTime()",
+         "nodeIdentifier": "RaagNowTimelineTests/testCountdownAcrossDSTIsRealElapsedTime()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00043s",
+         "durationInSeconds": 0.00043201446533203125,
+         "name": "testDSTBoundariesAreWallClock()",
+         "nodeIdentifier": "RaagNowTimelineTests/testDSTBoundariesAreWallClock()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00027s",
+         "durationInSeconds": 0.0002650022506713867,
+         "name": "testEntryUsesItsOwnDate()",
+         "nodeIdentifier": "RaagNowTimelineTests/testEntryUsesItsOwnDate()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0029s",
+         "durationInSeconds": 0.0029410123825073242,
+         "name": "testEveryCountdownTargetIsATimelineEntry()",
+         "nodeIdentifier": "RaagNowTimelineTests/testEveryCountdownTargetIsATimelineEntry()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0059s",
+         "durationInSeconds": 0.005912065505981445,
+         "name": "testFixedCountdownIsUnderAPaharAndWallClockExact()",
+         "nodeIdentifier": "RaagNowTimelineTests/testFixedCountdownIsUnderAPaharAndWallClockExact()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00058s",
+         "durationInSeconds": 0.0005799531936645508,
+         "name": "testFixedTimelineCadenceBoundariesAndBudget()",
+         "nodeIdentifier": "RaagNowTimelineTests/testFixedTimelineCadenceBoundariesAndBudget()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0021s",
+         "durationInSeconds": 0.0021420717239379883,
+         "name": "testForgetSolarCoordsLeavesNoLocationAnywhere()",
+         "nodeIdentifier": "RaagNowTimelineTests/testForgetSolarCoordsLeavesNoLocationAnywhere()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00027s",
+         "durationInSeconds": 0.00026810169219970703,
+         "name": "testOldSnapshotStillDecodes()",
+         "nodeIdentifier": "RaagNowTimelineTests/testOldSnapshotStillDecodes()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00055s",
+         "durationInSeconds": 0.0005500316619873047,
+         "name": "testSharedDefaultsCoordsRoundTrip()",
+         "nodeIdentifier": "RaagNowTimelineTests/testSharedDefaultsCoordsRoundTrip()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00025s",
+         "durationInSeconds": 0.0002529621124267578,
+         "name": "testSnapshotWithoutSolarCoords()",
+         "nodeIdentifier": "RaagNowTimelineTests/testSnapshotWithoutSolarCoords()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00042s",
+         "durationInSeconds": 0.0004190206527709961,
+         "name": "testSolarConfigDrivesPaharAndFallsBackWhenPolar()",
+         "nodeIdentifier": "RaagNowTimelineTests/testSolarConfigDrivesPaharAndFallsBackWhenPolar()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00064s",
+         "durationInSeconds": 0.0006440877914428711,
+         "name": "testSolarIsTheDefaultAndExplicitChoiceWins()",
+         "nodeIdentifier": "RaagNowTimelineTests/testSolarIsTheDefaultAndExplicitChoiceWins()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0004s",
+         "durationInSeconds": 0.00040400028228759766,
+         "name": "testTimelineTurnsTheRingAtNoonAndMidnight()",
+         "nodeIdentifier": "RaagNowTimelineTests/testTimelineTurnsTheRingAtNoonAndMidnight()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "RaagNowTimelineTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.023s",
+         "durationInSeconds": 0.02255690097808838,
+         "name": "testBounds()",
+         "nodeIdentifier": "ReaderModelTests/testBounds()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.022s",
+         "durationInSeconds": 0.02241802215576172,
+         "name": "testCancelledCallerDoesNotCancelTheSharedLoad()",
+         "nodeIdentifier": "ReaderModelTests/testCancelledCallerDoesNotCancelTheSharedLoad()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.022s",
+         "durationInSeconds": 0.022457003593444824,
+         "name": "testEnsureDuringPrefetchAwaitsTheSameLoad()",
+         "nodeIdentifier": "ReaderModelTests/testEnsureDuringPrefetchAwaitsTheSameLoad()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.024s",
+         "durationInSeconds": 0.023817062377929688,
+         "name": "testEvictionKeepsAnchorNeighbourhoodAndCapacity()",
+         "nodeIdentifier": "ReaderModelTests/testEvictionKeepsAnchorNeighbourhoodAndCapacity()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0006s",
+         "durationInSeconds": 0.0006049871444702148,
+         "name": "testFailureIsNotCachedAndRetrySucceeds()",
+         "nodeIdentifier": "ReaderModelTests/testFailureIsNotCachedAndRetrySucceeds()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.91s",
+         "durationInSeconds": 0.9052480459213257,
+         "name": "testSwipeRunNeverEvictsThePageItJustLoaded()",
+         "nodeIdentifier": "ReaderModelTests/testSwipeRunNeverEvictsThePageItJustLoaded()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "ReaderModelTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.0016s",
+         "durationInSeconds": 0.0016039609909057617,
+         "name": "testFirstUpdateAlwaysLands()",
+         "nodeIdentifier": "ReadingActivityPolicyTests/testFirstUpdateAlwaysLands()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0012s",
+         "durationInSeconds": 0.0011709928512573242,
+         "name": "testNoUpdateWithoutWholePercentChange()",
+         "nodeIdentifier": "ReadingActivityPolicyTests/testNoUpdateWithoutWholePercentChange()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0011s",
+         "durationInSeconds": 0.0011249780654907227,
+         "name": "testStaleDateIs20Minutes()",
+         "nodeIdentifier": "ReadingActivityPolicyTests/testStaleDateIs20Minutes()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0011s",
+         "durationInSeconds": 0.0011219978332519531,
+         "name": "testThrottledUnder10Seconds()",
+         "nodeIdentifier": "ReadingActivityPolicyTests/testThrottledUnder10Seconds()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00093s",
+         "durationInSeconds": 0.000926971435546875,
+         "name": "testUpdatesOnPercentChangeAfterInterval()",
+         "nodeIdentifier": "ReadingActivityPolicyTests/testUpdatesOnPercentChangeAfterInterval()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.001s",
+         "durationInSeconds": 0.0010389089584350586,
+         "name": "testWholePercentFloorsAndClamps()",
+         "nodeIdentifier": "ReadingActivityPolicyTests/testWholePercentFloorsAndClamps()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "ReadingActivityPolicyTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00097s",
+         "durationInSeconds": 0.0009669065475463867,
+         "name": "testAtMostOncePerVersion()",
+         "nodeIdentifier": "ReviewPromptTests/testAtMostOncePerVersion()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00093s",
+         "durationInSeconds": 0.0009319782257080078,
+         "name": "testNotBeforeThreeReadingDays()",
+         "nodeIdentifier": "ReviewPromptTests/testNotBeforeThreeReadingDays()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0066s",
+         "durationInSeconds": 0.006582975387573242,
+         "name": "testReadingDaysCountDistinctDaysAcrossBanis()",
+         "nodeIdentifier": "ReviewPromptTests/testReadingDaysCountDistinctDaysAcrossBanis()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00079s",
+         "durationInSeconds": 0.0007879734039306641,
+         "name": "testTheRateLinkOpensTheWriteReviewSheet()",
+         "nodeIdentifier": "ReviewPromptTests/testTheRateLinkOpensTheWriteReviewSheet()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "ReviewPromptTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.086s",
+         "durationInSeconds": 0.08580601215362549,
+         "name": "testEdgesClampInsteadOfFailing()",
+         "nodeIdentifier": "RibbonLayoutTests/testEdgesClampInsteadOfFailing()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.06s",
+         "durationInSeconds": 0.060427069664001465,
+         "name": "testEveryAngMapsBackToAWorkThatHoldsIt()",
+         "nodeIdentifier": "RibbonLayoutTests/testEveryAngMapsBackToAWorkThatHoldsIt()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00029s",
+         "durationInSeconds": 0.00028896331787109375,
+         "name": "testScrubIgnoresScrollsAndLiftsOffTheStrip()",
+         "nodeIdentifier": "RibbonLayoutTests/testScrubIgnoresScrollsAndLiftsOffTheStrip()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00028s",
+         "durationInSeconds": 0.0002770423889160156,
+         "name": "testSharedAngsAreSplitNotDoubleCounted()",
+         "nodeIdentifier": "RibbonLayoutTests/testSharedAngsAreSplitNotDoubleCounted()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.057s",
+         "durationInSeconds": 0.05662798881530762,
+         "name": "testSpokenLabelsNameTheWorkAndItsPlace()",
+         "nodeIdentifier": "RibbonLayoutTests/testSpokenLabelsNameTheWorkAndItsPlace()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.059s",
+         "durationInSeconds": 0.05900394916534424,
+         "name": "testStripIsContiguousAndCoversTheWholeGranth()",
+         "nodeIdentifier": "RibbonLayoutTests/testStripIsContiguousAndCoversTheWholeGranth()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "RibbonLayoutTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00028s",
+         "durationInSeconds": 0.0002770423889160156,
+         "name": "testASihariAfterTheYayyaIsDrawnToo()",
+         "nodeIdentifier": "SaroopTests/testASihariAfterTheYayyaIsDrawnToo()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00026s",
+         "durationInSeconds": 0.0002560615539550781,
+         "name": "testDoubledSubjoinedYayyaIsDrawnAsOneYakash()",
+         "nodeIdentifier": "SaroopTests/testDoubledSubjoinedYayyaIsDrawnAsOneYakash()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "1s",
+         "durationInSeconds": 1.3557790517807007,
+         "name": "testEveryCorpusLineRoundTripsExactly()",
+         "nodeIdentifier": "SaroopTests/testEveryCorpusLineRoundTripsExactly()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.0003069639205932617,
+         "name": "testTextWithoutASubjoinedYayyaIsUntouched()",
+         "nodeIdentifier": "SaroopTests/testTextWithoutASubjoinedYayyaIsUntouched()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00028s",
+         "durationInSeconds": 0.0002770423889160156,
+         "name": "testTheDisplayFormMapsBackToTheStoredText()",
+         "nodeIdentifier": "SaroopTests/testTheDisplayFormMapsBackToTheStoredText()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "SaroopTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.0073s",
+         "durationInSeconds": 0.0073310136795043945,
+         "name": "testAStoreThatCannotBeMovedIsNeverDestroyed()",
+         "nodeIdentifier": "SavedStoreLadderTests/testAStoreThatCannotBeMovedIsNeverDestroyed()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0024s",
+         "durationInSeconds": 0.0023970603942871094,
+         "name": "testExistingDefaultStoreOpensWithoutDegradation()",
+         "nodeIdentifier": "SavedStoreLadderTests/testExistingDefaultStoreOpensWithoutDegradation()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.003s",
+         "durationInSeconds": 0.0029850006103515625,
+         "name": "testFirstFailureFallsBackToMemoryWithoutDeleting()",
+         "nodeIdentifier": "SavedStoreLadderTests/testFirstFailureFallsBackToMemoryWithoutDeleting()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0025s",
+         "durationInSeconds": 0.0024890899658203125,
+         "name": "testHealthyStoreOpensPersistently()",
+         "nodeIdentifier": "SavedStoreLadderTests/testHealthyStoreOpensPersistently()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0086s",
+         "durationInSeconds": 0.008584022521972656,
+         "name": "testRepeatedFailedLaunchesKeepTheOriginalBytes()",
+         "nodeIdentifier": "SavedStoreLadderTests/testRepeatedFailedLaunchesKeepTheOriginalBytes()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0086s",
+         "durationInSeconds": 0.008641958236694336,
+         "name": "testRepeatedRecoveriesNeverCollide()",
+         "nodeIdentifier": "SavedStoreLadderTests/testRepeatedRecoveriesNeverCollide()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0049s",
+         "durationInSeconds": 0.004855990409851074,
+         "name": "testSecondConsecutiveFailureRecreates()",
+         "nodeIdentifier": "SavedStoreLadderTests/testSecondConsecutiveFailureRecreates()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0045s",
+         "durationInSeconds": 0.00451207160949707,
+         "name": "testWalAndShmMoveWithTheStore()",
+         "nodeIdentifier": "SavedStoreLadderTests/testWalAndShmMoveWithTheStore()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "SavedStoreLadderTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00037s",
+         "durationInSeconds": 0.00037097930908203125,
+         "name": "testDaylightSavingEdgesNeverFlipTheAnswer()",
+         "nodeIdentifier": "SolarPlaceTests/testDaylightSavingEdgesNeverFlipTheAnswer()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00028s",
+         "durationInSeconds": 0.0002809762954711914,
+         "name": "testHalfHourAndQuarterHourZones()",
+         "nodeIdentifier": "SolarPlaceTests/testHalfHourAndQuarterHourZones()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00069s",
+         "durationInSeconds": 0.0006890296936035156,
+         "name": "testKeptPlaceClearsOnlyWhenThePlaceChanges()",
+         "nodeIdentifier": "SolarPlaceTests/testKeptPlaceClearsOnlyWhenThePlaceChanges()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00027s",
+         "durationInSeconds": 0.0002740621566772461,
+         "name": "testLabels()",
+         "nodeIdentifier": "SolarPlaceTests/testLabels()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00026s",
+         "durationInSeconds": 0.0002599954605102539,
+         "name": "testLondonPhoneWithLondonPlaceIsNotAway()",
+         "nodeIdentifier": "SolarPlaceTests/testLondonPhoneWithLondonPlaceIsNotAway()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00025s",
+         "durationInSeconds": 0.00025200843811035156,
+         "name": "testLondonPhoneWithSydneyPlaceIsAway()",
+         "nodeIdentifier": "SolarPlaceTests/testLondonPhoneWithSydneyPlaceIsAway()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00027s",
+         "durationInSeconds": 0.0002740621566772461,
+         "name": "testSummerTimeAloneNeverTriggersTheNotice()",
+         "nodeIdentifier": "SolarPlaceTests/testSummerTimeAloneNeverTriggersTheNotice()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00025s",
+         "durationInSeconds": 0.0002499818801879883,
+         "name": "testSydneyPhoneWithLondonPlaceIsAwayButNotWithItsOwn()",
+         "nodeIdentifier": "SolarPlaceTests/testSydneyPhoneWithLondonPlaceIsAwayButNotWithItsOwn()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0003s",
+         "durationInSeconds": 0.0002969503402709961,
+         "name": "testWidgetNamesTheSkyOnlyWhenAway()",
+         "nodeIdentifier": "SolarPlaceTests/testWidgetNamesTheSkyOnlyWhenAway()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00027s",
+         "durationInSeconds": 0.0002650022506713867,
+         "name": "testZonesAcrossTheDateLineWrap()",
+         "nodeIdentifier": "SolarPlaceTests/testZonesAcrossTheDateLineWrap()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "SolarPlaceTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.0003s",
+         "durationInSeconds": 0.00030493736267089844,
+         "name": "testADegradedOrUnreadableStoreNeverTouchesTheIndex()",
+         "nodeIdentifier": "SpotlightAndClipboardTests/testADegradedOrUnreadableStoreNeverTouchesTheIndex()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00029s",
+         "durationInSeconds": 0.00029289722442626953,
+         "name": "testOnlyASuccessfullyReadPersistentStoreMayReplaceTheIndex()",
+         "nodeIdentifier": "SpotlightAndClipboardTests/testOnlyASuccessfullyReadPersistentStoreMayReplaceTheIndex()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "2s",
+         "durationInSeconds": 2.2372429370880127,
+         "name": "testVerbatimScriptureSurvivesThePasteboardScalarForScalar()",
+         "nodeIdentifier": "SpotlightAndClipboardTests/testVerbatimScriptureSurvivesThePasteboardScalarForScalar()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "SpotlightAndClipboardTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00073s",
+         "durationInSeconds": 0.0007290840148925781,
+         "name": "testAShabadSplitAcrossPagesStaysOneGroup()",
+         "nodeIdentifier": "ThemeChapterTests/testAShabadSplitAcrossPagesStaysOneGroup()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00035s",
+         "durationInSeconds": 0.00034999847412109375,
+         "name": "testCompanionsAreTheDistinctiveOnesThatShareVerses()",
+         "nodeIdentifier": "ThemeChapterTests/testCompanionsAreTheDistinctiveOnesThatShareVerses()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.0003139972686767578,
+         "name": "testDescriptionGurmukhiRunsKeepEveryCharacter()",
+         "nodeIdentifier": "ThemeChapterTests/testDescriptionGurmukhiRunsKeepEveryCharacter()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00027s",
+         "durationInSeconds": 0.00026595592498779297,
+         "name": "testExplanatoryCopyIsGatedOffUntilScholarReview()",
+         "nodeIdentifier": "ThemeChapterTests/testExplanatoryCopyIsGatedOffUntilScholarReview()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00028s",
+         "durationInSeconds": 0.00027501583099365234,
+         "name": "testFilterSummaryNamesEveryNarrowing()",
+         "nodeIdentifier": "ThemeChapterTests/testFilterSummaryNamesEveryNarrowing()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0031s",
+         "durationInSeconds": 0.0031369924545288086,
+         "name": "testThemeDeepLinks()",
+         "nodeIdentifier": "ThemeChapterTests/testThemeDeepLinks()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "ThemeChapterTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00047s",
+         "durationInSeconds": 0.00046503543853759766,
+         "name": "testAccentColorAssetMatchesBrandDefault()",
+         "nodeIdentifier": "ThemeContrastTests/testAccentColorAssetMatchesBrandDefault()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00039s",
+         "durationInSeconds": 0.00038695335388183594,
+         "name": "testAccentFillsAreDistinguishableFromSurfaces()",
+         "nodeIdentifier": "ThemeContrastTests/testAccentFillsAreDistinguishableFromSurfaces()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0004s",
+         "durationInSeconds": 0.00039899349212646484,
+         "name": "testAccentTextReadsOnEverySurface()",
+         "nodeIdentifier": "ThemeContrastTests/testAccentTextReadsOnEverySurface()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00029s",
+         "durationInSeconds": 0.00028705596923828125,
+         "name": "testDarkSurfaceRampIsOrderedAndWarm()",
+         "nodeIdentifier": "ThemeContrastTests/testDarkSurfaceRampIsOrderedAndWarm()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0003s",
+         "durationInSeconds": 0.0002950429916381836,
+         "name": "testMutedTextReadsOnWarmPaper()",
+         "nodeIdentifier": "ThemeContrastTests/testMutedTextReadsOnWarmPaper()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00029s",
+         "durationInSeconds": 0.00029098987579345703,
+         "name": "testOnAccentLabelsReadOnHeroGradientEndOfBrandDefault()",
+         "nodeIdentifier": "ThemeContrastTests/testOnAccentLabelsReadOnHeroGradientEndOfBrandDefault()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.0003139972686767578,
+         "name": "testOnAccentLabelsReadOnTheirFill()",
+         "nodeIdentifier": "ThemeContrastTests/testOnAccentLabelsReadOnTheirFill()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00029s",
+         "durationInSeconds": 0.00029098987579345703,
+         "name": "testOnlyBrandGoldSplitsFillFromAccent()",
+         "nodeIdentifier": "ThemeContrastTests/testOnlyBrandGoldSplitsFillFromAccent()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00039s",
+         "durationInSeconds": 0.0003910064697265625,
+         "name": "testStatusTokensReadAsTextOnContentSurfaces()",
+         "nodeIdentifier": "ThemeContrastTests/testStatusTokensReadAsTextOnContentSurfaces()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.000308990478515625,
+         "name": "testVoiceInkMapsCorpusAuthors()",
+         "nodeIdentifier": "ThemeContrastTests/testVoiceInkMapsCorpusAuthors()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00047s",
+         "durationInSeconds": 0.0004709959030151367,
+         "name": "testVoiceInkReadsOnEverySurface()",
+         "nodeIdentifier": "ThemeContrastTests/testVoiceInkReadsOnEverySurface()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "ThemeContrastTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00033s",
+         "durationInSeconds": 0.00032806396484375,
+         "name": "testAStaleOrRepeatedPageIsIgnored()",
+         "nodeIdentifier": "ThemeFeedTests/testAStaleOrRepeatedPageIsIgnored()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.00030994415283203125,
+         "name": "testNoRequestWhileLoadingOrAfterAFailure()",
+         "nodeIdentifier": "ThemeFeedTests/testNoRequestWhileLoadingOrAfterAFailure()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.0003110170364379883,
+         "name": "testPagesAppendInOrderUntilTheEnd()",
+         "nodeIdentifier": "ThemeFeedTests/testPagesAppendInOrderUntilTheEnd()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0003s",
+         "durationInSeconds": 0.0003000497817993164,
+         "name": "testSingleVerseFooter()",
+         "nodeIdentifier": "ThemeFeedTests/testSingleVerseFooter()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "ThemeFeedTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.27s",
+         "durationInSeconds": 0.2708570957183838,
+         "name": "testEveryArrangementKeepsEveryTheme()",
+         "nodeIdentifier": "ThemeIndexModelTests/testEveryArrangementKeepsEveryTheme()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.27s",
+         "durationInSeconds": 0.266414999961853,
+         "name": "testGlossIsTheDescriptionsOpeningPhrase()",
+         "nodeIdentifier": "ThemeIndexModelTests/testGlossIsTheDescriptionsOpeningPhrase()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.26s",
+         "durationInSeconds": 0.26310300827026367,
+         "name": "testPeakPhraseAndSummary()",
+         "nodeIdentifier": "ThemeIndexModelTests/testPeakPhraseAndSummary()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.29s",
+         "durationInSeconds": 0.29160594940185547,
+         "name": "testSearchFindsByNameMeaningAndGurmukhiWord()",
+         "nodeIdentifier": "ThemeIndexModelTests/testSearchFindsByNameMeaningAndGurmukhiWord()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.0003070831298828125,
+         "name": "testTodayTurnsOverAtLocalMidnight()",
+         "nodeIdentifier": "ThemeIndexModelTests/testTodayTurnsOverAtLocalMidnight()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "ThemeIndexModelTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.0046s",
+         "durationInSeconds": 0.004579067230224609,
+         "name": "testAnInterruptedRetireLeavesTheRestoredDataAlone()",
+         "nodeIdentifier": "UITestVaultTests/testAnInterruptedRetireLeavesTheRestoredDataAlone()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0035s",
+         "durationInSeconds": 0.0035059452056884766,
+         "name": "testAnInterruptedSealIsDiscardedAndRedone()",
+         "nodeIdentifier": "UITestVaultTests/testAnInterruptedSealIsDiscardedAndRedone()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0015s",
+         "durationInSeconds": 0.0015200376510620117,
+         "name": "testAnOrdinaryLaunchWithoutAVaultChangesNothing()",
+         "nodeIdentifier": "UITestVaultTests/testAnOrdinaryLaunchWithoutAVaultChangesNothing()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0038s",
+         "durationInSeconds": 0.0037789344787597656,
+         "name": "testAnUnverifiedVaultIsSetAsideNotOverwritten()",
+         "nodeIdentifier": "UITestVaultTests/testAnUnverifiedVaultIsSetAsideNotOverwritten()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.011s",
+         "durationInSeconds": 0.011235952377319336,
+         "name": "testAPartialRestoreKeepsTheVaultAndCompletesLater()",
+         "nodeIdentifier": "UITestVaultTests/testAPartialRestoreKeepsTheVaultAndCompletesLater()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.019s",
+         "durationInSeconds": 0.018504977226257324,
+         "name": "testArchivesAreBounded()",
+         "nodeIdentifier": "UITestVaultTests/testArchivesAreBounded()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.002s",
+         "durationInSeconds": 0.001995086669921875,
+         "name": "testASealThatCannotBeWrittenReportsFalse()",
+         "nodeIdentifier": "UITestVaultTests/testASealThatCannotBeWrittenReportsFalse()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0021s",
+         "durationInSeconds": 0.0020979642868041992,
+         "name": "testASealThatCannotReadASourceFailsAndLeavesNoVault()",
+         "nodeIdentifier": "UITestVaultTests/testASealThatCannotReadASourceFailsAndLeavesNoVault()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.004s",
+         "durationInSeconds": 0.003993988037109375,
+         "name": "testASecondTestLaunchNeverOverwritesTheVault()",
+         "nodeIdentifier": "UITestVaultTests/testASecondTestLaunchNeverOverwritesTheVault()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0049s",
+         "durationInSeconds": 0.004917025566101074,
+         "name": "testAStaleVaultArchivesTheLiveDataBeforeAWipe()",
+         "nodeIdentifier": "UITestVaultTests/testAStaleVaultArchivesTheLiveDataBeforeAWipe()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0026s",
+         "durationInSeconds": 0.0026270151138305664,
+         "name": "testATamperedVaultIsNotRestoredAndIsKept()",
+         "nodeIdentifier": "UITestVaultTests/testATamperedVaultIsNotRestoredAndIsKept()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0025s",
+         "durationInSeconds": 0.002516031265258789,
+         "name": "testAVaultNamingUnknownDataIsNotRestored()",
+         "nodeIdentifier": "UITestVaultTests/testAVaultNamingUnknownDataIsNotRestored()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0028s",
+         "durationInSeconds": 0.0028090476989746094,
+         "name": "testAVaultOfAnotherFormatIsNotRestored()",
+         "nodeIdentifier": "UITestVaultTests/testAVaultOfAnotherFormatIsNotRestored()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0043s",
+         "durationInSeconds": 0.00427401065826416,
+         "name": "testEmptyOriginalDataRestoresToEmpty()",
+         "nodeIdentifier": "UITestVaultTests/testEmptyOriginalDataRestoresToEmpty()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00055s",
+         "durationInSeconds": 0.0005469322204589844,
+         "name": "testEveryLeakableReadingSettingIsReset()",
+         "nodeIdentifier": "UITestVaultTests/testEveryLeakableReadingSettingIsReset()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00053s",
+         "durationInSeconds": 0.000532984733581543,
+         "name": "testLaunchModeIsExplicit()",
+         "nodeIdentifier": "UITestVaultTests/testLaunchModeIsExplicit()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0062s",
+         "durationInSeconds": 0.006199955940246582,
+         "name": "testPendingWALTransactionsAreKept()",
+         "nodeIdentifier": "UITestVaultTests/testPendingWALTransactionsAreKept()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0098s",
+         "durationInSeconds": 0.009840011596679688,
+         "name": "testTheRealDataComesBackExactly()",
+         "nodeIdentifier": "UITestVaultTests/testTheRealDataComesBackExactly()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "UITestVaultTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.0026s",
+         "durationInSeconds": 0.002604961395263672,
+         "name": "testHostileVaarLinksChangeNothing()",
+         "nodeIdentifier": "VaarLinkTests/testHostileVaarLinksChangeNothing()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0013s",
+         "durationInSeconds": 0.0012689828872680664,
+         "name": "testSiriVaarListMatchesTheShippedDB()",
+         "nodeIdentifier": "VaarLinkTests/testSiriVaarListMatchesTheShippedDB()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0022s",
+         "durationInSeconds": 0.0021959543228149414,
+         "name": "testVaarLinksBuildTheExploreStack()",
+         "nodeIdentifier": "VaarLinkTests/testVaarLinksBuildTheExploreStack()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "VaarLinkTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.001s",
+         "durationInSeconds": 0.0010360479354858398,
+         "name": "testCorruptFileIsMovedAsideNotLost()",
+         "nodeIdentifier": "VaarProgressTests/testCorruptFileIsMovedAsideNotLost()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00077s",
+         "durationInSeconds": 0.0007669925689697266,
+         "name": "testNewerSchemaIsReadOnly()",
+         "nodeIdentifier": "VaarProgressTests/testNewerSchemaIsReadOnly()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0023s",
+         "durationInSeconds": 0.0022749900817871094,
+         "name": "testPositionsPersistAndTheNewestUnfinishedIsCurrent()",
+         "nodeIdentifier": "VaarProgressTests/testPositionsPersistAndTheNewestUnfinishedIsCurrent()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0013s",
+         "durationInSeconds": 0.001260995864868164,
+         "name": "testTheFirstPositionIsSaved()",
+         "nodeIdentifier": "VaarProgressTests/testTheFirstPositionIsSaved()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00062s",
+         "durationInSeconds": 0.0006229877471923828,
+         "name": "testVaultCoversVaarProgress()",
+         "nodeIdentifier": "VaarProgressTests/testVaultCoversVaarProgress()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "VaarProgressTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00077s",
+         "durationInSeconds": 0.0007729530334472656,
+         "name": "testADeepLinkedPauriComesAfterAnExplicitLine()",
+         "nodeIdentifier": "VaarReaderLandingTests/testADeepLinkedPauriComesAfterAnExplicitLine()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00028s",
+         "durationInSeconds": 0.0002779960632324219,
+         "name": "testLabelLinesLandOnTheirUnitRow()",
+         "nodeIdentifier": "VaarReaderLandingTests/testLabelLinesLandOnTheirUnitRow()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00029s",
+         "durationInSeconds": 0.00029206275939941406,
+         "name": "testPaurisOnlyLandsOnThePauriASalokLeadsInto()",
+         "nodeIdentifier": "VaarReaderLandingTests/testPaurisOnlyLandsOnThePauriASalokLeadsInto()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00028s",
+         "durationInSeconds": 0.00027501583099365234,
+         "name": "testPrecedenceExplicitThenSavedThenHeading()",
+         "nodeIdentifier": "VaarReaderLandingTests/testPrecedenceExplicitThenSavedThenHeading()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "VaarReaderLandingTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00028s",
+         "durationInSeconds": 0.0002779960632324219,
+         "name": "testRowIdsNeverCollideOrOverflow()",
+         "nodeIdentifier": "VaarReaderRowIdTests/testRowIdsNeverCollideOrOverflow()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "VaarReaderRowIdTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00052s",
+         "durationInSeconds": 0.0005210638046264648,
+         "name": "testAngSpanReadsSingleAngs()",
+         "nodeIdentifier": "VaarsHomeTests/testAngSpanReadsSingleAngs()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00029s",
+         "durationInSeconds": 0.00028502941131591797,
+         "name": "testExplanatoryCopyIsOffUntilG3()",
+         "nodeIdentifier": "VaarsHomeTests/testExplanatoryCopyIsOffUntilG3()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00086s",
+         "durationInSeconds": 0.0008609294891357422,
+         "name": "testFiltersRoundTripAndHideEmpty()",
+         "nodeIdentifier": "VaarsHomeTests/testFiltersRoundTripAndHideEmpty()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00032s",
+         "durationInSeconds": 0.00031697750091552734,
+         "name": "testRibbonSpansAndHitTesting()",
+         "nodeIdentifier": "VaarsHomeTests/testRibbonSpansAndHitTesting()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00048s",
+         "durationInSeconds": 0.0004819631576538086,
+         "name": "testVoiceStripFillsTheWidthInOrder()",
+         "nodeIdentifier": "VaarsHomeTests/testVoiceStripFillsTheWidthInOrder()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00035s",
+         "durationInSeconds": 0.00034797191619873047,
+         "name": "testWeaveGroupsSaloksBeforeTheirPauri()",
+         "nodeIdentifier": "VaarsHomeTests/testWeaveGroupsSaloksBeforeTheirPauri()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "VaarsHomeTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00028s",
+         "durationInSeconds": 0.0002830028533935547,
+         "name": "testAllMarkerLineIsLeftAlone()",
+         "nodeIdentifier": "VerseTypographyTests/testAllMarkerLineIsLeftAlone()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00031s",
+         "durationInSeconds": 0.00031304359436035156,
+         "name": "testBindingIsReversibleToTheVerbatimLine()",
+         "nodeIdentifier": "VerseTypographyTests/testBindingIsReversibleToTheVerbatimLine()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00027s",
+         "durationInSeconds": 0.00027191638946533203,
+         "name": "testClosingMarkerCannotBeOrphaned()",
+         "nodeIdentifier": "VerseTypographyTests/testClosingMarkerCannotBeOrphaned()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00039s",
+         "durationInSeconds": 0.00039196014404296875,
+         "name": "testMisflaggedVersesAreNotDrawnAsHeadings()",
+         "nodeIdentifier": "VerseTypographyTests/testMisflaggedVersesAreNotDrawnAsHeadings()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00038s",
+         "durationInSeconds": 0.00038301944732666016,
+         "name": "testRealHeadingsStayHeadings()",
+         "nodeIdentifier": "VerseTypographyTests/testRealHeadingsStayHeadings()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "VerseTypographyTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.12s",
+         "durationInSeconds": 0.12333297729492188,
+         "name": "testEverySurfaceSaysTheRosterCount()",
+         "nodeIdentifier": "VoiceCountTests/testEverySurfaceSaysTheRosterCount()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00083s",
+         "durationInSeconds": 0.0008269548416137695,
+         "name": "testTheRosterListsThirtySixVoices()",
+         "nodeIdentifier": "VoiceCountTests/testTheRosterListsThirtySixVoices()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.049s",
+         "durationInSeconds": 0.049156904220581055,
+         "name": "testTheTaggedFigureNoteNamesSurdas()",
+         "nodeIdentifier": "VoiceCountTests/testTheTaggedFigureNoteNamesSurdas()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "VoiceCountTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00032s",
+         "durationInSeconds": 0.0003180503845214844,
+         "name": "testCenturyTitles()",
+         "nodeIdentifier": "VoicesLayoutTests/testCenturyTitles()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00067s",
+         "durationInSeconds": 0.0006749629974365234,
+         "name": "testDotIdentityIsStableAcrossGroupingsSoTheMorphIsHonest()",
+         "nodeIdentifier": "VoicesLayoutTests/testDotIdentityIsStableAcrossGroupingsSoTheMorphIsHonest()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0031s",
+         "durationInSeconds": 0.003104090690612793,
+         "name": "testEveryVoiceKeepsAtLeastOneDot()",
+         "nodeIdentifier": "VoicesLayoutTests/testEveryVoiceKeepsAtLeastOneDot()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0047s",
+         "durationInSeconds": 0.004728913307189941,
+         "name": "testNoDotOverlapsAnotherInAnyGrouping()",
+         "nodeIdentifier": "VoicesLayoutTests/testNoDotOverlapsAnotherInAnyGrouping()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0024s",
+         "durationInSeconds": 0.0023620128631591797,
+         "name": "testRegroupingMidFlightStartsFromTheDisplayedPositions()",
+         "nodeIdentifier": "VoicesLayoutTests/testRegroupingMidFlightStartsFromTheDisplayedPositions()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0017s",
+         "durationInSeconds": 0.0016620159149169922,
+         "name": "testRibbonColumnsAddUpAndNameWhoSingsThere()",
+         "nodeIdentifier": "VoicesLayoutTests/testRibbonColumnsAddUpAndNameWhoSingsThere()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00098s",
+         "durationInSeconds": 0.0009800195693969727,
+         "name": "testTraditionFallsBackToTheNameForVoicesTheRosterDoesNotListYet()",
+         "nodeIdentifier": "VoicesLayoutTests/testTraditionFallsBackToTheNameForVoicesTheRosterDoesNotListYet()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "VoicesLayoutTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.0011s",
+         "durationInSeconds": 0.0010579824447631836,
+         "name": "testMapIsOffUnlessAReviewerTurnsItOn()",
+         "nodeIdentifier": "VoicesMapTests/testMapIsOffUnlessAReviewerTurnsItOn()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.001s",
+         "durationInSeconds": 0.0010489225387573242,
+         "name": "testProjectionKeepsGeographyTheRightWayRound()",
+         "nodeIdentifier": "VoicesMapTests/testProjectionKeepsGeographyTheRightWayRound()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0014s",
+         "durationInSeconds": 0.00138092041015625,
+         "name": "testVoicesComeFromTheRosterPlaceField()",
+         "nodeIdentifier": "VoicesMapTests/testVoicesComeFromTheRosterPlaceField()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "VoicesMapTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00094s",
+         "durationInSeconds": 0.0009429454803466797,
+         "name": "testEverySpellingResolvesToTheSlug()",
+         "nodeIdentifier": "WaheguruNameTests/testEverySpellingResolvesToTheSlug()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.28s",
+         "durationInSeconds": 0.27514803409576416,
+         "name": "testSpotlightTitleChangesButTheIdentifierDoesNot()",
+         "nodeIdentifier": "WaheguruNameTests/testSpotlightTitleChangesButTheIdentifierDoesNot()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00033s",
+         "durationInSeconds": 0.00032508373260498047,
+         "name": "testTheIndexStampCarriesTheNameRevision()",
+         "nodeIdentifier": "WaheguruNameTests/testTheIndexStampCarriesTheNameRevision()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.28s",
+         "durationInSeconds": 0.27819108963012695,
+         "name": "testThemesIndexSearchFindsWaheguruUnderEverySpelling()",
+         "nodeIdentifier": "WaheguruNameTests/testThemesIndexSearchFindsWaheguruUnderEverySpelling()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00028s",
+         "durationInSeconds": 0.0002809762954711914,
+         "name": "testTheThemeIsShownAsWaheguru()",
+         "nodeIdentifier": "WaheguruNameTests/testTheThemeIsShownAsWaheguru()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.085s",
+         "durationInSeconds": 0.08483505249023438,
+         "name": "testWaheguruLinkOpensTheThemePage()",
+         "nodeIdentifier": "WaheguruNameTests/testWaheguruLinkOpensTheThemePage()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "WaheguruNameTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "1s",
+         "durationInSeconds": 1.5712329149246216,
+         "name": "testAnEntryKeepsItsOwnClockWhenThePhoneChangesZone()",
+         "nodeIdentifier": "WidgetRenderTests/testAnEntryKeepsItsOwnClockWhenThePhoneChangesZone()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.29s",
+         "durationInSeconds": 0.2944209575653076,
+         "name": "testEveryFamilyRendersInBothSchemesAndModes()",
+         "nodeIdentifier": "WidgetRenderTests/testEveryFamilyRendersInBothSchemesAndModes()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "WidgetRenderTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "duration": "0.00076s",
+         "durationInSeconds": 0.000758051872253418,
+         "name": "testEmptyAndUntaggedThemesAreNeverInvited()",
+         "nodeIdentifier": "YourThemesTests/testEmptyAndUntaggedThemesAreNeverInvited()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00056s",
+         "durationInSeconds": 0.0005550384521484375,
+         "name": "testShareTextIsNamesAndCountsNeverVerseText()",
+         "nodeIdentifier": "YourThemesTests/testShareTextIsNamesAndCountsNeverVerseText()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00041s",
+         "durationInSeconds": 0.0004050731658935547,
+         "name": "testSummaryCountsOnlyTheSavedVerses()",
+         "nodeIdentifier": "YourThemesTests/testSummaryCountsOnlyTheSavedVerses()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.0028s",
+         "durationInSeconds": 0.0028209686279296875,
+         "name": "testThemesDeepLinkOpensTheIndex()",
+         "nodeIdentifier": "YourThemesTests/testThemesDeepLinkOpensTheIndex()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00033s",
+         "durationInSeconds": 0.0003299713134765625,
+         "name": "testThemesIndexStampNamesTheBuild()",
+         "nodeIdentifier": "YourThemesTests/testThemesIndexStampNamesTheBuild()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00028s",
+         "durationInSeconds": 0.00028204917907714844,
+         "name": "testThemeSpotlightDomainSurvivesASavedStoreReset()",
+         "nodeIdentifier": "YourThemesTests/testThemeSpotlightDomainSurvivesASavedStoreReset()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00029s",
+         "durationInSeconds": 0.0002859830856323242,
+         "name": "testThemeSpotlightIdentifiersRoundTrip()",
+         "nodeIdentifier": "YourThemesTests/testThemeSpotlightIdentifiersRoundTrip()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.00028s",
+         "durationInSeconds": 0.0002789497375488281,
+         "name": "testUnavailableIsNotAnEmptyTally()",
+         "nodeIdentifier": "YourThemesTests/testUnavailableIsNotAnEmptyTally()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "0.066s",
+         "durationInSeconds": 0.06647896766662598,
+         "name": "testUnknownThemeNameOpensTheIndex()",
+         "nodeIdentifier": "YourThemesTests/testUnknownThemeNameOpensTheIndex()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "YourThemesTests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      }
+     ],
+     "name": "SGGSTests",
+     "nodeType": "Unit test bundle",
+     "result": "Passed"
+    }
+   ],
+   "name": "SGGS",
+   "nodeType": "Test Plan",
+   "result": "Passed"
+  }
+ ],
+ "testPlanConfigurations": [
+  {
+   "configurationId": "1",
+   "configurationName": "Test Scheme Action"
+  }
+ ]
+}

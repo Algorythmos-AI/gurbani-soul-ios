@@ -1,0 +1,224 @@
+{
+ "devices": [
+  {
+   "architecture": "arm64",
+   "deviceId": "FIXTURE-DEVICE-ID",
+   "deviceName": "S-iPhone",
+   "modelName": "iPhone 17 Pro Max",
+   "osBuildNumber": "24A446",
+   "osVersion": "27.0.1",
+   "platform": "iOS"
+  }
+ ],
+ "testNodes": [
+  {
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "children": [
+          {
+           "name": "Test skipped - device checklist: set TEST_RUNNER_SGGS_DEVICE_CHECKLIST=1",
+           "nodeType": "Skip Message"
+          }
+         ],
+         "duration": "1s",
+         "durationInSeconds": 1.0672199726104736,
+         "name": "testD10ColdAndWarmLaunchTimes()",
+         "nodeIdentifier": "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
+         "nodeType": "Test Case",
+         "result": "Skipped"
+        },
+        {
+         "children": [
+          {
+           "name": "Test skipped - device checklist: set TEST_RUNNER_SGGS_DEVICE_CHECKLIST=1",
+           "nodeType": "Skip Message"
+          }
+         ],
+         "duration": "0.026s",
+         "durationInSeconds": 0.026440024375915527,
+         "name": "testD11ResumeAndAnInterruptedVerify()",
+         "nodeIdentifier": "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()",
+         "nodeType": "Test Case",
+         "result": "Skipped"
+        },
+        {
+         "children": [
+          {
+           "name": "Test skipped - device checklist: set TEST_RUNNER_SGGS_DEVICE_CHECKLIST=1",
+           "nodeType": "Skip Message"
+          }
+         ],
+         "duration": "0.014s",
+         "durationInSeconds": 0.013853073120117188,
+         "name": "testD12HostileLinksNeverCrash()",
+         "nodeIdentifier": "DeviceChecklistTests/testD12HostileLinksNeverCrash()",
+         "nodeType": "Test Case",
+         "result": "Skipped"
+        },
+        {
+         "children": [
+          {
+           "name": "Test skipped - device checklist: set TEST_RUNNER_SGGS_DEVICE_CHECKLIST=1",
+           "nodeType": "Skip Message"
+          }
+         ],
+         "duration": "0.012s",
+         "durationInSeconds": 0.011970996856689453,
+         "name": "testD2CopyIsVerbatimWithSaroopOnAndOff()",
+         "nodeIdentifier": "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
+         "nodeType": "Test Case",
+         "result": "Skipped"
+        },
+        {
+         "children": [
+          {
+           "name": "Test skipped - device checklist: set TEST_RUNNER_SGGS_DEVICE_CHECKLIST=1",
+           "nodeType": "Skip Message"
+          }
+         ],
+         "duration": "0.011s",
+         "durationInSeconds": 0.010567069053649902,
+         "name": "testD3RenderingLightAndDarkAtAX3()",
+         "nodeIdentifier": "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
+         "nodeType": "Test Case",
+         "result": "Skipped"
+        },
+        {
+         "children": [
+          {
+           "name": "Test skipped - device checklist: set TEST_RUNNER_SGGS_DEVICE_CHECKLIST=1",
+           "nodeType": "Skip Message"
+          }
+         ],
+         "duration": "0.0091s",
+         "durationInSeconds": 0.009141921997070312,
+         "name": "testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
+         "nodeIdentifier": "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
+         "nodeType": "Test Case",
+         "result": "Skipped"
+        }
+       ],
+       "name": "DeviceChecklistTests",
+       "nodeType": "Test Suite",
+       "result": "Skipped"
+      },
+      {
+       "children": [
+        {
+         "duration": "36s",
+         "durationInSeconds": 36.895089983940125,
+         "name": "testAboutShowsVersion()",
+         "nodeIdentifier": "SGGSUITests/testAboutShowsVersion()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "duration": "59s",
+         "durationInSeconds": 59.06598699092865,
+         "name": "testAccentPickerSwitchesAndPersists()",
+         "nodeIdentifier": "SGGSUITests/testAccentPickerSwitchesAndPersists()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "children": [
+          {
+           "name": "Test skipped - report-only: set TEST_RUNNER_SGGS_SHOT_DIR",
+           "nodeType": "Skip Message"
+          }
+         ],
+         "duration": "0.041s",
+         "durationInSeconds": 0.0413050651550293,
+         "name": "testAccessibilityAuditReport()",
+         "nodeIdentifier": "SGGSUITests/testAccessibilityAuditReport()",
+         "nodeType": "Test Case",
+         "result": "Skipped"
+        },
+        {
+         "children": [
+          {
+           "name": "Publishing changes from within view updates is not allowed, this will cause undefined behavior.",
+           "nodeType": "Runtime Warning"
+          }
+         ],
+         "duration": "24s",
+         "durationInSeconds": 24.23190999031067,
+         "name": "testAutoScrollAdvancesAndPausesOnTouch()",
+         "nodeIdentifier": "SGGSUITests/testAutoScrollAdvancesAndPausesOnTouch()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "children": [
+          {
+           "name": "Publishing changes from within view updates is not allowed, this will cause undefined behavior.",
+           "nodeType": "Runtime Warning"
+          }
+         ],
+         "duration": "43s",
+         "durationInSeconds": 43.35190296173096,
+         "name": "testBaniContentsJumpsToPauri()",
+         "nodeIdentifier": "SGGSUITests/testBaniContentsJumpsToPauri()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        },
+        {
+         "children": [
+          {
+           "name": "Publishing changes from within view updates is not allowed, this will cause undefined behavior.",
+           "nodeType": "Runtime Warning"
+          }
+         ],
+         "duration": "27s",
+         "durationInSeconds": 27.48127591609955,
+         "name": "testBaniProgressResumes()",
+         "nodeIdentifier": "SGGSUITests/testBaniProgressResumes()",
+         "nodeType": "Test Case",
+         "result": "Passed"
+        }
+       ],
+       "name": "SGGSUITests",
+       "nodeType": "Test Suite",
+       "result": "Passed"
+      },
+      {
+       "children": [
+        {
+         "children": [
+          {
+           "name": "Encountered a problem with the test runner after launch. (Underlying Error: An error occurred while communicating with a remote process. (Underlying Error: The connection was invalidated.))",
+           "nodeType": "Failure Message"
+          }
+         ],
+         "name": "SGGSUITests-Runner (23273) encountered an error",
+         "nodeIdentifier": "SGGSUITests-Runner (23273) encountered an error",
+         "nodeType": "Test Case",
+         "result": "Failed"
+        }
+       ],
+       "name": "System Failures",
+       "nodeType": "Test Suite",
+       "result": "Failed"
+      }
+     ],
+     "name": "SGGSUITests",
+     "nodeType": "UI test bundle",
+     "result": "Failed"
+    }
+   ],
+   "name": "SGGS",
+   "nodeType": "Test Plan",
+   "result": "Failed"
+  }
+ ],
+ "testPlanConfigurations": [
+  {
+   "configurationId": "1",
+   "configurationName": "Test Scheme Action"
+  }
+ ]
+}

@@ -12,15 +12,13 @@ import json
 import subprocess
 import sys
 import tempfile
+from pathlib import Path
 
-ROWS = {  # checklist row -> test in DeviceChecklistTests (docs/ios/testflight-test-plan.md §8)
-    "D2 Copy fidelity": "testD2CopyIsVerbatimWithSaroopOnAndOff()",
-    "D3 Gurmukhi rendering": "testD3RenderingLightAndDarkAtAX3()",
-    "D6 Clear reading history": "testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
-    "D10 Launch time (this device)": "testD10ColdAndWarmLaunchTimes()",
-    "D11 Force quit and relaunch": "testD11ResumeAndAnInterruptedVerify()",
-    "D12 Hostile links": "testD12HostileLinksNeverCrash()",
-}
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from device_run import CHECKLIST  # noqa: E402  (one list of rows for both tools)
+
+# checklist row -> test in DeviceChecklistTests (docs/ios/testflight-test-plan.md §8)
+ROWS = {f"{row} {title}": test.split("/", 1)[1] for row, (title, test) in CHECKLIST.items() if test}
 
 
 def xcresult(*args):

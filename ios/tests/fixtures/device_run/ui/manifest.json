@@ -1,0 +1,17 @@
+[
+ {
+  "testIdentifier": "SGGSUITests/testThemesIndexSearch()",
+  "attachments": [
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "00000001-0A2D-421D-9C5F-3F0466EDAD11.png",
+    "isAssociatedWithFailure": true,
+    "repetitionNumber": 1,
+    "suggestedHumanReadableName": "Screenshot at failure_0_00000001-B0F7-4B71-BE5B-D087617059AA.png",
+    "timestamp": 1793117858.572
+   }
+  ]
+ }
+]

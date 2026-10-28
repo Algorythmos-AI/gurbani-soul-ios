@@ -1,0 +1,240 @@
+{
+ "testPlanConfigurations": [
+  {
+   "configurationId": "1",
+   "configurationName": "Test Scheme Action"
+  }
+ ],
+ "devices": [
+  {
+   "architecture": "arm64",
+   "deviceId": "FIXTURE-DEVICE-ID",
+   "deviceName": "S-iPhone",
+   "modelName": "iPhone 17 Pro Max",
+   "osBuildNumber": "24A446",
+   "osVersion": "27.0.1",
+   "platform": "iOS"
+  }
+ ],
+ "testNodes": [
+  {
+   "nodeType": "Test Plan",
+   "name": "SGGS",
+   "result": "Passed",
+   "children": [
+    {
+     "nodeType": "UI test bundle",
+     "name": "SGGSUITests",
+     "result": "Passed",
+     "children": [
+      {
+       "nodeType": "Test Suite",
+       "name": "BenchGuardTests",
+       "result": "Passed",
+       "children": [
+        {
+         "nodeType": "Test Case",
+         "nodeIdentifier": "BenchGuardTests/testBenchIsReadyForADeviceRun()",
+         "name": "testBenchIsReadyForADeviceRun()",
+         "result": "Passed",
+         "durationInSeconds": 2.1,
+         "duration": "2.1s",
+         "children": []
+        }
+       ]
+      },
+      {
+       "nodeType": "Test Suite",
+       "name": "SGGSUITests",
+       "result": "Passed",
+       "children": [
+        {
+         "nodeType": "Test Case",
+         "nodeIdentifier": "SGGSUITests/testReaderJumpAndSwipe()",
+         "name": "testReaderJumpAndSwipe()",
+         "result": "Failed",
+         "durationInSeconds": 61.2,
+         "duration": "61.2s",
+         "children": [
+          {
+           "nodeType": "Failure Message",
+           "name": "SGGSUITests.swift:812: Timed out while enabling automation mode."
+          }
+         ]
+        },
+        {
+         "nodeType": "Test Case",
+         "nodeIdentifier": "SGGSUITests/testThemesIndexSearch()",
+         "name": "testThemesIndexSearch()",
+         "result": "Failed",
+         "durationInSeconds": 14.0,
+         "duration": "14.0s",
+         "children": [
+          {
+           "nodeType": "Failure Message",
+           "name": "SGGSUITests.swift:1902: XCTAssertTrue failed - the search field never took focus"
+          }
+         ]
+        },
+        {
+         "nodeType": "Test Case",
+         "nodeIdentifier": "SGGSUITests/testForgetLocationReturnsToTheLocationCard()",
+         "name": "testForgetLocationReturnsToTheLocationCard()",
+         "result": "Passed",
+         "durationInSeconds": 9.4,
+         "duration": "9.4s",
+         "children": []
+        },
+        {
+         "nodeType": "Test Case",
+         "nodeIdentifier": "SGGSUITests/testRehrasVariantPersists()",
+         "name": "testRehrasVariantPersists()",
+         "result": "Passed",
+         "durationInSeconds": 7.7,
+         "duration": "7.7s",
+         "children": []
+        },
+        {
+         "nodeType": "Test Case",
+         "nodeIdentifier": "SGGSUITests/testCaptureScreens()",
+         "name": "testCaptureScreens()",
+         "result": "Skipped",
+         "durationInSeconds": 0.01,
+         "duration": "0.01s",
+         "children": [
+          {
+           "nodeType": "Skip Message",
+           "name": "Test skipped - capture-only: set TEST_RUNNER_SGGS_SHOT_DIR"
+          }
+         ]
+        },
+        {
+         "nodeType": "Test Case",
+         "nodeIdentifier": "SGGSUITests/testNitnemOpensJapjiAndCompletes()",
+         "name": "testNitnemOpensJapjiAndCompletes()",
+         "result": "Passed",
+         "durationInSeconds": 48.3,
+         "duration": "48.3s",
+         "children": [
+          {
+           "nodeType": "Repetition",
+           "nodeIdentifier": "1",
+           "name": "First Run",
+           "result": "Failed",
+           "durationInSeconds": 30.1,
+           "children": [
+            {
+             "nodeType": "Failure Message",
+             "name": "SGGSUITests.swift:233: Failed to launch app: The request was denied by service delegate (FBSOpenApplicationErrorDomain error 7)"
+            }
+           ]
+          },
+          {
+           "nodeType": "Repetition",
+           "nodeIdentifier": "2",
+           "name": "Retry 1",
+           "result": "Passed",
+           "durationInSeconds": 18.2,
+           "children": []
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "nodeType": "Test Suite",
+       "name": "DeviceChecklistTests",
+       "result": "Passed",
+       "children": [
+        {
+         "nodeType": "Test Case",
+         "nodeIdentifier": "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
+         "name": "testD2CopyIsVerbatimWithSaroopOnAndOff()",
+         "result": "Skipped",
+         "durationInSeconds": 0.01,
+         "duration": "0.01s",
+         "children": [
+          {
+           "nodeType": "Skip Message",
+           "name": "Test skipped - device checklist: set TEST_RUNNER_SGGS_DEVICE_CHECKLIST=1"
+          }
+         ]
+        },
+        {
+         "nodeType": "Test Case",
+         "nodeIdentifier": "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
+         "name": "testD3RenderingLightAndDarkAtAX3()",
+         "result": "Skipped",
+         "durationInSeconds": 0.01,
+         "duration": "0.01s",
+         "children": [
+          {
+           "nodeType": "Skip Message",
+           "name": "Test skipped - device checklist: set TEST_RUNNER_SGGS_DEVICE_CHECKLIST=1"
+          }
+         ]
+        },
+        {
+         "nodeType": "Test Case",
+         "nodeIdentifier": "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
+         "name": "testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
+         "result": "Skipped",
+         "durationInSeconds": 0.01,
+         "duration": "0.01s",
+         "children": [
+          {
+           "nodeType": "Skip Message",
+           "name": "Test skipped - device checklist: set TEST_RUNNER_SGGS_DEVICE_CHECKLIST=1"
+          }
+         ]
+        },
+        {
+         "nodeType": "Test Case",
+         "nodeIdentifier": "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
+         "name": "testD10ColdAndWarmLaunchTimes()",
+         "result": "Skipped",
+         "durationInSeconds": 0.01,
+         "duration": "0.01s",
+         "children": [
+          {
+           "nodeType": "Skip Message",
+           "name": "Test skipped - device checklist: set TEST_RUNNER_SGGS_DEVICE_CHECKLIST=1"
+          }
+         ]
+        },
+        {
+         "nodeType": "Test Case",
+         "nodeIdentifier": "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()",
+         "name": "testD11ResumeAndAnInterruptedVerify()",
+         "result": "Skipped",
+         "durationInSeconds": 0.01,
+         "duration": "0.01s",
+         "children": [
+          {
+           "nodeType": "Skip Message",
+           "name": "Test skipped - device checklist: set TEST_RUNNER_SGGS_DEVICE_CHECKLIST=1"
+          }
+         ]
+        },
+        {
+         "nodeType": "Test Case",
+         "nodeIdentifier": "DeviceChecklistTests/testD12HostileLinksNeverCrash()",
+         "name": "testD12HostileLinksNeverCrash()",
+         "result": "Skipped",
+         "durationInSeconds": 0.01,
+         "duration": "0.01s",
+         "children": [
+          {
+           "nodeType": "Skip Message",
+           "name": "Test skipped - device checklist: set TEST_RUNNER_SGGS_DEVICE_CHECKLIST=1"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

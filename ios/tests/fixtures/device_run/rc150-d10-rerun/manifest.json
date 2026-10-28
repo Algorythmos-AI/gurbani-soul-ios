@@ -1,0 +1,26 @@
+[
+ {
+  "attachments": [
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "EFAFA16C-E4DE-4D54-9464-E918BCD59CAB.txt",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D10 timings_0_960C3938-6EF7-4187-BB84-62E89EDEF410.txt",
+    "timestamp": 1793118897.424
+   },
+   {
+    "configurationName": "Test Scheme Action",
+    "deviceId": "FIXTURE-DEVICE-ID",
+    "deviceName": "S-iPhone",
+    "exportedFileName": "A843FDD2-591E-4918-9B1D-34AD00FD7D9C.png",
+    "isAssociatedWithFailure": false,
+    "suggestedHumanReadableName": "D10 after a cold launch_0_CCEA414C-E49C-41A2-953C-67038F9B3D15.png",
+    "timestamp": 1793118890.038
+   }
+  ],
+  "testIdentifier": "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
+  "testIdentifierURL": "test://com.apple.xcode/SGGS/SGGSUITests/DeviceChecklistTests/testD10ColdAndWarmLaunchTimes"
+ }
+]

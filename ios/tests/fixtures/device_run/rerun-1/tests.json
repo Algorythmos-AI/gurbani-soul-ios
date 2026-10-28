@@ -1,0 +1,60 @@
+{
+ "testPlanConfigurations": [
+  {
+   "configurationId": "1",
+   "configurationName": "Test Scheme Action"
+  }
+ ],
+ "devices": [
+  {
+   "architecture": "arm64",
+   "deviceId": "FIXTURE-DEVICE-ID",
+   "deviceName": "S-iPhone",
+   "modelName": "iPhone 17 Pro Max",
+   "osBuildNumber": "24A446",
+   "osVersion": "27.0.1",
+   "platform": "iOS"
+  }
+ ],
+ "testNodes": [
+  {
+   "nodeType": "Test Plan",
+   "name": "SGGS",
+   "result": "Passed",
+   "children": [
+    {
+     "nodeType": "UI test bundle",
+     "name": "SGGSUITests",
+     "result": "Passed",
+     "children": [
+      {
+       "nodeType": "Test Suite",
+       "name": "SGGSUITests",
+       "result": "Passed",
+       "children": [
+        {
+         "nodeType": "Test Case",
+         "nodeIdentifier": "SGGSUITests/testReaderJumpAndSwipe()",
+         "name": "testReaderJumpAndSwipe()",
+         "result": "Passed",
+         "durationInSeconds": 20.5,
+         "duration": "20.5s",
+         "children": []
+        },
+        {
+         "nodeType": "Test Case",
+         "nodeIdentifier": "SGGSUITests/testThemesIndexSearch()",
+         "name": "testThemesIndexSearch()",
+         "result": "Passed",
+         "durationInSeconds": 11.0,
+         "duration": "11.0s",
+         "children": []
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

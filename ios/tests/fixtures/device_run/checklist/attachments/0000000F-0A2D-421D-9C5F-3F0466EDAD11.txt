@@ -1,0 +1,8 @@
+process start to Nitnem, measured in the app:
+  cold (full verify): 1.31 s
+  warm:               0.88 s
+XCTest's clock (not judged; includes spawning and polling over the connection):
+  cold 4.02 s, warm 2.11 s
+timelines (s since process start):
+  cold {"cached_hash":false,"since_process_start":{"appInit":0.214,"containerReady":0.301,"integrityDone":1.02,"integrityHashed":0.98,"integrityStart":0.66,"nitnemDrawn":1.31,"rootShown":0.62,"tabsShown":1.1}}
+  warm {"cached_hash":true,"since_process_start":{"appInit":0.12,"containerReady":0.2,"integrityDone":0.52,"integrityStart":0.41,"nitnemDrawn":0.88,"rootShown":0.4,"tabsShown":0.7}}
