@@ -26,9 +26,8 @@ Two companion pages hold the parts of this review that live in other repositorie
   that sggs-data pins (sha256 `d8e07134…`, verified). It carries:
   - Prof. Sahib Singh, *Sri Guru Granth Sahib Darpan*: the arth, the word meanings and his notes;
   - the *Faridkot Teeka*;
-  - Bhai Vir Singh, *Santhya*;
-  - Bhai Manmohan Singh;
-  - Dr. Sant Singh Khalsa;
+  - Bhai Manmohan Singh (English and Punjabi);
+  - Dr. Sant Singh Khalsa and SikhNet;
   - each line's BaniDB / SikhiToTheMax shabad id.
 
   Excerpts are quoted verbatim, each followed by a short English gist. A gist is editorial.
@@ -69,10 +68,10 @@ Two companion pages hold the parts of this review that live in other repositorie
 | R-01 to R-36 life paragraphs | **14 Change, the rest Approve.** See the platform page. One factual error (R-16 Dhanna). | per item |
 | G-01 to G-23 form glosses | **Approve 15. Change 8:** G-02, G-05, G-08, G-18, G-19, G-20, G-21, G-23 | high, except G-21 (medium) and G-23 (Granthi to verify) |
 | A-01 to A-06, A-09 | **Confirm all** (A-04 checked line by line) | high |
-| A-07 Surdas line (Ang 1253) | **Surdas:** author only (see the sggs-data page) | high |
-| A-08 Salok sections | **Split as proposed** | high |
-| A-10 Ang 695 labels | **Fix as proposed** | high |
-| A-11 Bhagat-run heading author | **The first Bhagat of the run** (and the same for line 14771, Ang 323) | high |
+| A-07 Surdas line (Ang 1253) | **Surdas:** author only (see the sggs-data page; evidence corrected 28 Oct) | medium |
+| A-08 Salok sections | **Split as proposed** (evidence corrected 28 Oct) | high |
+| A-10 Ang 695 labels | **Fix as proposed** (evidence corrected 28 Oct) | high |
+| A-11 Bhagat-run heading author | **The first Bhagat of the run** (and the same for line 14771, Ang 323; evidence corrected 28 Oct) | medium |
 
 ---
 
@@ -760,7 +759,9 @@ The four items still open in the dataset are set out, with their evidence, on th
 [`RECOMMENDATIONS.md`](https://github.com/Algorythmos-AI/sggs-data/pull/18).
 
 - **A-07:** credit line 53935 to Bhagat Surdas Ji. SS says the line is Surdas's, and that it is counted as a whole
-  shabad, which is why the printed count reaches ੮.
+  shabad, which is why the printed count reaches ੮. The sources differ on the shabad that follows it: SS gives it
+  to Guru Arjan Dev Ji, while ShabadOS files it under Bhagat Surdas Ji (corrected 28 October 2026 on the
+  sggs-data page).
 - **A-08:** split the sections, as proposed.
 - **A-10:** fix the three labels, as proposed.
 - **A-11:** credit the heading to the first Bhagat of the run, and give line 14771 the same ruling.
