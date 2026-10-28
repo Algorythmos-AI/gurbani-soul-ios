@@ -110,7 +110,7 @@ are banis it does contain. `ios/tests/test_ios_gates.py` lints this section.)
 
 For version 1.5.1 (covers everything since 1.4.7, the version readers have; 1.4.9 and 1.5.0 were not submitted). Rewritten for every version; limit 4000 characters. Every version's text is kept in [`whats-new/`](whats-new/README.md).
 
-> New ways into the Granth, the Vaars as they are printed, and attributions settled by scholarly review.
+> New ways into the Granth, the Vaars as they are printed, and attributions updated after scholarly review.
 >
 > • Explore is now "The Granth Today": a featured card each day, and every card previews what it opens — the Ang you last read, this watch's raags, today's theme and its verse, cited by Ang. On iPad, three across.
 > • Index in the Granth's own order, with a map of the whole saroop and a page for every raag.
