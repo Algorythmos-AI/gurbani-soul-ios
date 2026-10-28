@@ -188,7 +188,7 @@ commit: the release commit's tree must be the tree that was tested.
 | Attested bench, `BenchGuardTests` first | Locked phone (CoreDeviceError 10003), landscape (four false failures), another app in front (eleven false failures) |
 | D10 judged outside XCTest | XCTest's clock over the tunnel added about 3 s ± 2 s and once 7.4 s of terminate; on 1.5.0 its bootstrap put the app's first code at 4.8 s |
 | Staging never in `/tmp`; private release, verified by re-download | The scratchpad was wiped twice and a full disk forced bundles to be deleted |
-| Identical images under two names flagged | Checksums ≠ correctness: wrong screens with valid sums, duplicates |
+| Identical images under two names flagged; they hold a checklist row back, except D11 and D12, whose proof is an unchanged screen (resume on the same Ang; hostile links ignored) | Checksums ≠ correctness: wrong screens with valid sums, duplicates. The 1.5.1 run (`20261028T2026Z-a4e2570`) showed D11/D12 identical by design |
 | Full SHAs; trees, not commits | Short SHAs in merges; a squash merge changes the commit, not the tree |
 | Device-only failures and flakes are kept | They found real bugs (a card that swallowed taps, a voice page that never loaded) |
 | Debug build | The run proves the checks, not the archived binary; the archive has its own gates |

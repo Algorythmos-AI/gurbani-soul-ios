@@ -577,6 +577,26 @@ class SummarizeTests(Base):
         self.assertEqual(s["checklist"]["D3"]["result"], "incomplete")
         self.assertTrue(any("identical image" in w for w in s["warnings"]))
 
+    def test_identical_screens_pass_the_rows_whose_proof_is_no_change(self):
+        rd = self.full_run()
+
+        def twin(manifest):
+            for entry in manifest:
+                atts = entry["attachments"]
+                if entry["testIdentifier"].endswith("testD11ResumeAndAnInterruptedVerify()"):
+                    atts[1]["exportedFileName"] = atts[0]["exportedFileName"]
+                if entry["testIdentifier"].endswith("testD12HostileLinksNeverCrash()"):
+                    atts.append({**atts[0], "suggestedHumanReadableName":
+                                 atts[0]["suggestedHumanReadableName"].replace("D12 stayed", "D12 still stayed")})
+            return manifest
+        self.host.mutate["checklist"] = {"manifest": twin}
+        self.summarize(rd)
+        s = self.summary(rd)
+        self.assertEqual((s["checklist"]["D11"]["result"], s["checklist"]["D12"]["result"]), ("pass", "pass"))
+        self.assertEqual(len(s["checklist"]["D12"]["attachments"]), 2)
+        self.assertTrue(any("identical image" in w and "D11" in w for w in s["warnings"]))
+        self.assertTrue(any("identical image" in w and "D12" in w for w in s["warnings"]))
+
     def test_planned_tests_that_never_ran_make_it_incomplete(self):
         self.planned.write_text("\n".join(fixture_ids() + ["SGGSUITests/testNeverRan()"]) + "\n")
         rd = self.full_run()
