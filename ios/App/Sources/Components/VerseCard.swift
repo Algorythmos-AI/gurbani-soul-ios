@@ -64,11 +64,11 @@ struct AppMarkTile: View {
         let dark = scheme == .dark
         let shape = RoundedRectangle(cornerRadius: size * 0.225, style: .continuous)
         shape
-            .fill(LinearGradient(colors: dark ? [Color(uiColor: UIColor(rgb: 0x2B221B)), Color(uiColor: UIColor(rgb: 0x0E0C0A))]
-                                              : [Color(uiColor: UIColor(rgb: 0xFFCE45)), Color(uiColor: UIColor(rgb: 0xF09A00))],
+            .fill(LinearGradient(colors: dark ? [IconField.inkTop, IconField.inkBottom]
+                                              : [IconField.goldTop, IconField.goldBottom],
                                  startPoint: .top, endPoint: .bottom))
             .overlay { Image("LaunchLogo").resizable().scaledToFit().padding(size * 0.12) }
-            .overlay { if dark { shape.strokeBorder(Color(uiColor: UIColor(rgb: 0x3A302A)), lineWidth: 0.5) } }
+            .overlay { if dark { shape.strokeBorder(IconField.inkEdge, lineWidth: 0.5) } }
             .frame(width: size, height: size)
             .accessibilityHidden(true)
     }
