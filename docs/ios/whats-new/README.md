@@ -17,7 +17,8 @@ against App Store Connect.
 
 | Version | Status |
 |---|---|
-| [1.5.1](1.5.1.md) | ready for submission (covers 1.4.9 and 1.5.0) |
+| [1.5.2](1.5.2.md) | ready for submission |
+| [1.5.1](1.5.1.md) | App Store (covers 1.4.9 and 1.5.0) |
 | [1.5.0](1.5.0.md) | never submitted; superseded by 1.5.1 |
 | [1.4.7](1.4.7.md) | App Store |
 | [1.4.4](1.4.4.md) | App Store |
