@@ -10,6 +10,9 @@ enum AppLinks {
     /// The App Store page (Apple ID 6812982384) and its write-a-review sheet.
     static let appStore = URL(string: "https://apps.apple.com/app/id6812982384")!
     static let writeReview = URL(string: "https://apps.apple.com/app/id6812982384?action=write-review")!
+    /// What "Share Gurbani Soul" sends: the site, which unfurls as Gurbani Soul's own card and
+    /// offers the App Store from there (the App Store link unfurls as Apple's generic card).
+    static let website = URL(string: "https://gurbanisoul.com")!
 }
 
 /// The in-app Privacy Policy (Guideline 5.1.1(i): reachable inside the app). Deliberately static

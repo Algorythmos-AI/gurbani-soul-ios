@@ -571,12 +571,10 @@ struct VoicePage: View {
         guard let verse = d.rahao.verses.first ?? d.compositions.first.map({
             VoiceVerse(id: $0.firstLineId, ang: $0.ang, compId: $0.compId, gurmukhi: $0.opening)
         }) else { return nil }
-        let renderer = ImageRenderer(content: VoiceShareCard(name: contributor.displayName,
-                                                             gurmukhiName: contributor.gurmukhi,
-                                                             verse: verse)
-            .environment(\.colorScheme, scheme))
-        renderer.scale = 3
-        return renderer.uiImage.map { Image(uiImage: $0) }
+        return VerseCardRenderer.render(VoiceShareCard(name: contributor.displayName,
+                                                        gurmukhiName: contributor.gurmukhi,
+                                                        verse: verse), scheme: scheme)
+            .map { Image(uiImage: $0) }
     }
 }
 
@@ -672,37 +670,31 @@ struct RaagCompositionsSheet: View {
     }
 }
 
-/// The share image: the voice's name, one rahao verse verbatim, the full citation. Fixed size by
-/// design (like VerseCardView): Dynamic Type must not reflow a shared image.
+/// The share image: the voice's name, one rahao verse verbatim, the full citation, in the share
+/// card frame (VerseCard.swift). Fixed size by design: Dynamic Type must not reflow a shared image.
 private struct VoiceShareCard: View {
     let name: String
     let gurmukhiName: String?
     let verse: VoiceVerse
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text(name).font(.system(size: 20, weight: .semibold, design: .serif)).foregroundStyle(.primary)
-            if let gurmukhiName {
-                Text(gurmukhiName).font(Brand.gurmukhi(24)).foregroundStyle(.primary)
+        ShareCardFrame(footer: "Voices of the Granth · gurbanisoul.com") {
+            VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(name).font(ShareType.serif(16)).foregroundStyle(.primary)
+                    if let gurmukhiName {
+                        Text(gurmukhiName).font(Brand.gurmukhi(17)).foregroundStyle(.primary)
+                    }
+                }
+                Text(verse.gurmukhi)
+                    .font(Brand.gurmukhi(25))
+                    .lineSpacing(12)
+                    .foregroundStyle(.primary)
+                    .fixedSize(horizontal: false, vertical: true)
+                ShareRule().padding(.top, 6)
+                Text(ShareLinks.citation(verse.ang)).font(ShareType.serif(11.3)).foregroundStyle(.primary)
             }
-            Text(verse.gurmukhi)
-                .font(Brand.gurmukhi(30))
-                .lineSpacing(16)
-                .foregroundStyle(.primary)
-            HStack {
-                RoundedRectangle(cornerRadius: 1)
-                    .fill(AccentPalette.brandDefault.heroGradient)
-                    .frame(width: 44, height: 2.5)
-                Text("Sri Guru Granth Sahib Ji · Ang \(String(verse.ang))")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(AccentPalette.gold.accentText)
-            }
-            Text("Gurbani Soul · Voices of the Granth")
-                .font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
         }
-        .padding(28)
-        .frame(width: 480, alignment: .leading)
-        .background(Ink.paper)
     }
 }
 

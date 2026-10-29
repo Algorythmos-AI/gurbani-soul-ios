@@ -288,6 +288,17 @@ enum VoiceInk {
 
 /// Shadow tokens. Dark mode intentionally has NO shadow — cards get an Ink.hairline
 /// border instead (Phase-3 Card applies scheme-appropriately).
+/// The app icon's field (brand book §5, AppIcon.icon's fill specialisations), for the small mark
+/// tile on share cards (VerseCard.swift): top-lit gold in light, warm ink in dark, and the dark
+/// tile's hairline edge.
+enum IconField {
+    static let goldTop = Color(uiColor: UIColor(rgb: 0xFFCE45))
+    static let goldBottom = Color(uiColor: UIColor(rgb: 0xF09A00))
+    static let inkTop = Color(uiColor: UIColor(rgb: 0x2B221B))
+    static let inkBottom = Color(uiColor: UIColor(rgb: 0x0E0C0A))
+    static let inkEdge = Color(uiColor: UIColor(rgb: 0x3A302A))
+}
+
 enum Elevation {
     /// Card resting shadow (light scheme only).
     static let cardShadowColor = Color.black.opacity(0.06)
