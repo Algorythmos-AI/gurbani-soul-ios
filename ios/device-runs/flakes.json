@@ -3,7 +3,7 @@
   "_comment": "Derived by `device_run.py rebuild`. A flake event is an unexplained (cause unknown) failure that passed on a rerun; a test with 3 or more is chronic.",
   "tests": {
     "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()": {
-      "runs": 5,
+      "runs": 6,
       "fails": 3,
       "env_fails": 2,
       "fail_then_pass": 1,
@@ -21,7 +21,7 @@
       "chronic": false
     },
     "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()": {
-      "runs": 4,
+      "runs": 5,
       "fails": 1,
       "env_fails": 1,
       "fail_then_pass": 1,
@@ -38,7 +38,7 @@
       "chronic": false
     },
     "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()": {
-      "runs": 4,
+      "runs": 5,
       "fails": 1,
       "env_fails": 1,
       "fail_then_pass": 1,
@@ -55,7 +55,7 @@
       "chronic": false
     },
     "SGGSUITests/testBaniContentsJumpsToPauri()": {
-      "runs": 1,
+      "runs": 2,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 1,
@@ -72,7 +72,7 @@
       "chronic": false
     },
     "SGGSUITests/testCaptureJaapPauri79()": {
-      "runs": 1,
+      "runs": 2,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 1,
@@ -89,7 +89,7 @@
       "chronic": false
     },
     "SGGSUITests/testCaptureScreens()": {
-      "runs": 1,
+      "runs": 2,
       "fails": 1,
       "env_fails": 1,
       "fail_then_pass": 1,
@@ -106,7 +106,7 @@
       "chronic": false
     },
     "SGGSUITests/testForgetLocationReturnsToTheLocationCard()": {
-      "runs": 2,
+      "runs": 3,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 0,
@@ -123,7 +123,7 @@
       "chronic": false
     },
     "SGGSUITests/testGutkaSwitchTogglesTheLayout()": {
-      "runs": 1,
+      "runs": 2,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 1,
@@ -140,7 +140,7 @@
       "chronic": false
     },
     "SGGSUITests/testIndexContinueCardResumes()": {
-      "runs": 1,
+      "runs": 2,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 1,
@@ -157,7 +157,7 @@
       "chronic": false
     },
     "SGGSUITests/testInsights()": {
-      "runs": 1,
+      "runs": 2,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 1,
@@ -174,7 +174,7 @@
       "chronic": false
     },
     "SGGSUITests/testLineageAndVaars()": {
-      "runs": 2,
+      "runs": 3,
       "fails": 2,
       "env_fails": 1,
       "fail_then_pass": 1,
@@ -191,7 +191,7 @@
       "chronic": false
     },
     "SGGSUITests/testNitnemOpensJapjiAndCompletes()": {
-      "runs": 1,
+      "runs": 2,
       "fails": 1,
       "env_fails": 1,
       "fail_then_pass": 1,
@@ -208,7 +208,7 @@
       "chronic": false
     },
     "SGGSUITests/testNitnemRemindersScreenOpens()": {
-      "runs": 1,
+      "runs": 2,
       "fails": 1,
       "env_fails": 1,
       "fail_then_pass": 1,
@@ -225,7 +225,7 @@
       "chronic": false
     },
     "SGGSUITests/testPrivacyPolicyReachableFromMore()": {
-      "runs": 1,
+      "runs": 2,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 0,
@@ -242,7 +242,7 @@
       "chronic": false
     },
     "SGGSUITests/testRaagPageFromTheIndex()": {
-      "runs": 1,
+      "runs": 2,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 1,
@@ -259,7 +259,7 @@
       "chronic": false
     },
     "SGGSUITests/testReaderChromeReturnsOnScrollUp()": {
-      "runs": 1,
+      "runs": 2,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 1,
@@ -276,7 +276,7 @@
       "chronic": false
     },
     "SGGSUITests/testReaderJumpAndSwipe()": {
-      "runs": 1,
+      "runs": 2,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 1,
@@ -293,7 +293,7 @@
       "chronic": false
     },
     "SGGSUITests/testSavedVerseRoundTrip()": {
-      "runs": 2,
+      "runs": 3,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 1,
@@ -310,7 +310,7 @@
       "chronic": false
     },
     "SGGSUITests/testSearchOpensShabad()": {
-      "runs": 1,
+      "runs": 2,
       "fails": 1,
       "env_fails": 1,
       "fail_then_pass": 1,
@@ -327,7 +327,7 @@
       "chronic": false
     },
     "SGGSUITests/testSehajFocusHidesChromeAndExits()": {
-      "runs": 1,
+      "runs": 2,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 1,
@@ -344,7 +344,7 @@
       "chronic": false
     },
     "SGGSUITests/testThemeListStatesItsTrueTotal()": {
-      "runs": 1,
+      "runs": 2,
       "fails": 1,
       "env_fails": 1,
       "fail_then_pass": 1,
@@ -361,7 +361,7 @@
       "chronic": false
     },
     "SGGSUITests/testThemesIndexSearchFindsByMeaningAndGurmukhi()": {
-      "runs": 2,
+      "runs": 3,
       "fails": 2,
       "env_fails": 1,
       "fail_then_pass": 2,
@@ -378,7 +378,7 @@
       "chronic": false
     },
     "SGGSUITests/testVerifyShowsVerdict()": {
-      "runs": 2,
+      "runs": 3,
       "fails": 2,
       "env_fails": 1,
       "fail_then_pass": 1,
