@@ -75,14 +75,18 @@ struct LineRow: View {
             Button { UIPasteboard.general.string = gurmukhi } label: {
                 Label("Copy verse", systemImage: "doc.on.doc")     // verbatim — never the saroop form
             }
-            ShareLink(item: shareText) { Label("Share", systemImage: "square.and.arrow.up") }
+            // the verse, its citation and its /ang link; the sheet's header names the source
+            ShareLink(item: shareText, preview: SharePreview(sharePreviewTitle, image: Image("LaunchLogo"))) {
+                Label("Share", systemImage: "square.and.arrow.up")
+            }
             Button {
                 // A card is only ever rendered WITH its Ang citation — a call site that didn't
                 // provide line identity falls back to the plain text share (which self-gates).
                 if ang > 0, let img = VerseCardRenderer.render(gurmukhi: gurmukhi, translit: translit,
                                                                en: englishPref ? en : nil, ang: ang,
                                                                context: shareContext, scheme: colorScheme) {
-                    presentShareSheet(items: [img])
+                    presentShareSheet(items: [ShareCardItem(image: img, title: ShareLinks.citation(ang),
+                                                            url: ShareLinks.ang(ang, line: lineId))])
                 } else {
                     assert(ang > 0 || sourceLabel != nil, "LineRow used without line identity — pass lineId/ang/compId")
                     presentShareSheet(items: [shareText])
@@ -124,12 +128,14 @@ struct LineRow: View {
         }
     }
 
-    /// Shared text carries the Ang citation (never bare scripture without its source).
+    /// Shared text carries the source (never bare scripture without it) and, for a line of
+    /// Sri Guru Granth Sahib Ji, the /ang link that unfurls as that Ang's card (ShareLinks).
     private var shareText: String {
-        var out = gurmukhi
-        if let sourceLabel { out += "\n— \(sourceLabel)" }
-        else if ang > 0 { out += "\n— Sri Guru Granth Sahib Ji, Ang \(String(ang))" }
-        return out
+        ShareLinks.verseText(gurmukhi: gurmukhi, ang: ang, line: lineId, sourceLabel: sourceLabel)
+    }
+
+    private var sharePreviewTitle: String {
+        sourceLabel ?? (ang > 0 ? ShareLinks.citation(ang) : "Gurbani Soul")
     }
 
     /// Gurmukhi (spoken as Punjabi) → English layer → metadata.

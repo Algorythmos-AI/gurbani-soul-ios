@@ -309,6 +309,16 @@ struct ReaderScreen: View {
                     .accessibilityIdentifier("angTitle")
                 }
                 ToolbarItem(placement: .topBarTrailing) {
+                    // this Ang's /ang link: it unfurls as the Ang's own card in any chat
+                    ShareLink(item: ShareLinks.ang(router.readerAng),
+                              preview: SharePreview(ShareLinks.citation(router.readerAng),
+                                                    image: Image("LaunchLogo"))) {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                    .accessibilityLabel("Share this Ang")
+                    .accessibilityIdentifier("shareAng")
+                }
+                ToolbarItem(placement: .topBarTrailing) {
                     Button { showOptions = true } label: { Image(systemName: "textformat.size") }
                         .accessibilityLabel("Reading options")
                         .accessibilityIdentifier("readerOptions")
