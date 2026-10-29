@@ -108,15 +108,16 @@ are banis it does contain. `ios/tests/test_ios_gates.py` lints this section.)
 
 ## What's New
 
-For version 1.5.0 (covers everything since 1.4.7, the version readers have). Rewritten for every version; limit 4000 characters.
+For version 1.5.1 (covers everything since 1.4.7, the version readers have; 1.4.9 and 1.5.0 were not submitted). Rewritten for every version; limit 4000 characters. Every version's text is kept in [`whats-new/`](whats-new/README.md).
 
-> New ways into the Granth, and the Vaars as they are printed.
+> New ways into the Granth, the Vaars as they are printed, and attributions updated after scholarly review.
 >
 > • Explore is now "The Granth Today": a featured card each day, and every card previews what it opens — the Ang you last read, this watch's raags, today's theme and its verse, cited by Ang. On iPad, three across.
 > • Index in the Granth's own order, with a map of the whole saroop and a page for every raag.
 > • Vaars as printed: read straight through or pauris only, with your place kept.
 > • Themes: a page for every theme, search in English or Gurmukhi, and Your themes. "Waheguru" now shows as written, and every spelling finds it.
-> • Voices of the Granth: 36 voices, each with its own page. One attribution (Surdas) is marked for scholarly review.
+> • Voices of the Granth: 36 voices, each with its own page. After scholarly review, the line on Ang 1253 is now listed under Bhagat Surdas Ji.
+> • Section names as printed: Chaubole Mahalla 5, and the Saloks of Bhagat Kabir Ji and Sheikh Farid Ji, each in its own place in the Index.
 > • Hukam of the day: a widget, a Nitnem card and Siri.
 > • Raag Clock on one 12-hour scale with AM and PM; it says whose sky it shows when your saved place is far away.
 > • Ang numbers read plainly (Ang 1353), and headings use sentence case, in the app and its widgets.

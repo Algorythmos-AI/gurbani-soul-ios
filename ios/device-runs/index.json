@@ -85,6 +85,20 @@
       "ios": "27.0.1",
       "d10_method": "in-xctest",
       "evidence_lost": false
+    },
+    {
+      "version": "1.5.1",
+      "run_id": "20261028T2026Z-a4e2570",
+      "path": "1.5.1/20261028T2026Z-a4e2570/summary.json",
+      "verdict": "PASS",
+      "origin": "device",
+      "commit": "e449d6c21f9b11c2d89a6c4804be99594f34b74f",
+      "tree": "a4e257073468eb061f228f5a2b708077d910004c",
+      "started_at": "2026-10-28T20:26:18Z",
+      "device": "iPhone-11",
+      "ios": "27.0.1",
+      "d10_method": "out-of-xctest",
+      "evidence_lost": false
     }
   ]
 }
