@@ -1,0 +1,3405 @@
+{
+  "schema": 1,
+  "tool_version": "1",
+  "origin": "device",
+  "version": "1.5.2",
+  "run_id": "20261030T0750Z-807c055",
+  "app": {
+    "version": "1.5.2",
+    "build": "1",
+    "build_config": "Debug"
+  },
+  "source": {
+    "commit": "e7697e60abee41298e48092d1065635c6b3daf4c",
+    "tree": "807c055c097e4d3c5122b3bce77ab104e05ac1a6",
+    "branch": "HEAD",
+    "dirty": false,
+    "stamp_tree": "807c055c097e4d3c5122b3bce77ab104e05ac1a6",
+    "stamp_built_at": "2026-10-30T07:50:05Z"
+  },
+  "pins": {
+    "dataset": {
+      "version": "1.3.0",
+      "commit": "efbf74e4f018a3f95801af3f641feecd2042e348"
+    },
+    "platform": {
+      "version": "1.5.2",
+      "commit": "869d3b8ea85d75c1e1e994831b908110ec80326c"
+    },
+    "db_sha256": "3e00f077a2f60bded34a0745fccffecd33514017f64b5f0761b0eb2ad93c5d44"
+  },
+  "device": {
+    "name": "iPhone-11",
+    "model": "iPhone 11 Pro Max",
+    "ios": "27.0.1"
+  },
+  "connection": {
+    "transport": "wired",
+    "tunnel": "connected"
+  },
+  "env": {
+    "attested": [
+      "auto-lock-never",
+      "cert-trusted",
+      "dnd",
+      "hands-off",
+      "no-other-apps",
+      "portrait-lock",
+      "unlocked"
+    ],
+    "locked_at_begin": false,
+    "free_disk_gb": 11.9,
+    "restore_launch": {
+      "result": "pass",
+      "recorded_at": "2026-10-30T08:47:20Z",
+      "note": "restore launch 08:47Z"
+    },
+    "incidents": [
+      "unknown"
+    ]
+  },
+  "started_at": "2026-10-30T07:50:06Z",
+  "ended_at": "2026-10-30T08:49:28Z",
+  "xcode": "27.0",
+  "operator": {
+    "role": "supervisor"
+  },
+  "evidence_repo": "Algorythmos-AI/gurbani-soul-device-evidence",
+  "asset_tag": "ios-1.5.2-20261030T0750Z-807c055",
+  "bundles": [
+    {
+      "name": "unit",
+      "kind": "unit",
+      "started_at": "2026-10-30T07:50:07Z",
+      "finished_at": "2026-10-30T07:51:01Z",
+      "result": "Passed",
+      "counts": {
+        "totalTestCount": 451,
+        "passedTests": 451,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "expectedFailures": 0
+      },
+      "root_id": "0~6staDeBZ_KM0neDT9SWLnbeZT-t9mnrvJ4_tuA7phqRAvWF4Kdx3WGv_ilp7F91mpWFgwtUWTx_Fgj5ASdKPnA==",
+      "asset": "unit.xcresult.tar.gz",
+      "tar_sha256": "d5ce38ae84926fb8ba07e1a762b8fd0eb2ca22978f039c3efbcf3693e2a8191f",
+      "size": 1798152,
+      "asset_url": "https://github.com/Algorythmos-AI/gurbani-soul-device-evidence/releases/download/ios-1.5.2-20261030T0750Z-807c055/unit.xcresult.tar.gz"
+    },
+    {
+      "name": "ui-01",
+      "kind": "ui",
+      "started_at": "2026-10-30T07:51:06Z",
+      "finished_at": "2026-10-30T08:00:07Z",
+      "result": "Passed",
+      "counts": {
+        "totalTestCount": 12,
+        "passedTests": 9,
+        "failedTests": 0,
+        "skippedTests": 3,
+        "expectedFailures": 0
+      },
+      "root_id": "0~uHioxpLPW3GnJz4F0E2bJz9dR-BTYr4x6VETMuW9NWJrH4AraHPVIYLRmUhCoJbGWRxYYYYs0KsQT26u8H7ETg==",
+      "asset": "ui-01.xcresult.tar.gz",
+      "tar_sha256": "5acb32fe0ab5a1d491c6fa2ba1c19dfe9d55443a31efaff3417ca4a653226e8b",
+      "size": 20542432,
+      "asset_url": "https://github.com/Algorythmos-AI/gurbani-soul-device-evidence/releases/download/ios-1.5.2-20261030T0750Z-807c055/ui-01.xcresult.tar.gz"
+    },
+    {
+      "name": "ui-02",
+      "kind": "ui",
+      "started_at": "2026-10-30T08:00:10Z",
+      "finished_at": "2026-10-30T08:07:40Z",
+      "result": "Passed",
+      "counts": {
+        "totalTestCount": 12,
+        "passedTests": 12,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "expectedFailures": 0
+      },
+      "root_id": "0~sfhhow5o05S5S75Qu-BXbtZUSdcJMJUQr5ZJ30hMWJHMM5fE1U95ag-mOpcvIUEEenb1rEVcdsj2kLgVctWPeQ==",
+      "asset": "ui-02.xcresult.tar.gz",
+      "tar_sha256": "ce7183f6356af203f1afe0fd9b0bcf11f608050a2dbe5477340a871747b9d4c2",
+      "size": 5242133,
+      "asset_url": "https://github.com/Algorythmos-AI/gurbani-soul-device-evidence/releases/download/ios-1.5.2-20261030T0750Z-807c055/ui-02.xcresult.tar.gz"
+    },
+    {
+      "name": "ui-03",
+      "kind": "ui",
+      "started_at": "2026-10-30T08:07:43Z",
+      "finished_at": "2026-10-30T08:12:37Z",
+      "result": "Passed",
+      "counts": {
+        "totalTestCount": 12,
+        "passedTests": 12,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "expectedFailures": 0
+      },
+      "root_id": "0~BZ6g4CAhAbsWbdVCvsOwVTf5inBFN_YWs4S8V_NJqQsX-zQGYt0bo-OAIkgwdl1Wchex4GyTt7WSMUKxY4PvnA==",
+      "asset": "ui-03.xcresult.tar.gz",
+      "tar_sha256": "3efda5127c8574d851997fef8538b974e28e0e9249b7b16360d64ef9dbf46173",
+      "size": 4747113,
+      "asset_url": "https://github.com/Algorythmos-AI/gurbani-soul-device-evidence/releases/download/ios-1.5.2-20261030T0750Z-807c055/ui-03.xcresult.tar.gz"
+    },
+    {
+      "name": "ui-04",
+      "kind": "ui",
+      "started_at": "2026-10-30T08:12:40Z",
+      "finished_at": "2026-10-30T08:19:04Z",
+      "result": "Passed",
+      "counts": {
+        "totalTestCount": 12,
+        "passedTests": 12,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "expectedFailures": 0
+      },
+      "root_id": "0~yZsAFM-bghV2Lp9Yh4LLYmT08pXzkGRLrDByPTpnzUt0-2nUTDrmk-fNu9Zp2hsSq4f3tXakmzy0OLZ06mzXCA==",
+      "asset": "ui-04.xcresult.tar.gz",
+      "tar_sha256": "e83ed6646fa0deab07917e596d1c6161cba81b1edb77a1e92728b72a8f73b7b4",
+      "size": 1781581,
+      "asset_url": "https://github.com/Algorythmos-AI/gurbani-soul-device-evidence/releases/download/ios-1.5.2-20261030T0750Z-807c055/ui-04.xcresult.tar.gz"
+    },
+    {
+      "name": "ui-05",
+      "kind": "ui",
+      "started_at": "2026-10-30T08:19:06Z",
+      "finished_at": "2026-10-30T08:23:28Z",
+      "result": "Passed",
+      "counts": {
+        "totalTestCount": 12,
+        "passedTests": 12,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "expectedFailures": 0
+      },
+      "root_id": "0~_B9qIsN477PMc8YNdGQ42Xg7becjJER-027ELKZtDeMMbltRVYRmOplPGXXNUc5lS3veeNNmbgcBj8PtKbJ7jQ==",
+      "asset": "ui-05.xcresult.tar.gz",
+      "tar_sha256": "a898c50fdd4bc2ec214559b41998b1e0a73bf486cd3fa15335582bba1d41bb1d",
+      "size": 4374428,
+      "asset_url": "https://github.com/Algorythmos-AI/gurbani-soul-device-evidence/releases/download/ios-1.5.2-20261030T0750Z-807c055/ui-05.xcresult.tar.gz"
+    },
+    {
+      "name": "ui-06",
+      "kind": "ui",
+      "started_at": "2026-10-30T08:23:30Z",
+      "finished_at": "2026-10-30T08:28:12Z",
+      "result": "Failed",
+      "counts": {
+        "totalTestCount": 12,
+        "passedTests": 11,
+        "failedTests": 1,
+        "skippedTests": 0,
+        "expectedFailures": 0
+      },
+      "root_id": "0~EmRei3UkiBapQ7e5_XOOiqvYaIPdjfnvZqLXbsEWzcVk5N4aB3-qdTCNw82JNC1tP-M_J3uBXtChWQLVF5gSGA==",
+      "asset": "ui-06.xcresult.tar.gz",
+      "tar_sha256": "6890a3adcda3d8f46e2af231d3fb6726ef328b0fd3d33b2867071281e9ad6d5c",
+      "size": 25327255,
+      "asset_url": "https://github.com/Algorythmos-AI/gurbani-soul-device-evidence/releases/download/ios-1.5.2-20261030T0750Z-807c055/ui-06.xcresult.tar.gz"
+    },
+    {
+      "name": "ui-07",
+      "kind": "ui",
+      "started_at": "2026-10-30T08:28:14Z",
+      "finished_at": "2026-10-30T08:38:53Z",
+      "result": "Passed",
+      "counts": {
+        "totalTestCount": 12,
+        "passedTests": 12,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "expectedFailures": 0
+      },
+      "root_id": "0~5BpUtkwIdVbYZERSvpHt67z-b3XvjS-SNoGQh4AjUZCZkJPjKrvCUmQ2PCkSxrTI88A6pd7AcSzxqkDFP5TbRA==",
+      "asset": "ui-07.xcresult.tar.gz",
+      "tar_sha256": "3c3c01adbf67c0f32d5a00387ef89df4e7ced3d1176125c3717782bc28eb14f6",
+      "size": 8921633,
+      "asset_url": "https://github.com/Algorythmos-AI/gurbani-soul-device-evidence/releases/download/ios-1.5.2-20261030T0750Z-807c055/ui-07.xcresult.tar.gz"
+    },
+    {
+      "name": "ui-08",
+      "kind": "ui",
+      "started_at": "2026-10-30T08:38:55Z",
+      "finished_at": "2026-10-30T08:41:39Z",
+      "result": "Passed",
+      "counts": {
+        "totalTestCount": 12,
+        "passedTests": 2,
+        "failedTests": 0,
+        "skippedTests": 10,
+        "expectedFailures": 0
+      },
+      "root_id": "0~nA7JrXDRX94WyGPHI-c9m9cGFqtq-ESCJIXA1RHzoXnBKedicSOzens6n0EF4v9ubU7Vg7P6ObKO5-L0WbuCPQ==",
+      "asset": "ui-08.xcresult.tar.gz",
+      "tar_sha256": "6c4c2b200a887b681bff0a404c5495d9eb3f7fbe98926d4a8dde45f5c675e2eb",
+      "size": 1051918,
+      "asset_url": "https://github.com/Algorythmos-AI/gurbani-soul-device-evidence/releases/download/ios-1.5.2-20261030T0750Z-807c055/ui-08.xcresult.tar.gz"
+    },
+    {
+      "name": "ui-09",
+      "kind": "ui",
+      "started_at": "2026-10-30T08:41:42Z",
+      "finished_at": "2026-10-30T08:41:46Z",
+      "result": "Skipped",
+      "counts": {
+        "totalTestCount": 1,
+        "passedTests": 0,
+        "failedTests": 0,
+        "skippedTests": 1,
+        "expectedFailures": 0
+      },
+      "root_id": "0~PJAiZoXLM8F6Cvny5Nif07YHFiaKOXJeuFUlbgcL60pjC7quadza9pJ-O_Z35wyaHWxwIAFs_X1R86xDG95H8w==",
+      "asset": "ui-09.xcresult.tar.gz",
+      "tar_sha256": "26c16daa3b65681c823b63a2d6094ded27b01127f809d150f3e8f27cf97a694a",
+      "size": 23254,
+      "asset_url": "https://github.com/Algorythmos-AI/gurbani-soul-device-evidence/releases/download/ios-1.5.2-20261030T0750Z-807c055/ui-09.xcresult.tar.gz"
+    },
+    {
+      "name": "checklist",
+      "kind": "checklist",
+      "started_at": "2026-10-30T08:41:51Z",
+      "finished_at": "2026-10-30T08:47:19Z",
+      "result": "Passed",
+      "counts": {
+        "totalTestCount": 6,
+        "passedTests": 6,
+        "failedTests": 0,
+        "skippedTests": 0,
+        "expectedFailures": 0
+      },
+      "root_id": "0~s_IJ7FXiS23dIeXoOd_96pjgNTH7OeA6hU-O04W9dMhZMwML3YS3a2HGj9cGuSm0SM6VW2k9ve0SxnEO-wH-RA==",
+      "asset": "checklist.xcresult.tar.gz",
+      "tar_sha256": "3a7dfb5d9217c4be38be1400724c5ab552d99466883e5d7f94dca36f31f8cffe",
+      "size": 7395294,
+      "asset_url": "https://github.com/Algorythmos-AI/gurbani-soul-device-evidence/releases/download/ios-1.5.2-20261030T0750Z-807c055/checklist.xcresult.tar.gz"
+    },
+    {
+      "name": "rerun-1",
+      "kind": "rerun",
+      "started_at": "2026-10-30T08:48:21Z",
+      "finished_at": "2026-10-30T08:49:28Z",
+      "result": "Failed",
+      "counts": {
+        "totalTestCount": 1,
+        "passedTests": 0,
+        "failedTests": 1,
+        "skippedTests": 0,
+        "expectedFailures": 0
+      },
+      "root_id": "0~WsU3N1Od0nfvnpj0pk0qbibaexOHlsOscmHpa--1vJzuO9Kj_fy3tjcmAY0_b8yGSYWc8YWtAdKTQsqM1lcAFg==",
+      "asset": "rerun-1.xcresult.tar.gz",
+      "tar_sha256": "fdc5545d9bb9cbce0de9d0e9dc095814cfe8c4490f73d5b12c090870ff3d75b1",
+      "size": 26652874,
+      "asset_url": "https://github.com/Algorythmos-AI/gurbani-soul-device-evidence/releases/download/ios-1.5.2-20261030T0750Z-807c055/rerun-1.xcresult.tar.gz"
+    }
+  ],
+  "planned_count": 554,
+  "not_run": [],
+  "tests": [
+    {
+      "id": "AmbientChromeTests/testAHiddenChromeReturnsAtTheTopWhateverMovedThePage()",
+      "outcome": "Passed",
+      "duration": 0.014
+    },
+    {
+      "id": "AmbientChromeTests/testALandingScrollNeverHidesTheChrome()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "AmbientChromeTests/testAnEarlierLandingsTimerNeverEndsALaterLanding()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "AmbientChromeTests/testAnUpwardReadRestoresTheChrome()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "AmbientChromeTests/testMovementTheReaderDidNotMakeNeverHidesTheChrome()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "AmbientChromeTests/testReadingDownHidesTheChrome()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "AngLocatorTests/testAngOneResolvesToJapjiSection()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "AngLocatorTests/testRaagBoundariesSortedAndDeduped()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "AngLocatorTests/testRaagSpanWins()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "AngLocatorTests/testSectionAnswersAfterRaagFramework()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "AngLocatorTests/testUnmatchedAngIsNil()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "AngPagerHostedTests/testBoundsClampedAtTheEnds()",
+      "outcome": "Passed",
+      "duration": 0.017
+    },
+    {
+      "id": "AngPagerHostedTests/testFarJumpConverges()",
+      "outcome": "Passed",
+      "duration": 0.004
+    },
+    {
+      "id": "AngPagerHostedTests/testInitialPageIsShown()",
+      "outcome": "Passed",
+      "duration": 0.003
+    },
+    {
+      "id": "AngPagerHostedTests/testParentUpdateRefreshesTheVisiblePageInPlace()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "AngPagerHostedTests/testReverseTurnConverges()",
+      "outcome": "Passed",
+      "duration": 0.003
+    },
+    {
+      "id": "AngPagerHostedTests/testSetWithNoWindowStillLands()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "AngPagerHostedTests/testThreeConsecutiveAdjacentTurnsConverge()",
+      "outcome": "Passed",
+      "duration": 0.004
+    },
+    {
+      "id": "AuthorNameTests/testBhattGurmukhiSuffixIsSplitOutOfTheEnglishLabel()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "AuthorNameTests/testCompactLabelsAreDistinctAcrossTheRoster()",
+      "outcome": "Passed",
+      "duration": 0.005
+    },
+    {
+      "id": "AuthorNameTests/testCountsInflectForZeroOneAndTwo()",
+      "outcome": "Passed",
+      "duration": 0.012
+    },
+    {
+      "id": "AuthorNameTests/testEveryRosterNameRendersCleanly()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "AuthorNameTests/testGranthOrderFollowsFirstAngAndVolumeIsOptIn()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "AuthorNameTests/testGuruNameSplitsIntoFullNameAndMahala()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "AuthorNameTests/testNoRaagSaysOutsideTheRaagSections()",
+      "outcome": "Passed",
+      "duration": 0.003
+    },
+    {
+      "id": "AuthorNameTests/testPlainNamesPassThrough()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "AutoScrollTests/testControllerStateMachine()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "AutoScrollTests/testEnvOverrideWins()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "AutoScrollTests/testNextOffsetAdvancesByRate()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "AutoScrollTests/testNextOffsetClampsToEnd()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "AutoScrollTests/testNextOffsetIgnoresStalledFrame()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "AutoScrollTests/testPaceScalesWithFontAndLowPower()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "BaniGutkaTests/testAVerseNumberClosesTheVerse()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "BaniGutkaTests/testEveryDasamAndArdaasHeadingRendersAsAHeading()",
+      "outcome": "Passed",
+      "duration": 0.083
+    },
+    {
+      "id": "BaniGutkaTests/testGutkaIsOnByDefaultOnlyForTheShortLineBanis()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "BaniGutkaTests/testHalfLinesPairUpToTheVerseNumberAndNeverAcrossIt()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "BaniGutkaTests/testJaapOpensWithItsBhujangPrayaatPairs()",
+      "outcome": "Passed",
+      "duration": 0.008
+    },
+    {
+      "id": "BaniGutkaTests/testOffMeansOneLinePerRow()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "BaniGutkaTests/testPackingIsOrderPreservingAndLosslessForEveryBani()",
+      "outcome": "Passed",
+      "duration": 0.711
+    },
+    {
+      "id": "BaniGutkaTests/testPairsNeverCrossAHeadingASectionAGroupOrARahao()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "BaniGutkaTests/testSGGSLinesKeepTheirFilter()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "BaniGutkaTests/testTheAddakIsDrawnAfterTheConjunct()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "BaniGutkaTests/testTheJoinedTransliterationSplitsBackIntoEachLine()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "BaniGutkaTests/testTheRepairTouchesOnlyTheTwoJaapLines()",
+      "outcome": "Passed",
+      "duration": 1.174
+    },
+    {
+      "id": "BaniGutkaTests/testTheSwitchStoresOnlyRealOverrides()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "BaniPagerTests/testBackFromMidSectionReturnsToItsStart()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "BaniPagerTests/testForwardAndBackWalkTheSections()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "BaniPagerTests/testPositionBeforeTheFirstSection()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "BaniPagerTests/testStepsNeedMoreThanOneNumberedSection()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "BenchGuardTests/testBenchIsReadyForADeviceRun()",
+      "outcome": "Passed",
+      "duration": 14.667
+    },
+    {
+      "id": "BrandFontTests/testGurmukhiFaceIsStillRegistered()",
+      "outcome": "Passed",
+      "duration": 0.006
+    },
+    {
+      "id": "BrandFontTests/testHeadingScalesWithDynamicType()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "BrandFontTests/testHeadingSerifIsBundledAndRegistered()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "BrandFontTests/testHeadingUsesTheSerifNotTheFallback()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "BrandTokensParityTests/testEveryColourTokenMatchesTokensJSONInAllFourLegs()",
+      "outcome": "Passed",
+      "duration": 0.006
+    },
+    {
+      "id": "BrandTokensParityTests/testSpacingAndRadiusMatchTokensJSON()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "ClockHandsTests/testFaceTiersShedDetailOnSmallFaces()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "ClockHandsTests/testFractionalSecondsSweep()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ClockHandsTests/testHandsCreepLikeARealMovement()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ClockHandsTests/testMidnightAllHandsAtTwelve()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "ClockHandsTests/testThreeOClockAndTwelveHourWrap()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "ClockHandsTests/testTimeZoneDrivesTheFace()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "ClockHandsTests/testWholeMinutesFreezesSeconds()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "CompositionCatalogTests/testHeroKeysAreValidAndUnique()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "CompositionCatalogTests/testMoreExcludesHeroesNonDefaultsAndTheExtraLayer()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "CompositionCatalogTests/testNextHeroWalksTheRailAndStopsAtTheEnd()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "CompositionCatalogTests/testResolvePicksTheExactVariantNotTheDefault()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "CompositionCatalogTests/testResolveReturnsNilWhenTheRegistryCannotAnswer()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "CompositionCatalogTests/testResolveWithEmptyVariantTakesTheDefaultRow()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "CompositionShapeTests/testFillFollowsTheSavedPosition()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "CompositionShapeTests/testFindLandsOnFamiliarAndCorpusSpellings()",
+      "outcome": "Passed",
+      "duration": 0.272
+    },
+    {
+      "id": "CompositionShapeTests/testHeroShapesMatchThePrintedRhythm()",
+      "outcome": "Passed",
+      "duration": 0.036
+    },
+    {
+      "id": "ConceptNameTests/testDegenerateSlugsDoNotCrash()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ConceptNameTests/testEveryBundledConceptHasADistinctCleanLabel()",
+      "outcome": "Passed",
+      "duration": 0.181
+    },
+    {
+      "id": "ConceptNameTests/testLabelsComeFromTheDescriptionHead()",
+      "outcome": "Passed",
+      "duration": 0.003
+    },
+    {
+      "id": "ConceptNameTests/testSlugsBecomeTitleCasedWords()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ConstellationLayoutTests/testEveryCorpusThemeHasExactlyOneGroup()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ConstellationLayoutTests/testSkyLayoutIsByteIdenticalAcrossRuns()",
+      "outcome": "Passed",
+      "duration": 0.021
+    },
+    {
+      "id": "ContributorsTests/testBundledRosterDecodes()",
+      "outcome": "Passed",
+      "duration": 0.004
+    },
+    {
+      "id": "ContributorsTests/testContextIsGatedOnItsReviewStatus()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ContributorsTests/testCountLine()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ContributorsTests/testGurmukhiInitialSkipsHonorifics()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ContributorsTests/testGuruMedallionIsTheMahalaInGurmukhi()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "ContributorsTests/testKindTagIsSentenceCase()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "ContributorsTests/testMalformedV2FieldIsIgnored()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ContributorsTests/testSlugs()",
+      "outcome": "Passed",
+      "duration": 0.004
+    },
+    {
+      "id": "ContributorsTests/testV1EntryHasNoV2Fields()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ContributorsTests/testV2FieldsDecode()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ContributorsTests/testVoiceDeepLink()",
+      "outcome": "Passed",
+      "duration": 0.011
+    },
+    {
+      "id": "CorpusIntegrationTests/testAngOneIsMoolMantar()",
+      "outcome": "Passed",
+      "duration": 0.003
+    },
+    {
+      "id": "CorpusIntegrationTests/testDBHashWithinLaunchBudget()",
+      "outcome": "Passed",
+      "duration": 0.138
+    },
+    {
+      "id": "CorpusIntegrationTests/testHukamUnitIsComplete()",
+      "outcome": "Passed",
+      "duration": 0.004
+    },
+    {
+      "id": "CorpusIntegrationTests/testThemeSearchReturnsLines()",
+      "outcome": "Passed",
+      "duration": 0.017
+    },
+    {
+      "id": "CorpusIntegrationTests/testVerifyExact()",
+      "outcome": "Passed",
+      "duration": 0.003
+    },
+    {
+      "id": "CrashMonitorTests/testDeleteAll()",
+      "outcome": "Passed",
+      "duration": 0.003
+    },
+    {
+      "id": "CrashMonitorTests/testFilesAreFilteredAndOldestFirst()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "CrashMonitorTests/testMissingFolderIsEmptyNotACrash()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "CrashMonitorTests/testPruneKeepsOnlyTheNewest()",
+      "outcome": "Passed",
+      "duration": 0.005
+    },
+    {
+      "id": "CrashMonitorTests/testPruneUnderTheCapRemovesNothing()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "DayArcModelTests/testBandBoundaries()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "DayArcModelTests/testDaylightFlag()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "DayArcModelTests/testMarkerFractionWrapsAtThreeAM()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
+      "outcome": "Passed",
+      "duration": 15.132
+    },
+    {
+      "id": "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()",
+      "outcome": "Passed",
+      "duration": 24.252
+    },
+    {
+      "id": "DeviceChecklistTests/testD12HostileLinksNeverCrash()",
+      "outcome": "Passed",
+      "duration": 20.211
+    },
+    {
+      "id": "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
+      "outcome": "Passed",
+      "duration": 71.836
+    },
+    {
+      "id": "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
+      "outcome": "Passed",
+      "duration": 81.206
+    },
+    {
+      "id": "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
+      "outcome": "Passed",
+      "duration": 108.422
+    },
+    {
+      "id": "ExploreDigestTests/testCenturySpanComesFromTheRoster()",
+      "outcome": "Passed",
+      "duration": 0.184
+    },
+    {
+      "id": "ExploreDigestTests/testContinueNamesTheVaarInProgress()",
+      "outcome": "Passed",
+      "duration": 0.163
+    },
+    {
+      "id": "ExploreDigestTests/testMastheadCountsComeFromTheData()",
+      "outcome": "Passed",
+      "duration": 0.179
+    },
+    {
+      "id": "ExploreDigestTests/testNothingLoadedSaysLessNeverAGuess()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "ExploreDigestTests/testPreviewsHoldTheWholeGranth()",
+      "outcome": "Passed",
+      "duration": 0.185
+    },
+    {
+      "id": "ExploreLayoutTests/testEveryDestinationHasOneUniqueTitle()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ExploreLayoutTests/testEveryWidthFillsEveryRowWithEachDestinationOnce()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ExploreLayoutTests/testFeatureTurnsOverByDayAndCoversEveryEligibleDestination()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ExploreLayoutTests/testOneColumnIsOneCardPerRow()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ExploreLayoutTests/testPinWinsOnlyWhenEligible()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ExploreLayoutTests/testSquaresPairUpBeforeStandingAlone()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ExploreLiveTests/testANewerDayWinsOverALoadInFlight()",
+      "outcome": "Passed",
+      "duration": 1.097
+    },
+    {
+      "id": "ExploreLiveTests/testClockStatesTheWidgetsWatch()",
+      "outcome": "Passed",
+      "duration": 0.004
+    },
+    {
+      "id": "ExploreLiveTests/testNightWatchAcrossMidnightReadsPMtoAM()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ExploreLiveTests/testSecondLoadSameDayReadsNothingNew()",
+      "outcome": "Passed",
+      "duration": 1.048
+    },
+    {
+      "id": "ExploreLiveTests/testSkyIsTheSkyScreensLayout()",
+      "outcome": "Passed",
+      "duration": 0.898
+    },
+    {
+      "id": "ExploreLiveTests/testStoredLocationFarFromTheClocksZone()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ExploreLiveTests/testThemeVerseIsTheCorpusLineByteForByte()",
+      "outcome": "Passed",
+      "duration": 0.667
+    },
+    {
+      "id": "GranthAngsTests/testEverythingSizedFromTheCountCoversIt()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "GranthAngsTests/testTheBundledDatabaseCoversExactlyGranthAngs()",
+      "outcome": "Passed",
+      "duration": 0.172
+    },
+    {
+      "id": "GranthMapTests/testAngLabel()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "GranthMapTests/testChauboleNamesWhatItsSpanHolds()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "GranthMapTests/testEveryRaagAndSectionHasAnEnglishName()",
+      "outcome": "Passed",
+      "duration": 0.163
+    },
+    {
+      "id": "GranthMapTests/testMovementsFollowTheSaroop()",
+      "outcome": "Passed",
+      "duration": 0.175
+    },
+    {
+      "id": "GranthMapTests/testPrimaryPaharsKeepOnlyPrimaryClaimsInRange()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "GranthMapTests/testRaagDeepLinkValuesResolveWithoutTheDB()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "GranthMapTests/testRaagSlugsAreUniqueAndRoundTrip()",
+      "outcome": "Passed",
+      "duration": 0.192
+    },
+    {
+      "id": "GranthMapTests/testRomanTableMatchesTheDB()",
+      "outcome": "Passed",
+      "duration": 0.18
+    },
+    {
+      "id": "GranthMapTests/testSliceRectStaysInsideTheTrack()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "HardeningTests/testAngDeepLinkCarriesLineAndClears()",
+      "outcome": "Passed",
+      "duration": 0.009
+    },
+    {
+      "id": "HardeningTests/testBaniDeepLinkRoutesByVariant()",
+      "outcome": "Passed",
+      "duration": 0.007
+    },
+    {
+      "id": "HardeningTests/testExplicitAngNavigationSetsTheFlag()",
+      "outcome": "Passed",
+      "duration": 0.006
+    },
+    {
+      "id": "HardeningTests/testHostDisappearReArmsPresenting()",
+      "outcome": "Passed",
+      "duration": 0.006
+    },
+    {
+      "id": "HardeningTests/testHukamWidgetOpensTheVerseItShows()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "HardeningTests/testImpossibleCompositionIdReadsEmptyNotACrash()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "HardeningTests/testMalformedAngLinkChangesNothing()",
+      "outcome": "Passed",
+      "duration": 0.005
+    },
+    {
+      "id": "HardeningTests/testMalformedCompositionRequestChangesNothing()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "HardeningTests/testNonexistentCompositionIdsReadEmpty()",
+      "outcome": "Passed",
+      "duration": 0.005
+    },
+    {
+      "id": "HardeningTests/testOpenCompositionPushesOnTheExploreStack()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "HardeningTests/testOutOfRangeShabadLinkIsIgnored()",
+      "outcome": "Passed",
+      "duration": 0.007
+    },
+    {
+      "id": "HardeningTests/testPresentBeforeSheetHostNeverLatches()",
+      "outcome": "Passed",
+      "duration": 0.007
+    },
+    {
+      "id": "HardeningTests/testPresentShowsImmediatelyWhenIdle()",
+      "outcome": "Passed",
+      "duration": 0.008
+    },
+    {
+      "id": "HardeningTests/testPresentSwapQueuesUntilDismissCompletes()",
+      "outcome": "Passed",
+      "duration": 0.006
+    },
+    {
+      "id": "HardeningTests/testRapidTriplePresentNeverStrandsTheQueue()",
+      "outcome": "Passed",
+      "duration": 0.006
+    },
+    {
+      "id": "HardeningTests/testShabadDeepLinkCarriesLine()",
+      "outcome": "Passed",
+      "duration": 0.011
+    },
+    {
+      "id": "HardeningTests/testShabadLinkComponentsAreStrict()",
+      "outcome": "Passed",
+      "duration": 0.03
+    },
+    {
+      "id": "HardeningTests/testUserDismissReArmsPresenting()",
+      "outcome": "Passed",
+      "duration": 0.006
+    },
+    {
+      "id": "HardeningTests/testWatchdogNeverPresentsMidDismiss()",
+      "outcome": "Passed",
+      "duration": 0.006
+    },
+    {
+      "id": "HukamOfTheDayTimelineTests/testANonGregorianCalendarDrawsTheSameDay()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "HukamOfTheDayTimelineTests/testAWestwardTripStillFindsTheDay()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "HukamOfTheDayTimelineTests/testDayKeysAreTheReadersLocalDate()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "HukamOfTheDayTimelineTests/testMidnightFollowsDaylightSaving()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "HukamOfTheDayTimelineTests/testNoVerseForTodayMeansNoSchedule()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "HukamOfTheDayTimelineTests/testPastDaysAreSkippedAndOrderIsByDate()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "HukamOfTheDayTimelineTests/testSnapshotWithoutDaysStillDecodes()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "HukamOfTheDayTimelineTests/testTheAppRewritesTheDaysWhenTheyRunLow()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "HukamOfTheDayTimelineTests/testTodayAtOnceThenEachLocalMidnight()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "HukamOfTheDayTimelineTests/testTwoWeeksOfRealVersesStayInsideTheBudget()",
+      "outcome": "Passed",
+      "duration": 0.475
+    },
+    {
+      "id": "HukamOfTheDayTimelineTests/testWidgetFallsBackWithoutDays()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "HukamOfTheDayTimelineTests/testWidgetTurnsAtMidnightWithoutTheApp()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "HukamWidgetRenderTests/testCitationIsNeverTruncated()",
+      "outcome": "Passed",
+      "duration": 1.624
+    },
+    {
+      "id": "HukamWidgetRenderTests/testHukamRendersMediumAndLarge()",
+      "outcome": "Passed",
+      "duration": 0.174
+    },
+    {
+      "id": "IndexContinueAndHourTests/testContinueSkipsAPositionThatNoLongerResumes()",
+      "outcome": "Passed",
+      "duration": 0.005
+    },
+    {
+      "id": "IndexContinueAndHourTests/testInThisHourMatchesTheRaagClock()",
+      "outcome": "Passed",
+      "duration": 0.008
+    },
+    {
+      "id": "IndexContinueAndHourTests/testResumesWithoutLinesMatchesResumeSeq()",
+      "outcome": "Passed",
+      "duration": 0.005
+    },
+    {
+      "id": "LaunchCacheTests/testCacheHitRequiresEveryFieldToMatch()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "LaunchCacheTests/testFirstRunStreamsSecondRunUsesCache()",
+      "outcome": "Passed",
+      "duration": 0.18
+    },
+    {
+      "id": "LaunchCacheTests/testGarbageCacheForcesFullVerify()",
+      "outcome": "Passed",
+      "duration": 0.1
+    },
+    {
+      "id": "LaunchClockTests/testTheProcessStartIsKnownAndInThePast()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "LaunchClockTests/testTheReportCarriesEachMarkSinceProcessStart()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "LaunchClockTests/testTheTimelineIsLeftForTheBenchAndAnOldOneIsDiscarded()",
+      "outcome": "Passed",
+      "duration": 0.007
+    },
+    {
+      "id": "LineageLogicTests/testAMonthRotatesThroughEveryVoice()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "LineageLogicTests/testAliveInAYearAndTheReadout()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "LineageLogicTests/testCompareOverlapAndSharedAngs()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "LineageLogicTests/testEveryRosterVoiceIsCounted()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "LineageLogicTests/testFactsAreBuiltOnlyFromWhatTheDBGives()",
+      "outcome": "Passed",
+      "duration": 0.003
+    },
+    {
+      "id": "LineageLogicTests/testMilestonesWaitForTheScholar()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "LineageLogicTests/testNoRahaoFallsBackToTheOpeningVerse()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "LineageLogicTests/testReviewLineAndNoteCiteTheAng()",
+      "outcome": "Passed",
+      "duration": 0.003
+    },
+    {
+      "id": "LineageLogicTests/testRiverTapRows()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "LineageLogicTests/testSameDaySameVoiceAndVerse()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemAnchorResumeTests/testLegacyFileWithoutAnchorStillResumes()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "NitnemAnchorResumeTests/testNeverOverwritesANewerSchema()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemAnchorResumeTests/testResumeByAnchorWhenRegistryChanged()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "NitnemAnchorResumeTests/testResumeBySeqWhenRegistryUnchanged()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "NitnemAnchorResumeTests/testResumeUnresolvableFallsToTop()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "NitnemDayClockTests/testDayRollsAtThreeAM()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemDayClockTests/testSohilaReadAtNightStaysDoneAfterMidnight()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "NitnemJourneyTests/testConsecutiveDays()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "NitnemJourneyTests/testDSTMonthStaysContinuous()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemJourneyTests/testDayNumbersFollowTheGridsCalendarNotTheDevices()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemJourneyTests/testMondayFirstWeekday()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemJourneyTests/testMonthGridHonoursFirstWeekday()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemJourneyTests/testPracticeDaysIntersection()",
+      "outcome": "Passed",
+      "duration": 0.004
+    },
+    {
+      "id": "NitnemJourneyTests/testPracticesMarkedOnTheRightDay()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemProgressTests/testClearHistoryLeavesANewerSchemaFileAlone()",
+      "outcome": "Passed",
+      "duration": 0.003
+    },
+    {
+      "id": "NitnemProgressTests/testClearHistoryRemovesPositionsAndDaysAndNotifies()",
+      "outcome": "Passed",
+      "duration": 0.004
+    },
+    {
+      "id": "NitnemProgressTests/testCompletedDaysAreCapped()",
+      "outcome": "Passed",
+      "duration": 0.496
+    },
+    {
+      "id": "NitnemProgressTests/testCorruptFileIsEmptyNeverCrashes()",
+      "outcome": "Passed",
+      "duration": 0.005
+    },
+    {
+      "id": "NitnemProgressTests/testDayKeyIsLocalCalendarDay()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemProgressTests/testNewerUndecodableFileIsLeftInPlace()",
+      "outcome": "Passed",
+      "duration": 0.003
+    },
+    {
+      "id": "NitnemProgressTests/testPersistsAcrossReload()",
+      "outcome": "Passed",
+      "duration": 0.004
+    },
+    {
+      "id": "NitnemProgressTests/testPositionCompletionAndFraction()",
+      "outcome": "Passed",
+      "duration": 0.005
+    },
+    {
+      "id": "NitnemProgressTests/testRecoveriesInTheSameSecondNeverCollide()",
+      "outcome": "Passed",
+      "duration": 0.003
+    },
+    {
+      "id": "NitnemProgressTests/testStreakCountsConsecutiveDays()",
+      "outcome": "Passed",
+      "duration": 0.012
+    },
+    {
+      "id": "NitnemProgressTests/testTruncatedFileIsKeptAside()",
+      "outcome": "Passed",
+      "duration": 0.004
+    },
+    {
+      "id": "NitnemProgressTests/testUnreadableFileIsNeverOverwritten()",
+      "outcome": "Passed",
+      "duration": 0.004
+    },
+    {
+      "id": "NitnemRemindersTests/testAlreadyAuthorizedNeverPromptsAgain()",
+      "outcome": "Passed",
+      "duration": 0.005
+    },
+    {
+      "id": "NitnemRemindersTests/testCopyHasNoDigitsOrGurmukhi()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemRemindersTests/testDecliningTheUpgradePromptSnapsToggleBack()",
+      "outcome": "Passed",
+      "duration": 0.003
+    },
+    {
+      "id": "NitnemRemindersTests/testDeniedSnapsToggleBack()",
+      "outcome": "Passed",
+      "duration": 0.004
+    },
+    {
+      "id": "NitnemRemindersTests/testDisableClearsPending()",
+      "outcome": "Passed",
+      "duration": 0.004
+    },
+    {
+      "id": "NitnemRemindersTests/testEnableSchedulesRescheduleReplaces()",
+      "outcome": "Passed",
+      "duration": 0.004
+    },
+    {
+      "id": "NitnemRemindersTests/testPlanSchedules14PerEnabledBand()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemRemindersTests/testProvisionalIsUpgradedWithARealPrompt()",
+      "outcome": "Passed",
+      "duration": 0.004
+    },
+    {
+      "id": "NitnemRemindersTests/testThreeBandsStayUnder64()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemRemindersTests/testTodayDroppedWhenSetComplete()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemRemindersTests/testTodayDroppedWhenTimePassed()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemRemindersTests/testTurningAReminderOffNeverPrompts()",
+      "outcome": "Passed",
+      "duration": 0.004
+    },
+    {
+      "id": "NitnemScheduleTests/testBandFocusAndOrder()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemScheduleTests/testBandsAcrossTheDay()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemScheduleTests/testBaniKeyAllowlist()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemScheduleTests/testNextSkipsCompletedAndRespectsOrder()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "NitnemScheduleTests/testRehrasVariantPreference()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemSetsTests/testAddableExcludesPresent()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "NitnemSetsTests/testAddedCrossCategoryBaniAppears()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemSetsTests/testCorruptFileIsEmptyNotCrash()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "NitnemSetsTests/testEmptyPlanFallsBackToDefaults()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemSetsTests/testHiddenExcluded()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemSetsTests/testNewDefaultAppendedForCustomisedSet()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemSetsTests/testNewerVersionReadOnly()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "NitnemSetsTests/testRehrasVariantHonoured()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemSetsTests/testRehrasVariantHonouredWithoutACustomisedSet()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemSetsTests/testReorderRespected()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemSetsTests/testStoreRoundTripAndReset()",
+      "outcome": "Passed",
+      "duration": 0.006
+    },
+    {
+      "id": "NitnemSetsTests/testUnknownKeyDropped()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "NitnemTimelineTests/testAllDone()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "NitnemTimelineTests/testCompletionFollowsThe0300NitnemDay()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemTimelineTests/testDatesIncludeBandBoundaries()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemTimelineTests/testEntryPicksBandAndSet()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemTimelineTests/testNextSkipsCompleted()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "NitnemWidgetRenderTests/testRendersEveryFamily()",
+      "outcome": "Passed",
+      "duration": 0.07
+    },
+    {
+      "id": "PagerSyncTests/testBoundsAreClamped()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PagerSyncTests/testCancelledSwipeDoesNothing()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PagerSyncTests/testConsecutiveAdjacentRequestsAllShow()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "PagerSyncTests/testContinuesOnPillShows()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PagerSyncTests/testFarJumpFades()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PagerSyncTests/testFirstMountShowsWithoutAnimation()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PagerSyncTests/testFuzzConvergence()",
+      "outcome": "Passed",
+      "duration": 0.048
+    },
+    {
+      "id": "PagerSyncTests/testJumpDuringDecelerationIsAppliedWithoutAHeal()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PagerSyncTests/testNoOpWhenAlreadyThere()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PagerSyncTests/testOffWindowShowsWithoutTransition()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PagerSyncTests/testPlainSwipeSettles()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PagerSyncTests/testRapidTapsSkipAnimationAfterTheFirst()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PagerSyncTests/testReduceMotionFadesEvenWhenAdjacent()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PagerSyncTests/testRequestDuringGestureIsParkedThenApplied()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PagerSyncTests/testRequestDuringGestureThatMatchesLandingIsANoOp()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PagerSyncTests/testReverseAdjacentSlidesBackward()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PagerSyncTests/testSecondSwipeKeepsGestureActive()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PagerSyncTests/testWatchdogHealsAfterLostCallback()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PagerSyncTests/testWatchdogNoOpWhenNothingPending()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PagerSyncTests/testWatchdogReArmsWhileScrollBusy()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PaharFormatTests/testCountdown()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "PaharFormatTests/testDSTFallBackDayRendersWallClock()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PaharFormatTests/testDSTSpringForwardDayRendersWallClock()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PaharFormatTests/testDialAnglesMatchTheTwelveHourFace()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "PaharFormatTests/testDialModelShowsTheHourHandsHalf()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PaharFormatTests/testDialModelsCoverTheDay()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "PaharFormatTests/testDialNumeralsFollowTheHalf()",
+      "outcome": "Passed",
+      "duration": 0.003
+    },
+    {
+      "id": "PaharFormatTests/testFixedWindowsMatchThePinnedStrings()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "PaharFormatTests/testHourCycle()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PaharFormatTests/testJSTimezoneOffsetSign()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PaharFormatTests/testMinutesOfDayRespectsTimeZone()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PaharFormatTests/testNextMinuteBoundary()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "PaharFormatTests/testSolarWindowKeepsMinutes()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "PaharFormatTests/testTimeFollowsLocale()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PaharFormatTests/testUsableSunRejectsPolarAndDegenerate()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PaharFormatTests/testWeekdayDayComplication()",
+      "outcome": "Passed",
+      "duration": 0.005
+    },
+    {
+      "id": "PaharFormatTests/testWrapToNextDay()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "PerfBudgetTests/testAngRenderDataBudget()",
+      "outcome": "Passed",
+      "duration": 0.005
+    },
+    {
+      "id": "PerfBudgetTests/testForceLayoutSettleBudget()",
+      "outcome": "Passed",
+      "duration": 0.291
+    },
+    {
+      "id": "PerfBudgetTests/testProgressionBudget()",
+      "outcome": "Passed",
+      "duration": 0.048
+    },
+    {
+      "id": "PerfBudgetTests/testSearchBudget()",
+      "outcome": "Passed",
+      "duration": 0.05
+    },
+    {
+      "id": "PoeticFormGroupsTests/testEveryHeadingIsAccountedForInSaroopOrder()",
+      "outcome": "Passed",
+      "duration": 0.003
+    },
+    {
+      "id": "PoeticFormGroupsTests/testFindReachesForms()",
+      "outcome": "Passed",
+      "duration": 0.238
+    },
+    {
+      "id": "PoeticFormGroupsTests/testRunsFoldButDistinctCompositionsStayApart()",
+      "outcome": "Passed",
+      "duration": 0.003
+    },
+    {
+      "id": "RaagNowTimelineTests/testCountdownAcrossDSTIsRealElapsedTime()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "RaagNowTimelineTests/testDSTBoundariesAreWallClock()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "RaagNowTimelineTests/testEntryUsesItsOwnDate()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "RaagNowTimelineTests/testEveryCountdownTargetIsATimelineEntry()",
+      "outcome": "Passed",
+      "duration": 0.008
+    },
+    {
+      "id": "RaagNowTimelineTests/testFixedCountdownIsUnderAPaharAndWallClockExact()",
+      "outcome": "Passed",
+      "duration": 0.018
+    },
+    {
+      "id": "RaagNowTimelineTests/testFixedTimelineCadenceBoundariesAndBudget()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "RaagNowTimelineTests/testForgetSolarCoordsLeavesNoLocationAnywhere()",
+      "outcome": "Passed",
+      "duration": 0.008
+    },
+    {
+      "id": "RaagNowTimelineTests/testOldSnapshotStillDecodes()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "RaagNowTimelineTests/testSharedDefaultsCoordsRoundTrip()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "RaagNowTimelineTests/testSnapshotWithoutSolarCoords()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "RaagNowTimelineTests/testSolarConfigDrivesPaharAndFallsBackWhenPolar()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "RaagNowTimelineTests/testSolarIsTheDefaultAndExplicitChoiceWins()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "RaagNowTimelineTests/testTimelineTurnsTheRingAtNoonAndMidnight()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ReaderModelTests/testBounds()",
+      "outcome": "Passed",
+      "duration": 0.025
+    },
+    {
+      "id": "ReaderModelTests/testCancelledCallerDoesNotCancelTheSharedLoad()",
+      "outcome": "Passed",
+      "duration": 0.028
+    },
+    {
+      "id": "ReaderModelTests/testEnsureDuringPrefetchAwaitsTheSameLoad()",
+      "outcome": "Passed",
+      "duration": 0.026
+    },
+    {
+      "id": "ReaderModelTests/testEvictionKeepsAnchorNeighbourhoodAndCapacity()",
+      "outcome": "Passed",
+      "duration": 0.037
+    },
+    {
+      "id": "ReaderModelTests/testFailureIsNotCachedAndRetrySucceeds()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "ReaderModelTests/testSwipeRunNeverEvictsThePageItJustLoaded()",
+      "outcome": "Passed",
+      "duration": 0.964
+    },
+    {
+      "id": "ReadingActivityPolicyTests/testFirstUpdateAlwaysLands()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "ReadingActivityPolicyTests/testNoUpdateWithoutWholePercentChange()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "ReadingActivityPolicyTests/testStaleDateIs20Minutes()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "ReadingActivityPolicyTests/testThrottledUnder10Seconds()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "ReadingActivityPolicyTests/testUpdatesOnPercentChangeAfterInterval()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "ReadingActivityPolicyTests/testWholePercentFloorsAndClamps()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "ReviewPromptTests/testAtMostOncePerVersion()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "ReviewPromptTests/testNotBeforeThreeReadingDays()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "ReviewPromptTests/testReadingDaysCountDistinctDaysAcrossBanis()",
+      "outcome": "Passed",
+      "duration": 0.005
+    },
+    {
+      "id": "ReviewPromptTests/testTheRateLinkOpensTheWriteReviewSheet()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "RibbonLayoutTests/testEdgesClampInsteadOfFailing()",
+      "outcome": "Passed",
+      "duration": 0.164
+    },
+    {
+      "id": "RibbonLayoutTests/testEveryAngMapsBackToAWorkThatHoldsIt()",
+      "outcome": "Passed",
+      "duration": 0.176
+    },
+    {
+      "id": "RibbonLayoutTests/testScrubIgnoresScrollsAndLiftsOffTheStrip()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "RibbonLayoutTests/testSharedAngsAreSplitNotDoubleCounted()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "RibbonLayoutTests/testSpokenLabelsNameTheWorkAndItsPlace()",
+      "outcome": "Passed",
+      "duration": 0.19
+    },
+    {
+      "id": "RibbonLayoutTests/testStripIsContiguousAndCoversTheWholeGranth()",
+      "outcome": "Passed",
+      "duration": 0.184
+    },
+    {
+      "id": "SGGSUITests/testAboutShowsVersion()",
+      "outcome": "Passed",
+      "duration": 20.144
+    },
+    {
+      "id": "SGGSUITests/testAccentPickerSwitchesAndPersists()",
+      "outcome": "Passed",
+      "duration": 33.49
+    },
+    {
+      "id": "SGGSUITests/testAccessibilityAuditReport()",
+      "outcome": "Skipped",
+      "duration": 0,
+      "skip": "report-only: set TEST_RUNNER_SGGS_SHOT_DIR",
+      "skip_allowed": "the accessibility audit is report-only"
+    },
+    {
+      "id": "SGGSUITests/testAutoScrollAdvancesAndPausesOnTouch()",
+      "outcome": "Passed",
+      "duration": 20.329
+    },
+    {
+      "id": "SGGSUITests/testBaniContentsJumpsToPauri()",
+      "outcome": "Passed",
+      "duration": 18.846
+    },
+    {
+      "id": "SGGSUITests/testBaniProgressResumes()",
+      "outcome": "Passed",
+      "duration": 17.391
+    },
+    {
+      "id": "SGGSUITests/testCaptureJaapPauri79()",
+      "outcome": "Passed",
+      "duration": 49.706
+    },
+    {
+      "id": "SGGSUITests/testCaptureSaroopReview()",
+      "outcome": "Skipped",
+      "duration": 0,
+      "skip": "capture-only: set TEST_RUNNER_SGGS_SHOT_DIR",
+      "skip_allowed": "screen captures run as their own `shots` bundles"
+    },
+    {
+      "id": "SGGSUITests/testCaptureScreens()",
+      "outcome": "Passed",
+      "duration": 312.802
+    },
+    {
+      "id": "SGGSUITests/testCaptureVoicesMap()",
+      "outcome": "Skipped",
+      "duration": 0,
+      "skip": "capture-only: set TEST_RUNNER_SGGS_SHOT_DIR",
+      "skip_allowed": "screen captures run as their own `shots` bundles"
+    },
+    {
+      "id": "SGGSUITests/testChevronsTurnPagesRepeatedly()",
+      "outcome": "Passed",
+      "duration": 35.519
+    },
+    {
+      "id": "SGGSUITests/testCompositionEndOffersBackToIndexNotNitnem()",
+      "outcome": "Passed",
+      "duration": 29.946
+    },
+    {
+      "id": "SGGSUITests/testConstellation()",
+      "outcome": "Passed",
+      "duration": 43.659
+    },
+    {
+      "id": "SGGSUITests/testConstellationDeepLink()",
+      "outcome": "Passed",
+      "duration": 11.346
+    },
+    {
+      "id": "SGGSUITests/testContinuationPillGoesToNextAng()",
+      "outcome": "Passed",
+      "duration": 73.449
+    },
+    {
+      "id": "SGGSUITests/testContinuesFromPillGoesToShabadStart()",
+      "outcome": "Passed",
+      "duration": 21.63
+    },
+    {
+      "id": "SGGSUITests/testDeepLinkAngBeatsResume()",
+      "outcome": "Passed",
+      "duration": 31.849
+    },
+    {
+      "id": "SGGSUITests/testDeepLinkOpensHukam()",
+      "outcome": "Passed",
+      "duration": 10.261
+    },
+    {
+      "id": "SGGSUITests/testEchoesShowCitedVerses()",
+      "outcome": "Passed",
+      "duration": 20.237
+    },
+    {
+      "id": "SGGSUITests/testEnglishSearchMode()",
+      "outcome": "Passed",
+      "duration": 23.354
+    },
+    {
+      "id": "SGGSUITests/testEverySurfaceSaysThirtySixVoices()",
+      "outcome": "Passed",
+      "duration": 21.607
+    },
+    {
+      "id": "SGGSUITests/testExploreFeatures()",
+      "outcome": "Passed",
+      "duration": 123.46
+    },
+    {
+      "id": "SGGSUITests/testExploreHubReachesEverySurface()",
+      "outcome": "Passed",
+      "duration": 22.781
+    },
+    {
+      "id": "SGGSUITests/testFindInIndex()",
+      "outcome": "Passed",
+      "duration": 30.832
+    },
+    {
+      "id": "SGGSUITests/testForgetLocationReturnsToTheLocationCard()",
+      "outcome": "Passed",
+      "duration": 35.111
+    },
+    {
+      "id": "SGGSUITests/testGutkaSwitchTogglesTheLayout()",
+      "outcome": "Passed",
+      "duration": 30.725
+    },
+    {
+      "id": "SGGSUITests/testHukamOfTheDayIsTheSameEachTime()",
+      "outcome": "Passed",
+      "duration": 20.112
+    },
+    {
+      "id": "SGGSUITests/testIndexContinueCardResumes()",
+      "outcome": "Passed",
+      "duration": 19.162
+    },
+    {
+      "id": "SGGSUITests/testIndexFollowsTheSaroop()",
+      "outcome": "Passed",
+      "duration": 31.452
+    },
+    {
+      "id": "SGGSUITests/testIndexFormsOpenTheirComposition()",
+      "outcome": "Passed",
+      "duration": 17.779
+    },
+    {
+      "id": "SGGSUITests/testIndexOpensCompositionReaderOnTheExploreStack()",
+      "outcome": "Passed",
+      "duration": 21.202
+    },
+    {
+      "id": "SGGSUITests/testInsights()",
+      "outcome": "Passed",
+      "duration": 14.983
+    },
+    {
+      "id": "SGGSUITests/testInsightsVisualizations()",
+      "outcome": "Passed",
+      "duration": 34.405
+    },
+    {
+      "id": "SGGSUITests/testJaapChhandTitleIsAHeading()",
+      "outcome": "Passed",
+      "duration": 12.383
+    },
+    {
+      "id": "SGGSUITests/testJaapGutkaRowHoldsTwoHalfLines()",
+      "outcome": "Passed",
+      "duration": 16.725
+    },
+    {
+      "id": "SGGSUITests/testJourneyClearsReadingHistory()",
+      "outcome": "Passed",
+      "duration": 39.664
+    },
+    {
+      "id": "SGGSUITests/testJourneyOpens()",
+      "outcome": "Passed",
+      "duration": 7.293
+    },
+    {
+      "id": "SGGSUITests/testJumpSheetAtAX5()",
+      "outcome": "Passed",
+      "duration": 10.367
+    },
+    {
+      "id": "SGGSUITests/testJumpSteppersAndGoLabel()",
+      "outcome": "Passed",
+      "duration": 18.68
+    },
+    {
+      "id": "SGGSUITests/testLaunchShowsNitnem()",
+      "outcome": "Passed",
+      "duration": 5.392
+    },
+    {
+      "id": "SGGSUITests/testLineageAndVaars()",
+      "outcome": "Passed",
+      "duration": 139.915
+    },
+    {
+      "id": "SGGSUITests/testLiveActivityToggleDefaultsOff()",
+      "outcome": "Passed",
+      "duration": 9.178
+    },
+    {
+      "id": "SGGSUITests/testMyNitnemEditorOpens()",
+      "outcome": "Passed",
+      "duration": 14.718
+    },
+    {
+      "id": "SGGSUITests/testNitnemOpensJapjiAndCompletes()",
+      "outcome": "Passed",
+      "duration": 54.173
+    },
+    {
+      "id": "SGGSUITests/testNitnemRemindersScreenOpens()",
+      "outcome": "Passed",
+      "duration": 11.272
+    },
+    {
+      "id": "SGGSUITests/testPageBarStaysOnOneLineAtLargeText()",
+      "outcome": "Passed",
+      "duration": 29.676
+    },
+    {
+      "id": "SGGSUITests/testPrivacyPolicyReachableFromMore()",
+      "outcome": "Passed",
+      "duration": 33.793
+    },
+    {
+      "id": "SGGSUITests/testRaagClock()",
+      "outcome": "Passed",
+      "duration": 30.063
+    },
+    {
+      "id": "SGGSUITests/testRaagClockDefaultsToSolarPrompt()",
+      "outcome": "Passed",
+      "duration": 12.715
+    },
+    {
+      "id": "SGGSUITests/testRaagClockMorningHalf()",
+      "outcome": "Passed",
+      "duration": 12.954
+    },
+    {
+      "id": "SGGSUITests/testRaagClockTravelNotice()",
+      "outcome": "Passed",
+      "duration": 16.236
+    },
+    {
+      "id": "SGGSUITests/testRaagDeepLink()",
+      "outcome": "Passed",
+      "duration": 13.312
+    },
+    {
+      "id": "SGGSUITests/testRaagPageFromTheIndex()",
+      "outcome": "Passed",
+      "duration": 34.844
+    },
+    {
+      "id": "SGGSUITests/testRapidChevronTapsStayInSync()",
+      "outcome": "Passed",
+      "duration": 18.489
+    },
+    {
+      "id": "SGGSUITests/testRapidTapsNeverStrandSheets()",
+      "outcome": "Passed",
+      "duration": 24.192
+    },
+    {
+      "id": "SGGSUITests/testRateAndShareAreOfferedInMore()",
+      "outcome": "Passed",
+      "duration": 13.087
+    },
+    {
+      "id": "SGGSUITests/testReaderBoundsAndRubberBand()",
+      "outcome": "Passed",
+      "duration": 32.492
+    },
+    {
+      "id": "SGGSUITests/testReaderChromeReturnsOnScrollUp()",
+      "outcome": "Passed",
+      "duration": 21.763
+    },
+    {
+      "id": "SGGSUITests/testReaderJumpAndSwipe()",
+      "outcome": "Passed",
+      "duration": 22.484
+    },
+    {
+      "id": "SGGSUITests/testReaderNavAroundSheetAndBackground()",
+      "outcome": "Passed",
+      "duration": 35.432
+    },
+    {
+      "id": "SGGSUITests/testReaderProgressOpensJump()",
+      "outcome": "Passed",
+      "duration": 15.425
+    },
+    {
+      "id": "SGGSUITests/testReaderTab()",
+      "outcome": "Passed",
+      "duration": 13.869
+    },
+    {
+      "id": "SGGSUITests/testReadingOptionsTextSize()",
+      "outcome": "Passed",
+      "duration": 16.141
+    },
+    {
+      "id": "SGGSUITests/testRehrasVariantPersists()",
+      "outcome": "Passed",
+      "duration": 26.314
+    },
+    {
+      "id": "SGGSUITests/testSavedVerseRoundTrip()",
+      "outcome": "Failed",
+      "duration": 52.519,
+      "failure": "XCTAssertTrue failed - delete did not empty the list",
+      "cause": "unknown",
+      "reruns": [
+        {
+          "bundle": "rerun-1",
+          "outcome": "Failed",
+          "failure": "XCTAssertTrue failed - delete did not empty the list",
+          "cause": "unknown"
+        }
+      ]
+    },
+    {
+      "id": "SGGSUITests/testSearchIdleStateShowsExamples()",
+      "outcome": "Passed",
+      "duration": 30.733
+    },
+    {
+      "id": "SGGSUITests/testSearchOpensShabad()",
+      "outcome": "Passed",
+      "duration": 15.129
+    },
+    {
+      "id": "SGGSUITests/testSearchResultOpensShabadAtLine()",
+      "outcome": "Passed",
+      "duration": 21.05
+    },
+    {
+      "id": "SGGSUITests/testSearchTabReachable()",
+      "outcome": "Passed",
+      "duration": 8.158
+    },
+    {
+      "id": "SGGSUITests/testSehajFocusHidesChromeAndExits()",
+      "outcome": "Passed",
+      "duration": 21.488
+    },
+    {
+      "id": "SGGSUITests/testSettingsControls()",
+      "outcome": "Passed",
+      "duration": 21.151
+    },
+    {
+      "id": "SGGSUITests/testShabadDoneReturnsToOrigin()",
+      "outcome": "Passed",
+      "duration": 26.016
+    },
+    {
+      "id": "SGGSUITests/testSwipeRunAfterJumpRendersContent()",
+      "outcome": "Passed",
+      "duration": 300.72
+    },
+    {
+      "id": "SGGSUITests/testThemeListStatesItsTrueTotal()",
+      "outcome": "Passed",
+      "duration": 51.358
+    },
+    {
+      "id": "SGGSUITests/testThemePageWordFamilyNarrowsEverything()",
+      "outcome": "Passed",
+      "duration": 30.137
+    },
+    {
+      "id": "SGGSUITests/testThemesIndexSearchFindsByMeaningAndGurmukhi()",
+      "outcome": "Passed",
+      "duration": 27.204
+    },
+    {
+      "id": "SGGSUITests/testTitleOpensJumpAndTypedAngRenders()",
+      "outcome": "Passed",
+      "duration": 26.268
+    },
+    {
+      "id": "SGGSUITests/testTrailFromSearch()",
+      "outcome": "Passed",
+      "duration": 17.428
+    },
+    {
+      "id": "SGGSUITests/testTrailOpenSwapsToShabad()",
+      "outcome": "Passed",
+      "duration": 19.932
+    },
+    {
+      "id": "SGGSUITests/testVaarsWeave()",
+      "outcome": "Passed",
+      "duration": 72.546
+    },
+    {
+      "id": "SGGSUITests/testVerifyShowsVerdict()",
+      "outcome": "Passed",
+      "duration": 18.027
+    },
+    {
+      "id": "SGGSUITests/testVoiceDeepLink()",
+      "outcome": "Passed",
+      "duration": 16.694
+    },
+    {
+      "id": "SGGSUITests/testVoicesContributors()",
+      "outcome": "Passed",
+      "duration": 24.978
+    },
+    {
+      "id": "SGGSUITests/testVoicesNavigationAndCountAgreement()",
+      "outcome": "Passed",
+      "duration": 53.323
+    },
+    {
+      "id": "SGGSUITests/testYourThemesCountsSavedVerses()",
+      "outcome": "Passed",
+      "duration": 96.574
+    },
+    {
+      "id": "SaroopTests/testASihariAfterTheYayyaIsDrawnToo()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "SaroopTests/testDoubledSubjoinedYayyaIsDrawnAsOneYakash()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "SaroopTests/testEveryCorpusLineRoundTripsExactly()",
+      "outcome": "Passed",
+      "duration": 3.401
+    },
+    {
+      "id": "SaroopTests/testTextWithoutASubjoinedYayyaIsUntouched()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "SaroopTests/testTheDisplayFormMapsBackToTheStoredText()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "SavedStoreLadderTests/testAStoreThatCannotBeMovedIsNeverDestroyed()",
+      "outcome": "Passed",
+      "duration": 0.028
+    },
+    {
+      "id": "SavedStoreLadderTests/testExistingDefaultStoreOpensWithoutDegradation()",
+      "outcome": "Passed",
+      "duration": 0.009
+    },
+    {
+      "id": "SavedStoreLadderTests/testFirstFailureFallsBackToMemoryWithoutDeleting()",
+      "outcome": "Passed",
+      "duration": 0.008
+    },
+    {
+      "id": "SavedStoreLadderTests/testHealthyStoreOpensPersistently()",
+      "outcome": "Passed",
+      "duration": 0.007
+    },
+    {
+      "id": "SavedStoreLadderTests/testRepeatedFailedLaunchesKeepTheOriginalBytes()",
+      "outcome": "Passed",
+      "duration": 0.031
+    },
+    {
+      "id": "SavedStoreLadderTests/testRepeatedRecoveriesNeverCollide()",
+      "outcome": "Passed",
+      "duration": 0.028
+    },
+    {
+      "id": "SavedStoreLadderTests/testSecondConsecutiveFailureRecreates()",
+      "outcome": "Passed",
+      "duration": 0.016
+    },
+    {
+      "id": "SavedStoreLadderTests/testWalAndShmMoveWithTheStore()",
+      "outcome": "Passed",
+      "duration": 0.015
+    },
+    {
+      "id": "ShareCardTests/testAngLinksAreTheWebSharePages()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ShareCardTests/testSharingTheAppSendsTheSite()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ShareCardTests/testTheCardShareCarriesItsOwnHeader()",
+      "outcome": "Passed",
+      "duration": 0.057
+    },
+    {
+      "id": "ShareCardTests/testVerseCardsRenderSquareAt1080InBothSchemes()",
+      "outcome": "Passed",
+      "duration": 0.091
+    },
+    {
+      "id": "ShareCardTests/testVerseTextIsTheLineItsCitationAndItsLink()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "SiteShotTests/testCaptureAbout()",
+      "outcome": "Skipped",
+      "duration": 0,
+      "skip": "capture-only: set TEST_RUNNER_SGGS_SHOT_DIR",
+      "skip_allowed": "screen captures run as their own `shots` bundles"
+    },
+    {
+      "id": "SiteShotTests/testCaptureClock()",
+      "outcome": "Skipped",
+      "duration": 0,
+      "skip": "capture-only: set TEST_RUNNER_SGGS_SHOT_DIR",
+      "skip_allowed": "screen captures run as their own `shots` bundles"
+    },
+    {
+      "id": "SiteShotTests/testCaptureConstellation()",
+      "outcome": "Skipped",
+      "duration": 0,
+      "skip": "capture-only: set TEST_RUNNER_SGGS_SHOT_DIR",
+      "skip_allowed": "screen captures run as their own `shots` bundles"
+    },
+    {
+      "id": "SiteShotTests/testCaptureIndex()",
+      "outcome": "Skipped",
+      "duration": 0,
+      "skip": "capture-only: set TEST_RUNNER_SGGS_SHOT_DIR",
+      "skip_allowed": "screen captures run as their own `shots` bundles"
+    },
+    {
+      "id": "SiteShotTests/testCaptureInsights()",
+      "outcome": "Skipped",
+      "duration": 0,
+      "skip": "capture-only: set TEST_RUNNER_SGGS_SHOT_DIR",
+      "skip_allowed": "screen captures run as their own `shots` bundles"
+    },
+    {
+      "id": "SiteShotTests/testCaptureLineage()",
+      "outcome": "Skipped",
+      "duration": 0,
+      "skip": "capture-only: set TEST_RUNNER_SGGS_SHOT_DIR",
+      "skip_allowed": "screen captures run as their own `shots` bundles"
+    },
+    {
+      "id": "SiteShotTests/testCaptureMore()",
+      "outcome": "Skipped",
+      "duration": 0,
+      "skip": "capture-only: set TEST_RUNNER_SGGS_SHOT_DIR",
+      "skip_allowed": "screen captures run as their own `shots` bundles"
+    },
+    {
+      "id": "SiteShotTests/testCaptureNitnem()",
+      "outcome": "Skipped",
+      "duration": 0,
+      "skip": "capture-only: set TEST_RUNNER_SGGS_SHOT_DIR",
+      "skip_allowed": "screen captures run as their own `shots` bundles"
+    },
+    {
+      "id": "SiteShotTests/testCaptureSearchAndReader()",
+      "outcome": "Skipped",
+      "duration": 0,
+      "skip": "capture-only: set TEST_RUNNER_SGGS_SHOT_DIR",
+      "skip_allowed": "screen captures run as their own `shots` bundles"
+    },
+    {
+      "id": "SiteShotTests/testCaptureThemes()",
+      "outcome": "Skipped",
+      "duration": 0,
+      "skip": "capture-only: set TEST_RUNNER_SGGS_SHOT_DIR",
+      "skip_allowed": "screen captures run as their own `shots` bundles"
+    },
+    {
+      "id": "SiteShotTests/testCaptureVerify()",
+      "outcome": "Skipped",
+      "duration": 0,
+      "skip": "capture-only: set TEST_RUNNER_SGGS_SHOT_DIR",
+      "skip_allowed": "screen captures run as their own `shots` bundles"
+    },
+    {
+      "id": "SolarPlaceTests/testDaylightSavingEdgesNeverFlipTheAnswer()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "SolarPlaceTests/testHalfHourAndQuarterHourZones()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "SolarPlaceTests/testKeptPlaceClearsOnlyWhenThePlaceChanges()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "SolarPlaceTests/testLabels()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "SolarPlaceTests/testLondonPhoneWithLondonPlaceIsNotAway()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "SolarPlaceTests/testLondonPhoneWithSydneyPlaceIsAway()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "SolarPlaceTests/testSummerTimeAloneNeverTriggersTheNotice()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "SolarPlaceTests/testSydneyPhoneWithLondonPlaceIsAwayButNotWithItsOwn()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "SolarPlaceTests/testWidgetNamesTheSkyOnlyWhenAway()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "SolarPlaceTests/testZonesAcrossTheDateLineWrap()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "SpotlightAndClipboardTests/testADegradedOrUnreadableStoreNeverTouchesTheIndex()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "SpotlightAndClipboardTests/testOnlyASuccessfullyReadPersistentStoreMayReplaceTheIndex()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "SpotlightAndClipboardTests/testVerbatimScriptureSurvivesThePasteboardScalarForScalar()",
+      "outcome": "Passed",
+      "duration": 7.099
+    },
+    {
+      "id": "ThemeChapterTests/testAShabadSplitAcrossPagesStaysOneGroup()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "ThemeChapterTests/testCompanionsAreTheDistinctiveOnesThatShareVerses()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ThemeChapterTests/testDescriptionGurmukhiRunsKeepEveryCharacter()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ThemeChapterTests/testExplanatoryCopyIsGatedOffUntilScholarReview()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ThemeChapterTests/testFilterSummaryNamesEveryNarrowing()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ThemeChapterTests/testThemeDeepLinks()",
+      "outcome": "Passed",
+      "duration": 0.009
+    },
+    {
+      "id": "ThemeContrastTests/testAccentColorAssetMatchesBrandDefault()",
+      "outcome": "Passed",
+      "duration": 0.005
+    },
+    {
+      "id": "ThemeContrastTests/testAccentFillsAreDistinguishableFromSurfaces()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ThemeContrastTests/testAccentTextReadsOnEverySurface()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ThemeContrastTests/testDarkSurfaceRampIsOrderedAndWarm()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ThemeContrastTests/testMutedTextReadsOnWarmPaper()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ThemeContrastTests/testOnAccentLabelsReadOnHeroGradientEndOfBrandDefault()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ThemeContrastTests/testOnAccentLabelsReadOnTheirFill()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ThemeContrastTests/testOnlyBrandGoldSplitsFillFromAccent()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ThemeContrastTests/testStatusTokensReadAsTextOnContentSurfaces()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ThemeContrastTests/testVoiceInkMapsCorpusAuthors()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ThemeContrastTests/testVoiceInkReadsOnEverySurface()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ThemeFeedTests/testAStaleOrRepeatedPageIsIgnored()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ThemeFeedTests/testNoRequestWhileLoadingOrAfterAFailure()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ThemeFeedTests/testPagesAppendInOrderUntilTheEnd()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ThemeFeedTests/testSingleVerseFooter()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "ThemeIndexModelTests/testEveryArrangementKeepsEveryTheme()",
+      "outcome": "Passed",
+      "duration": 0.824
+    },
+    {
+      "id": "ThemeIndexModelTests/testGlossIsTheDescriptionsOpeningPhrase()",
+      "outcome": "Passed",
+      "duration": 0.825
+    },
+    {
+      "id": "ThemeIndexModelTests/testPeakPhraseAndSummary()",
+      "outcome": "Passed",
+      "duration": 0.817
+    },
+    {
+      "id": "ThemeIndexModelTests/testSearchFindsByNameMeaningAndGurmukhiWord()",
+      "outcome": "Passed",
+      "duration": 0.899
+    },
+    {
+      "id": "ThemeIndexModelTests/testTodayTurnsOverAtLocalMidnight()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "UITestVaultTests/testAPartialRestoreKeepsTheVaultAndCompletesLater()",
+      "outcome": "Passed",
+      "duration": 0.035
+    },
+    {
+      "id": "UITestVaultTests/testASealThatCannotBeWrittenReportsFalse()",
+      "outcome": "Passed",
+      "duration": 0.004
+    },
+    {
+      "id": "UITestVaultTests/testASealThatCannotReadASourceFailsAndLeavesNoVault()",
+      "outcome": "Passed",
+      "duration": 0.005
+    },
+    {
+      "id": "UITestVaultTests/testASecondTestLaunchNeverOverwritesTheVault()",
+      "outcome": "Passed",
+      "duration": 0.01
+    },
+    {
+      "id": "UITestVaultTests/testAStaleVaultArchivesTheLiveDataBeforeAWipe()",
+      "outcome": "Passed",
+      "duration": 0.012
+    },
+    {
+      "id": "UITestVaultTests/testATamperedVaultIsNotRestoredAndIsKept()",
+      "outcome": "Passed",
+      "duration": 0.007
+    },
+    {
+      "id": "UITestVaultTests/testAVaultNamingUnknownDataIsNotRestored()",
+      "outcome": "Passed",
+      "duration": 0.007
+    },
+    {
+      "id": "UITestVaultTests/testAVaultOfAnotherFormatIsNotRestored()",
+      "outcome": "Passed",
+      "duration": 0.007
+    },
+    {
+      "id": "UITestVaultTests/testAnInterruptedRetireLeavesTheRestoredDataAlone()",
+      "outcome": "Passed",
+      "duration": 0.082
+    },
+    {
+      "id": "UITestVaultTests/testAnInterruptedSealIsDiscardedAndRedone()",
+      "outcome": "Passed",
+      "duration": 0.01
+    },
+    {
+      "id": "UITestVaultTests/testAnOrdinaryLaunchWithoutAVaultChangesNothing()",
+      "outcome": "Passed",
+      "duration": 0.005
+    },
+    {
+      "id": "UITestVaultTests/testAnUnverifiedVaultIsSetAsideNotOverwritten()",
+      "outcome": "Passed",
+      "duration": 0.01
+    },
+    {
+      "id": "UITestVaultTests/testArchivesAreBounded()",
+      "outcome": "Passed",
+      "duration": 0.046
+    },
+    {
+      "id": "UITestVaultTests/testEmptyOriginalDataRestoresToEmpty()",
+      "outcome": "Passed",
+      "duration": 0.012
+    },
+    {
+      "id": "UITestVaultTests/testEveryLeakableReadingSettingIsReset()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "UITestVaultTests/testLaunchModeIsExplicit()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "UITestVaultTests/testPendingWALTransactionsAreKept()",
+      "outcome": "Passed",
+      "duration": 0.016
+    },
+    {
+      "id": "UITestVaultTests/testTheRealDataComesBackExactly()",
+      "outcome": "Passed",
+      "duration": 0.026
+    },
+    {
+      "id": "VaarLinkTests/testHostileVaarLinksChangeNothing()",
+      "outcome": "Passed",
+      "duration": 0.007
+    },
+    {
+      "id": "VaarLinkTests/testSiriVaarListMatchesTheShippedDB()",
+      "outcome": "Passed",
+      "duration": 0.005
+    },
+    {
+      "id": "VaarLinkTests/testVaarLinksBuildTheExploreStack()",
+      "outcome": "Passed",
+      "duration": 0.006
+    },
+    {
+      "id": "VaarProgressTests/testCorruptFileIsMovedAsideNotLost()",
+      "outcome": "Passed",
+      "duration": 0.321
+    },
+    {
+      "id": "VaarProgressTests/testNewerSchemaIsReadOnly()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "VaarProgressTests/testPositionsPersistAndTheNewestUnfinishedIsCurrent()",
+      "outcome": "Passed",
+      "duration": 0.008
+    },
+    {
+      "id": "VaarProgressTests/testTheFirstPositionIsSaved()",
+      "outcome": "Passed",
+      "duration": 0.004
+    },
+    {
+      "id": "VaarProgressTests/testVaultCoversVaarProgress()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "VaarReaderLandingTests/testADeepLinkedPauriComesAfterAnExplicitLine()",
+      "outcome": "Passed",
+      "duration": 0.021
+    },
+    {
+      "id": "VaarReaderLandingTests/testLabelLinesLandOnTheirUnitRow()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "VaarReaderLandingTests/testPaurisOnlyLandsOnThePauriASalokLeadsInto()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "VaarReaderLandingTests/testPrecedenceExplicitThenSavedThenHeading()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "VaarReaderRowIdTests/testRowIdsNeverCollideOrOverflow()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "VaarsHomeTests/testAngSpanReadsSingleAngs()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "VaarsHomeTests/testExplanatoryCopyIsOffUntilG3()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "VaarsHomeTests/testFiltersRoundTripAndHideEmpty()",
+      "outcome": "Passed",
+      "duration": 0.003
+    },
+    {
+      "id": "VaarsHomeTests/testRibbonSpansAndHitTesting()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "VaarsHomeTests/testVoiceStripFillsTheWidthInOrder()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "VaarsHomeTests/testWeaveGroupsSaloksBeforeTheirPauri()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "VerseTypographyTests/testAllMarkerLineIsLeftAlone()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "VerseTypographyTests/testBindingIsReversibleToTheVerbatimLine()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "VerseTypographyTests/testClosingMarkerCannotBeOrphaned()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "VerseTypographyTests/testMisflaggedVersesAreNotDrawnAsHeadings()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "VerseTypographyTests/testRealHeadingsStayHeadings()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "VoiceCountTests/testEveryRosterVoiceIsTaggedSinceTheG3Ruling()",
+      "outcome": "Passed",
+      "duration": 0.155
+    },
+    {
+      "id": "VoiceCountTests/testEverySurfaceSaysTheRosterCount()",
+      "outcome": "Passed",
+      "duration": 0.319
+    },
+    {
+      "id": "VoiceCountTests/testTheRosterListsThirtySixVoices()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "VoicesLayoutTests/testCenturyTitles()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "VoicesLayoutTests/testDotIdentityIsStableAcrossGroupingsSoTheMorphIsHonest()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "VoicesLayoutTests/testEveryVoiceKeepsAtLeastOneDot()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "VoicesLayoutTests/testNoDotOverlapsAnotherInAnyGrouping()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "VoicesLayoutTests/testRegroupingMidFlightStartsFromTheDisplayedPositions()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "VoicesLayoutTests/testRibbonColumnsAddUpAndNameWhoSingsThere()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "VoicesLayoutTests/testTraditionFallsBackToTheNameForVoicesTheRosterDoesNotListYet()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "VoicesMapTests/testMapIsOffUnlessAReviewerTurnsItOn()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "VoicesMapTests/testProjectionKeepsGeographyTheRightWayRound()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "VoicesMapTests/testVoicesComeFromTheRosterPlaceField()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "WaheguruNameTests/testEverySpellingResolvesToTheSlug()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "WaheguruNameTests/testSpotlightTitleChangesButTheIdentifierDoesNot()",
+      "outcome": "Passed",
+      "duration": 0.691
+    },
+    {
+      "id": "WaheguruNameTests/testTheIndexStampCarriesTheNameRevision()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "WaheguruNameTests/testTheThemeIsShownAsWaheguru()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "WaheguruNameTests/testThemesIndexSearchFindsWaheguruUnderEverySpelling()",
+      "outcome": "Passed",
+      "duration": 0.791
+    },
+    {
+      "id": "WaheguruNameTests/testWaheguruLinkOpensTheThemePage()",
+      "outcome": "Passed",
+      "duration": 0.262
+    },
+    {
+      "id": "WidgetRenderTests/testAnEntryKeepsItsOwnClockWhenThePhoneChangesZone()",
+      "outcome": "Passed",
+      "duration": 3.42
+    },
+    {
+      "id": "WidgetRenderTests/testEveryFamilyRendersInBothSchemesAndModes()",
+      "outcome": "Passed",
+      "duration": 0.6
+    },
+    {
+      "id": "YourThemesTests/testEmptyAndUntaggedThemesAreNeverInvited()",
+      "outcome": "Passed",
+      "duration": 0.002
+    },
+    {
+      "id": "YourThemesTests/testShareTextIsNamesAndCountsNeverVerseText()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "YourThemesTests/testSummaryCountsOnlyTheSavedVerses()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "YourThemesTests/testThemeSpotlightDomainSurvivesASavedStoreReset()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "YourThemesTests/testThemeSpotlightIdentifiersRoundTrip()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "YourThemesTests/testThemesDeepLinkOpensTheIndex()",
+      "outcome": "Passed",
+      "duration": 0.008
+    },
+    {
+      "id": "YourThemesTests/testThemesIndexStampNamesTheBuild()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "YourThemesTests/testUnavailableIsNotAnEmptyTally()",
+      "outcome": "Passed",
+      "duration": 0.001
+    },
+    {
+      "id": "YourThemesTests/testUnknownThemeNameOpensTheIndex()",
+      "outcome": "Passed",
+      "duration": 0.186
+    }
+  ],
+  "checklist": {
+    "D1": {
+      "mode": "manual",
+      "title": "Charter S",
+      "result": "pending"
+    },
+    "D2": {
+      "mode": "auto",
+      "title": "Copy fidelity",
+      "test": "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
+      "attachments": [
+        {
+          "name": "D2 pasted text and scalars",
+          "sha256": "53591597381f52e02a6efb0207a0b3e153ad24de52913deddca836386c2c8ed4"
+        },
+        {
+          "name": "D2 pasted, saroop off",
+          "sha256": "834f9ba64f89cac0ce35744c53df851628bb954d66ce60b985b8033403f70e15"
+        },
+        {
+          "name": "D2 Ang 1400, saroop off",
+          "sha256": "28332797c2df10cb801ce1c3a58f6e160b4e2ee740602bdba8ee4d507987796b"
+        },
+        {
+          "name": "D2 pasted, saroop on",
+          "sha256": "19f91c2f27b8f167e43e11d90a918942ba543074b09aad8e8ae1be7f63625382"
+        },
+        {
+          "name": "D2 Ang 1400, saroop on",
+          "sha256": "752c127da9211b94fa3c4a2977a4c61b99c7f7b47b20e0bd94cee43c7052d175"
+        }
+      ],
+      "result": "pass"
+    },
+    "D3": {
+      "mode": "auto",
+      "title": "Gurmukhi rendering",
+      "test": "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
+      "attachments": [
+        {
+          "name": "D3 Ang 1354 ਸਤੵਿੰ dark standard size",
+          "sha256": "c51d42c03f4ffbe10204ff601b5b34af1a50e1cd85c26b784d6a86d33379d695"
+        },
+        {
+          "name": "D3 Ang 1400 dark AX3",
+          "sha256": "07e22d3cff2e7a66d8f4afec8855df7e535fe037acc2c35f453fa5f72fb30972"
+        },
+        {
+          "name": "D3 Ang 1359 dark AX3",
+          "sha256": "22195cfd26fcfcc7b5af75e2f10c3dbd61502c5e5e9b9109456b8e2593c464fb"
+        },
+        {
+          "name": "D3 Ang 1354 dark AX3",
+          "sha256": "4c557557ec8b7313821758ff631b25fcaed0e68fc167c54f2a20cf0459c85160"
+        },
+        {
+          "name": "D3 Ang 1 dark AX3",
+          "sha256": "7c734140676cf721f7dea7e32df0e5bd34de7e9c1aa8070529baf3e562a72a3a"
+        },
+        {
+          "name": "D3 Ang 1354 ਸਤੵਿੰ light standard size",
+          "sha256": "bdbaeeac1c4b3af60444c8228e5c6541b1fe12afd03758ffc0fc5e4a2352c201"
+        },
+        {
+          "name": "D3 Ang 1400 light AX3",
+          "sha256": "6de98ea5407f6d0d24929896d296820fe55161b49625dbf098f384082ef876fc"
+        },
+        {
+          "name": "D3 Ang 1359 light AX3",
+          "sha256": "12ec3173cf632c03f4d10b81ed06c997085a77f8093c28b1b87c2b1a10b5e1fd"
+        },
+        {
+          "name": "D3 Ang 1354 light AX3",
+          "sha256": "43e08ed61e4444ffd0f7c34f91d6b17440b1a82ebe25b543434f9691e3f18f98"
+        },
+        {
+          "name": "D3 Ang 1 light AX3",
+          "sha256": "a8c90bd90f9337987a3ed6e0a7200175a38ea3ab08652cf62c45aeba51de0416"
+        }
+      ],
+      "result": "pass"
+    },
+    "D4": {
+      "mode": "manual",
+      "title": "Update from the store build",
+      "result": "pending"
+    },
+    "D5": {
+      "mode": "manual",
+      "title": "Forget location (widget half)",
+      "result": "pending",
+      "app_half": {
+        "test": "SGGSUITests/testForgetLocationReturnsToTheLocationCard()",
+        "outcome": "Passed"
+      }
+    },
+    "D6": {
+      "mode": "auto",
+      "title": "Clear reading history",
+      "test": "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
+      "attachments": [
+        {
+          "name": "D6 saved verses after clearing",
+          "sha256": "a36842c962371c07c4118a1af4362b38fd93929ef0aff99be2d7541bf3b9f15b"
+        },
+        {
+          "name": "D6 journey after clearing",
+          "sha256": "da7e3ab11828dee5836f0b4c32f29443b8411e62a9bc4e887e4f103e2d97ffe5"
+        },
+        {
+          "name": "D6 confirmation",
+          "sha256": "9a34cd53b204c20839d2a6c0273bced5fbbe4328e46c0c95255d8dcfd35bc693"
+        },
+        {
+          "name": "D6 journey with history",
+          "sha256": "e5fc1db2a7731edc3a39a7b01e32b4db8d85a4229147245923ec80bbd3a04837"
+        }
+      ],
+      "result": "pass"
+    },
+    "D7": {
+      "mode": "manual",
+      "title": "Spotlight",
+      "result": "pending"
+    },
+    "D8": {
+      "mode": "manual",
+      "title": "Widgets",
+      "result": "pending"
+    },
+    "D9": {
+      "mode": "manual",
+      "title": "Airplane Mode",
+      "result": "pending"
+    },
+    "D10": {
+      "mode": "auto",
+      "title": "Launch time (this device)",
+      "test": "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()",
+      "attachments": [
+        {
+          "name": "D10 timings",
+          "sha256": "d1121f46afaa95d57a19019de8c8e2f6f07c71827b45b13efc8b5a50aa6d4205"
+        },
+        {
+          "name": "D10 launch timeline",
+          "sha256": "dc3c9eeb17074b3d3554ad60d5bb780ceb602216c0f116cda8697156d5ea8bd6"
+        },
+        {
+          "name": "D10 after a cold launch",
+          "sha256": "50b2c523f36c658f36df8e900ad1699c57a3126bb0621a5c88b1025be98a8e0f"
+        }
+      ],
+      "result": "incomplete",
+      "note": "d10/ has no warm.json — run `device_bench.sh d10` again in a new run"
+    },
+    "D11": {
+      "mode": "auto",
+      "title": "Force quit and relaunch",
+      "test": "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()",
+      "attachments": [
+        {
+          "name": "D11 after the interrupted verify",
+          "sha256": "30f54e1fab63c63511428ac3b697f0e03673f5a8c3621455987a0c6004de06ce"
+        },
+        {
+          "name": "D11 at the force quit",
+          "sha256": "6aca92ee1bad9778896c0c9cef6dd298457df124709cba0651a855a4940b3c66"
+        },
+        {
+          "name": "D11 resumed on Ang 700",
+          "sha256": "a980838e40663abaeaea33a5448fa69b1d76a70f06bb770d0a1b47ba05010429"
+        },
+        {
+          "name": "D11 reading Ang 700",
+          "sha256": "a980838e40663abaeaea33a5448fa69b1d76a70f06bb770d0a1b47ba05010429"
+        }
+      ],
+      "result": "pass"
+    },
+    "D12": {
+      "mode": "auto",
+      "title": "Hostile links",
+      "test": "DeviceChecklistTests/testD12HostileLinksNeverCrash()",
+      "attachments": [
+        {
+          "name": "D12 after sggsshabadabc",
+          "sha256": "6a25d831e1c446b96032449d6ac8deddb347a8617a22de4ea60a1abcf4580859"
+        },
+        {
+          "name": "D12 after sggsang99999",
+          "sha256": "6a25d831e1c446b96032449d6ac8deddb347a8617a22de4ea60a1abcf4580859"
+        },
+        {
+          "name": "D12 after sggsshabad-1",
+          "sha256": "6a25d831e1c446b96032449d6ac8deddb347a8617a22de4ea60a1abcf4580859"
+        },
+        {
+          "name": "D12 after sggsshabad3000000000",
+          "sha256": "6a25d831e1c446b96032449d6ac8deddb347a8617a22de4ea60a1abcf4580859"
+        }
+      ],
+      "result": "pass"
+    }
+  },
+  "launch": {
+    "budget_s": 5.0,
+    "d10_method": "out-of-xctest",
+    "xctest": {
+      "cold": {
+        "appInit": 0.494,
+        "containerReady": 0.764,
+        "integrityDone": 1.47,
+        "integrityHashed": 1.419,
+        "integrityStart": 1.108,
+        "nitnemDrawn": 2.105,
+        "rootShown": 1.108,
+        "tabsShown": 1.645
+      },
+      "cached_hash": {
+        "cold": false,
+        "warm": true
+      },
+      "warm": {
+        "appInit": 0.308,
+        "containerReady": 0.406,
+        "integrityDone": 0.673,
+        "integrityHashed": 0.605,
+        "integrityStart": 0.602,
+        "nitnemDrawn": 1.159,
+        "rootShown": 0.602,
+        "tabsShown": 0.742
+      },
+      "xctest_clock": {
+        "cold": 7.471,
+        "warm": 2.932
+      },
+      "pre_main": {
+        "cold": 0.494,
+        "warm": 0.308
+      },
+      "app_work": {
+        "cold": 1.611,
+        "warm": 0.851
+      }
+    }
+  },
+  "warnings": [
+    "ui-01: identical image under 2 names: shot lineage-roll, shot voice-of-the-day",
+    "ui-01: identical image under 2 names: shot voices_dots_voices, shot voices_ribbon",
+    "ui-01: identical image under 2 names: shot constellation, shot constellation-focus",
+    "ui-01: identical image under 3 names: shot themes, shot themes-index, shot your-themes",
+    "ui-02: identical image under 2 names: shot explore_feature_constellation, shot explore_feature_constellation_dark",
+    "ui-02: identical image under 2 names: shot explore_feature_clock, shot explore_feature_clock_dark",
+    "checklist: identical image under 2 names: D11 reading Ang 700, D11 resumed on Ang 700",
+    "checklist: identical image under 4 names: D12 after sggsang99999, D12 after sggsshabad-1, D12 after sggsshabad3000000000, D12 after sggsshabadabc"
+  ],
+  "public_evidence": {
+    "asset": "checklist-evidence-20261030T0750Z-807c055.tar.gz",
+    "sha256": "b49aadd58657ab0620d5dd1fce7a50e446493777ba72222a698db9a4ea3f80eb",
+    "size": 5108871,
+    "release": "Algorythmos-AI/gurbani-soul-ios@v1.5.2",
+    "files": [
+      "D11 after the interrupted verify.png",
+      "D11 at the force quit.png",
+      "D11 reading Ang 700.png",
+      "D11 resumed on Ang 700.png",
+      "D2 Ang 1400_ saroop off.png",
+      "D2 Ang 1400_ saroop on.png",
+      "D2 pasted_ saroop off.png",
+      "D2 pasted_ saroop on.png",
+      "D3 Ang 1 dark AX3.png",
+      "D3 Ang 1 light AX3.png",
+      "D3 Ang 1354 dark AX3.png",
+      "D3 Ang 1354 light AX3.png",
+      "D3 Ang 1354 ਸਤ___ dark standard size.png",
+      "D3 Ang 1354 ਸਤ___ light standard size.png",
+      "D3 Ang 1359 dark AX3.png",
+      "D3 Ang 1359 light AX3.png",
+      "D3 Ang 1400 dark AX3.png",
+      "D3 Ang 1400 light AX3.png"
+    ]
+  },
+  "verdict": "FAIL",
+  "verdict_reasons": [
+    "SGGSUITests/testSavedVerseRoundTrip() failed twice in a row (unknown, unknown)",
+    "D1 Charter S: pending",
+    "D4 Update from the store build: pending",
+    "D5 Forget location (widget half): pending",
+    "D7 Spotlight: pending",
+    "D8 Widgets: pending",
+    "D9 Airplane Mode: pending",
+    "D10 Launch time (this device): incomplete (d10/ has no warm.json — run `device_bench.sh d10` again in a new run)"
+  ]
+}

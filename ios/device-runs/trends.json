@@ -186,6 +186,209 @@
           34.746
         ]
       ]
+    },
+    {
+      "version": "1.5.2",
+      "run_id": "20261030T0750Z-807c055",
+      "verdict": "FAIL",
+      "d10": {
+        "cold": null,
+        "warm": null
+      },
+      "d10_method": "out-of-xctest",
+      "d10_xctest_pre_main": {
+        "cold": 0.494,
+        "warm": 0.308
+      },
+      "suite_seconds": {
+        "unit": 54,
+        "ui": 3020,
+        "checklist": 328,
+        "rerun": 67
+      },
+      "slowest": [
+        [
+          "SGGSUITests/testCaptureScreens()",
+          312.802
+        ],
+        [
+          "SGGSUITests/testSwipeRunAfterJumpRendersContent()",
+          300.72
+        ],
+        [
+          "SGGSUITests/testLineageAndVaars()",
+          139.915
+        ],
+        [
+          "SGGSUITests/testExploreFeatures()",
+          123.46
+        ],
+        [
+          "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
+          108.422
+        ],
+        [
+          "SGGSUITests/testYourThemesCountsSavedVerses()",
+          96.574
+        ],
+        [
+          "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
+          81.206
+        ],
+        [
+          "SGGSUITests/testContinuationPillGoesToNextAng()",
+          73.449
+        ],
+        [
+          "SGGSUITests/testVaarsWeave()",
+          72.546
+        ],
+        [
+          "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
+          71.836
+        ],
+        [
+          "SGGSUITests/testNitnemOpensJapjiAndCompletes()",
+          54.173
+        ],
+        [
+          "SGGSUITests/testVoicesNavigationAndCountAgreement()",
+          53.323
+        ],
+        [
+          "SGGSUITests/testSavedVerseRoundTrip()",
+          52.519
+        ],
+        [
+          "SGGSUITests/testThemeListStatesItsTrueTotal()",
+          51.358
+        ],
+        [
+          "SGGSUITests/testCaptureJaapPauri79()",
+          49.706
+        ],
+        [
+          "SGGSUITests/testConstellation()",
+          43.659
+        ],
+        [
+          "SGGSUITests/testJourneyClearsReadingHistory()",
+          39.664
+        ],
+        [
+          "SGGSUITests/testChevronsTurnPagesRepeatedly()",
+          35.519
+        ],
+        [
+          "SGGSUITests/testReaderNavAroundSheetAndBackground()",
+          35.432
+        ],
+        [
+          "SGGSUITests/testForgetLocationReturnsToTheLocationCard()",
+          35.111
+        ]
+      ]
+    },
+    {
+      "version": "1.5.2",
+      "run_id": "20261030T0936Z-807c055",
+      "verdict": "PASS",
+      "d10": {
+        "cold": 1.586,
+        "warm": 0.586
+      },
+      "d10_method": "out-of-xctest",
+      "d10_xctest_pre_main": {
+        "cold": 0.713,
+        "warm": 0.312
+      },
+      "suite_seconds": {
+        "unit": 54,
+        "ui": 3142,
+        "checklist": 337
+      },
+      "slowest": [
+        [
+          "SGGSUITests/testCaptureScreens()",
+          311.307
+        ],
+        [
+          "SGGSUITests/testSwipeRunAfterJumpRendersContent()",
+          300.499
+        ],
+        [
+          "SGGSUITests/testVerifyShowsVerdict()",
+          172.741
+        ],
+        [
+          "SGGSUITests/testLineageAndVaars()",
+          132.437
+        ],
+        [
+          "SGGSUITests/testExploreFeatures()",
+          125.904
+        ],
+        [
+          "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
+          111.72
+        ],
+        [
+          "SGGSUITests/testYourThemesCountsSavedVerses()",
+          93.039
+        ],
+        [
+          "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
+          85.255
+        ],
+        [
+          "SGGSUITests/testContinuationPillGoesToNextAng()",
+          73.441
+        ],
+        [
+          "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
+          72.951
+        ],
+        [
+          "SGGSUITests/testVaarsWeave()",
+          72.507
+        ],
+        [
+          "SGGSUITests/testVoicesNavigationAndCountAgreement()",
+          55.401
+        ],
+        [
+          "SGGSUITests/testNitnemOpensJapjiAndCompletes()",
+          53.192
+        ],
+        [
+          "SGGSUITests/testThemeListStatesItsTrueTotal()",
+          50.859
+        ],
+        [
+          "SGGSUITests/testCaptureJaapPauri79()",
+          49.608
+        ],
+        [
+          "SGGSUITests/testConstellation()",
+          43.238
+        ],
+        [
+          "SGGSUITests/testChevronsTurnPagesRepeatedly()",
+          42.112
+        ],
+        [
+          "SGGSUITests/testPrivacyPolicyReachableFromMore()",
+          38.721
+        ],
+        [
+          "SGGSUITests/testRaagPageFromTheIndex()",
+          38.409
+        ],
+        [
+          "SGGSUITests/testSavedVerseRoundTrip()",
+          38.39
+        ]
+      ]
     }
   ]
 }
