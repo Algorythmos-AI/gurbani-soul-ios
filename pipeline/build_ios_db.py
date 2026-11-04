@@ -10,7 +10,7 @@ build_ios_db.py — derive the iOS database from the full corpus DB, in one of t
       pipeline/check_release_license.sh until the translation is licensed in writing.
 
   --profile public
-      Gurmukhi-only: drops `translations` + `fts_en`. This is the only profile eligible
+      Gurmukhi-only: drops `translations` + `fts_en` + `translation_spans`. This is the only profile eligible
       for public distribution today. Written to a separate (git-ignored) artifact so it
       can never silently replace the bundled personal DB.
 
@@ -32,7 +32,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 
 # The translation layer (the only license-restricted content in the DB).
-TRANSLATION_LAYER = ['translations', 'fts_en']
+TRANSLATION_LAYER = ['translations', 'fts_en', 'translation_spans']
 # Timing-layer tables expected from DB v2.12.0+ (additive; informational detection only).
 TIMING_TABLES = ['timing_sources', 'raag_timing_claims', 'shabd_raag_map',
                  'shabd_musical_markers', 'shabd_structural_form', 'shabd_poetic_genre']
@@ -148,7 +148,7 @@ def _derive(profile, src_path, dest, drop, mpath, tmp, mtmp):
         assert not (extra_cols & {'en', 'english', 'translation'}), 'extra_lines must never carry English'
         assert not any(t.startswith('extra_trans') for t in remaining), 'no translations for extra text'
     if profile == 'public':
-        assert not en_bundled and 'translations' not in remaining and 'fts_en' not in remaining, \
+        assert not en_bundled and not any(t in remaining for t in TRANSLATION_LAYER), \
             'translation layer not removed from the PUBLIC profile'
     else:
         assert en_bundled, 'personal profile expected translations + fts_en in the source DB'

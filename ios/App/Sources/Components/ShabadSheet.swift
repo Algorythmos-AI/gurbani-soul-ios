@@ -45,7 +45,7 @@ struct ShabadSheet: View {
                                 // Explore-related work from inside the sheet (never an "Ang 0" card).
                                 LineRow(gurmukhi: line.gurmukhi, translit: line.translit,
                                         meta: line.isRahao ? "ਰਹਾਉ · refrain" : "", en: line.en,
-                                        lineId: line.id, ang: line.ang, compId: line.compId)
+                                        inSpan: line.enSpan != nil, lineId: line.id, ang: line.ang, compId: line.compId)
                                     .focusHighlight(highlightedId == line.id)
                                     .accessibilityFocused($voFocus, equals: line.id)
                                     .id(line.id)

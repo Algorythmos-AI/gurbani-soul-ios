@@ -40,13 +40,22 @@ extension SQLiteCandidateSource: CorpusReader, AnalyticsSource {
         while stepRow(stmt, failed: &failed) {
             out[Int(sqlite3_column_int64(stmt, 0))] = sqlite3_column_text(stmt, 1).map { String(cString: $0) } ?? ""
         }
-        return failed ? [:] : out
+        return failed ? [:] : placed(ids: ids, en: out).en
+    }
+
+    /// Spans (dataset 1.4.0+): the English moves to the last member present in `ids`.
+    private func placed(ids: [Int], en: [Int: String]) -> (en: [Int: String], span: [Int: ClosedRange<Int>]) {
+        guard let lo = ids.min(), let hi = ids.max() else { return (en, [:]) }
+        return EnglishSpans.place(ids: ids, en: en, spans: readEnglishSpans(handle, lo: lo, hi: hi))
     }
 
     private func attachEn(_ lines: [ReaderLine]) -> [ReaderLine] {
-        let m = enMap(ids: lines.map { $0.id })
-        if m.isEmpty { return lines }
-        return lines.map { m[$0.id] != nil ? $0.withEn(m[$0.id]) : $0 }
+        let ids = lines.map { $0.id }
+        let p = placed(ids: ids, en: enMap(ids: ids))
+        if p.en.isEmpty && p.span.isEmpty { return lines }
+        return lines.map { l in
+            p.en[l.id] != nil || p.span[l.id] != nil ? l.withEn(p.en[l.id], span: p.span[l.id]) : l
+        }
     }
 
     /// English for search results — serve.py attaches en to EVERY search mode's results (:798).

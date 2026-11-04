@@ -14,6 +14,9 @@ struct LineRow: View {
     /// never blended into the Gurmukhi. nil (2,619 lines have none, and the public DB profile
     /// has the whole layer absent) renders nothing — no placeholder.
     var en: String? = nil
+    /// Part of a group of printed lines that one English record covers (the English sits under
+    /// the last of them). A hairline in the margin joins the group; the refrain rule wins.
+    var inSpan = false
     /// Provide line identity to enable the Save (bookmark) action.
     var lineId: Int? = nil
     var ang: Int = 0
@@ -62,11 +65,13 @@ struct LineRow: View {
         }
         .multilineTextAlignment(centred ? .center : .leading)
         .frame(maxWidth: .infinity, alignment: centred ? .center : .leading)
-        .padding(.leading, isRahao ? Theme.Space.m : 0)
+        .padding(.leading, isRahao || inSpan ? Theme.Space.m : 0)
         .overlay(alignment: .leading) {
             if isRahao {
                 RoundedRectangle(cornerRadius: 1.5).fill(palette.accent)
                     .frame(width: 3).accessibilityHidden(true)
+            } else if inSpan {
+                Rectangle().fill(Ink.hairline).frame(width: 2).accessibilityHidden(true)
             }
         }
         .contentShape(Rectangle())
