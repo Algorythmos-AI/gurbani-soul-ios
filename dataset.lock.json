@@ -1,6 +1,6 @@
 {
   "repository": "Algorythmos-AI/sggs-data",
-  "commit": "cc9ed99290a021f3c8c6f3eb8fba10a36429786c",
+  "commit": "ff6f63397ba98f617e04ca0d0a63c7076fa3a866",
   "dataset_version": "1.4.0",
   "database": {
     "path": "db/sggs.sqlite",

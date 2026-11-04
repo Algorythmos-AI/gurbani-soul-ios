@@ -1,11 +1,11 @@
 {
   "sources": {
     "data": {
-      "commit": "cc9ed99290a021f3c8c6f3eb8fba10a36429786c",
+      "commit": "ff6f63397ba98f617e04ca0d0a63c7076fa3a866",
       "files": {
         "pipeline/build_ios_db.py": "c4f0dcd0256fdbfb5f93740c0491f500d89e74d20b113eec5a1c438bf52cb812"
       },
-      "ref": "cc9ed99290a021f3c8c6f3eb8fba10a36429786c",
+      "ref": "ff6f63397ba98f617e04ca0d0a63c7076fa3a866",
       "repository": "Algorythmos-AI/sggs-data",
       "version": "1.4.0"
     },
