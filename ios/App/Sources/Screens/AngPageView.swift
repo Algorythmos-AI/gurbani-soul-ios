@@ -144,7 +144,7 @@ struct AngPageView: View {
                                 translit: focusMode ? "" : line.translit,
                                 meta: line.isRahao ? "ਰਹਾਉ · refrain" : "",
                                 en: focusMode ? nil : line.en,
-                                lineId: line.id, ang: line.ang, compId: line.compId) {
+                                inSpan: line.enSpan != nil, lineId: line.id, ang: line.ang, compId: line.compId) {
                             container.present(.shabad(compId: line.compId, focusLineId: line.id))
                         }
                         .padding(.vertical, focusMode ? Theme.Space.m : 0)

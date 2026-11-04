@@ -143,6 +143,8 @@ extension SQLiteCandidateSource {
             sqlite3_finalize(stmt)
         }
         if failed { return [:] }
-        return out
+        // Spans (dataset 1.4.0+): English moves to the last member present, in recital order.
+        guard let lo = ids.min(), let hi = ids.max() else { return out }
+        return EnglishSpans.place(ids: ids, en: out, spans: readEnglishSpans(handle, lo: lo, hi: hi)).en
     }
 }
