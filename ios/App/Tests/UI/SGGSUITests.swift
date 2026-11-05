@@ -73,11 +73,15 @@ final class SGGSUITests: XCTestCase {
     }
 
     /// Tap `element` until `target` appears. On a loaded CI runner one tap can be swallowed
-    /// while a push/pop or the glass bars are still animating; only re-tap while `element` is
-    /// still hittable, so a slow-but-real navigation is never tapped twice.
+    /// while a push/pop or the glass bars are still animating. The first tap is unconditional
+    /// (XCUITest scrolls an off-screen element into view; `isHittable` is false until it does);
+    /// a retry happens only while `element` is still hittable, so a slow-but-real navigation is
+    /// never tapped twice.
     @discardableResult
     private func tap(_ element: XCUIElement, until target: XCUIElement, timeout: TimeInterval = 8) -> Bool {
-        for _ in 0..<3 {
+        element.tap()
+        if target.waitForExistence(timeout: timeout) { return true }
+        for _ in 0..<2 {
             if element.exists && element.isHittable { element.tap() }
             if target.waitForExistence(timeout: timeout) { return true }
         }
