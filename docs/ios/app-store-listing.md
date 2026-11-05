@@ -108,9 +108,9 @@ are banis it does contain. `ios/tests/test_ios_gates.py` lints this section.)
 
 ## What's New
 
-For version 1.6.0 (covers everything since 1.5.2). Rewritten for every version; limit 4000 characters. Every version's text is kept in [`whats-new/`](whats-new/README.md).
+For version 1.6.1 (covers everything since 1.5.2; 1.6.0 was never uploaded). Rewritten for every version; limit 4000 characters. Every version's text is kept in [`whats-new/`](whats-new/README.md).
 
-> Reliability and polish, in step with gurbanisoul.com 1.6.0.
+> Reliability and polish, in step with gurbanisoul.com — now also in Punjabi at gurbanisoul.com/pa.
 >
 > The text of Sri Guru Granth Sahib Ji is unchanged.
 
@@ -123,13 +123,15 @@ the launch path. Domain topology: [`docs/website/README.md`](../website/README.m
 
 **Enter only URLs that resolve today.** A Support or Privacy URL that 404s is a direct rejection
 (2.1 / 5.1.1). All three below serve 200 on the canonical host today; the `uptime` workflow and the
-`@smoke` landing spec watch them, and `sggs-verify-prod` proves each answers with no redirect.
+`@smoke` landing spec watch them. Since platform 1.6.0 the marketing pages live under a language
+prefix, so enter the `/en/…` pages directly; the old `/support` and `/privacy` still reach them in one
+permanent redirect, which `sggs-verify-prod` proves.
 
 | Field | Submit this | Status |
 |---|---|---|
-| Support URL | `https://gurbanisoul.com/support` | live |
+| Support URL | `https://gurbanisoul.com/en/support` | live (update in App Store Connect with 1.6.1) |
 | Marketing URL | `https://gurbanisoul.com` | live — the Gurbani Soul landing page |
-| Privacy Policy URL | `https://gurbanisoul.com/privacy` | live |
+| Privacy Policy URL | `https://gurbanisoul.com/en/privacy` | live (update in App Store Connect with 1.6.1) |
 
 The privacy page must stay true to the binary: no data collected, no network requests, location
 on-device only, saved verses / settings / Nitnem progress stored locally, reminders as local
