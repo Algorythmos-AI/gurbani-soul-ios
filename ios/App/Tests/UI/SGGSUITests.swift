@@ -67,8 +67,13 @@ final class SGGSUITests: XCTestCase {
         openTab(app, "Explore", expectingNavBar: "Explore")
         let card = app.buttons["Raag Clock"].firstMatch
         XCTAssertTrue(card.waitForExistence(timeout: 12), "Raag Clock card missing")
-        card.tap()
-        XCTAssertTrue(app.navigationBars["Raag Clock"].waitForExistence(timeout: 12), "Raag Clock did not open")
+        // A tap that lands while Explore is still settling can be swallowed (seen on a slow CI
+        // runner, main 071ddcc): retry like openTab rather than fail on the first miss.
+        for _ in 0..<3 {
+            if card.exists && card.isHittable { card.tap() }
+            if app.navigationBars["Raag Clock"].waitForExistence(timeout: 8) { return }
+        }
+        XCTFail("Raag Clock did not open")
     }
 
     /// Tab button that also resolves on iPadOS 26 (top tab bar may not expose `tabBars`).
