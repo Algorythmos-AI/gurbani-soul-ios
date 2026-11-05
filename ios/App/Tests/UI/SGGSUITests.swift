@@ -67,8 +67,25 @@ final class SGGSUITests: XCTestCase {
         openTab(app, "Explore", expectingNavBar: "Explore")
         let card = app.buttons["Raag Clock"].firstMatch
         XCTAssertTrue(card.waitForExistence(timeout: 12), "Raag Clock card missing")
-        card.tap()
-        XCTAssertTrue(app.navigationBars["Raag Clock"].waitForExistence(timeout: 12), "Raag Clock did not open")
+        // A tap that lands while Explore is still settling can be swallowed (seen on a slow CI
+        // runner, main 071ddcc).
+        XCTAssertTrue(tap(card, until: app.navigationBars["Raag Clock"]), "Raag Clock did not open")
+    }
+
+    /// Tap `element` until `target` appears. On a loaded CI runner one tap can be swallowed
+    /// while a push/pop or the glass bars are still animating. The first tap is unconditional
+    /// (XCUITest scrolls an off-screen element into view; `isHittable` is false until it does);
+    /// a retry happens only while `element` is still hittable, so a slow-but-real navigation is
+    /// never tapped twice.
+    @discardableResult
+    private func tap(_ element: XCUIElement, until target: XCUIElement, timeout: TimeInterval = 8) -> Bool {
+        element.tap()
+        if target.waitForExistence(timeout: timeout) { return true }
+        for _ in 0..<2 {
+            if element.exists && element.isHittable { element.tap() }
+            if target.waitForExistence(timeout: timeout) { return true }
+        }
+        return false
     }
 
     /// Tab button that also resolves on iPadOS 26 (top tab bar may not expose `tabBars`).
@@ -802,8 +819,8 @@ final class SGGSUITests: XCTestCase {
         XCUIDevice.shared.system.open(URL(string: "sggs://raag/gauri")!)
         XCTAssertTrue(app.navigationBars["Raag Gauri"].waitForExistence(timeout: 15), "sggs://raag/gauri did not open")
         attachShot(app, "raag_gauri")
-        app.navigationBars["Raag Gauri"].buttons.element(boundBy: 0).tap()
-        XCTAssertTrue(app.navigationBars["Index"].waitForExistence(timeout: 10), "a raag link sits on top of the Index")
+        XCTAssertTrue(tap(app.navigationBars["Raag Gauri"].buttons.element(boundBy: 0), until: app.navigationBars["Index"]),
+                      "a raag link sits on top of the Index")
         XCUIDevice.shared.system.open(URL(string: "sggs://raag/maalee-gaurhaa")!)
         XCTAssertTrue(app.navigationBars["Raag Mali Gaura"].waitForExistence(timeout: 15), "the corpus roman did not resolve")
     }
@@ -1051,10 +1068,10 @@ final class SGGSUITests: XCTestCase {
         let app = launchApp()
         openTab(app, "Explore", expectingNavBar: "Explore")
         let lineage = app.buttons["Lineage"].firstMatch
-        XCTAssertTrue(lineage.waitForExistence(timeout: 15)); lineage.tap()
+        XCTAssertTrue(lineage.waitForExistence(timeout: 15), "Lineage card missing")
         // "36 voices" — the exact count is pinned by testEverySurfaceSaysThirtySixVoices.
         let header = app.staticTexts.matching(NSPredicate(format: "label MATCHES %@", "[0-9]+ voices · 12th–17th century")).firstMatch
-        XCTAssertTrue(header.waitForExistence(timeout: 15), "lineage header missing")
+        XCTAssertTrue(tap(lineage, until: header, timeout: 15), "lineage header missing")
         // the River lens draws, then the Roll comes back for the cards below
         let river = app.segmentedControls.buttons["River"]
         XCTAssertTrue(river.waitForExistence(timeout: 8), "lens control missing")
@@ -1070,9 +1087,10 @@ final class SGGSUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["verses"].waitForExistence(timeout: 12), "voice page did not load")
         XCTAssertTrue(app.staticTexts["Their Bani in the Granth"].exists, "Ang barcode section missing")
         XCTAssertTrue(app.buttons["voiceBeginFirst"].waitForExistence(timeout: 12), "voice actions missing")
-        app.navigationBars.buttons.element(boundBy: 0).tap()   // back to Lineage
-        // compare two voices
-        app.buttons["compareVoices"].tap()
+        let compare = app.buttons["compareVoices"].firstMatch
+        XCTAssertTrue(tap(app.navigationBars.buttons.element(boundBy: 0), until: compare),   // back to Lineage
+                      "Back did not return to Lineage")
+        compare.tap()
         // Each pick starts from the top of the lazy list, so neither depends on where Back left
         // the scroll position, nor on whether Jaidev (c. 1170) sorts above or below Farid (1173).
         XCTAssertTrue(pickCard(app, farid), "compare: Farid card missing")
@@ -1082,15 +1100,15 @@ final class SGGSUITests: XCTestCase {
                       "compare sheet missing")
         XCTAssertTrue(app.staticTexts["Theme emphasis"].waitForExistence(timeout: 12), "diverging theme bars missing")
         app.buttons["Done"].tap()
-        app.navigationBars.buttons.element(boundBy: 0).tap()   // back to Explore
+        XCTAssertTrue(tap(app.navigationBars.buttons.element(boundBy: 0), until: app.navigationBars["Explore"]),
+                      "Back did not return to Explore")
         // vaars
         let vaars = app.buttons["Vaars"].firstMatch
-        XCTAssertTrue(vaars.waitForExistence(timeout: 8)); vaars.tap()
-        XCTAssertTrue(app.navigationBars["Vaars"].waitForExistence(timeout: 12))
+        XCTAssertTrue(vaars.waitForExistence(timeout: 8), "Vaars card missing")
+        XCTAssertTrue(tap(vaars, until: app.navigationBars["Vaars"], timeout: 12), "Vaars did not open")
         let card = app.buttons["vaar.card.2"].firstMatch      // Majh Ki Vaar
         XCTAssertTrue(card.waitForExistence(timeout: 12), "vaar card missing")
-        card.tap()
-        XCTAssertTrue(app.descendants(matching: .any)["vaar.weave"].waitForExistence(timeout: 12),
+        XCTAssertTrue(tap(card, until: app.descendants(matching: .any)["vaar.weave"], timeout: 12),
                       "vaar weave missing")
     }
 
