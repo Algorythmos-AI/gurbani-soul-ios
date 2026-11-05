@@ -108,14 +108,9 @@ are banis it does contain. `ios/tests/test_ios_gates.py` lints this section.)
 
 ## What's New
 
-For version 1.5.2 (covers everything since 1.5.1). Rewritten for every version; limit 4000 characters. Every version's text is kept in [`whats-new/`](whats-new/README.md).
+For version 1.6.0 (covers everything since 1.5.2). Rewritten for every version; limit 4000 characters. Every version's text is kept in [`whats-new/`](whats-new/README.md).
 
-> Share Gurbani beautifully.
->
-> • Share a verse as a card: the verse as printed, cited by Ang, in light or dark.
-> • Shared verses carry a link to that Ang on gurbanisoul.com, so they open with a preview of the Ang in Messages, WhatsApp and other apps.
-> • Share this Ang, straight from the Reader.
-> • Share Gurbani Soul sends a link with a proper preview.
+> Reliability and polish, in step with gurbanisoul.com 1.6.0.
 >
 > The text of Sri Guru Granth Sahib Ji is unchanged.
 
