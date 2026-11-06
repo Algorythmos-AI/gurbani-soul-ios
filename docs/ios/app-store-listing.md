@@ -108,7 +108,7 @@ are banis it does contain. `ios/tests/test_ios_gates.py` lints this section.)
 
 ## What's New
 
-For version 1.6.2 (covers everything since 1.5.2; 1.6.0 was never uploaded and 1.6.1 never submitted). Rewritten for every version; limit 4000 characters. Every version's text is kept in [`whats-new/`](whats-new/README.md).
+For version 1.6.3 (covers everything since 1.5.2; 1.6.0 was never uploaded, 1.6.1 and 1.6.2 never submitted). Rewritten for every version; limit 4000 characters. Every version's text is kept in [`whats-new/`](whats-new/README.md).
 
 > Reliability and polish, in step with gurbanisoul.com — now also in Punjabi at gurbanisoul.com/pa and in French at gurbanisoul.com/fr.
 >
@@ -129,9 +129,9 @@ permanent redirect, which `sggs-verify-prod` proves.
 
 | Field | Submit this | Status |
 |---|---|---|
-| Support URL | `https://gurbanisoul.com/en/support` | live (update in App Store Connect with 1.6.2) |
+| Support URL | `https://gurbanisoul.com/en/support` | live (update in App Store Connect with 1.6.3) |
 | Marketing URL | `https://gurbanisoul.com` | live — the Gurbani Soul landing page |
-| Privacy Policy URL | `https://gurbanisoul.com/en/privacy` | live (update in App Store Connect with 1.6.2) |
+| Privacy Policy URL | `https://gurbanisoul.com/en/privacy` | live (update in App Store Connect with 1.6.3) |
 
 The privacy page must stay true to the binary: no data collected, no network requests, location
 on-device only, saved verses / settings / Nitnem progress stored locally, reminders as local
