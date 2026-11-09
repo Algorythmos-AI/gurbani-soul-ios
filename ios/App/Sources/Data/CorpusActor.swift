@@ -46,6 +46,10 @@ actor CorpusActor {
     func english(forLine id: Int) throws -> String? { db.english(forLine: id) }
     func ang(_ n: Int) throws -> AngPage { try db.fetchAng(n) }
     func shabad(compId: Int) throws -> Shabad { try db.fetchShabad(compId: compId) }
+    /// Lines `first...last` by id (the Hukamnama's range; proven by `HukamnamaLocator`).
+    func lines(from first: Int, to last: Int) throws -> [ReaderLine] {
+        try db.fetchLines(from: first, to: last, maxLines: HukamnamaEntry.maxRangeLines)
+    }
     func randomHukam() throws -> HukamUnit { try db.hukamUnit(seed: db.randomSeedCompId()) }
     /// The Hukam of the day for a day number (`HukamOfTheDay.dayNumber`): the same unit all day.
     func hukamOfTheDay(day: Int) throws -> HukamUnit { try db.hukamUnit(seed: db.hukamOfTheDaySeed(day: day)) }

@@ -40,6 +40,11 @@ final class AppContainer {
     /// Gentle local reminders (opt-in, no entitlement, no network). Under `SGGS_UITEST` a fake
     /// scheduler stands in so tests never touch the real notification center.
     let reminders: NitnemReminderController
+    /// The Hukamnama from Sri Harmandir Sahib: the push registration state machine and what the
+    /// card/sheet know. A separate feature from the Hukam of the day. Fakes under `SGGS_UITEST`;
+    /// no network at all while the feature is disabled (Release builds until its gates are signed).
+    let hukamnamaPush: HukamnamaPushController
+    let hukamnama: HukamnamaHome
     #if canImport(UserNotifications)
     /// Retained delegate that routes a tapped reminder to `sggs://nitnem`.
     private var notificationRouter: NotificationRouter?
@@ -94,6 +99,9 @@ final class AppContainer {
         let scheduler: NotificationScheduling = FakeNotificationScheduler()
         #endif
         self.reminders = NitnemReminderController(scheduler: scheduler)
+        let seams = Self.makeHukamnamaSeams()
+        self.hukamnamaPush = HukamnamaPushController(registrar: seams.registrar, service: seams.service)
+        self.hukamnama = HukamnamaHome(service: seams.service)
 
         // Reload the Nitnem widget AND refresh reminders the moment a bani is marked read
         // (today's reminder for a now-complete band is removed).
@@ -112,10 +120,45 @@ final class AppContainer {
         #if canImport(UserNotifications)
         let router = self.router
         let container = self
-        let nr = NotificationRouter(onOpen: { url in router.handle(url, container: container) })
+        let home = self.hukamnama
+        let nr = NotificationRouter(onOpen: { url in router.handle(url, container: container) },
+                                    onHukamnama: { entry in home.ingest(entry) })
         self.notificationRouter = nr
         UNUserNotificationCenter.current().delegate = nr
         #endif
+    }
+
+    /// The Hukamnama's two seams. Under UI test: a fake registrar (no prompt, no APNs) and a fake
+    /// service seeded from `SGGS_UITEST_HUKAMNAMA` (one entry, JSON). Otherwise the real ones —
+    /// and no service at all while the feature is disabled.
+    private static func makeHukamnamaSeams() -> (registrar: PushRegistering, service: HukamnamaServing?) {
+        #if DEBUG
+        if DebugHooks.isUITest {
+            var entries: [HukamnamaEntry] = []
+            if let json = DebugHooks.environment["SGGS_UITEST_HUKAMNAMA"],
+               let e = try? HukamnamaStore.decoder.decode(HukamnamaEntry.self, from: Data(json.utf8)) {
+                entries = [e]
+            }
+            return (FakePushRegistrar(), FakeHukamnamaService(entries: entries))
+        }
+        #endif
+        #if canImport(UserNotifications) && canImport(UIKit)
+        guard HukamnamaConfig.enabled else { return (SystemPushRegistrar(), nil) }
+        return (SystemPushRegistrar(), HukamnamaConfig.apiBase.map { HukamnamaHTTPService(base: $0) })
+        #else
+        return (FakePushRegistrar(), nil)
+        #endif
+    }
+
+    /// Launch and foreground: copy the corpus fingerprint into the App Group (the NSE and the
+    /// widget compare against it without the DB), keep the server in step, re-read the store.
+    func refreshHukamnama() async {
+        guard HukamnamaConfig.enabled else { return }
+        if HukamnamaStore.localScriptureSHA256 != HukamnamaConfig.scriptureSHA256 {
+            HukamnamaStore.localScriptureSHA256 = HukamnamaConfig.scriptureSHA256
+        }
+        hukamnama.reloadFromStore()
+        await hukamnamaPush.refresh()
     }
 
     /// Which reminder bands have their whole set completed for today's Nitnem day. Used to drop
@@ -419,6 +462,9 @@ enum Presentation: Identifiable {
     case baniContents(BaniContentsRequest)
     /// The bani reader's reading-settings sheet (size, spacing, paper tone, toggles).
     case readingSettings
+    /// The Hukamnama from Sri Harmandir Sahib for an Amritsar date (nil = the latest). Never the
+    /// Hukam of the day — a separate feature with its own sheet (G3 R6).
+    case hukamnama(date: String?)
     var id: String {
         switch self {
         case .shabad(let c, _): return "shabad-\(c)"
@@ -429,6 +475,7 @@ enum Presentation: Identifiable {
         case .themeCard(let c): return "theme-card-\(c)"
         case .baniContents(let r): return "contents-\(r.baniId)"
         case .readingSettings: return "reading-settings"
+        case .hukamnama(let d): return "hukamnama-\(d ?? "latest")"
         }
     }
     /// The shabad/hukam subset, for ShabadSheet.

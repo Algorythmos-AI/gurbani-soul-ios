@@ -4,6 +4,8 @@ import CoreSpotlight
 
 @main
 struct SGGSApp: App {
+    /// APNs registration callbacks (the Hukamnama push) → PushTokenBroker.
+    @UIApplicationDelegateAdaptor(SGGSAppDelegate.self) private var appDelegate
     @State private var container: AppContainer
     @Environment(\.scenePhase) private var scenePhase
 
@@ -62,10 +64,19 @@ struct SGGSApp: App {
             .task {
                 CrashMonitor.shared.start()   // local-only diagnostics; QA requires zero collected
                 ReadingActivityController.sweepOrphaned()   // clear any activity left by a prior launch
+                #if DEBUG
+                // A cold launch straight into a deep link (as a notification tap or a widget does),
+                // delivered while the integrity check is still running: the presentation must queue
+                // and appear only once the sheet host mounts.
+                if let raw = DebugHooks.environment["SGGS_UITEST_OPEN_URL"], let url = URL(string: raw) {
+                    container.router.handle(url, container: container)
+                }
+                #endif
                 await container.runIntegrity()
                 await container.loadMeta()
                 await container.refreshWidgetSnapshot()
                 await container.refreshReminders()
+                await container.refreshHukamnama()   // registers with APNs on every launch while wanted
                 await container.indexThemesForSpotlight()   // once per build, after launch settles
             }
             .onOpenURL { url in container.router.handle(url, container: container) }
@@ -74,6 +85,7 @@ struct SGGSApp: App {
                     container.flushIfIdle()   // never presents mid-dismiss
                     Task { await container.refreshReminders() }   // re-plan dated reminders on return
                     Task { await container.refreshWidgetSnapshotIfStale() }   // keep the Hukam days ahead
+                    Task { await container.refreshHukamnama() }   // denied → DELETE; 24 h re-ack; queued DELETEs
                 }
             }
             // The dated plan drops "today" once its time has passed, so a time-zone or clock change
@@ -81,6 +93,7 @@ struct SGGSApp: App {
             .onReceive(NotificationCenter.default.publisher(for: .NSSystemTimeZoneDidChange)) { _ in
                 Task { await container.refreshReminders() }
                 Task { await container.refreshWidgetSnapshotIfStale() }   // a new local date may need today's verse
+                if HukamnamaConfig.enabled { container.hukamnamaPush.scheduleSync() }   // new DST slots, debounced
             }
             .onReceive(NotificationCenter.default.publisher(for: .NSSystemClockDidChange)) { _ in
                 Task { await container.refreshReminders() }

@@ -78,24 +78,70 @@ final class NitnemReminderController: ObservableObject {
 }
 
 #if canImport(UserNotifications)
-/// Routes a tapped reminder to `sggs://nitnem` and keeps banners off the screen while the app is
-/// foregrounded (no nudge over the page the reader is on). One shared instance, set as the
-/// center's delegate at launch.
+/// Routes a tapped notification and decides how one is shown while the app is foregrounded.
+/// - Nitnem reminders: a tap opens `sggs://nitnem`; in the foreground nothing is shown (no
+///   nudge over the page the reader is on).
+/// - The Hukamnama from Sri Harmandir Sahib (`thread-id` "hukamnama"): a tap opens its sheet
+///   (`sggs://hukamnama/<date>`, or the latest when the payload's URL is malformed); in the
+///   foreground it goes to Notification Center only (`.list`), never a banner over the page.
+///   Both paths also merge the payload into the shared store so the card and widget update.
+/// One shared instance, set as the center's delegate at launch (early enough for a cold tap).
 final class NotificationRouter: NSObject, UNUserNotificationCenterDelegate {
+    static let hukamnamaThread = "hukamnama"
+
     let onOpen: @MainActor @Sendable (URL) -> Void
-    init(onOpen: @escaping @MainActor @Sendable (URL) -> Void) { self.onOpen = onOpen }
+    let onHukamnama: @MainActor @Sendable (HukamnamaEntry) -> Void
+    init(onOpen: @escaping @MainActor @Sendable (URL) -> Void,
+         onHukamnama: @escaping @MainActor @Sendable (HukamnamaEntry) -> Void = { _ in }) {
+        self.onOpen = onOpen
+        self.onHukamnama = onHukamnama
+    }
+
+    /// Foreground presentation, by thread: the Hukamnama → Notification Center only.
+    static func presentationOptions(threadIdentifier: String) -> UNNotificationPresentationOptions {
+        threadIdentifier == hukamnamaThread ? [.list] : []
+    }
+
+    /// Where a tap goes. A Hukamnama whose `url` is missing or fails the router's strict check
+    /// falls back to the latest Hukamnama; anything else keeps the reminders' `sggs://nitnem`.
+    static func openURL(threadIdentifier: String, userInfo: [AnyHashable: Any], now: Date = Date()) -> URL? {
+        let raw = userInfo["url"] as? String
+        if threadIdentifier == hukamnamaThread {
+            if let raw, let url = URL(string: raw), Router.hukamnamaTarget(url, now: now) != nil { return url }
+            return URL(string: "sggs://hukamnama")
+        }
+        return URL(string: raw ?? "sggs://nitnem")
+    }
+
+    /// The payload's entry, merged into the App Group store (the NSE normally did this already;
+    /// merging twice is a no-op). Nil for any other notification.
+    private func ingest(_ content: UNNotificationContent) -> HukamnamaEntry? {
+        guard content.threadIdentifier == Self.hukamnamaThread,
+              let entry = HukamnamaEntry(pushUserInfo: content.userInfo) else { return nil }
+        HukamnamaStore.merge([entry])
+        return entry
+    }
 
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
-        []   // already in the app — never cover the reader with our own banner
+        let content = notification.request.content
+        if let entry = ingest(content) {
+            let handle = onHukamnama
+            await MainActor.run { handle(entry) }
+        }
+        return Self.presentationOptions(threadIdentifier: content.threadIdentifier)
     }
 
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 didReceive response: UNNotificationResponse) async {
-        let raw = response.notification.request.content.userInfo["url"] as? String ?? "sggs://nitnem"
-        guard let url = URL(string: raw) else { return }
-        let open = onOpen
-        await MainActor.run { open(url) }
+        let content = response.notification.request.content
+        let entry = ingest(content)
+        guard let url = Self.openURL(threadIdentifier: content.threadIdentifier, userInfo: content.userInfo) else { return }
+        let open = onOpen, handle = onHukamnama
+        await MainActor.run {
+            if let entry { handle(entry) }
+            open(url)
+        }
     }
 }
 #endif

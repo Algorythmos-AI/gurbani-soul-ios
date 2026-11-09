@@ -144,6 +144,18 @@ extension SQLiteCandidateSource: CorpusReader, AnalyticsSource {
         return Shabad(compId: compId, lines: rs)
     }
 
+    /// The lines with ids `first...last`, in id order (the Hukamnama from Sri Harmandir Sahib
+    /// arrives as a line-id range, which can cross compositions on a Vaar day). Verbatim rows,
+    /// exactly as /api/shabad returns them; the caller proves them against `range_sha256`.
+    /// An empty or reversed range, or one longer than `maxLines`, reads nothing.
+    public func fetchLines(from first: Int, to last: Int, maxLines: Int = 400) throws -> [ReaderLine] {
+        guard first > 0, last >= first, last - first < maxLines else { return [] }
+        return attachEn(try readerRows("SELECT \(Self.readerCols) FROM lines WHERE id BETWEEN ? AND ? ORDER BY id") {
+            sqlite3_bind_int64($0, 1, Int64(first))
+            sqlite3_bind_int64($0, 2, Int64(last))
+        })
+    }
+
     public func randomSeedCompId() throws -> Int {
         var stmt: OpaquePointer?
         guard sqlite3_prepare_v2(handle, "SELECT comp_id FROM lines WHERE is_header=0 ORDER BY RANDOM() LIMIT 1", -1, &stmt, nil) == SQLITE_OK else {

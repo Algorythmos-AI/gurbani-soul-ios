@@ -71,6 +71,14 @@
       <array><string>sggs</string></array>
     </dict>
   </array>
+  <!-- The Hukamnama from Sri Harmandir Sahib (push): build settings in project.yml, per
+       configuration. Read by HukamnamaConfig; never hard-coded in Swift. -->
+  <key>HukamnamaAPIBase</key>
+  <string>$(HUKAMNAMA_API_BASE)</string>
+  <key>HukamnamaAPSEnvironment</key>
+  <string>$(HUKAMNAMA_APS_ENV)</string>
+  <key>HukamnamaEnabled</key>
+  <string>$(HUKAMNAMA_ENABLED)</string>
   <key>NSLocationWhenInUseUsageDescription</key>
   <string>Your location is used only on this device to compute local sunrise and sunset for the solar Raag Clock. It is rounded to about 1 km, stored only on this device, and never transmitted.</string>
 </dict>

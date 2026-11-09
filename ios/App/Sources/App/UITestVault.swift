@@ -36,6 +36,7 @@ enum UITestVault {
                             "sggs_rehras_variant", "sggs_reader_tone", "sggs_reader_leading",
                             "sggs_gurmukhi_size", "sggs_focus_mode", "sggs_saroop", "sggs_appearance",
                             "sggs_autoscroll_pace", "sggs_live_activity", "sggs_gutka_layout"]
+                            + HukamnamaPushController.storedKeys
 
     enum LaunchMode: Equatable { case testSession, testRelaunch, ordinary }
 

@@ -68,6 +68,12 @@ UPLOAD="${SGGS_UPLOAD:-0}"
 CHANNEL="${SGGS_RELEASE_CHANNEL:-testflight}"
 case "$CHANNEL" in testflight|appstore) ;; *) fail "SGGS_RELEASE_CHANNEL must be testflight or appstore" ;; esac
 export SGGS_RELEASE_CHANNEL="$CHANNEL"          # read by pipeline/check_release_license.sh (step 2)
+# The Hukamnama service: project.yml's Release default is production; TestFlight builds talk to
+# the staging service instead (whose sends reach production APNs only for an allowlist).
+HUKAMNAMA_ARGS=()
+if [ "$CHANNEL" = testflight ]; then
+  HUKAMNAMA_ARGS=(HUKAMNAMA_API_BASE="${SGGS_HUKAMNAMA_API_BASE_TESTFLIGHT:-https://api-staging.gurbanisoul.com}")
+fi
 # Apple rejects uploads built with an older SDK (Xcode 26 / iOS 26 SDK required since 2026-04-28).
 # One constant: raise it when developer.apple.com/news/upcoming-requirements raises the floor.
 MIN_XCODE_MAJOR=26
@@ -229,6 +235,7 @@ rm -rf "$ARCHIVE"
 xcodebuild -project "$PROJECT_DIR/$TF_NAME.xcodeproj" -scheme SGGS -configuration Release \
   -destination "generic/platform=iOS" -archivePath "$ARCHIVE" archive \
   DEVELOPMENT_TEAM="$TEAM_ID" CURRENT_PROJECT_VERSION="$BUILD" CODE_SIGNING_ALLOWED=YES \
+  ${HUKAMNAMA_ARGS[@]+"${HUKAMNAMA_ARGS[@]}"} \
   -allowProvisioningUpdates ${AUTH_ARGS[@]+"${AUTH_ARGS[@]}"} | tail -30
 [ -d "$ARCHIVE" ] || fail "archive was not produced"
 

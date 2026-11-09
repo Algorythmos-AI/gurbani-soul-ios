@@ -68,6 +68,7 @@ struct RootView: View {
                     case .themeCard(let concept): ThemeCardSheet(concept: concept)
                     case .baniContents(let r): BaniContentsSheet(request: r)
                     case .readingSettings: ReadingSettingsSheet()
+                    case .hukamnama(let date): HukamnamaSheet(date: date)
                     }
                 }
                 .safeAreaInset(edge: .top) {

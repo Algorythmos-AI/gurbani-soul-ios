@@ -41,15 +41,29 @@ targets:
         product: GurbaniPahar
       - target: SGGSWidgets
         embed: true
+      - target: SGGSNotificationService
+        embed: true
     entitlements:
       path: SGGS.entitlements
       properties:
         com.apple.security.application-groups: [group.org.sggs]
+        # Remote push for the Hukamnama from Sri Harmandir Sahib. Expanded per configuration
+        # (Debug = development/sandbox tokens; Release = production — TestFlight AND App Store
+        # builds get production tokens). The same setting is reported to the server as `env`.
+        aps-environment: $(HUKAMNAMA_APS_ENV)
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: org.sggs.app
         INFOPLIST_FILE: Resources/Info.plist
         GENERATE_INFOPLIST_FILE: "NO"
+        # The Hukamnama service (sggs-platform services/hukamnama). Release builds point at
+        # production; ios/tools/testflight_archive.sh overrides it to staging for the
+        # testflight channel. Read from Info.plist (HukamnamaAPIBase) — never typed in code.
+        HUKAMNAMA_API_BASE: https://api-staging.gurbanisoul.com
+        HUKAMNAMA_APS_ENV: development
+        # The feature ships dark until G3 (copy), G4 (privacy) and H-src (SGPC) are signed:
+        # Debug builds (tests, CI, development) show it; Release builds hide every surface.
+        HUKAMNAMA_ENABLED: "YES"
       configs:
         # Release = the archive/TestFlight configuration. DEVELOPMENT_TEAM stays "" here BY DESIGN:
         # ios/tools/testflight_archive.sh injects the Team ID on the xcodebuild command line, so it
@@ -60,6 +74,9 @@ targets:
           CODE_SIGNING_ALLOWED: "YES"
           CODE_SIGN_STYLE: Automatic
           DEVELOPMENT_TEAM: ""
+          HUKAMNAMA_API_BASE: https://api.gurbanisoul.com
+          HUKAMNAMA_APS_ENV: production
+          HUKAMNAMA_ENABLED: "NO"
   # WidgetKit extension: links ONLY the dependency-free GurbaniPahar product + the shared
   # snapshot store — never CSQLite or the 100 MB corpus DB. Entitlements are inert on the
   # simulator (CI stays green with CODE_SIGNING_ALLOWED NO); device installs need signing.
@@ -104,11 +121,49 @@ targets:
           CODE_SIGNING_ALLOWED: "YES"
           CODE_SIGN_STYLE: Automatic
           DEVELOPMENT_TEAM: ""
+  # Notification Service Extension for the Hukamnama push: a PASS-THROUGH data writer. It never
+  # edits the notification; it merges the payload's fields into hukamnama-snapshot.json (App
+  # Group) and reloads the "Hukamnama" widget kind. Links no package (no CSQLite, no corpus DB):
+  # only the one shared store file. PrivacyInfo ships in every distributable target.
+  SGGSNotificationService:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: NotificationService
+      - path: Shared/HukamnamaShared.swift
+      - path: Resources/PrivacyInfo.xcprivacy
+        buildPhase: resources
+    entitlements:
+      path: NotificationService/SGGSNotificationService.entitlements
+      properties:
+        com.apple.security.application-groups: [group.org.sggs]
+    info:
+      path: NotificationService/Info.plist
+      properties:
+        CFBundleDisplayName: Gurbani Soul
+        # Must track the app's MARKETING_VERSION (App Store validation, as for the widgets).
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.usernotifications.service
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).NotificationService
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: org.sggs.app.notifications
+      configs:
+        Release:                      # must match the app target (same team, same App Group)
+          CODE_SIGNING_ALLOWED: "YES"
+          CODE_SIGN_STYLE: Automatic
+          DEVELOPMENT_TEAM: ""
   SGGSTests:
     type: bundle.unit-test
     platform: iOS
     sources:
       - path: Tests/Unit
+      # Hukamnama fixtures (generated from the corpus by ios/tools/hukamnama_fixture.py; never
+      # hand-typed). The .apns file is also the `xcrun simctl push` fixture.
+      - path: Tests/Fixtures
+        buildPhase: resources
       # The platform's brand tokens (vendored, vendor.lock.json) — BrandTokensParityTests pins
       # DesignTokens.swift to them. Test bundle only; the app never ships this file.
       - path: ../../docs/brand/tokens.json
@@ -124,7 +179,10 @@ targets:
   SGGSUITests:
     type: bundle.ui-testing
     platform: iOS
-    sources: [Tests/UI]
+    sources:
+      - path: Tests/UI
+      - path: Tests/Fixtures
+        buildPhase: resources
     dependencies: [target: SGGS]
     settings:
       base: { PRODUCT_BUNDLE_IDENTIFIER: org.sggs.app.uitests }
