@@ -24,8 +24,8 @@ enum HukamnamaSchedule {
     /// A later entry takes effect one minute after the previous day's delivery, so a change of
     /// offset never fires twice on one local day nor skips a day: it must be live before the next
     /// delivery whether that moves earlier or later in UTC.
-    /// A local time that does not exist on a spring-forward day (02:30 in Sydney) is the next
-    /// time that does, as the system clock would ring an alarm.
+    /// A local time that does not exist on a spring-forward day (02:30 in Sydney) moves forward by
+    /// the gap (03:30), as the Clock app rings an alarm; its UTC minute is unchanged that day.
     static func build(localMinute: Int, timeZone: TimeZone, from: Date) -> [HukamnamaSlot] {
         let minute = min(max(localMinute, 0), 24 * 60 - 1)
         var cal = Calendar(identifier: .gregorian)
@@ -39,7 +39,7 @@ enum HukamnamaSchedule {
             guard let midnight = cal.date(byAdding: .day, value: day, to: start),
                   let fire = cal.nextDate(after: midnight.addingTimeInterval(-1),
                                           matching: DateComponents(hour: minute / 60, minute: minute % 60),
-                                          matchingPolicy: .nextTime) else { continue }
+                                          matchingPolicy: .nextTimePreservingSmallerComponents) else { continue }
             let c = utc.dateComponents([.hour, .minute], from: fire)
             let slot = (c.hour ?? 0) * 60 + (c.minute ?? 0)
             if out.last?.slotUTCMin != slot {

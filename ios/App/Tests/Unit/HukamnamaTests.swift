@@ -46,13 +46,14 @@ final class HukamnamaScheduleTests: XCTestCase {
         // AEDT (+11) → 20:00 UTC the previous day; AEST (+10) from 2027-04-04 → 21:00 UTC
         let syd = HukamnamaSchedule.build(localMinute: 7 * 60, timeZone: zone("Australia/Sydney"), from: utc(2026, 11, 9))
         XCTAssertEqual(syd.map(\.slotUTCMin), [1200, 1260, 1200])
-        // PST (−8) → 15:00 UTC; PDT (−7) from 2027-03-14 → 14:00 UTC
-        let van = HukamnamaSchedule.build(localMinute: 7 * 60, timeZone: zone("America/Vancouver"), from: utc(2026, 11, 9))
-        XCTAssertEqual(van.map(\.slotUTCMin), [900, 840, 900])
+        // PST (−8) → 15:00 UTC; PDT (−7) from 2027-03-14 → 14:00 UTC. (Los Angeles, not Vancouver:
+        // newer tz data puts British Columbia on permanent UTC−7, so its answer depends on the OS.)
+        let la = HukamnamaSchedule.build(localMinute: 7 * 60, timeZone: zone("America/Los_Angeles"), from: utc(2026, 11, 9))
+        XCTAssertEqual(la.map(\.slotUTCMin), [900, 840, 900])
     }
 
     func testEntriesAreOrderedAndInRange() {
-        for id in ["Asia/Kolkata", "Asia/Kathmandu", "Europe/London", "Australia/Sydney", "America/Vancouver",
+        for id in ["Asia/Kolkata", "Asia/Kathmandu", "Europe/London", "Australia/Sydney", "America/Vancouver", "America/Los_Angeles",
                    "Australia/Lord_Howe", "Pacific/Chatham", "America/St_Johns"] {
             for minute in [0, 150, 7 * 60, 23 * 60 + 59] {
                 let s = HukamnamaSchedule.build(localMinute: minute, timeZone: zone(id), from: utc(2026, 11, 9, 3))
@@ -83,7 +84,8 @@ final class HukamnamaScheduleTests: XCTestCase {
         // 20:00 UTC on 8 Nov is 01:30 on 9 Nov in Amritsar → that morning's 05:30 IST
         XCTAssertEqual(HukamnamaSchedule.usualPublishInstant(now: utc(2026, 11, 8, 20)), utc(2026, 11, 9))
         XCTAssertEqual(HukamnamaSchedule.usualLocalTime(now: utc(2026, 11, 9, 12), timeZone: zone("Australia/Sydney"),
-                                                        locale: Locale(identifier: "en_US_POSIX")), "11:00 AM")
+                                                        locale: Locale(identifier: "en_US_POSIX"))
+                           .replacingOccurrences(of: "\u{202F}", with: " "), "11:00 AM")   // ICU's narrow no-break space
     }
 
     func testAmritsarDate() {

@@ -321,7 +321,10 @@ extension Router {
     /// date is a real Gregorian date (no 2026-02-30, no 2026-1-9) within ±400 days of `now`.
     /// Everything else is nil, never a guess.
     nonisolated static func hukamnamaTarget(_ url: URL, now: Date = Date()) -> HukamnamaTarget? {
-        guard url.scheme == "sggs", url.host == "hukamnama", url.user == nil, url.port == nil else { return nil }
+        guard url.scheme == "sggs", url.host == "hukamnama", url.user == nil, url.port == nil,
+              // the date is plain ASCII: a percent-escape (`%32026-11-09`) is never decoded into one
+              let raw = URLComponents(url: url, resolvingAgainstBaseURL: false)?.percentEncodedPath,
+              !raw.contains("%") else { return nil }
         let parts = url.pathComponents.filter { $0 != "/" }
         guard !parts.isEmpty else { return .latest }
         guard parts.count == 1, let key = parts.first, let day = AmritsarDate.startOfDay(key),
