@@ -27,8 +27,9 @@ LISTING = ROOT / "docs" / "ios" / "app-store-listing.md"
 # and is out of scope.
 SHIPPING_DIRS = [APP / "Sources", APP / "Shared", APP / "Widgets", APP / "NotificationService", KIT]
 
-# The one file allowed to talk to a server: the opt-in Hukamnama service client.
-NETWORK_FILES = ("HukamnamaAPI.swift",)
+# The files allowed to talk to a server: the opt-in Hukamnama service client, and the Hukamnama
+# widget's one read of /today (compiled only where HUKAMNAMA_WIDGET is set).
+NETWORK_FILES = ("HukamnamaAPI.swift", "HukamnamaWidgetProvider.swift")
 
 
 def shipping_swift():
@@ -160,6 +161,33 @@ class HukamnamaGates(unittest.TestCase):
         if "REVIEWED: true" not in review:
             self.assertEqual(release.group(1), "NO",
                              "the Hukamnama is enabled in Release before its G3 copy review is signed")
+
+    def test_widget_ships_dark_until_the_copy_is_reviewed(self):
+        # the widget's registration and its network read are compiled out of Release builds
+        # until the G3 copy review is signed, exactly like the app's HUKAMNAMA_ENABLED
+        provider = (APP / "Widgets" / "HukamnamaWidgetProvider.swift").read_text(encoding="utf-8")
+        self.assertTrue(provider.lstrip().startswith("#if HUKAMNAMA_WIDGET"), "the provider must be wholly conditional")
+        self.assertTrue(provider.rstrip().endswith("#endif"))
+        bundle = (APP / "Widgets" / "SGGSWidgets.swift").read_text(encoding="utf-8")
+        self.assertRegex(bundle, r"#if HUKAMNAMA_WIDGET\n\s*HukamnamaWidget\(\)")
+        project = (APP / "project.yml").read_text(encoding="utf-8")
+        block = project.split("  SGGSWidgets:", 1)[1].split("\n  SGGSNotificationService:", 1)[0]
+        release = block.split("        Release:", 1)[1]
+        self.assertIn("HUKAMNAMA_WIDGET", block.split("      configs:", 1)[0])
+        review = (ROOT / "docs" / "review" / "g3-hukamnama.md").read_text(encoding="utf-8")
+        if "REVIEWED: true" not in review:
+            self.assertIn('SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited)"', release)
+            self.assertNotIn("HUKAMNAMA_WIDGET", release,
+                             "the Hukamnama widget is compiled into Release before its G3 copy review is signed")
+
+    def test_widget_network_read_is_one_get_of_today(self):
+        # the widget's exception cannot grow quietly: one GET of /v1/hukamnama/today, no body,
+        # no token, no identifier
+        text = (APP / "Widgets" / "HukamnamaWidgetProvider.swift").read_text(encoding="utf-8")
+        self.assertEqual(re.findall(r'appendingPathComponent\("([^"]+)"\)', text), ["v1/hukamnama/today"])
+        self.assertEqual(re.findall(r'httpMethod = "([A-Z]+)"', text), ["GET"])
+        self.assertNotRegex(text, r"httpBody|setValue\([^)]*Authorization|deviceToken|identifierForVendor")
+        self.assertIn(".ephemeral", text)
 
     def test_aps_environment_is_per_configuration(self):
         entitlements = (APP / "SGGS.entitlements").read_text(encoding="utf-8")
@@ -472,6 +500,11 @@ class ListingLint(unittest.TestCase):
     def test_review_notes_widget_count_matches_code(self):
         widgets = violations(r"struct\s+\w+\s*:\s*Widget\b", dirs=[APP / "Widgets"])
         home_screen = [w for w in widgets if "LiveActivity" not in w]
+        # A widget compiled only under HUKAMNAMA_WIDGET is not in the Release binary until its
+        # G3 review is signed (HukamnamaGates), so the store's review notes do not count it yet.
+        review = (ROOT / "docs" / "review" / "g3-hukamnama.md").read_text(encoding="utf-8")
+        if "REVIEWED: true" not in review:
+            home_screen = [w for w in home_screen if "HukamnamaWidgetProvider.swift" not in w]
         words = {2: "two", 3: "three", 4: "four", 5: "five"}
         notes = _section(self.text, "App Review Information")
         self.assertRegex(notes, rf"(?i)\b{words[len(home_screen)]} Home Screen widgets\b")

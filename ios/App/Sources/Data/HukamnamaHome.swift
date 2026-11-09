@@ -1,4 +1,7 @@
 import Foundation
+#if canImport(WidgetKit)
+import WidgetKit
+#endif
 
 /// What the Nitnem home card and the sheet know about the Hukamnama from Sri Harmandir Sahib:
 /// the shared store first (written by the NSE, the app and the widget), then the read API —
@@ -27,8 +30,20 @@ final class HukamnamaHome {
 
     /// A payload from a foreground push or a tap.
     func ingest(_ entry: HukamnamaEntry) {
+        let before = entries
         entries = HukamnamaStore.merge([entry], url: storeURL)
         if entries.isEmpty { reloadFromStore() }
+        if entries != before { Self.reloadWidget() }
+    }
+
+    /// The widget kind the NSE also reloads (Widgets/HukamnamaWidgetProvider.swift). App-side
+    /// reloads are not counted against the widget's budget while the app is in the foreground.
+    static let widgetKind = "Hukamnama"
+
+    static func reloadWidget() {
+        #if canImport(WidgetKit)
+        WidgetCenter.shared.reloadTimelines(ofKind: widgetKind)
+        #endif
     }
 
     /// The card is on screen: fetch today's status unless that happened in the last 10 minutes.

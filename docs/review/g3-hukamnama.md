@@ -18,7 +18,7 @@ It is a separate feature from the existing **Hukam of the day**, whose copy is n
 |---|---|---|
 | iOS push, sheet, card, Reminders section, NSE | `gurbani-soul-ios` | branch `feat/hukamnama-push` |
 | Push payload (title, subtitle, body format) | `sggs-platform` | `services/hukamnama/` (sender; built separately) |
-| Widget names, descriptions and states | `gurbani-soul-ios` | later PR `feat/hukamnama-widget` — listed in §3.6 as planned copy |
+| Widget names, descriptions and states | `gurbani-soul-ios` | branch `feat/hukamnama-widget` (§3.6) |
 
 **What is not in scope.** No Gurmukhi verse text is reviewed here. Every verse comes verbatim from
 the pinned corpus, proven by `range_sha256` before it is shown, and is cited by Ang. One existing
@@ -100,14 +100,23 @@ day** · R7 no hand-typed Gurmukhi · R8 keywords name something the app contain
 The card and the sheet speak the strings above; lines speak their verbatim Gurmukhi first (the
 existing `LineRow` behaviour). No new VoiceOver-only text.
 
-### 3.6 Widget (planned — later PR, listed so the whole feature is reviewed once)
+### 3.6 Widget (`Shared/HukamnamaWidgetViews.swift`, `Widgets/HukamnamaWidgetProvider.swift`)
 
-| # | String | Pre-review note |
-|---|---|---|
-| W1 | Widget name: `Hukamnama · Sri Harmandir Sahib` | |
-| W2 | Description: `The Hukamnama taken at Sri Harmandir Sahib, Amritsar, located by Ang from SGPC. Text from Sri Guru Granth Sahib Ji (not the Hukam of the day).` | From the plan. |
-| W3 | `Ang 673 · Mon 9 Nov, Amritsar` | Comma form, from the plan; the app uses " · Amritsar". Choose one. |
-| W4 | `Not yet published today` / `Not available today. Open the app` / `Turn on the Hukamnama in Gurbani Soul` / `Tap to read` / `Hukamnama · Ang 673` | Widget states and families. |
+Compiled only where `HUKAMNAMA_WIDGET` is set, so it is not in Release builds until this pack is
+signed. The verse is the entry's opening verse (copied by the server from our corpus), shown whole
+or not at all; a corpus-fingerprint mismatch shows the Ang and date only.
+
+| # | String | Where | Pre-review note |
+|---|---|---|---|
+| W1 | Widget name and eyebrow: `Hukamnama · Sri Harmandir Sahib` | `HukamnamaWidgetView.name` | N1. The small widget splits it: `Hukamnama` over `Sri Harmandir Sahib`. |
+| W2 | Description (widget gallery): `The Hukamnama taken at Sri Harmandir Sahib, Amritsar, located by Ang from SGPC. Text from Sri Guru Granth Sahib Ji (not the Hukam of the day).` | provider | R6, both ways round. |
+| W3 | Citation `Sri Guru Granth Sahib Ji · Ang N`, then the date line `Mon 9 Nov · Amritsar` | Home Screen families | The plan's comma form ("Ang 673 · Mon 9 Nov, Amritsar") was dropped for the app's own " · Amritsar" (N2), so every surface writes the date one way. |
+| W4 | `Not yet published today` | 05:30–14:00 IST with nothing new | The previous Hukamnama stays, dimmed, with its own date. |
+| W5 | `Delayed today` | held for the owner's check, or after 14:00 IST | The card's word (C4), so the two agree. The plan's "Not available today. Open the app" was not used. |
+| W6 | `Turn on the Hukamnama in Gurbani Soul.` | no Hukamnama has reached this device | |
+| W7 | `Tap to read` (medium) / `Tap to read the shabad` (large) | beside the citation | *Existing* words (Hukam of the day widget). |
+| W8 | Lock Screen: `Hukamnama · Ang 673` (rectangular, inline); `Ang` over the number (circular); `Hukamnama` with no Ang yet | accessory families | The rectangular widget adds the verse only when it fits whole, otherwise the date or the status. |
+| W9 | Before 05:30 IST, yesterday's Hukamnama is shown with its date and no status line (it is still the current one) | | Never called today's. |
 
 ## 4. Sign-off
 
