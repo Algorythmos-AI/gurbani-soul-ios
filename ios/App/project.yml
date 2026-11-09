@@ -111,16 +111,25 @@ targets:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UIAppFonts: [SantLipi.ttf, SourceSerif4.ttf]
+        HukamnamaAPIBase: $(HUKAMNAMA_API_BASE)
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: org.sggs.app.widgets
+        # The Hukamnama widget (Widgets/HukamnamaWidgetProvider.swift) is compiled only where
+        # HUKAMNAMA_WIDGET is set, and reads /today from the same service as the app (the
+        # command-line override in ios/tools/testflight_archive.sh reaches this target too).
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) HUKAMNAMA_WIDGET"
+        HUKAMNAMA_API_BASE: https://api-staging.gurbanisoul.com
       configs:
         Release:                      # must match the app target (same team, same App Group)
           CODE_SIGNING_ALLOWED: "YES"
           CODE_SIGN_STYLE: Automatic
           DEVELOPMENT_TEAM: ""
+          HUKAMNAMA_API_BASE: https://api.gurbanisoul.com
+          # Dark in Release until G3 (copy) and G4 (privacy) are signed, like HUKAMNAMA_ENABLED.
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited)"
   # Notification Service Extension for the Hukamnama push: a PASS-THROUGH data writer. It never
   # edits the notification; it merges the payload's fields into hukamnama-snapshot.json (App
   # Group) and reloads the "Hukamnama" widget kind. Links no package (no CSQLite, no corpus DB):

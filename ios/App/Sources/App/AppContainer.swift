@@ -156,6 +156,7 @@ final class AppContainer {
         guard HukamnamaConfig.enabled else { return }
         if HukamnamaStore.localScriptureSHA256 != HukamnamaConfig.scriptureSHA256 {
             HukamnamaStore.localScriptureSHA256 = HukamnamaConfig.scriptureSHA256
+            HukamnamaHome.reloadWidget()   // the widget's verse decision reads this fingerprint
         }
         hukamnama.reloadFromStore()
         await hukamnamaPush.refresh()

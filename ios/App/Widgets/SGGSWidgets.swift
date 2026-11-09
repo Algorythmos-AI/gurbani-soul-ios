@@ -14,6 +14,9 @@ struct SGGSWidgetsBundle: WidgetBundle {
     var body: some Widget {
         RaagNowWidget()
         HukamWidget()
+        #if HUKAMNAMA_WIDGET
+        HukamnamaWidget()      // dark in Release until G3/G4 are signed (ios/tests HukamnamaGates)
+        #endif
         NitnemWidget()
         #if canImport(ActivityKit)
         NitnemLiveActivity()   // Lock Screen + Dynamic Island while reading
