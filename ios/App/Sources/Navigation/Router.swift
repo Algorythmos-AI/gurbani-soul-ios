@@ -188,7 +188,8 @@ final class Router {
     ///   sggs://constellation[?theme=naam&with=haumai | &alone=1] ·
     ///   sggs://hukam (a fresh draw) · sggs://hukam/today (the Hukam of the day) ·
     ///   sggs://vaars · sggs://vaar/<1–22>[/read][?pauri=N | ?line=Y] ·
-    ///   sggs://voice/<slug> (a voice's page, e.g. guru-tegh-bahadur-ji)
+    ///   sggs://voice/<slug> (a voice's page, e.g. guru-tegh-bahadur-ji) ·
+    ///   sggs://hukamnama[/<yyyy-MM-dd>] (the Hukamnama from Sri Harmandir Sahib; Amritsar date)
     /// `line` lands on that verse (scrolled + highlighted). Out-of-range/malformed values are
     /// ignored (never crash on a hostile URL).
     func handle(_ url: URL, container: AppContainer) {
@@ -274,6 +275,12 @@ final class Router {
         case "hukam":
             // sggs://hukam draws afresh; sggs://hukam/today opens the Hukam of the day (the widget's verse)
             container.present(value == "today" ? .hukamOfTheDay : .hukam)
+        case "hukamnama":
+            // The Hukamnama from Sri Harmandir Sahib (a separate feature from the Hukam of the day):
+            // sggs://hukamnama (the latest) · sggs://hukamnama/<yyyy-MM-dd> (an Amritsar date).
+            // Anything else — a malformed or far-off date, extra path — is ignored.
+            guard HukamnamaConfig.enabled, let target = Router.hukamnamaTarget(url) else { break }
+            container.present(.hukamnama(date: target.dateKey))
         case "constellation":
             let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
             func q(_ k: String) -> String? { items.first(where: { $0.name == k })?.value.flatMap(ConstellationLink.slug) }
@@ -295,6 +302,34 @@ final class Router {
             }
         default: break
         }
+    }
+}
+
+/// A `sggs://hukamnama` deep link: the latest Hukamnama, or one Amritsar date.
+enum HukamnamaTarget: Equatable, Sendable {
+    case latest
+    case date(String)
+    var dateKey: String? { if case .date(let d) = self { return d }; return nil }
+}
+
+extension Router {
+    /// How far from today (either way) a dated link may point. A push or widget link is always
+    /// within days of today; a year-and-a-bit allows old shares while refusing nonsense.
+    nonisolated static let hukamnamaDateWindowDays = 400
+
+    /// Strict: `sggs://hukamnama`, `sggs://hukamnama/`, or `sggs://hukamnama/yyyy-MM-dd` where the
+    /// date is a real Gregorian date (no 2026-02-30, no 2026-1-9) within ±400 days of `now`.
+    /// Everything else is nil, never a guess.
+    nonisolated static func hukamnamaTarget(_ url: URL, now: Date = Date()) -> HukamnamaTarget? {
+        guard url.scheme == "sggs", url.host == "hukamnama", url.user == nil, url.port == nil,
+              // the date is plain ASCII: a percent-escape (`%32026-11-09`) is never decoded into one
+              let raw = URLComponents(url: url, resolvingAgainstBaseURL: false)?.percentEncodedPath,
+              !raw.contains("%") else { return nil }
+        let parts = url.pathComponents.filter { $0 != "/" }
+        guard !parts.isEmpty else { return .latest }
+        guard parts.count == 1, let key = parts.first, let day = AmritsarDate.startOfDay(key),
+              abs(day.timeIntervalSince(now)) <= Double(hukamnamaDateWindowDays) * 86_400 else { return nil }
+        return .date(key)
     }
 }
 

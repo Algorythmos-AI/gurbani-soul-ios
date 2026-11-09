@@ -22,9 +22,13 @@ APP = IOS / "App"
 KIT = IOS / "Packages" / "GurbaniSearchKit" / "Sources"
 LISTING = ROOT / "docs" / "ios" / "app-store-listing.md"
 
-# Shipping Swift: the app, the widget extension, code shared by both, and the search/DB package.
-# CSQLite is the vendored SQLite amalgamation (C, public domain) and is out of scope.
-SHIPPING_DIRS = [APP / "Sources", APP / "Shared", APP / "Widgets", KIT]
+# Shipping Swift: the app, the widget extension, the notification service extension, code shared by
+# them, and the search/DB package. CSQLite is the vendored SQLite amalgamation (C, public domain)
+# and is out of scope.
+SHIPPING_DIRS = [APP / "Sources", APP / "Shared", APP / "Widgets", APP / "NotificationService", KIT]
+
+# The one file allowed to talk to a server: the opt-in Hukamnama service client.
+NETWORK_FILES = ("HukamnamaAPI.swift",)
 
 
 def shipping_swift():
@@ -111,14 +115,59 @@ class CrashAndDebugHygiene(unittest.TestCase):
         self.assertEqual(violations(r"(?<![\w.])print\(", allow_debug=True), [])
 
     def test_no_network_code(self):
-        # "No accounts. No network. No tracking." is a store-listing and privacy-label claim.
+        # "No accounts. No network. No tracking." is a store-listing and privacy-label claim. The
+        # single exception is the opt-in Hukamnama from Sri Harmandir Sahib (HukamnamaAPI.swift),
+        # which ships dark in Release until G4 updates those claims (see HukamnamaShipsDark).
         self.assertEqual(
-            violations(r"\bURLSession\b|\bURLRequest\b|\bWKWebView\b|\bNWConnection\b|^\s*import Network\b"), [])
+            violations(r"\bURLSession\b|\bURLRequest\b|\bWKWebView\b|\bNWConnection\b|^\s*import Network\b",
+                       allow_files=NETWORK_FILES), [])
+
+    def test_network_file_is_only_the_hukamnama_client(self):
+        # the exception cannot grow quietly: the allowed file is one client of one service
+        path = APP / "Sources" / "Data" / "HukamnamaAPI.swift"
+        text = path.read_text(encoding="utf-8")
+        self.assertIn("struct HukamnamaHTTPService", text)
+        self.assertNotRegex(text, r"\bWKWebView\b|\bNWConnection\b|import Network\b")
 
     def test_environment_hooks_only_under_if_debug(self):
         # Test hooks read from the process environment must not exist in a Release binary
         # (App Review 2.3.1: no hidden or undocumented behaviour switches).
         self.assertEqual(violations(r"ProcessInfo\.processInfo\.environment", allow_debug=True), [])
+
+
+class HukamnamaGates(unittest.TestCase):
+    """The Hukamnama push: a pass-through NSE, and dark in Release until its copy is reviewed."""
+
+    def test_notification_service_never_edits_the_notification(self):
+        # the NSE is a data writer only: the lock screen shows exactly what the server sent
+        text = (APP / "NotificationService" / "NotificationService.swift").read_text(encoding="utf-8")
+        self.assertIn("contentHandler(content)", text)
+        self.assertNotRegex(text, r"mutableCopy|bestAttemptContent|UNMutableNotificationContent")
+
+    def test_notification_service_links_no_corpus(self):
+        project = (APP / "project.yml").read_text(encoding="utf-8")
+        block = project.split("  SGGSNotificationService:", 1)[1].split("\n  SGGSTests:", 1)[0]
+        self.assertNotIn("package:", block, "the NSE must not link the corpus package (CSQLite)")
+        self.assertIn("Shared/HukamnamaShared.swift", block)
+        self.assertIn("Resources/PrivacyInfo.xcprivacy", block)
+        self.assertIn("$(MARKETING_VERSION)", block)
+
+    def test_ships_dark_until_the_copy_is_reviewed(self):
+        project = (APP / "project.yml").read_text(encoding="utf-8")
+        release = re.search(r"Release:\n(?:\s{10}.*\n)*?\s{10}HUKAMNAMA_ENABLED: \"(YES|NO)\"", project)
+        self.assertIsNotNone(release, "the app's Release config must set HUKAMNAMA_ENABLED")
+        review = (ROOT / "docs" / "review" / "g3-hukamnama.md").read_text(encoding="utf-8")
+        if "REVIEWED: true" not in review:
+            self.assertEqual(release.group(1), "NO",
+                             "the Hukamnama is enabled in Release before its G3 copy review is signed")
+
+    def test_aps_environment_is_per_configuration(self):
+        entitlements = (APP / "SGGS.entitlements").read_text(encoding="utf-8")
+        self.assertIn("<key>aps-environment</key>", entitlements)
+        self.assertIn("$(HUKAMNAMA_APS_ENV)", entitlements)
+        project = (APP / "project.yml").read_text(encoding="utf-8")
+        self.assertIn("HUKAMNAMA_APS_ENV: development", project)
+        self.assertIn("HUKAMNAMA_APS_ENV: production", project)
 
 
 class DesignSystemGates(unittest.TestCase):

@@ -80,6 +80,7 @@ struct NitnemScreen: View {
                 HStack(alignment: .top, spacing: Theme.Space.l) {
                     VStack(spacing: Theme.Space.l) {
                         hero(band: band, date: date, focus: focus, next: next)
+                        if HukamnamaConfig.enabled { HukamnamaCard() }
                         hukamCard
                         journeyCard
                     }
@@ -92,6 +93,7 @@ struct NitnemScreen: View {
             } else {
                 VStack(spacing: Theme.Space.l) {
                     hero(band: band, date: date, focus: focus, next: next)
+                    if HukamnamaConfig.enabled { HukamnamaCard() }
                     hukamCard
                     journeyCard
                     sections(band: band, banis: banis, date: date)

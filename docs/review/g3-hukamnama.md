@@ -1,0 +1,118 @@
+# G3 sensitivity review: the Hukamnama from Sri Harmandir Sahib (new English copy)
+
+Status: **unreviewed**. This pack was prepared by an engineer so a reviewer can see every new
+reader-facing English string of the Hukamnama push in one place. It is not a review. Nothing in it
+is "reviewed" until a Granthi or Gurbani scholar signs the block at the end. The flag at the end
+stays `REVIEWED: false` until then, and while it does, `ios/tests/test_ios_gates.py`
+(`HukamnamaGates.test_ships_dark_until_the_copy_is_reviewed`) keeps the feature switched off in
+Release builds (`HUKAMNAMA_ENABLED: "NO"` in `ios/App/project.yml`).
+
+## 1. Purpose and scope
+
+**What is in scope.** Every English string a reader sees, hears (VoiceOver) or receives (the push)
+for the new feature **"Hukamnama · Sri Harmandir Sahib"**: the Hukamnama taken at Sri Harmandir
+Sahib, Amritsar, located each morning from SGPC by our server and shown from the app's own corpus.
+It is a separate feature from the existing **Hukam of the day**, whose copy is not touched.
+
+| Work | Repository | Where |
+|---|---|---|
+| iOS push, sheet, card, Reminders section, NSE | `gurbani-soul-ios` | branch `feat/hukamnama-push` |
+| Push payload (title, subtitle, body format) | `sggs-platform` | `services/hukamnama/` (sender; built separately) |
+| Widget names, descriptions and states | `gurbani-soul-ios` | later PR `feat/hukamnama-widget` — listed in §3.6 as planned copy |
+
+**What is not in scope.** No Gurmukhi verse text is reviewed here. Every verse comes verbatim from
+the pinned corpus, proven by `range_sha256` before it is shown, and is cited by Ang. One existing
+Gurmukhi label is reused unchanged (the refrain marker on rows, copied byte-for-byte from
+`ShabadSheet.swift`); it is marked *existing*.
+
+**Rules** (the project's own, as in `docs/review/g3-constellation-v2-and-hukam-of-the-day.md` §1):
+R1 verbatim and cited · R2 explanation labelled · R3 descriptive, never a ranking · R4 voice
+("Reverent, plain, exact") · R5 endorser only as a credit · **R6 the Hukam of the day is never called
+the Darbar Sahib Hukamnama — and, the other way round, this feature is never called the Hukam of the
+day** · R7 no hand-typed Gurmukhi · R8 keywords name something the app contains.
+
+**How to record a decision.** For each item: **OK**, **Change** (give the wording), **Remove**, or
+**Ask**. "Leave it" is a complete answer.
+
+## 2. Naming decisions to confirm first
+
+| # | Decision | Pre-review note |
+|---|---|---|
+| N1 | The feature's name everywhere: **"Hukamnama · Sri Harmandir Sahib"** (card, push title, widget). The sheet adds ", Amritsar". | Owner decision 2026-11-09. Never "Darbar Sahib Hukamnama" in the app's own words? The plan uses "Sri Harmandir Sahib" consistently; please confirm, or give the form you prefer. |
+| N2 | The date is always the **Amritsar** date, written **"Mon 9 Nov · Amritsar"** (en_GB style). | A reader in Vancouver receives it the previous local evening; the Amritsar label avoids "today" being wrong. |
+| N3 | The source credit: **"Located by Ang from SGPC (sgpc.net). Text from Sri Guru Granth Sahib Ji."** | SGPC's text is used only to locate the shabad; the credit says so. Gate H-src (SGPC courtesy/permission letter) is separate. |
+| N4 | The toggle's own label: **"Daily Hukamnama"** under the section header **"Hukamnama from Sri Harmandir Sahib"**. | |
+
+## 3. Strings
+
+`file:line` is `ios/App/…` on `feat/hukamnama-push`. Interpolations are shown as code.
+
+### 3.1 Push notification (sent by the server; format fixed by the plan)
+
+| # | String | Where | Pre-review note |
+|---|---|---|---|
+| P1 | Title: `Hukamnama · Sri Harmandir Sahib` | server payload `aps.alert.title`; fixture `Tests/Fixtures/hukamnama.apns` | |
+| P2 | Subtitle: `Mon 9 Nov · Amritsar` (the Amritsar date) | `aps.alert.subtitle` | |
+| P3 | Body: the opening verse (verbatim, from our corpus), a line break, then `Sri Guru Granth Sahib Ji · Ang N` | `aps.alert.body`; parsed by `Shared/HukamnamaShared.swift:59` | The verse is never truncated by the server; iOS may visually truncate a long verse on the lock screen. |
+
+### 3.2 Nitnem home card (`Sources/Screens/HukamnamaCard.swift`)
+
+| # | String | Where | Pre-review note |
+|---|---|---|---|
+| C1 | `Hukamnama · Sri Harmandir Sahib` | :11 | Sits directly above the existing "Hukam of the day" card; the two must read as different things. |
+| C2 | `` `Mon 9 Nov · Amritsar` · Ang `N` `` (published) | :49–50 | Date and Ang only — the card shows no verse. |
+| C3 | `` Not yet published · usually around `11:00 am` your time `` | :52 | The time is computed on the device from SGPC's 05:30 IST stamp; the soak will confirm a measured "usually by". |
+| C4 | `Delayed today · it will appear here once it has been checked` | :54 | Shown when the server holds the day for the owner's check, or after 14:00 IST with nothing new. |
+
+### 3.3 Hukamnama sheet (`Sources/Screens/HukamnamaSheet.swift`)
+
+| # | String | Where | Pre-review note |
+|---|---|---|---|
+| S1 | Navigation title: `Hukamnama` | :32 | |
+| S2 | Header: `Hukamnama · Sri Harmandir Sahib, Amritsar` | :26 | |
+| S3 | Date line: `Mon 9 Nov · Amritsar` | :73 (via `AmritsarDate.label`) | |
+| S4 | Citation: `Sri Guru Granth Sahib Ji · Ang N` | :77 | R1. |
+| S5 | Footer: `Located by Ang from SGPC (sgpc.net). Text from Sri Guru Granth Sahib Ji.` | :27 | N3. |
+| S6 | `` Open Ang `N` in Reader `` | :109 | *Existing pattern* (ShabadSheet). |
+| S7 | `Not yet published` / `` `Mon 9 Nov · Amritsar`. Usually around `11:00 am` your time. `` | :47–48 | |
+| S8 | `Delayed today` / `` `Mon 9 Nov · Amritsar`. It will appear here once it has been checked. `` | :51–52 | |
+| S9 | `Update Gurbani Soul to read this Hukamnama` / `Sri Guru Granth Sahib Ji · Ang N` | :55–56 | Shown when the app's corpus cannot prove the server's range: the Ang only, never a line. |
+| S10 | `Connect to the internet` / `The Hukamnama is found online each morning. Its text then comes from Sri Guru Granth Sahib Ji in this app.` | :59–60 | |
+| S11 | `No Hukamnama for this date` / the date | :63 | |
+| S12 | `Try again`, `Done` | :132, :34 | *Existing* words. |
+| S13 | Row refrain marker (Gurmukhi + `· refrain`) | :93 | *Existing*, copied byte-for-byte from `ShabadSheet.swift`. |
+
+### 3.4 Reminders section (`Sources/Screens/NitnemRemindersScreen.swift`)
+
+| # | String | Where | Pre-review note |
+|---|---|---|---|
+| R-1 | Section header: `Hukamnama from Sri Harmandir Sahib` | :105 | |
+| R-2 | Toggle: `Daily Hukamnama` | :106 | |
+| R-3 | Mode: `As soon as it's published` | :107 | Default. |
+| R-4 | Mode: `At a time I choose`, with a `Time` picker | :108, :149 | |
+| R-5 | `` Usually around `11:00 am` your time `` | :145 | Under "As soon as it's published". |
+| R-6 | `Notifications are turned off for Gurbani Soul in iOS Settings.` / `Open Settings` | :129, :131 | Mirrors the existing reminders row. |
+| R-7 | `Couldn't turn on. Try again.` | `Sources/Data/HukamnamaPush.swift:262` | Permission granted but registration or the server failed; the toggle snaps back. |
+| R-8 | Footer: `The Hukamnama is located each morning from SGPC and its text comes from Sri Guru Granth Sahib Ji in this app. When this is on, this device's notification token and your chosen time are sent to Algorythmos to deliver it. Turning it off deletes them.` | :109 | **Also G4** (privacy). The existing Nitnem footer below it still says "Everything stays on this device — no account, no network", which remains true of those reminders but now sits under a section that does use the network: please judge whether the two read clearly together. |
+
+### 3.5 VoiceOver
+
+The card and the sheet speak the strings above; lines speak their verbatim Gurmukhi first (the
+existing `LineRow` behaviour). No new VoiceOver-only text.
+
+### 3.6 Widget (planned — later PR, listed so the whole feature is reviewed once)
+
+| # | String | Pre-review note |
+|---|---|---|
+| W1 | Widget name: `Hukamnama · Sri Harmandir Sahib` | |
+| W2 | Description: `The Hukamnama taken at Sri Harmandir Sahib, Amritsar, located by Ang from SGPC. Text from Sri Guru Granth Sahib Ji (not the Hukam of the day).` | From the plan. |
+| W3 | `Ang 673 · Mon 9 Nov, Amritsar` | Comma form, from the plan; the app uses " · Amritsar". Choose one. |
+| W4 | `Not yet published today` / `Not available today. Open the app` / `Turn on the Hukamnama in Gurbani Soul` / `Tap to read` / `Hukamnama · Ang 673` | Widget states and families. |
+
+## 4. Sign-off
+
+Reviewer name: ______________________ Role: ______________________ Date: ____________
+
+Decisions recorded above, and any changes applied in commit: ____________
+
+REVIEWED: false
