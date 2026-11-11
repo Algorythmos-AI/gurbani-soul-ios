@@ -120,11 +120,24 @@ final class HukamnamaPushControllerTests: XCTestCase {
     }
     override func tearDown() { defaults.removePersistentDomain(forName: suiteName) }
 
-    private func make(_ registrar: FakePushRegistrar, _ service: FakeHukamnamaService) -> HukamnamaPushController {
+    private static let thisInstall = "install-this-phone"
+
+    private func make(_ registrar: FakePushRegistrar, _ service: FakeHukamnamaService,
+                      install: String = thisInstall) -> HukamnamaPushController {
         let c = clock
         return HukamnamaPushController(registrar: registrar, service: service, defaults: defaults,
                                        env: "development", scriptureSHA256: String(repeating: "0", count: 64),
-                                       now: { c.now }, zone: { TimeZone(identifier: "Australia/Sydney")! })
+                                       now: { c.now }, zone: { TimeZone(identifier: "Australia/Sydney")! },
+                                       installID: install)
+    }
+
+    /// Polls (real time, up to 3 s) until `condition` holds — the fake service runs on its own actor.
+    private func waitUntil(_ what: String, _ condition: () async -> Bool) async {
+        for _ in 0..<600 {
+            if await condition() { return }
+            try? await Task.sleep(for: .milliseconds(5))
+        }
+        XCTFail("timed out waiting for \(what)")
     }
 
     func testTurningOnRegistersOnce() async {
@@ -257,6 +270,224 @@ final class HukamnamaPushControllerTests: XCTestCase {
         XCTAssertNil(rows[tokenA])
     }
 
+    // MARK: serial queue (the turn-off race)
+
+    func testTurnOffWhileARefreshPutIsInFlightDeletesAfterIt() async {
+        let reg = FakePushRegistrar(token: tokenA), svc = FakeHukamnamaService()
+        let c = make(reg, svc)
+        _ = await c.setEnabled(true)
+        clock.now = clock.now.addingTimeInterval(25 * 3600)   // the next refresh re-acknowledges
+        await svc.hold()
+        let refreshing = Task { await c.refresh() }
+        await waitUntil("the refresh PUT to start") { await svc.parkedCount == 1 }
+        let off = Task { await c.setEnabled(false) }
+        await waitUntil("the toggle to take effect") { !c.wanted }
+        XCTAssertFalse(c.wanted, "off takes effect before anything is awaited")
+        try? await Task.sleep(for: .milliseconds(50))
+        let parked = await svc.parkedCount, startedWhileHeld = await svc.started
+        XCTAssertEqual(parked, 1, "the DELETE waits for the PUT in flight")
+        XCTAssertFalse(startedWhileHeld.contains("DELETE \(tokenA)"))
+        await svc.resume()
+        await refreshing.value
+        let settled = await off.value
+        XCTAssertFalse(settled); XCTAssertFalse(c.wanted); XCTAssertFalse(c.effective)
+        let started = await svc.started, rows = await svc.rows
+        XCTAssertEqual(Array(started.suffix(2)), ["PUT \(tokenA)", "DELETE \(tokenA)"], "the DELETE goes after the PUT")
+        XCTAssertNil(rows[tokenA], "the late PUT left no row behind")
+        XCTAssertNil(c.ack); XCTAssertEqual(c.deleteQueue, [])
+        await c.refresh()
+        let puts = await svc.puts.count
+        XCTAssertEqual(puts, 2, "nothing re-registers once off")
+    }
+
+    func testQueuedDeleteNeverRacesTheFreshPutForTheSameToken() async {
+        let reg = FakePushRegistrar(token: tokenA), svc = FakeHukamnamaService()
+        let c = make(reg, svc)
+        _ = await c.setEnabled(true)
+        await svc.setOffline(true)
+        _ = await c.setEnabled(false)
+        XCTAssertEqual(c.deleteQueue, [tokenA])
+        await svc.setOffline(false)
+        await svc.hold()
+        let refreshing = Task { await c.refresh() }          // flushes the queued DELETE
+        await waitUntil("the queued DELETE to start") { await svc.parkedCount == 1 }
+        let on = Task { await c.setEnabled(true) }           // the same token, PUT again
+        try? await Task.sleep(for: .milliseconds(50))
+        let startedWhileHeld = await svc.started
+        XCTAssertEqual(startedWhileHeld.last, "DELETE \(tokenA)", "the PUT waits for the DELETE in flight")
+        await svc.resume()
+        await refreshing.value
+        let settled = await on.value
+        XCTAssertTrue(settled); XCTAssertTrue(c.effective)
+        let started = await svc.started, rows = await svc.rows
+        XCTAssertEqual(Array(started.suffix(2)), ["DELETE \(tokenA)", "PUT \(tokenA)"])
+        XCTAssertNotNil(rows[tokenA], "the fresh registration survives")
+        XCTAssertEqual(c.ack?.token, tokenA); XCTAssertEqual(c.deleteQueue, [])
+    }
+
+    func testRefreshWhileNotWantedDeletesALeftoverAck() async {
+        let reg = FakePushRegistrar(token: tokenA), svc = FakeHukamnamaService()
+        let c = make(reg, svc)
+        c.ack = .init(token: tokenA, digest: "x", at: clock.now, install: Self.thisInstall)
+        await c.refresh()
+        let deletes = await svc.deletes
+        XCTAssertEqual(deletes, [tokenA]); XCTAssertNil(c.ack); XCTAssertFalse(c.effective)
+    }
+
+    func testRefreshesAskedForTogetherShareOneRun() async {
+        let reg = FakePushRegistrar(token: tokenA), svc = FakeHukamnamaService()
+        let c = make(reg, svc)
+        _ = await c.setEnabled(true)
+        clock.now = clock.now.addingTimeInterval(25 * 3600)
+        await svc.hold()
+        let first = Task { await c.refresh() }
+        await waitUntil("the first refresh PUT") { await svc.parkedCount == 1 }
+        let second = Task { await c.refresh() }, third = Task { await c.refresh() }
+        try? await Task.sleep(for: .milliseconds(20))
+        await svc.resume()
+        await first.value; await second.value; await third.value
+        let puts = await svc.puts.count
+        XCTAssertEqual(puts, 2, "the queued refreshes joined into one, which found nothing to send")
+    }
+
+    // MARK: server answers
+
+    func testPermanentRejectionOnReackStopsClaimingDelivery() async {
+        let reg = FakePushRegistrar(token: tokenA), svc = FakeHukamnamaService()
+        let c = make(reg, svc)
+        _ = await c.setEnabled(true)
+        await svc.set(rejectPuts: 400)
+        clock.now = clock.now.addingTimeInterval(25 * 3600)
+        await c.refresh()
+        XCTAssertFalse(c.effective, "a 4xx is not 'offline'")
+        XCTAssertTrue(c.wanted, "the reader's wish is kept")
+        XCTAssertEqual(c.message, HukamnamaPushController.refused)
+        XCTAssertFalse(c.changePending)
+    }
+
+    func testTooManyRequestsIsTreatedLikeOffline() async {
+        let reg = FakePushRegistrar(token: tokenA), svc = FakeHukamnamaService()
+        let c = make(reg, svc)
+        _ = await c.setEnabled(true)
+        await svc.set(rejectPuts: 429)
+        clock.now = clock.now.addingTimeInterval(25 * 3600)
+        await c.refresh()
+        XCTAssertTrue(c.effective, "still registered; retried later"); XCTAssertNil(c.message)
+        await svc.set(rejectPuts: 503)
+        await c.refresh()
+        XCTAssertTrue(c.effective); XCTAssertNil(c.message)
+        await svc.set(rejectPuts: nil)
+        await c.refresh()
+        let puts = await svc.puts.count
+        XCTAssertEqual(puts, 2, "the re-ack went through once the server recovered")
+    }
+
+    func testRejectionErrorClassification() {
+        XCTAssertTrue(HukamnamaServiceError.rejected(400).isPermanentRejection)
+        XCTAssertTrue(HukamnamaServiceError.rejected(410).isPermanentRejection)
+        XCTAssertFalse(HukamnamaServiceError.rejected(429).isPermanentRejection)
+        XCTAssertFalse(HukamnamaServiceError.rejected(500).isPermanentRejection)
+        XCTAssertFalse(HukamnamaServiceError.offline.isPermanentRejection)
+    }
+
+    func testDeliveryStatusFromThePutIsKeptAndClearedOnOff() async {
+        let reg = FakePushRegistrar(token: tokenA), svc = FakeHukamnamaService()
+        let status = HukamnamaDeviceStatus(amritsarDate: AmritsarDate.key(clock.now), status: .published, delivery: .sent,
+                                           sentAt: clock.now, reason: nil, nextSlotAt: nil)
+        await svc.set(nextStatus: status)
+        let c = make(reg, svc)
+        _ = await c.setEnabled(true)
+        XCTAssertEqual(c.deliveryStatus, status); XCTAssertEqual(c.deliveryStatusAt, clock.now)
+        // an older server's bare {"ok":true} keeps the last answer
+        await svc.set(nextStatus: nil)
+        c.setMode(.scheduled)
+        await c.refresh()
+        XCTAssertEqual(c.deliveryStatus, status)
+        _ = await c.setEnabled(false)
+        XCTAssertNil(c.deliveryStatus)
+    }
+
+    func testAChangeMadeOfflineIsPendingUntilItReachesTheServer() async {
+        let reg = FakePushRegistrar(token: tokenA), svc = FakeHukamnamaService()
+        let c = make(reg, svc)
+        _ = await c.setEnabled(true)
+        await svc.setOffline(true)
+        c.setMode(.scheduled)
+        await c.refresh()
+        XCTAssertTrue(c.changePending); XCTAssertTrue(c.effective, "the old registration still stands")
+        XCTAssertEqual(HukamnamaDeliveryCopy.line(status: nil, receivedAt: nil, mode: c.mode, settingsChangedAt: c.settingsChangedAt,
+                                                  changePending: c.changePending, now: clock.now),
+                       HukamnamaDeliveryCopy.willUpdate)
+        await svc.setOffline(false)
+        await c.refresh()
+        XCTAssertFalse(c.changePending)
+        let last = await svc.puts.last
+        XCTAssertEqual(last?.body.mode, .scheduled)
+    }
+
+    // MARK: permission + restored backups
+
+    func testDeniedNoteClearsOnceSettingsAllowNotificationsAgain() async {
+        let reg = FakePushRegistrar(status: .notDetermined, grants: false), svc = FakeHukamnamaService()
+        let c = make(reg, svc)
+        _ = await c.setEnabled(true)
+        XCTAssertTrue(c.denied); XCTAssertFalse(c.wanted)
+        await reg.set(status: .authorized)      // the reader allowed notifications in Settings
+        await c.refresh()
+        XCTAssertFalse(c.denied, "the Settings note goes even though the toggle is off")
+    }
+
+    func testRestoredBackupAsksForTheToggleAgainAndKeepsTheOldPhonesRow() async {
+        // UserDefaults came over from the old phone: wanted, and the old phone's acknowledgement
+        defaults.set(true, forKey: HukamnamaPushController.wantedKey)
+        let reg = FakePushRegistrar(status: .notDetermined, token: tokenA), svc = FakeHukamnamaService()
+        let c = make(reg, svc)
+        c.ack = .init(token: tokenB, digest: "old", at: clock.now, install: "install-old-phone")
+        await c.refresh()
+        XCTAssertFalse(c.wanted); XCTAssertFalse(c.effective); XCTAssertFalse(c.denied)
+        XCTAssertEqual(c.message, HukamnamaPushController.turnOnAgain)
+        XCTAssertNil(c.ack)
+        let prompts = await reg.promptCount, deletes = await svc.deletes, puts = await svc.puts.count
+        XCTAssertEqual(prompts, 0, "only the toggle prompts"); XCTAssertEqual(deletes, [], "the old phone's row is not ours to delete")
+        XCTAssertEqual(puts, 0)
+        let on = await c.setEnabled(true)
+        XCTAssertTrue(on)
+        let put = await svc.puts.last
+        XCTAssertEqual(put?.token, tokenA); XCTAssertNil(put?.body.replaces, "never replaces the old phone's token")
+    }
+
+    func testAnotherInstallsAckIsNeverSentAsReplaces() async {
+        // restored, and permission already granted on the new phone (e.g. through Nitnem reminders)
+        defaults.set(true, forKey: HukamnamaPushController.wantedKey)
+        let reg = FakePushRegistrar(token: tokenA), svc = FakeHukamnamaService()
+        let c = make(reg, svc)
+        c.ack = .init(token: tokenB, digest: "old", at: clock.now, install: "install-old-phone")
+        await c.refresh()
+        let put = await svc.puts.last, deletes = await svc.deletes
+        XCTAssertEqual(put?.token, tokenA); XCTAssertNil(put?.body.replaces)
+        XCTAssertEqual(deletes, []); XCTAssertEqual(c.ack?.install, Self.thisInstall)
+    }
+
+    func testAnAckFromBeforeTheInstallMarkerIsStillOurs() async {
+        defaults.set(true, forKey: HukamnamaPushController.wantedKey)
+        let reg = FakePushRegistrar(token: tokenB), svc = FakeHukamnamaService()
+        let c = make(reg, svc)
+        c.ack = .init(token: tokenA, digest: "old", at: clock.now, install: nil)
+        await c.refresh()
+        let put = await svc.puts.last
+        XCTAssertEqual(put?.body.replaces, tokenA, "a same-phone token rotation still replaces")
+    }
+
+    func testInstallMarkerIsStableAndExcludedFromBackup() throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("install-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let first = HukamnamaInstall.id(directory: dir)
+        XCTAssertFalse(first.isEmpty)
+        XCTAssertEqual(HukamnamaInstall.id(directory: dir), first)
+        let values = try dir.appendingPathComponent(HukamnamaInstall.filename).resourceValues(forKeys: [.isExcludedFromBackupKey])
+        XCTAssertEqual(values.isExcludedFromBackup, true)
+    }
+
     func testScheduledModeSendsAStableSchedule() async {
         let reg = FakePushRegistrar(token: tokenA), svc = FakeHukamnamaService()
         let c = make(reg, svc)
@@ -353,8 +584,180 @@ final class HukamnamaRouterTests: XCTestCase {
                        "sggs://hukamnama")
         // reminders keep their behaviour
         XCTAssertEqual(NotificationRouter.openURL(threadIdentifier: "", userInfo: [:], now: now)?.absoluteString, "sggs://nitnem")
-        XCTAssertEqual(NotificationRouter.presentationOptions(threadIdentifier: "hukamnama"), [.list])
-        XCTAssertEqual(NotificationRouter.presentationOptions(threadIdentifier: ""), [])
+        // a foreground arrival is seen (banner + sound) unless its own sheet is already open
+        XCTAssertEqual(NotificationRouter.presentationOptions(threadIdentifier: "hukamnama", sheetShowingSameDate: false),
+                       [.banner, .list, .sound])
+        XCTAssertEqual(NotificationRouter.presentationOptions(threadIdentifier: "hukamnama", sheetShowingSameDate: true), [.list])
+        XCTAssertEqual(NotificationRouter.presentationOptions(threadIdentifier: "", sheetShowingSameDate: false), [])
+        XCTAssertEqual(NotificationRouter.presentationOptions(threadIdentifier: "", sheetShowingSameDate: true), [])
+    }
+
+    func testNotificationDateForTheSameSheetCheck() {
+        let e = HukamnamaEntry(amritsarDate: "2026-11-09", status: .published)
+        XCTAssertEqual(NotificationRouter.hukamnamaDate(entry: e, userInfo: [:]), "2026-11-09")
+        XCTAssertEqual(NotificationRouter.hukamnamaDate(entry: nil, userInfo: ["amritsar_date": "2026-11-08"]), "2026-11-08")
+        XCTAssertEqual(NotificationRouter.hukamnamaDate(entry: nil, userInfo: ["url": "sggs://hukamnama/2026-11-07"], now: now), "2026-11-07")
+        XCTAssertNil(NotificationRouter.hukamnamaDate(entry: nil, userInfo: ["url": "sggs://hukamnama/2026-11-31"], now: now))
+        XCTAssertNil(NotificationRouter.hukamnamaDate(entry: nil, userInfo: ["amritsar_date": "today"]))
+        XCTAssertNil(NotificationRouter.hukamnamaDate(entry: nil, userInfo: [:]))
+    }
+}
+
+// MARK: - Delivery status (PUT answer) + its one-line copy
+
+final class HukamnamaDeliveryStatusTests: XCTestCase {
+    private let tz = TimeZone(identifier: "Australia/Sydney")!
+    private let locale = Locale(identifier: "en_US")
+    private func time(_ d: Date) -> String {
+        d.formatted(Date.FormatStyle(date: .omitted, time: .shortened, locale: locale, timeZone: tz))
+    }
+
+    func testDecodesTheFullAnswer() throws {
+        let json = #"{"ok":true,"today":{"amritsar_date":"2026-11-11","status":"published","delivery":"sent","sent_at":"2026-11-11T02:54:18Z","reason":null},"next_slot_at":"2026-11-12T03:13:00Z"}"#
+        let s = try XCTUnwrap(HukamnamaDeviceStatus.decode(Data(json.utf8)))
+        XCTAssertEqual(s.amritsarDate, "2026-11-11"); XCTAssertEqual(s.status, .published)
+        XCTAssertEqual(s.delivery, .sent); XCTAssertNil(s.reason)
+        XCTAssertEqual(s.sentAt, utc(2026, 11, 11, 2, 54).addingTimeInterval(18))
+        XCTAssertEqual(s.nextSlotAt, utc(2026, 11, 12, 3, 13))
+    }
+
+    func testOldServersAndOddAnswersAreTolerated() {
+        XCTAssertNil(HukamnamaDeviceStatus.decode(Data(#"{"ok":true}"#.utf8)), "an older server: nothing to say")
+        XCTAssertNil(HukamnamaDeviceStatus.decode(Data("".utf8)))
+        XCTAssertNil(HukamnamaDeviceStatus.decode(Data("[1,2]".utf8)))
+        let odd = #"{"ok":true,"today":{"amritsar_date":"2026-11-31","status":"lost","delivery":"teleported","sent_at":"yesterday","reason":"moon","extra":1},"next_slot_at":"2026-11-12T03:13:00.250Z","future":{}}"#
+        let s = HukamnamaDeviceStatus.decode(Data(odd.utf8))
+        XCTAssertNil(s?.amritsarDate); XCTAssertNil(s?.status); XCTAssertNil(s?.delivery)
+        XCTAssertNil(s?.sentAt); XCTAssertNil(s?.reason)
+        XCTAssertEqual(s?.nextSlotAt?.timeIntervalSince1970 ?? 0,
+                       utc(2026, 11, 12, 3, 13).timeIntervalSince1970 + 0.25, accuracy: 0.001,
+                       "unknown values are ignored, fractional seconds read")
+        let types = #"{"today":{"amritsar_date":20261111,"delivery":["sent"]},"next_slot_at":5}"#
+        XCTAssertNil(HukamnamaDeviceStatus.decode(Data(types.utf8)))
+    }
+
+    private func line(_ s: HukamnamaDeviceStatus?, mode: HukamnamaMode = .scheduled, changed: Date? = nil,
+                      pending: Bool = false, now: Date, receivedAt: Date? = nil) -> String? {
+        HukamnamaDeliveryCopy.line(status: s, receivedAt: receivedAt ?? now, mode: mode, settingsChangedAt: changed,
+                                   changePending: pending, now: now, locale: locale, timeZone: tz)
+    }
+
+    func testEveryLine() {
+        let now = utc(2026, 11, 11, 4)            // 09:30 in Amritsar, 15:00 in Sydney
+        let today = AmritsarDate.key(now)
+        let sent = utc(2026, 11, 11, 2, 54), next = utc(2026, 11, 12, 3, 13), laterToday = utc(2026, 11, 11, 6)
+
+        let delivered = HukamnamaDeviceStatus(amritsarDate: today, status: .published, delivery: .sent, sentAt: sent)
+        XCTAssertEqual(line(delivered, now: now), "Today's Hukamnama was delivered at \(time(sent)).")
+        XCTAssertEqual(line(delivered, changed: sent.addingTimeInterval(-60), now: now),
+                       "Today's Hukamnama was delivered at \(time(sent)).", "a change before delivery says nothing more")
+        XCTAssertEqual(line(delivered, changed: sent.addingTimeInterval(60), now: now),
+                       "Today's Hukamnama was delivered at \(time(sent)). Your new time starts tomorrow.")
+
+        XCTAssertEqual(line(.init(amritsarDate: today, delivery: .notToday, reason: .registeredAfterPublish), now: now),
+                       "Today's Hukamnama is already out — open it from the Nitnem page. Notifications start tomorrow.")
+        XCTAssertEqual(line(.init(amritsarDate: today, delivery: .notToday, reason: .slotPassed, nextSlotAt: next), now: now),
+                       "Your time has passed for today. Notifications start tomorrow at \(time(next)).")
+        XCTAssertNil(line(.init(amritsarDate: today, delivery: .notToday), now: now), "no reason: nothing guessed")
+
+        XCTAssertEqual(line(.init(amritsarDate: today, status: .pending, delivery: .due, nextSlotAt: laterToday), now: now),
+                       "Today's arrives at \(time(laterToday)).")
+        XCTAssertNil(line(.init(amritsarDate: today, delivery: .due, nextSlotAt: now.addingTimeInterval(-60)), now: now),
+                     "a slot already past is not promised")
+        XCTAssertEqual(line(.init(amritsarDate: today, status: .pending, delivery: .due), mode: .asap, now: now),
+                       "Today's arrives as soon as it's published.")
+        XCTAssertNil(line(.init(amritsarDate: today, status: .published, delivery: .due), mode: .asap, now: now))
+
+        XCTAssertEqual(line(delivered, pending: true, now: now), "Will update when you're online.")
+        XCTAssertNil(line(nil, now: now))
+    }
+
+    func testOnlyTodaysAnswerIsShown() {
+        let now = utc(2026, 11, 11, 4)
+        let yesterday = HukamnamaDeviceStatus(amritsarDate: "2026-11-10", status: .published, delivery: .sent, sentAt: utc(2026, 11, 10, 2))
+        XCTAssertNil(line(yesterday, now: now))
+        var undated = yesterday; undated.amritsarDate = nil
+        XCTAssertNil(line(undated, now: now, receivedAt: utc(2026, 11, 10, 3)), "an undated answer from yesterday")
+        XCTAssertNotNil(line(undated, now: now, receivedAt: utc(2026, 11, 11, 1)))
+    }
+
+    @MainActor func testCopyNeverCarriesGurmukhi() {
+        let gurmukhi = UnicodeScalar(0x0A00)!...UnicodeScalar(0x0A7F)!
+        let now = utc(2026, 11, 11, 4), today = AmritsarDate.key(now)
+        let all = [HukamnamaDeliveryCopy.lateNote, HukamnamaDeliveryCopy.willUpdate, HukamnamaPushController.refused,
+                   HukamnamaPushController.turnOnAgain,
+                   line(.init(amritsarDate: today, delivery: .sent, sentAt: now), now: now) ?? "",
+                   line(.init(amritsarDate: today, delivery: .notToday, reason: .registeredAfterPublish), now: now) ?? ""]
+        for text in all { XCTAssertFalse(text.unicodeScalars.contains { gurmukhi.contains($0) }, text) }
+    }
+}
+
+// MARK: - The sheet's entry choice (store, then the service)
+
+@MainActor
+final class HukamnamaHomePickTests: XCTestCase {
+    nonisolated(unsafe) private var dir: URL!
+    override func setUp() {
+        dir = FileManager.default.temporaryDirectory.appendingPathComponent("hukamnama-home-\(UUID().uuidString)")
+    }
+    override func tearDown() { try? FileManager.default.removeItem(at: dir) }
+
+    private var storeURL: URL { dir.appendingPathComponent(HukamnamaStore.filename) }
+    private func published(_ date: String, hash: Character = "a") -> HukamnamaEntry {
+        HukamnamaEntry(amritsarDate: date, status: .published, ang: 1, firstLineId: 1, lastLineId: 2,
+                       rangeSHA256: String(repeating: hash, count: 64))
+    }
+    private let now = Date()
+    private var today: String { AmritsarDate.key(now) }
+    private var yesterday: String { AmritsarDate.key(now.addingTimeInterval(-86_400)) }
+
+    func testAMissingDateIsNotFoundNotOffline() async {
+        let svc = FakeHukamnamaService()
+        let home = HukamnamaHome(service: svc, storeURL: storeURL)
+        let r = await home.fetch(date: "2026-01-05")
+        XCTAssertEqual(r, .notFound)
+        let pick = await home.pick(date: "2026-01-05", now: now)
+        XCTAssertEqual(pick, .notFound)
+        await svc.setOffline(true)
+        let offline = await home.pick(date: "2026-01-05", now: now)
+        XCTAssertEqual(offline, .offline)
+    }
+
+    func testTheLatestFetchesTodayBeforeShowingAnOlderOne() async {
+        HukamnamaStore.merge([published(yesterday)], url: storeURL)
+        let svc = FakeHukamnamaService(entries: [published(yesterday), published(today, hash: "b")])
+        let home = HukamnamaHome(service: svc, storeURL: storeURL)
+        let pick = await home.pick(date: nil, now: now)
+        XCTAssertEqual(pick, .entry(published(today, hash: "b")), "today's, not the stored yesterday")
+        let fetches = await svc.fetches
+        XCTAssertEqual(fetches, [nil])
+        // and once today's is stored, no read at all
+        _ = await home.pick(date: nil, now: now)
+        let again = await svc.fetches.count
+        XCTAssertEqual(again, 1)
+    }
+
+    func testTheLatestFallsBackToTheStoredOneOffline() async {
+        HukamnamaStore.merge([published(yesterday)], url: storeURL)
+        let svc = FakeHukamnamaService()
+        await svc.setOffline(true)
+        let home = HukamnamaHome(service: svc, storeURL: storeURL)
+        let pick = await home.pick(date: nil, now: now)
+        XCTAssertEqual(pick, .entry(published(yesterday)))
+        let empty = HukamnamaHome(service: svc, storeURL: dir.appendingPathComponent("none.json"))
+        let nothing = await empty.pick(date: nil, now: now)
+        XCTAssertEqual(nothing, .offline)
+    }
+
+    func testRevisionChangesWhenTheEntryArrives() {
+        let home = HukamnamaHome(service: nil, storeURL: storeURL)
+        let before = home.revision(date: today, now: now)
+        home.ingest(HukamnamaEntry(amritsarDate: today, status: .pending))
+        let pending = home.revision(date: today, now: now)
+        home.ingest(published(today))
+        let after = home.revision(date: today, now: now)
+        XCTAssertNotEqual(before, pending); XCTAssertNotEqual(pending, after)
+        XCTAssertEqual(home.revision(date: nil, now: now), after, "the latest sheet keys on today's entry")
     }
 }
 
