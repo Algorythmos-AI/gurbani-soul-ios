@@ -34,7 +34,10 @@ struct HukamnamaSheet: View {
                 .toolbar { ToolbarItem(placement: .topBarTrailing) { Button("Done") { dismiss() } } }
         }
         .accessibilityIdentifier("hukamnamaSheet")
-        .task(id: "\(date ?? "latest")-\(container.integrity?.ok == true)") { await load() }
+        // the entry's revision is in the id: an open sheet reloads when the Hukamnama arrives
+        .task(id: "\(date ?? "latest")-\(container.integrity?.ok == true)-\(container.hukamnama.revision(date: date))") {
+            await load()
+        }
     }
 
     @ViewBuilder private var content: some View {
@@ -143,23 +146,22 @@ struct HukamnamaSheet: View {
         // scripture is never shown before the launch integrity check passes
         guard container.integrity?.ok == true, let corpus = container.corpus else { phase = .loading; return }
         phase = .loading
-        let home = container.hukamnama
-        var entry = date.flatMap { home.entry(for: $0) } ?? (date == nil ? home.latestPublished : nil)
-        if entry?.isLocatable != true {
-            if let fetched = await home.fetch(date: date) {
-                entry = fetched
-            } else if entry == nil {
-                phase = .offline
-                return
-            }
+        let entry: HukamnamaEntry
+        let pick = await container.hukamnama.pick(date: date)
+        guard !Task.isCancelled else { return }   // the entry changed meanwhile: the new task loads it
+        switch pick {
+        case .entry(let e): entry = e
+        case .notFound: phase = .notFound; return
+        case .offline: phase = .offline; return
         }
-        guard let entry else { phase = .notFound; return }
         switch entry.status {
         case .pending: phase = .notYet(date: entry.amritsarDate); return
         case .held: phase = .held(date: entry.amritsarDate); return
         case .published: break
         }
-        switch await HukamnamaLocator.resolve(entry, source: corpus) {
+        let resolved = await HukamnamaLocator.resolve(entry, source: corpus)
+        guard !Task.isCancelled else { return }
+        switch resolved {
         case .verified(let lines), .relocated(let lines): phase = .lines(entry, lines)
         case .needsUpdate(let ang): phase = .needsUpdate(ang: ang)
         }
