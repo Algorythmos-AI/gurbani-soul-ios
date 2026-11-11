@@ -69,10 +69,17 @@ CHANNEL="${SGGS_RELEASE_CHANNEL:-testflight}"
 case "$CHANNEL" in testflight|appstore) ;; *) fail "SGGS_RELEASE_CHANNEL must be testflight or appstore" ;; esac
 export SGGS_RELEASE_CHANNEL="$CHANNEL"          # read by pipeline/check_release_license.sh (step 2)
 # The Hukamnama service: project.yml's Release default is production; TestFlight builds talk to
-# the staging service instead (whose sends reach production APNs only for an allowlist).
+# the staging service instead, so its pushes reach testers only.
+# TestFlight builds also SHOW the Hukamnama (push, sheet, card and widget) so testers can soak it
+# before the G3/G4 reviews are signed. App Store builds (CHANNEL=appstore) never get these
+# overrides and stay dark until project.yml's Release config is flipped (tests/test_ios_gates.py).
 HUKAMNAMA_ARGS=()
 if [ "$CHANNEL" = testflight ]; then
-  HUKAMNAMA_ARGS=(HUKAMNAMA_API_BASE="${SGGS_HUKAMNAMA_API_BASE_TESTFLIGHT:-https://api-staging.gurbanisoul.com}")
+  HUKAMNAMA_ARGS=(
+    HUKAMNAMA_API_BASE="${SGGS_HUKAMNAMA_API_BASE_TESTFLIGHT:-https://api-staging.gurbanisoul.com}"
+    HUKAMNAMA_ENABLED=YES
+    'SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) HUKAMNAMA_WIDGET'
+  )
 fi
 # Apple rejects uploads built with an older SDK (Xcode 26 / iOS 26 SDK required since 2026-04-28).
 # One constant: raise it when developer.apple.com/news/upcoming-requirements raises the floor.
