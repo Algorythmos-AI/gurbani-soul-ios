@@ -83,7 +83,8 @@ final class NitnemReminderController: ObservableObject {
 ///   nudge over the page the reader is on).
 /// - The Hukamnama from Sri Harmandir Sahib (`thread-id` "hukamnama"): a tap opens its sheet
 ///   (`sggs://hukamnama/<date>`, or the latest when the payload's URL is malformed); in the
-///   foreground it goes to Notification Center only (`.list`), never a banner over the page.
+///   foreground it shows as a banner with its sound (the reader asked for it) — except while
+///   that same date's sheet is already open, when it goes to Notification Center only.
 ///   Both paths also merge the payload into the shared store so the card and widget update.
 /// One shared instance, set as the center's delegate at launch (early enough for a cold tap).
 final class NotificationRouter: NSObject, UNUserNotificationCenterDelegate {
@@ -91,15 +92,30 @@ final class NotificationRouter: NSObject, UNUserNotificationCenterDelegate {
 
     let onOpen: @MainActor @Sendable (URL) -> Void
     let onHukamnama: @MainActor @Sendable (HukamnamaEntry) -> Void
+    /// Whether the Hukamnama sheet for this Amritsar date is on screen right now.
+    let isShowingHukamnama: @MainActor @Sendable (String) -> Bool
     init(onOpen: @escaping @MainActor @Sendable (URL) -> Void,
-         onHukamnama: @escaping @MainActor @Sendable (HukamnamaEntry) -> Void = { _ in }) {
+         onHukamnama: @escaping @MainActor @Sendable (HukamnamaEntry) -> Void = { _ in },
+         isShowingHukamnama: @escaping @MainActor @Sendable (String) -> Bool = { _ in false }) {
         self.onOpen = onOpen
         self.onHukamnama = onHukamnama
+        self.isShowingHukamnama = isShowingHukamnama
     }
 
-    /// Foreground presentation, by thread: the Hukamnama → Notification Center only.
-    static func presentationOptions(threadIdentifier: String) -> UNNotificationPresentationOptions {
-        threadIdentifier == hukamnamaThread ? [.list] : []
+    /// Foreground presentation, by thread. The Hukamnama → banner + list + sound, unless the
+    /// reader is already looking at that date's sheet (then Notification Center only). Nitnem
+    /// reminders → nothing (no nudge over the page the reader is on).
+    static func presentationOptions(threadIdentifier: String, sheetShowingSameDate: Bool = false) -> UNNotificationPresentationOptions {
+        guard threadIdentifier == hukamnamaThread else { return [] }
+        return sheetShowingSameDate ? [.list] : [.banner, .list, .sound]
+    }
+
+    /// The Amritsar date a Hukamnama notification is for (its entry, else its `url`).
+    static func hukamnamaDate(entry: HukamnamaEntry?, userInfo: [AnyHashable: Any], now: Date = Date()) -> String? {
+        if let entry { return entry.amritsarDate }
+        if let d = userInfo["amritsar_date"] as? String, AmritsarDate.isValidKey(d) { return d }
+        guard let raw = userInfo["url"] as? String, let url = URL(string: raw) else { return nil }
+        return Router.hukamnamaTarget(url, now: now)?.dateKey
     }
 
     /// Where a tap goes. A Hukamnama whose `url` is missing or fails the router's strict check
@@ -132,11 +148,14 @@ final class NotificationRouter: NSObject, UNUserNotificationCenterDelegate {
                                 withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         let content = notification.request.content
         let entry = ingest(content)
-        let options = Self.presentationOptions(threadIdentifier: content.threadIdentifier)
-        let done = MainThreadCompletion(completionHandler), handle = onHukamnama
+        let thread = content.threadIdentifier
+        let date = thread == Self.hukamnamaThread ? Self.hukamnamaDate(entry: entry, userInfo: content.userInfo) : nil
+        let done = MainThreadCompletion(completionHandler), handle = onHukamnama, showing = isShowingHukamnama
         Task { @MainActor in
+            // decided before the entry is handed on (that reloads the open sheet, not the answer)
+            let same = date.map(showing) ?? false
             if let entry { handle(entry) }
-            done.call(options)
+            done.call(Self.presentationOptions(threadIdentifier: thread, sheetShowingSameDate: same))
         }
     }
 
