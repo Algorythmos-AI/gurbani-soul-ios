@@ -66,6 +66,11 @@ final class VaarProgressTests: XCTestCase {
         XCTAssertTrue(UITestVault.defaultItems().contains { $0.name == "vaar-progress" },
                       "UI tests wipe vaar progress, so the vault must seal it first")
     }
+
+    func testVaultCoversTheHukamnamaStore() {
+        XCTAssertTrue(UITestVault.defaultItems().contains { $0.name == "hukamnama-snapshot" },
+                      "UI tests wipe the Hukamnama store, so the vault must seal it first")
+    }
 }
 
 final class VaarReaderRowIdTests: XCTestCase {

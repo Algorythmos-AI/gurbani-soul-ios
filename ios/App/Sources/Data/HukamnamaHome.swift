@@ -53,11 +53,53 @@ final class HukamnamaHome {
         _ = await fetch(date: nil)
     }
 
-    /// One read from the service, merged into the store. Nil when offline or not found.
-    func fetch(date: String?) async -> HukamnamaEntry? {
-        guard let service, let e = try? await service.fetch(date: date) else { return nil }
-        ingest(e)
-        return e
+    /// What one read from the service found. `notFound` is the service's 404 (no Hukamnama for
+    /// that date) — a different thing from not reaching it, and shown differently.
+    enum FetchResult: Equatable, Sendable {
+        case found(HukamnamaEntry)
+        case notFound
+        /// Offline, a refused/busy server or an answer that didn't decode: nothing learned.
+        case offline
+    }
+
+    /// One read from the service, merged into the store.
+    func fetch(date: String?) async -> FetchResult {
+        guard let service else { return .offline }
+        do {
+            guard let e = try await service.fetch(date: date) else { return .notFound }
+            ingest(e)
+            return .found(e)
+        } catch {
+            return .offline
+        }
+    }
+
+    /// What the sheet for `date` shows (nil = the latest, i.e. today's in Amritsar).
+    enum SheetPick: Equatable, Sendable {
+        case entry(HukamnamaEntry)
+        case notFound
+        case offline
+    }
+
+    /// The stored entry when it is ready to read; otherwise a fresh read first (a tap with no or a
+    /// malformed date must not show yesterday's while today's is out); the stored one again — or,
+    /// for the latest, the newest published one — when the service can't be reached or has none.
+    func pick(date: String?, now: Date = Date()) async -> SheetPick {
+        let stored = entry(for: date ?? AmritsarDate.key(now))
+        if let stored, stored.isLocatable { return .entry(stored) }
+        let fallback = stored ?? (date == nil ? latestPublished : nil)
+        switch await fetch(date: date) {
+        case .found(let e): return .entry(e)
+        case .notFound: return fallback.map(SheetPick.entry) ?? .notFound
+        case .offline: return fallback.map(SheetPick.entry) ?? .offline
+        }
+    }
+
+    /// Changes whenever the sheet's entry does (published, corrected, held…), so an open sheet
+    /// reloads the moment a push or a read brings it.
+    func revision(date: String?, now: Date = Date()) -> String {
+        guard let e = entry(for: date ?? AmritsarDate.key(now)) else { return "none" }
+        return "\(e.status.rawValue)-\(e.rangeSHA256 ?? "")-\(e.firstLineId ?? 0)-\(e.lastLineId ?? 0)"
     }
 
     enum CardState: Equatable, Sendable {

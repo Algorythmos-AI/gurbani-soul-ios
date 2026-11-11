@@ -180,6 +180,18 @@ class HukamnamaGates(unittest.TestCase):
             self.assertNotIn("HUKAMNAMA_WIDGET", release,
                              "the Hukamnama widget is compiled into Release before its G3 copy review is signed")
 
+    def test_only_testflight_archives_show_the_hukamnama(self):
+        # testers soak the feature before G3/G4 are signed; an App Store archive must never get
+        # the overrides that switch it on
+        script = (ROOT / "ios" / "tools" / "testflight_archive.sh").read_text(encoding="utf-8")
+        block = re.search(r'HUKAMNAMA_ARGS=\(\)\nif \[ "\$CHANNEL" = testflight \]; then\n(.*?)\nfi\n', script, re.S)
+        self.assertIsNotNone(block, "the Hukamnama overrides must sit inside the testflight-only branch")
+        self.assertIn("HUKAMNAMA_ENABLED=YES", block.group(1))
+        self.assertIn("HUKAMNAMA_WIDGET", block.group(1))
+        outside = script.replace(block.group(0), "")
+        self.assertNotIn("HUKAMNAMA_ENABLED=YES", outside)
+        self.assertNotIn("HUKAMNAMA_WIDGET", outside)
+
     def test_widget_network_read_is_one_get_of_today(self):
         # the widget's exception cannot grow quietly: one GET of /v1/hukamnama/today, no body,
         # no token, no identifier

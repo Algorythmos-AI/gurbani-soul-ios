@@ -122,7 +122,8 @@ final class AppContainer {
         let container = self
         let home = self.hukamnama
         let nr = NotificationRouter(onOpen: { url in router.handle(url, container: container) },
-                                    onHukamnama: { entry in home.ingest(entry) })
+                                    onHukamnama: { entry in home.ingest(entry) },
+                                    isShowingHukamnama: { date in container.isShowingHukamnama(date: date) })
         self.notificationRouter = nr
         UNUserNotificationCenter.current().delegate = nr
         #endif
@@ -148,6 +149,13 @@ final class AppContainer {
         #else
         return (FakePushRegistrar(), nil)
         #endif
+    }
+
+    /// Whether the Hukamnama sheet for this Amritsar date is the modal on screen. The "latest"
+    /// sheet counts for today's date (it shows today's once it is out).
+    func isShowingHukamnama(date: String, now: Date = Date()) -> Bool {
+        guard case .hukamnama(let shown) = presentation else { return false }
+        return (shown ?? AmritsarDate.key(now)) == date
     }
 
     /// Launch and foreground: copy the corpus fingerprint into the App Group (the NSE and the

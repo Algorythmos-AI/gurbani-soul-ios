@@ -55,6 +55,34 @@ final class HukamnamaUITests: XCTestCase {
         shot(app, "hukamnama_sheet")
     }
 
+    /// A TAP on a Hukamnama notification while the app is in the background opens the sheet.
+    /// Device only (the app needs notification permission, which a fresh simulator lacks): set
+    /// TEST_RUNNER_SGGS_DEVICE_CHECKLIST=1. The Debug hook SGGS_DEBUG_LOCAL_HUKAMNAMA posts a local
+    /// notification on the Hukamnama thread; its tap takes the same NotificationRouter path as a push.
+    func testNotificationTapFromBackgroundOpensTheSheet() throws {
+        guard ProcessInfo.processInfo.environment["SGGS_DEVICE_CHECKLIST"] == "1" else {
+            throw XCTSkip("device only: set TEST_RUNNER_SGGS_DEVICE_CHECKLIST=1")
+        }
+        let fx = try fixture()
+        let app = XCUIApplication()
+        app.launchEnvironment["SGGS_UITEST"] = "1"
+        app.launchEnvironment["SGGS_UITEST_HUKAMNAMA"] = fx.json
+        app.launchEnvironment["SGGS_DEBUG_LOCAL_HUKAMNAMA"] = "8"
+        app.launch()
+        XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 90), "the app did not finish launching")
+        XCUIDevice.shared.press(.home)
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        let banner = springboard.descendants(matching: .any)
+            .matching(NSPredicate(format: "label CONTAINS %@", "device check")).firstMatch
+        XCTAssertTrue(banner.waitForExistence(timeout: 30), "the Hukamnama notification never appeared")
+        banner.tap()
+        XCTAssertTrue(app.wait(for: .runningForeground, timeout: 15), "the tap did not bring the app forward")
+        let header = app.descendants(matching: .any)["hukamnamaHeader"].firstMatch
+        XCTAssertTrue(header.waitForExistence(timeout: 20), "the tap did not open the Hukamnama sheet")
+        XCTAssertTrue(app.staticTexts["Sri Guru Granth Sahib Ji · Ang \(fx.ang)"].firstMatch.waitForExistence(timeout: 10))
+        shot(app, "hukamnama_from_notification_tap")
+    }
+
     /// A malformed date is ignored: the app opens normally, no sheet.
     func testMalformedDateIsIgnored() throws {
         let fx = try fixture()
