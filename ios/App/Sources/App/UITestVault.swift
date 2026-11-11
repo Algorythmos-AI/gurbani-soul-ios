@@ -76,6 +76,9 @@ enum UITestVault {
         if let u = NitnemPlanStore.defaultURL() { items.append(Item(name: "nitnem-plan", url: u, kind: .file)) }
         if let u = VaarProgressStore.defaultURL() { items.append(Item(name: "vaar-progress", url: u, kind: .file)) }
         if let u = WidgetStore.url() { items.append(Item(name: "widget-snapshot", url: u, kind: .file)) }
+        // the Hukamnama store (App Group): a phone that ran the real feature holds today's real
+        // entry, which the sheet reads before the service — tests start without it
+        if let u = HukamnamaStore.defaultURL() { items.append(Item(name: "hukamnama-snapshot", url: u, kind: .file)) }
         let store = ModelConfiguration(schema: Schema(versionedSchema: SavedLineSchemaV1.self)).url
         items.append(Item(name: "saved-store", url: store, kind: .sqlite))
         return items

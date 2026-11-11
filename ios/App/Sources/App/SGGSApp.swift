@@ -32,6 +32,7 @@ struct SGGSApp: App {
             NitnemProgressStore.wipe()
             NitnemPlanStore.wipe()
             VaarProgressStore.wipe()
+            if let u = HukamnamaStore.defaultURL() { try? FileManager.default.removeItem(at: u) }
         }
         // D10: a cold integrity verify (full re-hash), as after an install or an update. It drops the
         // verified fingerprint only, never any data, so it also applies to an ordinary launch: the
