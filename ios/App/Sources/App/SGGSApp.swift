@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import CoreSpotlight
+import UserNotifications
 
 @main
 struct SGGSApp: App {
@@ -71,6 +72,19 @@ struct SGGSApp: App {
                 // and appear only once the sheet host mounts.
                 if let raw = DebugHooks.environment["SGGS_UITEST_OPEN_URL"], let url = URL(string: raw) {
                     container.router.handle(url, container: container)
+                }
+                // A device check of the notification-tap path: a LOCAL notification on the
+                // Hukamnama thread, carrying today's URL, N seconds after launch. A tap goes through
+                // the same `NotificationRouter.didReceive` as a real push (lock the phone, tap it).
+                if let raw = DebugHooks.environment["SGGS_DEBUG_LOCAL_HUKAMNAMA"], let secs = Double(raw), secs >= 1 {
+                    let content = UNMutableNotificationContent()
+                    content.title = "Hukamnama · Sri Harmandir Sahib (device check)"
+                    content.body = "Tap: the Hukamnama sheet should open"
+                    content.threadIdentifier = NotificationRouter.hukamnamaThread
+                    content.userInfo = ["url": "sggs://hukamnama/\(AmritsarDate.key(Date()))"]
+                    let request = UNNotificationRequest(identifier: "debug.hukamnama", content: content,
+                        trigger: UNTimeIntervalNotificationTrigger(timeInterval: secs, repeats: false))
+                    try? await UNUserNotificationCenter.current().add(request)
                 }
                 #endif
                 await container.runIntegrity()

@@ -122,26 +122,44 @@ final class NotificationRouter: NSObject, UNUserNotificationCenterDelegate {
         return entry
     }
 
-    func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {
+    // The COMPLETION-HANDLER forms, never the `async` ones. Swift's bridge for an `async` delegate
+    // method calls UIKit's completion handler from a background executor; UIKit asserts it is on
+    // the main thread and aborts the app — every notification tap crashed (SIGABRT in
+    // -[UIApplication _performBlockAfterCATransactionCommitSynchronizes:], device run 2026-11-11).
+    // Here the work hops to the main actor and the handler is called there, after it.
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification,
+                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         let content = notification.request.content
-        if let entry = ingest(content) {
-            let handle = onHukamnama
-            await MainActor.run { handle(entry) }
+        let entry = ingest(content)
+        let options = Self.presentationOptions(threadIdentifier: content.threadIdentifier)
+        let done = MainThreadCompletion(completionHandler), handle = onHukamnama
+        Task { @MainActor in
+            if let entry { handle(entry) }
+            done.call(options)
         }
-        return Self.presentationOptions(threadIdentifier: content.threadIdentifier)
     }
 
-    func userNotificationCenter(_ center: UNUserNotificationCenter,
-                                didReceive response: UNNotificationResponse) async {
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
+                                withCompletionHandler completionHandler: @escaping () -> Void) {
         let content = response.notification.request.content
         let entry = ingest(content)
-        guard let url = Self.openURL(threadIdentifier: content.threadIdentifier, userInfo: content.userInfo) else { return }
-        let open = onOpen, handle = onHukamnama
-        await MainActor.run {
+        let url = Self.openURL(threadIdentifier: content.threadIdentifier, userInfo: content.userInfo)
+        let done = MainThreadCompletion(completionHandler), open = onOpen, handle = onHukamnama
+        Task { @MainActor in
             if let entry { handle(entry) }
-            open(url)
+            if let url { open(url) }
+            done.call(())
         }
     }
+}
+
+/// UIKit's completion handlers are not `Sendable`, but they may be called from the main actor,
+/// which is the only place this box calls them.
+private struct MainThreadCompletion<Value>: @unchecked Sendable {
+    private let handler: (Value) -> Void
+    init(_ handler: @escaping (Value) -> Void) { self.handler = handler }
+    init(_ handler: @escaping () -> Void) where Value == Void { self.handler = { _ in handler() } }
+    @MainActor func call(_ value: Value) { handler(value) }
 }
 #endif
