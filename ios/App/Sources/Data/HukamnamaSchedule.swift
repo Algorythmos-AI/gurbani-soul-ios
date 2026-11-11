@@ -70,7 +70,7 @@ enum HukamnamaSchedule {
     }
 
     /// "11:00 am" in the reader's zone and locale style.
-    static func usualLocalTime(now: Date, timeZone: TimeZone = .current, locale: Locale = .current) -> String {
+    static func usualLocalTime(now: Date, timeZone: TimeZone = .autoupdatingCurrent, locale: Locale = .autoupdatingCurrent) -> String {
         let f = DateFormatter()
         f.locale = locale
         f.timeZone = timeZone

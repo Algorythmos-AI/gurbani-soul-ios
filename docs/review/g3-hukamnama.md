@@ -94,6 +94,14 @@ day** · R7 no hand-typed Gurmukhi · R8 keywords name something the app contain
 | R-6 | `Notifications are turned off for Gurbani Soul in iOS Settings.` / `Open Settings` | :129, :131 | Mirrors the existing reminders row. |
 | R-7 | `Couldn't turn on. Try again.` | `Sources/Data/HukamnamaPush.swift:262` | Permission granted but registration or the server failed; the toggle snaps back. |
 | R-8 | Footer: `The Hukamnama is located each morning from SGPC and its text comes from Sri Guru Granth Sahib Ji in this app. When this is on, this device's notification token and your chosen time are sent to Algorythmos to deliver it. Turning it off deletes them.` | :109 | **Also G4** (privacy). The existing Nitnem footer below it still says "Everything stays on this device — no account, no network", which remains true of those reminders but now sits under a section that does use the network: please judge whether the two read clearly together. |
+| R-9 | `Turn it on again on this iPhone.` (`iPad` on iPad) | `Sources/Data/HukamnamaPush.swift` (`turnOnAgain`) | A restored backup or a new phone: the setting came over, the notification permission did not. Only the toggle may prompt. |
+| R-10 | `The Hukamnama couldn't be set up for this device. Turn it off and on again.` | `Sources/Data/HukamnamaPush.swift` (`refused`) | The server refused this device (4xx, not 429) on a routine re-registration. |
+| R-11 | `If it isn't published by then, it arrives as soon as it is.` | under the `Time` picker | "At a time I choose" only. |
+| R-12 | `` Today's Hukamnama was delivered at `1:54 PM`. `` (+ `Your new time starts tomorrow.` after a later change) | `HukamnamaDeliveryCopy` | From the server's delivery status (PUT answer), the reader's locale and zone. |
+| R-13 | `Today's Hukamnama is already out — open it from the Nitnem page. Notifications start tomorrow.` | `HukamnamaDeliveryCopy` | Turned on after today's was sent. |
+| R-14 | `` Your time has passed for today. Notifications start tomorrow at `2:13 PM`. `` | `HukamnamaDeliveryCopy` | |
+| R-15 | `` Today's arrives at `2:13 PM`. `` / `Today's arrives as soon as it's published.` | `HukamnamaDeliveryCopy` | |
+| R-16 | `Will update when you're online.` | `HukamnamaDeliveryCopy` | A mode/time change has not reached the server yet. |
 
 ### 3.5 VoiceOver
 

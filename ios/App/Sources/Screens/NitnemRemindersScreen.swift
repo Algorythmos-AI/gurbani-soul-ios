@@ -99,6 +99,7 @@ struct NitnemRemindersScreen: View {
 struct HukamnamaReminderSection: View {
     @Environment(AppContainer.self) private var container
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.locale) private var locale
     /// Mirrors the controller so the toggle moves at once; the async result corrects it.
     @State private var on = false
 
@@ -151,6 +152,16 @@ struct HukamnamaReminderSection: View {
                         set: { push.setMinute(Self.minuteOfDay($0)) }),
                                displayedComponents: .hourAndMinute)
                         .accessibilityIdentifier("hukamnamaTime")
+                    Text(HukamnamaDeliveryCopy.lateNote)
+                        .font(.footnote).foregroundStyle(.secondary)
+                        .accessibilityIdentifier("hukamnamaLateNote")
+                }
+                if let line = HukamnamaDeliveryCopy.line(
+                    status: push.deliveryStatus, receivedAt: push.deliveryStatusAt, mode: push.mode,
+                    settingsChangedAt: push.settingsChangedAt, changePending: push.changePending,
+                    now: Date(), locale: locale) {
+                    Text(line).font(.footnote).foregroundStyle(.secondary)
+                        .accessibilityIdentifier("hukamnamaDeliveryStatus")
                 }
             }
             #if DEBUG

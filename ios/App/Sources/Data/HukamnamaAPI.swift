@@ -44,11 +44,13 @@ struct HukamnamaHTTPService: HukamnamaServing {
         }
     }
 
-    func register(token: String, body: HukamnamaDeviceBody) async throws {
+    func register(token: String, body: HukamnamaDeviceBody) async throws -> HukamnamaDeviceStatus? {
         guard HukamnamaDeviceBody.isValidToken(token) else { throw HukamnamaServiceError.malformed }
         let data = try HukamnamaDeviceBody.encoder.encode(body)
-        let (_, status) = try await send(request("v1/devices/\(token)", method: "PUT", body: data))
+        let (answer, status) = try await send(request("v1/devices/\(token)", method: "PUT", body: data))
         guard (200..<300).contains(status) else { throw HukamnamaServiceError.rejected(status) }
+        // today's delivery for this device, when the server says (an older one: just {"ok":true})
+        return HukamnamaDeviceStatus.decode(answer)
     }
 
     func unregister(token: String) async throws {
