@@ -863,6 +863,10 @@ final class HukamnamaStoreTests: XCTestCase {
         // the same range from a push (no opening field) keeps the stored opening
         m = HukamnamaStore.merged(existing: [entry(day(9), opening: "verse")], incoming: [entry(day(9))])
         XCTAssertEqual(m.first?.openingGurmukhi, "verse")
+        // …and its refrain
+        var withRahao = entry(day(9)); withRahao.rahaoGurmukhi = ["line one ॥", "line two ॥ ਰਹਾਉ ॥"]
+        m = HukamnamaStore.merged(existing: [withRahao], incoming: [entry(day(9))])
+        XCTAssertEqual(m.first?.rahaoGurmukhi, withRahao.rahaoGurmukhi)
         // pending → published upgrades; malformed dates are dropped
         m = HukamnamaStore.merged(existing: [entry(day(9), .pending)], incoming: [entry(day(9)), entry("2026-11-31")])
         XCTAssertEqual(m.map(\.status), [.published])
@@ -898,6 +902,8 @@ final class HukamnamaStoreTests: XCTestCase {
         XCTAssertEqual(pushed.rangeSHA256, api.rangeSHA256)
         XCTAssertEqual(pushed.firstLineId, api.firstLineId); XCTAssertEqual(pushed.lastLineId, api.lastLineId)
         XCTAssertEqual(pushed.openingGurmukhi, api.openingGurmukhi, "the verse is the body minus our exact citation line")
+        XCTAssertFalse(api.rahaoLines.isEmpty, "the fixture carries its ਰਹਾਉ")
+        XCTAssertEqual(pushed.rahaoLines, api.rahaoLines, "push and read API carry the same refrain")
         XCTAssertEqual(pushed.url?.absoluteString, info["url"] as? String)
         let aps = try XCTUnwrap(info["aps"] as? [String: Any])
         XCTAssertEqual(aps["thread-id"] as? String, NotificationRouter.hukamnamaThread)
@@ -910,6 +916,17 @@ final class HukamnamaStoreTests: XCTestCase {
         alert["body"] = "\(api.openingGurmukhi ?? "")\nAng \(api.ang ?? 0)"
         a["alert"] = alert; odd["aps"] = a
         XCTAssertNil(HukamnamaEntry(pushUserInfo: odd)?.openingGurmukhi)
+        // a malformed refrain is dropped whole (never shown in part); the entry itself stays
+        let line = api.rahaoLines[0]
+        let bad: [Any] = [[String](), [line, line, line, line], [""], ["\(line)\n\(line)"],
+                          [String(repeating: "ਕ", count: 400)], line, 7]
+        for v in bad {
+            var badRahao = info; badRahao["rahao_gurmukhi"] = v
+            let e = try XCTUnwrap(HukamnamaEntry(pushUserInfo: badRahao), "\(v)")
+            XCTAssertEqual(e.rahaoLines, [], "\(v)")
+        }
+        var noRahao = info; noRahao.removeValue(forKey: "rahao_gurmukhi")
+        XCTAssertEqual(try XCTUnwrap(HukamnamaEntry(pushUserInfo: noRahao)).rahaoLines, [], "an older server sends none")
         // malformed fields → not a Hukamnama entry at all
         for (k, v) in [("range_sha256", "nothex"), ("amritsar_date", "2026-11-31"), ("first_line_id", "x")] as [(String, Any)] {
             var bad = info; bad[k] = v

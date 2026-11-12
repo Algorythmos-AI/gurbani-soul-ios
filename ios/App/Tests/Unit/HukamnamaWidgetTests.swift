@@ -151,8 +151,16 @@ final class HukamnamaWidgetRenderTests: XCTestCase {
     private func states() throws -> [(String, HukamnamaTimeline.Entry)] {
         let t = try fixtureEntry()
         let now = ist(t.amritsarDate, 9)
+        var opensWithRahao = t; opensWithRahao.rahaoGurmukhi = [t.openingGurmukhi ?? "", t.rahaoLines.last ?? ""]
+        var noRahao = t; noRahao.rahaoGurmukhi = nil
+        var longVerse = t   // a long opening (two corpus verses joined) must step down or drop, never cut
+        longVerse.openingGurmukhi = [t.openingGurmukhi ?? "", t.rahaoLines.last ?? ""].joined(separator: " ")
         return [
             ("today", .init(date: now, state: .today(t), verseShown: true)),
+            ("opens-rahao", .init(date: now, state: .today(opensWithRahao), verseShown: true)),
+            ("no-rahao", .init(date: now, state: .today(noRahao), verseShown: true)),
+            ("long", .init(date: now, state: .today(longVerse), verseShown: true)),
+            ("current", .init(date: now, state: .current(t), verseShown: true)),
             ("notyet", .init(date: now, state: .notYet(previous: t), verseShown: true)),
             ("delayed", .init(date: now, state: .delayed(previous: nil), verseShown: false)),
             ("mismatch", .init(date: now, state: .today(t), verseShown: false)),
@@ -183,6 +191,11 @@ final class HukamnamaWidgetRenderTests: XCTestCase {
                     r.scale = 3
                     let img = try XCTUnwrap(r.uiImage, "hukamnama \(name) \(stateName) failed to render")
                     XCTAssertGreaterThan(img.size.width, 0)
+                    // kept in the result bundle (CI uploads it), so a design review needs no simulator
+                    let shot = XCTAttachment(image: img)
+                    shot.name = "hukamnama-\(name)-\(stateName)-\(dark ? "dark" : "light")"
+                    shot.lifetime = .keepAlways
+                    add(shot)
                     if let png = img.pngData() {
                         try png.write(to: out.appendingPathComponent("hukamnama-\(name)-\(stateName)-\(dark ? "dark" : "light").png"))
                     }
@@ -193,7 +206,7 @@ final class HukamnamaWidgetRenderTests: XCTestCase {
 
     func testCopyNeverCallsItTheHukamOfTheDay() {
         // G3 R6, both ways round
-        for s in [HukamnamaWidgetView.name, HukamnamaWidgetView.emptyText,
+        for s in [HukamnamaWidgetView.name, HukamnamaWidgetView.emptyText, HukamnamaWidgetView.rahaoLabel,
                   HukamnamaWidgetView.notYetText, HukamnamaWidgetView.delayedText] {
             XCTAssertFalse(s.localizedCaseInsensitiveContains("of the day"), s)
         }
@@ -227,7 +240,7 @@ final class HukamnamaWidgetRenderTests: XCTestCase {
                     let content = root.insetBy(dx: inset - 0.5, dy: inset - 0.5)
                     XCTAssertTrue(content.contains(cite), "\(label): citation \(cite) clipped outside \(content)")
                     let needed = UIHostingController(rootView:
-                        Text(Citation.displayText(ang: ang)).font(WidgetType.serif(12))
+                        Text(Citation.displayText(ang: ang)).font(WidgetType.serif(HukamnamaWidgetView.citationSize(family)))
                             .environment(\.dynamicTypeSize, min(typeSize, .xxxLarge)))
                         .sizeThatFits(in: CGSize(width: cite.width + 0.5, height: .greatestFiniteMagnitude))
                     XCTAssertLessThanOrEqual(needed.height, cite.height + 1,
