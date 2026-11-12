@@ -24,6 +24,10 @@ struct HukamnamaEntry: Codable, Sendable, Equatable {
     /// the sheet always renders from the app's own DB after the range hash matches.
     var openingGurmukhi: String?
     var openingTranslit: String?
+    /// The shabad's ਰਹਾਉ couplet (1–3 lines), copied by the server from OUR corpus (verbatim). Present
+    /// only when the shabad has exactly one rahao. Display-only (the large widget); read it through
+    /// `rahaoLines`, which drops a malformed value rather than show part of it.
+    var rahaoGurmukhi: [String]?
     /// sha256 (lowercase hex) of the range's NFC Gurmukhi lines joined by "\n".
     var rangeSHA256: String?
     /// The corpus fingerprint (`scripture_sha256` in sggs-ios.manifest.json) the server used.
@@ -35,6 +39,7 @@ struct HukamnamaEntry: Codable, Sendable, Equatable {
         case amritsarDate = "amritsar_date", status, ang
         case firstLineId = "first_line_id", lastLineId = "last_line_id", compId = "comp_id"
         case openingGurmukhi = "opening_gurmukhi", openingTranslit = "opening_translit"
+        case rahaoGurmukhi = "rahao_gurmukhi"
         case rangeSHA256 = "range_sha256", scriptureSHA256 = "scripture_sha256"
         case publishedAt = "published_at", expectedBy = "expected_by"
     }
@@ -48,6 +53,19 @@ struct HukamnamaEntry: Codable, Sendable, Equatable {
         guard status == .published, let a = ang, a > 0, let f = firstLineId, let l = lastLineId,
               f > 0, l >= f, l - f < Self.maxRangeLines, let h = rangeSHA256 else { return false }
         return Self.isHex64(h)
+    }
+
+    /// The longest refrain the widget will draw (the server's cap); anything longer is malformed.
+    static let maxRahaoLines = 3
+
+    /// The refrain lines, or [] when absent or malformed (too many lines, an empty or multi-line
+    /// string, or an absurd length). All or nothing: a refrain is never shown in part.
+    var rahaoLines: [String] { Self.validRahao(rahaoGurmukhi) ?? [] }
+
+    static func validRahao(_ value: Any?) -> [String]? {
+        guard let lines = value as? [String], (1...maxRahaoLines).contains(lines.count),
+              lines.allSatisfy({ !$0.isEmpty && !$0.contains("\n") && $0.utf8.count <= 1_000 }) else { return nil }
+        return lines
     }
 
     /// `range_sha256` / `scripture_sha256` shape: exactly 64 lowercase hex characters.
@@ -85,6 +103,7 @@ struct HukamnamaEntry: Codable, Sendable, Equatable {
         }
         self.init(amritsarDate: date, status: .published, ang: ang, firstLineId: first, lastLineId: last,
                   compId: int("comp_id"), openingGurmukhi: opening, openingTranslit: str("opening_translit"),
+                  rahaoGurmukhi: Self.validRahao(info["rahao_gurmukhi"]),
                   rangeSHA256: hash, scriptureSHA256: str("scripture_sha256").flatMap { Self.isHex64($0) ? $0 : nil },
                   publishedAt: nil, expectedBy: nil)
         guard isLocatable else { return nil }
@@ -92,10 +111,11 @@ struct HukamnamaEntry: Codable, Sendable, Equatable {
 
     init(amritsarDate: String, status: Status, ang: Int? = nil, firstLineId: Int? = nil, lastLineId: Int? = nil,
          compId: Int? = nil, openingGurmukhi: String? = nil, openingTranslit: String? = nil,
-         rangeSHA256: String? = nil, scriptureSHA256: String? = nil, publishedAt: Date? = nil, expectedBy: Date? = nil) {
+         rahaoGurmukhi: [String]? = nil, rangeSHA256: String? = nil, scriptureSHA256: String? = nil, publishedAt: Date? = nil, expectedBy: Date? = nil) {
         self.amritsarDate = amritsarDate; self.status = status; self.ang = ang
         self.firstLineId = firstLineId; self.lastLineId = lastLineId; self.compId = compId
         self.openingGurmukhi = openingGurmukhi; self.openingTranslit = openingTranslit
+        self.rahaoGurmukhi = rahaoGurmukhi
         self.rangeSHA256 = rangeSHA256; self.scriptureSHA256 = scriptureSHA256
         self.publishedAt = publishedAt; self.expectedBy = expectedBy
     }
@@ -148,6 +168,11 @@ enum AmritsarDate {
         f.timeZone = timeZone
         f.dateFormat = "EEE d MMM"
         return "\(f.string(from: d)) · Amritsar"
+    }
+
+    /// "Mon 9 Nov" — the small widget's date, where "Sri Harmandir Sahib" already names the place.
+    static func shortLabel(_ key: String) -> String? {
+        label(key).map { String($0.dropLast(" · Amritsar".count)) }
     }
 }
 
@@ -248,6 +273,7 @@ enum HukamnamaStore {
                 if old.rangeSHA256 != nil && old.rangeSHA256 == e.rangeSHA256 {
                     if e.openingGurmukhi == nil { e.openingGurmukhi = old.openingGurmukhi }
                     if e.openingTranslit == nil { e.openingTranslit = old.openingTranslit }
+                    if e.rahaoGurmukhi == nil { e.rahaoGurmukhi = old.rahaoGurmukhi }
                     if e.compId == nil { e.compId = old.compId }
                     if e.publishedAt == nil { e.publishedAt = old.publishedAt }
                 }

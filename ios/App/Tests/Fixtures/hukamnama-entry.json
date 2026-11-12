@@ -8,6 +8,10 @@
   "opening_gurmukhi": "ਜਿਹ ਕਰਣੀ ਹੋਵਹਿ ਸਰਮਿੰਦਾ ਇਹਾ ਕਮਾਨੀ ਰੀਤਿ ॥",
   "opening_translit": "jih karanee hovah saramindaa ihaa kamaanee reet",
   "published_at": "2026-11-09T00:04:00Z",
+  "rahao_gurmukhi": [
+    "ਮਾਇਆ ਮੋਹ ਭੂਲੋ ਅਵਰੈ ਹੀਤ ॥",
+    "ਹਰਿਚੰਦਉਰੀ ਬਨ ਹਰ ਪਾਤ ਰੇ ਇਹੈ ਤੁਹਾਰੋ ਬੀਤ ॥੧॥ ਰਹਾਉ ॥"
+  ],
   "range_sha256": "2bebe00ca6e1bf98e69eaf1c985de91acb50584ae5818d5e12ee39593aa4834a",
   "scripture_sha256": "0eff4bae60cfcf1c63ae4ac14c2ecf255a9457edc0bebaf627aa28dedb89c84f",
   "status": "published"

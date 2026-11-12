@@ -65,6 +65,8 @@ struct Mark: View {
 struct Citation: View {
     let ang: Int
     var action: String? = nil
+    /// The serif's point size: 12 everywhere but the small Hukamnama widget.
+    var size: CGFloat = 12
 
     static func text(ang: Int) -> String { "Sri Guru Granth Sahib Ji · Ang \(String(ang))" }
     /// What is drawn: `text(ang:)` with no-break spaces before the "·" and after "Ang", so a
@@ -99,7 +101,7 @@ struct Citation: View {
 
     private var citation: some View {
         Text(Self.displayText(ang: ang))
-            .font(WidgetType.serif(12))
+            .font(WidgetType.serif(size))
             .foregroundStyle(.primary)
             .accessibilityLabel(Self.text(ang: ang))
             .background(GeometryReader {

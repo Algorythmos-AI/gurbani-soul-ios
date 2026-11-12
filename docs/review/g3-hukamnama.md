@@ -114,16 +114,25 @@ Compiled only where `HUKAMNAMA_WIDGET` is set, so it is not in Release builds un
 signed. The verse is the entry's opening verse (copied by the server from our corpus), shown whole
 or not at all; a corpus-fingerprint mismatch shows the Ang and date only.
 
+**Redesign (widget v2, 2026-11-12).** The faces read like the letter: name and Amritsar date at the
+head, the verse, the citation at the foot (the sheet's order). The large size adds the opening
+verse's transliteration and the shabad's ਰਹਾਉ couplet under a gold rule (`rahao_gurmukhi`, copied by
+the server from our corpus; present only when the shabad has exactly one ਰਹਾਉ). Every layout steps
+down whole (smaller type → no transliteration → no ਰਹਾਉ → no verse), never cuts a line, and binds a
+closing ॥ to the word before it for display only (`VerseTypography`, as the reader does).
+
 | # | String | Where | Pre-review note |
 |---|---|---|---|
 | W1 | Widget name and eyebrow: `Hukamnama · Sri Harmandir Sahib` | `HukamnamaWidgetView.name` | N1. The small widget splits it: `Hukamnama` over `Sri Harmandir Sahib`. |
 | W2 | Description (widget gallery): `The Hukamnama taken at Sri Harmandir Sahib, Amritsar, located by Ang from SGPC. Text from Sri Guru Granth Sahib Ji (not the Hukam of the day).` | provider | R6, both ways round. |
-| W3 | Citation `Sri Guru Granth Sahib Ji · Ang N`, then the date line `Mon 9 Nov · Amritsar` | Home Screen families | The plan's comma form ("Ang 673 · Mon 9 Nov, Amritsar") was dropped for the app's own " · Amritsar" (N2), so every surface writes the date one way. |
+| W3 | Date `Mon 9 Nov · Amritsar` under the name (medium, large); citation `Sri Guru Granth Sahib Ji · Ang N` at the foot | Home Screen families | The plan's comma form ("Ang 673 · Mon 9 Nov, Amritsar") was dropped for the app's own " · Amritsar" (N2), so every surface writes the date one way. **v2:** the small widget writes `Mon 9 Nov` alone under its citation, because `Sri Harmandir Sahib` above already names the place and the full form does not fit beside a whole verse. Please confirm. |
 | W4 | `Not yet published today` | 05:30–14:00 IST with nothing new | The previous Hukamnama stays, dimmed, with its own date. |
 | W5 | `Delayed today` | held for the owner's check, or after 14:00 IST | The card's word (C4), so the two agree. The plan's "Not available today. Open the app" was not used. |
 | W6 | `Turn on the Hukamnama in Gurbani Soul.` | no Hukamnama has reached this device | |
 | W7 | `Tap to read` (medium) / `Tap to read the shabad` (large) | beside the citation | *Existing* words (Hukam of the day widget). |
 | W8 | Lock Screen: `Hukamnama · Ang 673` (rectangular, inline); `Ang` over the number (circular); `Hukamnama` with no Ang yet | accessory families | The rectangular widget adds the verse only when it fits whole, otherwise the date or the status. |
+| W10 | `ਰਹਾਉ · refrain` under the ਰਹਾਉ couplet (large) | `HukamnamaWidgetView.rahaoLabel` | *Existing* words: the reader's and the sheet's label for a rahao line. |
+| W11 | The opening verse's transliteration, italic, under it (large, when it fits whole) | `opening_translit` | The corpus's rule-based transliteration, as the Hukam of the day widget shows it. Not a translation. |
 | W9 | Before 05:30 IST, yesterday's Hukamnama is shown with its date and no status line (it is still the current one) | | Never called today's. |
 
 ## 4. Sign-off

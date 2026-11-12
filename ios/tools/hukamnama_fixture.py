@@ -17,6 +17,7 @@ NOT a claim about any day's actual Hukamnama.
 """
 import hashlib
 import json
+import re
 import sqlite3
 import sys
 import unicodedata
@@ -36,18 +37,39 @@ def range_sha256(lines):
     return hashlib.sha256(joined.encode("utf-8")).hexdigest()
 
 
+VERSE_END = re.compile(r"॥[੦-੯]+॥$")
+RAHAO_MAX_LINES = 3
+
+
+def rahao_block(rows):
+    """The one ਰਹਾਉ couplet, by the service's rule (services/hukamnama corpus.rahao_block in
+    sggs-platform): the rahao line plus the verse lines just before it, back to a numbered verse
+    end or a heading, at most 3 lines; none when there is no rahao or several."""
+    marked = [i for i, r in enumerate(rows) if r[5]]
+    if len(marked) != 1:
+        return []
+    start = end = marked[0]
+    while start > 0 and not rows[start - 1][2] and not VERSE_END.search(rows[start - 1][3]):
+        start -= 1
+    if end - start + 1 > RAHAO_MAX_LINES:
+        return []
+    return [r[3] for r in rows[start:end + 1]]
+
+
 def build():
     con = sqlite3.connect(f"file:{DB}?mode=ro", uri=True)
     comp = con.execute(
         "SELECT comp_id FROM lines GROUP BY comp_id HAVING min(ang) = ? ORDER BY min(id) LIMIT 1", (ANG,)
     ).fetchone()[0]
     rows = con.execute(
-        "SELECT id, ang, is_header, gurmukhi, translit FROM lines WHERE comp_id = ? ORDER BY id", (comp,)
+        "SELECT id, ang, is_header, gurmukhi, translit, is_rahao FROM lines WHERE comp_id = ? ORDER BY id", (comp,)
     ).fetchall()
     ids = [r[0] for r in rows]
     assert ids == list(range(ids[0], ids[-1] + 1)), "the composition's ids are not contiguous"
     opening = next(r for r in rows if not r[2])
     scripture = json.loads(MANIFEST.read_text())["scripture_sha256"]
+    rahao = rahao_block(rows)
+    assert rahao, "the fixture shabad must carry a rahao couplet"
     entry = {
         "amritsar_date": DATE,
         "status": "published",
@@ -57,6 +79,7 @@ def build():
         "comp_id": comp,
         "opening_gurmukhi": opening[3],
         "opening_translit": opening[4],
+        "rahao_gurmukhi": rahao,
         "range_sha256": range_sha256([r[3] for r in rows]),
         "scripture_sha256": scripture,
         "published_at": "2026-11-09T00:04:00Z",
@@ -84,6 +107,7 @@ def build():
         "range_sha256": entry["range_sha256"],
         "scripture_sha256": scripture,
         "opening_translit": opening[4],
+        "rahao_gurmukhi": rahao,
     }
     dump = lambda o: json.dumps(o, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     return {"hukamnama-entry.json": dump(entry), "hukamnama.apns": dump(apns)}
