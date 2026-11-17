@@ -17,6 +17,7 @@ against App Store Connect.
 
 | Version | Status |
 |---|---|
+| [1.7.0](1.7.0.md) | uploading for App Store (the Hukamnama stays off in App Store builds) |
 | [1.6.4](1.6.4.md) | TestFlight (carries the Hukamnama from Sri Harmandir Sahib beta; App Store builds keep it off) |
 | [1.6.3](1.6.3.md) | App Store |
 | [1.6.2](1.6.2.md) | uploaded, never submitted; superseded by 1.6.3 |

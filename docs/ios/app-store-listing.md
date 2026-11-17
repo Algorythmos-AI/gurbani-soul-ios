@@ -108,9 +108,9 @@ are banis it does contain. `ios/tests/test_ios_gates.py` lints this section.)
 
 ## What's New
 
-For version 1.6.4 (covers everything since 1.6.3, the version on the App Store). Rewritten for every version; limit 4000 characters. Every version's text is kept in [`whats-new/`](whats-new/README.md).
+For version 1.7.0 (covers everything since 1.6.3, the version on the App Store; 1.6.4 was TestFlight-only). Rewritten for every version; limit 4000 characters. Every version's text is kept in [`whats-new/`](whats-new/README.md).
 
-> Reliability improvements, in step with gurbanisoul.com.
+> Reliability improvements, in step with gurbanisoul.com — where the daily Hukamnama from Sri Harmandir Sahib is now published.
 >
 > The text of Sri Guru Granth Sahib Ji is unchanged.
 
@@ -129,9 +129,9 @@ permanent redirect, which `sggs-verify-prod` proves.
 
 | Field | Submit this | Status |
 |---|---|---|
-| Support URL | `https://gurbanisoul.com/en/support` | live (update in App Store Connect with 1.6.4) |
+| Support URL | `https://gurbanisoul.com/en/support` | live (update in App Store Connect with 1.7.0) |
 | Marketing URL | `https://gurbanisoul.com` | live — the Gurbani Soul landing page |
-| Privacy Policy URL | `https://gurbanisoul.com/en/privacy` | live (update in App Store Connect with 1.6.4) |
+| Privacy Policy URL | `https://gurbanisoul.com/en/privacy` | live (update in App Store Connect with 1.7.0) |
 
 The privacy page must stay true to the binary: no data collected, no network requests, location
 on-device only, saved verses / settings / Nitnem progress stored locally, reminders as local
