@@ -389,6 +389,108 @@
           38.39
         ]
       ]
+    },
+    {
+      "version": "1.7.1",
+      "run_id": "20261118T0415Z-726d7df",
+      "verdict": "PASS",
+      "d10": {
+        "cold": 0.31,
+        "warm": 0.243
+      },
+      "d10_method": "out-of-xctest",
+      "d10_xctest_pre_main": {
+        "cold": 0.277,
+        "warm": 0.247
+      },
+      "suite_seconds": {
+        "unit": 37,
+        "ui": 2232,
+        "checklist": 169,
+        "rerun": 1186
+      },
+      "slowest": [
+        [
+          "SGGSUITests/testCaptureScreens()",
+          301.419
+        ],
+        [
+          "SGGSUITests/testSwipeRunAfterJumpRendersContent()",
+          286.996
+        ],
+        [
+          "SGGSUITests/testVerifyShowsVerdict()",
+          164.238
+        ],
+        [
+          "SGGSUITests/testExploreFeatures()",
+          128.377
+        ],
+        [
+          "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()",
+          106.818
+        ],
+        [
+          "SGGSUITests/testLineageAndVaars()",
+          90.167
+        ],
+        [
+          "SGGSUITests/testYourThemesCountsSavedVerses()",
+          87.373
+        ],
+        [
+          "SGGSUITests/testContinuationPillGoesToNextAng()",
+          75.22
+        ],
+        [
+          "DeviceChecklistTests/testD3RenderingLightAndDarkAtAX3()",
+          73.172
+        ],
+        [
+          "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()",
+          72.414
+        ],
+        [
+          "SGGSUITests/testVaarsWeave()",
+          70.548
+        ],
+        [
+          "SGGSUITests/testCaptureJaapPauri79()",
+          53.613
+        ],
+        [
+          "SGGSUITests/testNitnemOpensJapjiAndCompletes()",
+          51.125
+        ],
+        [
+          "SGGSUITests/testVoicesNavigationAndCountAgreement()",
+          50.188
+        ],
+        [
+          "SGGSUITests/testThemeListStatesItsTrueTotal()",
+          49.531
+        ],
+        [
+          "SGGSUITests/testConstellation()",
+          43.156
+        ],
+        [
+          "SGGSUITests/testRaagPageFromTheIndex()",
+          40.804
+        ],
+        [
+          "SGGSUITests/testSavedVerseRoundTrip()",
+          40.636
+        ],
+        [
+          "SGGSUITests/testJourneyClearsReadingHistory()",
+          38.224
+        ],
+        [
+          "SGGSUITests/testInsightsVisualizations()",
+          34.5
+        ]
+      ]
     }
   ]
 }
