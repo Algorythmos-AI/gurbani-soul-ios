@@ -108,7 +108,7 @@ are banis it does contain. `ios/tests/test_ios_gates.py` lints this section.)
 
 ## What's New
 
-For version 1.7.4 (covers everything since 1.7.1, the version on the App Store; 1.7.2, 1.7.3 and 1.7.4 are upload-only). Rewritten for every version; limit 4000 characters. Every version's text is kept in [`whats-new/`](whats-new/README.md).
+For version 1.7.5 (covers everything since 1.7.1, the version on the App Store; 1.7.2 to 1.7.5 are upload-only). Rewritten for every version; limit 4000 characters. Every version's text is kept in [`whats-new/`](whats-new/README.md).
 
 > Reliability improvements, in step with gurbanisoul.com — where the daily Hukamnama from Sri Harmandir Sahib is now published.
 >
