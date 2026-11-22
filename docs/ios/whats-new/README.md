@@ -17,7 +17,8 @@ against App Store Connect.
 
 | Version | Status |
 |---|---|
-| [1.7.3](1.7.3.md) | uploading for App Store, not to be submitted (no in-app change for App Store readers) |
+| [1.7.4](1.7.4.md) | uploading for App Store, not to be submitted (no in-app change for App Store readers) |
+| [1.7.3](1.7.3.md) | uploaded, never submitted; superseded by 1.7.4 |
 | [1.7.2](1.7.2.md) | uploaded, never submitted; superseded by 1.7.3 |
 | [1.7.1](1.7.1.md) | on the App Store since 2026-11-19 |
 | [1.7.0](1.7.0.md) | uploaded, never submitted; superseded by 1.7.1 |
