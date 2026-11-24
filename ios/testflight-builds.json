@@ -526,6 +526,20 @@
       "sdk": "iphoneos27.0",
       "uploaded_at": "2026-11-24T01:22:06Z",
       "note": "TestFlight-channel soak build, not for App Review: archived locally at tag v1.7.5 with CHANNEL=testflight, so HukamnamaEnabled=YES, HUKAMNAMA_WIDGET compiled in, Hukamnama API = api-staging.gurbanisoul.com (checked in the archived Info.plist and widget). Made because every appstore-channel build since 1.7.0 hides the Hukamnama card. The CI run could not sign (team at Apple's 10 development-certificate limit). db_sha256 d56c18d2 is the local-build hash; same dataset and scripture as 1.7.5 (1)."
+    },
+    {
+      "version": "1.7.6",
+      "build": 1,
+      "source_commit": "ac5471e87b55e95d82593e3f0241734f43203083",
+      "platform_commit": "4de3613b5899d1a660f6538928695753a39140bb",
+      "dataset_commit": "ff6f63397ba98f617e04ca0d0a63c7076fa3a866",
+      "profile": "public",
+      "channel": "appstore",
+      "db_sha256": "1e79b501d3184fb64496b0102fca11ba5473f4d9bcc5e4c0cb7eb1de3eda1769",
+      "xcode": "27.2",
+      "sdk": "iphoneos27.2",
+      "uploaded_at": "2026-11-24T12:47:36Z",
+      "note": "Archived and uploaded by ios-testflight.yml (run 45395024264) at tag v1.7.6: the Mac had under the script's 8 GB floor. Upload only, not for App Review; carries the platform v1.7.6 vendor sync (one-number policy). Built with Xcode 27.2 / iOS 27.2 SDK (ITMS-90725 floor met). db_sha256 1e79b501 is the runner's SQLite bytes, same as 1.7.5 (1); same dataset, scripture byte-identical and scripture_sha256 matched the certified corpus. The run revoked the development certificate it created (#151)."
     }
   ]
 }
