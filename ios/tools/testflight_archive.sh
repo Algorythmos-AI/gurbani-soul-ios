@@ -73,7 +73,7 @@ export SGGS_RELEASE_CHANNEL="$CHANNEL"          # read by pipeline/check_release
 # TestFlight builds also SHOW the Hukamnama (push, sheet, card and widget) so testers can soak it
 # before the G3/G4 reviews are signed. App Store builds (CHANNEL=appstore) never get these
 # overrides and stay dark until project.yml's Release config is flipped (tests/test_ios_gates.py).
-# Step 6 proves the archived app matches its channel (ios/tools/check_hukamnama_build.py).
+# After archiving, before export/upload, ios/tools/check_hukamnama_build.py proves the app matches its channel.
 HUKAMNAMA_TF_API="${SGGS_HUKAMNAMA_API_BASE_TESTFLIGHT:-https://api-staging.gurbanisoul.com}"
 HUKAMNAMA_ARGS=()
 if [ "$CHANNEL" = testflight ]; then

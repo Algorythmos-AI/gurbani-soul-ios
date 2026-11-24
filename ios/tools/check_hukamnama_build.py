@@ -5,7 +5,7 @@ its channel promises?
 testflight_archive.sh switches the Hukamnama on (card, sheet, push, widget) only for
 CHANNEL=testflight, by command-line overrides. Nothing proved the overrides reached the binary:
 the flags were checked by hand before 1.7.5 (2). This checks the archived SGGS.app itself
-(step 6 of the archive script):
+(after archiving, before export and upload):
 
   testflight  HukamnamaEnabled = YES; app and widget HukamnamaAPIBase = the testflight API;
               the Hukamnama widget is compiled into the widget binary.
