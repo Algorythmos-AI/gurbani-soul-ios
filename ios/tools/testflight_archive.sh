@@ -15,7 +15,7 @@
 #   5. Exports for App Store Connect; with SGGS_UPLOAD=1 the export *is* the upload.
 #   6. Proves what was built: the Info.plist version/build and the manifest INSIDE the .app.
 #
-# Usage (macOS with Xcode ≥ 16, XcodeGen, python3; `make dataset` first; run from anywhere):
+# Usage (macOS with Xcode ≥ ios/tools/min-sdk-major (27), XcodeGen, python3; `make dataset` first; run from anywhere):
 #   SGGS_TEAM_ID=ABCDE12345 SGGS_BUILD_NUMBER=4 ios/tools/testflight_archive.sh
 #   SGGS_TEAM_ID=… SGGS_BUILD_NUMBER=5 SGGS_UPLOAD=1 ios/tools/testflight_archive.sh
 #
@@ -81,9 +81,14 @@ if [ "$CHANNEL" = testflight ]; then
     'SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) HUKAMNAMA_WIDGET'
   )
 fi
-# Apple rejects uploads built with an older SDK (Xcode 26 / iOS 26 SDK required since 2026-04-28).
-# One constant: raise it when developer.apple.com/news/upcoming-requirements raises the floor.
-MIN_XCODE_MAJOR=26
+# Apple refuses uploads built with an older SDK (ITMS-90725). The floor lives in ONE file,
+# ios/tools/min-sdk-major, shared with appstore_preflight.py, check_bundle_sdk.py and the CI
+# select-xcode action: raise it there when developer.apple.com/news/upcoming-requirements does.
+# (27: the iOS 27 SDK / Xcode 27 is required from April 2027; 1.7.5 (1) drew the warning.)
+FLOOR_FILE="$ROOT/ios/tools/min-sdk-major"
+[ -f "$FLOOR_FILE" ] || fail "missing $FLOOR_FILE (the minimum iOS SDK major)"
+MIN_XCODE_MAJOR="$(tr -d '[:space:]' < "$FLOOR_FILE")"
+[[ "$MIN_XCODE_MAJOR" =~ ^[0-9]+$ ]] || fail "$FLOOR_FILE must hold one integer, got '$MIN_XCODE_MAJOR'"
 
 KEY_PATH="${SGGS_ASC_KEY_PATH:-}"; KEY_ID="${SGGS_ASC_KEY_ID:-}"; ISSUER="${SGGS_ASC_ISSUER_ID:-}"
 AUTH_ARGS=()
@@ -133,7 +138,11 @@ fi
 XCODE_VERSION="$(xcodebuild -version | awk 'NR==1{print $2}')"
 [ "${XCODE_VERSION%%.*}" -ge "$MIN_XCODE_MAJOR" ] 2>/dev/null \
   || fail "Xcode $XCODE_VERSION is too old — App Store Connect requires Xcode $MIN_XCODE_MAJOR+ (select it with xcode-select)"
-echo "  Xcode $XCODE_VERSION"
+# The SDK the archive will link against, checked before any work — not only the Xcode's name.
+IOS_SDK_VERSION="$(xcrun --sdk iphoneos --show-sdk-version 2>/dev/null || true)"
+[[ "$IOS_SDK_VERSION" =~ ^[0-9]+ ]] && [ "${IOS_SDK_VERSION%%.*}" -ge "$MIN_XCODE_MAJOR" ] \
+  || fail "the selected Xcode's iOS SDK is '${IOS_SDK_VERSION:-none}' — App Store Connect requires the iOS $MIN_XCODE_MAJOR SDK or later"
+echo "  Xcode $XCODE_VERSION · iOS SDK $IOS_SDK_VERSION"
 if [ "$UPLOAD" = 1 ]; then
   # The commit must be on the trunk — never a local-only or feature SHA.
   git fetch -q origin main 2>/dev/null || echo "  (could not fetch origin; using local remote-tracking refs)"
@@ -287,8 +296,9 @@ bash ios/tools/check_no_test_hooks.sh "$APP" || fail "UI-test hooks found in the
 # The SDK the binary was actually built with (what App Store Connect validates), not what we hoped.
 DT_XCODE=$(/usr/libexec/PlistBuddy -c 'Print DTXcode' "$APP/Info.plist")
 DT_SDK=$(/usr/libexec/PlistBuddy -c 'Print DTSDKName' "$APP/Info.plist")
-SDK_MAJOR=$(printf '%s' "$DT_SDK" | sed -E 's/^[a-z]+([0-9]+).*/\1/')
-[ "$SDK_MAJOR" -ge "$MIN_XCODE_MAJOR" ] 2>/dev/null || fail "archived app was built with SDK $DT_SDK — App Store Connect requires the iOS $MIN_XCODE_MAJOR SDK or later"
+# Every bundle (app, widget .appex, frameworks): Apple validates each binary, not only the app.
+python3 ios/tools/check_bundle_sdk.py "$APP" "$MIN_XCODE_MAJOR" \
+  || fail "a bundle in the archive was built below the iOS $MIN_XCODE_MAJOR SDK (see above)"
 # dSYM UUIDs: what a MetricKit / Organizer crash report must match to be symbolicated later.
 # Xcode's dwarfdump via xcrun — a Homebrew LLVM dwarfdump earlier on PATH rejects --uuid. Each line
 # is "UUID: <uuid> (<arch>) <path>"; keep uuid:<binary name>. Diagnostics only: empty on failure.

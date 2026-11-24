@@ -72,7 +72,7 @@ Neither S-1 nor S-2 is caused by the app: the app shows the stored text faithful
 | E-5 | P2 | Hukam widget | showed the unit's first verse, opened the seed's composition (can differ) | snapshot carries the shown verse's comp + line | `testHukamWidgetOpensTheVerseItShows` | fixed, PASS |
 | E-6 | P2 | Spotlight | session-only saves indexed; un-index before a failed delete; never reconciled | skip degraded; un-index after save; reconcile at launch | not unit-observable → D7 | fixed; device NOT RUN |
 | E-7 | P2 | Tests | `SaroopTests` searched Gurmukhi as `String` (grapheme clusters): vacuous checks, failing count | scalar comparison, exact counts | itself | fixed, PASS |
-| E-8 | P1 | Release | archives since 1.4.1 use Xcode 27 / SDK 27; CI builds and tests with Xcode 26.3 / SDK 26.2 | run `app` on the archive's Xcode | — | open |
+| E-8 | P1 | Release | archives since 1.4.1 use Xcode 27 / SDK 27; CI builds and tests with Xcode 26.3 / SDK 26.2 | run `app` on the archive's Xcode | `runs-on: xcode-27` + `select-xcode` verifies Xcode/SDK ≥ `ios/tools/min-sdk-major` (after 1.7.5 (1) drew ITMS-90725) | fixed |
 | E-9 | P1 | Release | CI tests the **personal** DB profile; releases ship **public** | add a public-profile `app` run | — | open |
 | E-10 | P1 | Release | the CI "certified manifest" check compares a manifest the step before just rewrote; the archive never checks `db/sggs.sqlite` against `dataset.lock.json` (scripture text is still pinned by `CERTIFIED_SCRIPTURE_SHA`) | `git diff --exit-code` on the manifest; verify the dataset hash at archive time | — | open |
 | E-11 | P1 | Versioning | HEAD carries PR #36 under 1.4.2, already shipped | bump with the platform (1.4.3) and re-sign Charter S | — | open |

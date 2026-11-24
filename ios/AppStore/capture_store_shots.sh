@@ -10,7 +10,7 @@
 #
 # The public DB is built into ios/App/build/ and copied into the BUILT .app (a copy in DerivedData),
 # never into ios/Resources. The simulators are created for this run and deleted afterwards.
-# Needs: `make dataset` done, `make ios-db-repair` (the personal pair the project builds with), Xcode 26.
+# Needs: `make dataset` done, `make ios-db-repair` (the personal pair the project builds with), Xcode 27+ (ios/tools/min-sdk-major).
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 OUT="$(mkdir -p "${1:?usage: capture_store_shots.sh <out-dir>}" && cd "$1" && pwd)"

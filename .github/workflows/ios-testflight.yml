@@ -56,7 +56,7 @@ concurrency:
 
 jobs:
   archive:
-    runs-on: macos-15
+    runs-on: xcode-27   # GitHub's Xcode 27 image (macOS 27, arm64): the App Store SDK floor, ios/tools/min-sdk-major
     environment: testflight
     timeout-minutes: 90
     steps:
@@ -67,20 +67,10 @@ jobs:
         with: { token: "${{ secrets.SGGS_READ_TOKEN || github.token }}" }
       - name: Install XcodeGen
         run: brew install xcodegen
-      - name: Select Xcode
-        run: |
-          # App Store Connect rejects uploads built with anything older than Xcode 26 (iOS 26 SDK).
-          # Pick the newest installed Xcode 26+, and FAIL if the image has none — never fall back
-          # silently to an SDK Apple will refuse after a 40-minute archive.
-          XCODE=""
-          for app in /Applications/Xcode_*.app; do
-            major="${app##*/Xcode_}"; major="${major%%.*}"
-            case "$major" in *[!0-9]*|"") continue ;; esac
-            if [ "$major" -ge 26 ]; then XCODE="$app"; fi   # the glob sorts ascending, so the last match is the newest
-          done
-          test -n "$XCODE" || { echo "::error::no Xcode 26+ on this runner image — move runs-on to an image that has it"; exit 1; }
-          sudo xcode-select -s "$XCODE"
-          xcodebuild -version
+      # The one shared selector: the newest released Xcode at or above ios/tools/min-sdk-major, verified
+      # by what it reports. It FAILS on an image without one — never a silent fall-back to an SDK Apple
+      # flags or refuses (1.7.5 (1) was archived here on Xcode 26.3 / SDK 26.2 and drew ITMS-90725).
+      - uses: ./.github/actions/select-xcode
       - name: Write the App Store Connect API key
         env:
           ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}

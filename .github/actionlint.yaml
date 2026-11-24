@@ -1,0 +1,6 @@
+# Runner labels actionlint does not know yet. xcode-27 is GitHub's hosted Xcode 27 image (macOS 27,
+# arm64; GA 2026-10-16, https://github.blog/changelog/2026-10-16-xcode-27-runner-image-generally-available/),
+# not a self-hosted runner — actionlint only has this one place to declare extra labels.
+self-hosted-runner:
+  labels:
+    - xcode-27

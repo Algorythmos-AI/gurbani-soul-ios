@@ -25,7 +25,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-MIN_SDK_MAJOR = 26   # keep in step with MIN_XCODE_MAJOR in testflight_archive.sh
+# The App Store SDK floor (ITMS-90725), read from the one file every gate shares.
+MIN_SDK_MAJOR = int((ROOT / "ios" / "tools" / "min-sdk-major").read_text().strip())
 
 
 def newest_build(version, builds):

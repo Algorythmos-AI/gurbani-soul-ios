@@ -118,18 +118,25 @@ if [ "$1" = "-version" ]; then echo "Xcode {version}"; echo "Build version STUB"
 exit 0
 """
 
+XCRUN_STUB = """#!/bin/bash
+# stands in for xcrun: reports the selected Xcode's iOS SDK version
+if [ "$3" = "--show-sdk-version" ]; then echo "{sdk}"; exit 0; fi
+exit 0
+"""
+
 
 @unittest.skipUnless(shutil.which("bash") and (ROOT / "db" / "sggs.sqlite").is_file()
                      and (ROOT / "db" / "sggs.sqlite").read_bytes()[:15] == b"SQLite format 3",
                      "needs bash and the real db/sggs.sqlite (make dataset)")
 class ArchiveLeavesNoTrace(unittest.TestCase):
-    XCODE = "26.5"
+    XCODE = "27.0"
+    SDK = "27.0"
 
     def setUp(self):
         self.stubs = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, self.stubs)
         for name, body in (("uname", "#!/bin/bash\necho Darwin\n"), ("xcodebuild", XCODEBUILD_STUB.format(version=self.XCODE)),
-                           ("xcodegen", XCODEGEN_STUB)):
+                           ("xcrun", XCRUN_STUB.format(sdk=self.SDK)), ("xcodegen", XCODEGEN_STUB)):
             p = self.stubs / name
             p.write_text(body)
             p.chmod(p.stat().st_mode | stat.S_IXUSR)
@@ -228,13 +235,29 @@ class ReleaseChannelGate(ArchiveLeavesNoTrace):
 
 
 class OldXcodeIsRefused(ArchiveLeavesNoTrace):
-    XCODE = "16.4"
+    # Xcode 26.x is what built 1.7.5 (1) and drew ITMS-90725: below the floor in ios/tools/min-sdk-major.
+    XCODE = "26.3"
+    SDK = "26.2"
     test_killed_then_rerun_archive_never_touches_the_dev_pair = None
 
     def test_archive_refuses_an_sdk_apple_will_reject(self):
         run = subprocess.run(["bash", str(SCRIPT)], env=self.env, capture_output=True, text=True, timeout=120)
         self.assertNotEqual(run.returncode, 0)
-        self.assertIn("App Store Connect requires Xcode 26+", run.stderr)
+        self.assertIn("App Store Connect requires Xcode 27+", run.stderr)
+        self.assertFalse(self.stage.exists(), "refused before any work")
+
+
+class OldSdkUnderNewXcodeIsRefused(ArchiveLeavesNoTrace):
+    # A new-enough Xcode name is not enough: the iOS SDK it would link against is checked too.
+    XCODE = "27.0"
+    SDK = "26.2"
+    test_killed_then_rerun_archive_never_touches_the_dev_pair = None
+
+    def test_archive_checks_the_sdk_not_only_the_xcode(self):
+        run = subprocess.run(["bash", str(SCRIPT)], env=self.env, capture_output=True, text=True, timeout=120)
+        self.assertNotEqual(run.returncode, 0)
+        self.assertIn("iOS SDK is '26.2'", run.stderr)
+        self.assertFalse(self.stage.exists(), "refused before any work")
 
 
 class GithubRepoDefault(unittest.TestCase):

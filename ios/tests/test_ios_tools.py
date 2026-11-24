@@ -105,8 +105,8 @@ LABEL_ON = "enum NitnemReview {\n    static let extraTextReviewed = false\n}\n"
 
 class AppStorePreflight(unittest.TestCase):
     def rows(self, **newest):
-        return [{"version": "1.3.1", "build": 1, "channel": "appstore", "sdk": "iphoneos26.5"},
-                dict({"version": "1.3.1", "build": 2, "channel": "appstore", "sdk": "iphoneos26.5"}, **newest)]
+        return [{"version": "1.3.1", "build": 1, "channel": "appstore", "sdk": "iphoneos27.0"},
+                dict({"version": "1.3.1", "build": 2, "channel": "appstore", "sdk": "iphoneos27.0"}, **newest)]
 
     def test_ready(self):
         build, problems = preflight.evaluate("1.3.1", self.rows(), SIGNED, LABEL_OFF)
@@ -124,7 +124,14 @@ class AppStorePreflight(unittest.TestCase):
 
     def test_old_sdk_is_refused(self):
         _, problems = preflight.evaluate("1.3.1", self.rows(sdk="iphoneos18.5"), SIGNED, LABEL_OFF)
-        self.assertTrue(any("iOS 26 SDK" in p for p in problems))
+        self.assertTrue(any("iOS 27 SDK" in p for p in problems))
+
+    def test_the_sdk_that_drew_itms_90725_is_refused(self):   # 1.7.5 (1): Xcode 26.3 / iphoneos26.2
+        _, problems = preflight.evaluate("1.3.1", self.rows(sdk="iphoneos26.2"), SIGNED, LABEL_OFF)
+        self.assertTrue(any("sdk=iphoneos26.2" in p and "iOS 27 SDK" in p for p in problems))
+
+    def test_floor_comes_from_the_shared_file(self):
+        self.assertEqual(preflight.MIN_SDK_MAJOR, int((ROOT / "ios/tools/min-sdk-major").read_text()))
 
     def test_unsigned_review_and_visible_label_are_each_reported(self):
         _, problems = preflight.evaluate("1.3.1", self.rows(), UNSIGNED, LABEL_ON)
@@ -141,7 +148,7 @@ class DeviceRunGate(unittest.TestCase):
     TREE = "b" * 40
 
     def rows(self):
-        return [{"version": "1.3.1", "build": 2, "channel": "appstore", "sdk": "iphoneos26.5", "source_commit": "a" * 40}]
+        return [{"version": "1.3.1", "build": 2, "channel": "appstore", "sdk": "iphoneos27.0", "source_commit": "a" * 40}]
 
     def run_row(self, **over):
         return dict({"version": "1.3.1", "run_id": "20261027T1604Z-bbbbbbb", "verdict": "PASS", "tree": self.TREE}, **over)

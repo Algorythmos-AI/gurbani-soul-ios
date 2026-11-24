@@ -17,7 +17,7 @@ file that proves it. Audit and plan: 2026-09-20.
 | M2 | `/privacy` and `/support` are live on production and name **Gurbani Soul** | `@smoke` specs in the deploy gate; `uptime` workflow green |
 | M3 | Repo gates green on the RC commit | `make gates` (vendored inputs, versions, iOS source/listing/archive gates) |
 | M4 | The RC is an **App Store channel** build from green trunk | `make testflight TEAM_ID=… BUILD=N CHANNEL=appstore UPLOAD=1` — refuses a dirty tree, an off-trunk commit, red CI, Xcode < 26, or an unsigned Nitnem review |
-| M5 | The ledger row is committed | `ios/testflight-builds.json` has the build with `channel: appstore`, `sdk: iphoneos26.x`; PR merged |
+| M5 | The ledger row is committed | `ios/testflight-builds.json` has the build with `channel: appstore`, `sdk: iphoneos27.x` (at least `ios/tools/min-sdk-major`); PR merged |
 | M6 | This version may be submitted | `make appstore-preflight` exits 0 (it includes M9) |
 | M7 | Listing text is within limits and true | listing lint (part of M3); paste from `docs/ios/app-store-listing.md` only |
 | M8 | App Store Connect holds exactly the listing doc | `make asc-diff` prints `RESULT: NO DRIFT` (GET only; run after pasting and again on submission day) |
@@ -93,8 +93,9 @@ answers; tick those by hand.
 ## 3. Re-check on submission day
 `make asc-diff` again (someone may have edited the console since), then:
 Apple changes these without notice — read <https://developer.apple.com/news/upcoming-requirements/>:
-minimum Xcode/SDK (and raise `MIN_XCODE_MAJOR` in `ios/tools/testflight_archive.sh` +
-`MIN_SDK_MAJOR` in `ios/tools/appstore_preflight.py` together), the age-rating questions, whether
+minimum Xcode/SDK (raise the one number in `ios/tools/min-sdk-major`: the archive script, the
+preflight, the per-bundle check and CI's `select-xcode` all read it; also move `runs-on: xcode-N` in
+the iOS workflows, which `ios/tests/test_sdk_floor.py` enforces), the age-rating questions, whether
 accessibility labels have become mandatory.
 
 ## 4. If App Review rejects

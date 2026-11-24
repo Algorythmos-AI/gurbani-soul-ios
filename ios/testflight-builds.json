@@ -511,7 +511,7 @@
       "xcode": "26.3",
       "sdk": "iphoneos26.2",
       "uploaded_at": "2026-11-23T02:18:13Z",
-      "note": "Archived and uploaded by ios-testflight.yml (run 45098657833) at tag v1.7.5: the Mac had under the script's 8 GB floor. Same dataset as 1.7.4; db_sha256 differs because the runner's SQLite writes different file bytes. Scripture byte-identical and scripture_sha256 matched the certified corpus (step 1-2 gates)."
+      "note": "Archived and uploaded by ios-testflight.yml (run 45098657833) at tag v1.7.5: the Mac had under the script's 8 GB floor. Same dataset as 1.7.4; db_sha256 differs because the runner's SQLite writes different file bytes. Scripture byte-identical and scripture_sha256 matched the certified corpus (step 1-2 gates). App Store Connect warned ITMS-90725 on 2026-11-23 (built with the iOS 26.2 SDK; the iOS 27 SDK is required from April 2027): delivery succeeded and no re-upload is needed. The CI path now runs on the xcode-27 image and every gate reads ios/tools/min-sdk-major (27)."
     },
     {
       "version": "1.7.5",
