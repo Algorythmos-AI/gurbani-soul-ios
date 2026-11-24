@@ -73,10 +73,12 @@ export SGGS_RELEASE_CHANNEL="$CHANNEL"          # read by pipeline/check_release
 # TestFlight builds also SHOW the Hukamnama (push, sheet, card and widget) so testers can soak it
 # before the G3/G4 reviews are signed. App Store builds (CHANNEL=appstore) never get these
 # overrides and stay dark until project.yml's Release config is flipped (tests/test_ios_gates.py).
+# After archiving, before export/upload, ios/tools/check_hukamnama_build.py proves the app matches its channel.
+HUKAMNAMA_TF_API="${SGGS_HUKAMNAMA_API_BASE_TESTFLIGHT:-https://api-staging.gurbanisoul.com}"
 HUKAMNAMA_ARGS=()
 if [ "$CHANNEL" = testflight ]; then
   HUKAMNAMA_ARGS=(
-    HUKAMNAMA_API_BASE="${SGGS_HUKAMNAMA_API_BASE_TESTFLIGHT:-https://api-staging.gurbanisoul.com}"
+    HUKAMNAMA_API_BASE="$HUKAMNAMA_TF_API"
     HUKAMNAMA_ENABLED=YES
     'SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) HUKAMNAMA_WIDGET'
   )
@@ -245,6 +247,12 @@ xcodebuild -project "$PROJECT_DIR/$TF_NAME.xcodeproj" -scheme SGGS -configuratio
   ${HUKAMNAMA_ARGS[@]+"${HUKAMNAMA_ARGS[@]}"} \
   -allowProvisioningUpdates ${AUTH_ARGS[@]+"${AUTH_ARGS[@]}"} | tail -30
 [ -d "$ARCHIVE" ] || fail "archive was not produced"
+# Before export/upload (step 5): the Hukamnama is switched on only by the testflight overrides above,
+# so prove the archived binary got exactly what its channel promises (testflight: on + staging API +
+# widget compiled in; appstore: project.yml's Release config). A mismatch never reaches App Store Connect.
+python3 ios/tools/check_hukamnama_build.py "$ARCHIVE/Products/Applications/SGGS.app" "$CHANNEL" \
+  --testflight-api "$HUKAMNAMA_TF_API" \
+  || fail "the archived app's Hukamnama flags do not match channel $CHANNEL — nothing was exported or uploaded"
 
 say "5/6 export for App Store Connect (destination: $([ "$UPLOAD" = 1 ] && echo upload || echo export))"
 cat > "$OPTIONS" <<PLIST

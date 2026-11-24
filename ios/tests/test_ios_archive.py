@@ -308,5 +308,89 @@ class RequiredChecksAsCode(unittest.TestCase):
                 self.assertIn(ctx, required)
 
 
+class HukamnamaMatchesChannel(unittest.TestCase):
+    """ios/tools/check_hukamnama_build.py: the archived app must carry exactly the Hukamnama its
+    channel promises, and the archive script must check it before export/upload (step 5).
+    Fake .app bundles; verified by hand against the real 1.7.1 (1) and 1.7.5 (2) archives."""
+
+    STAGING, PROD = "https://api-staging.gurbanisoul.com", "https://api.gurbanisoul.com"
+
+    def setUp(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("check_hukamnama_build",
+                                                      ROOT / "ios/tools/check_hukamnama_build.py")
+        self.mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.mod)
+        self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp)
+        self.project = PROJECT_YML.read_text()
+
+    def _app(self, enabled, api, widget_api, widget_compiled):
+        import plistlib
+        app = self.tmp / f"{enabled}-{len(list(self.tmp.iterdir()))}" / "SGGS.app"
+        widget = app / "PlugIns" / "SGGSWidgets.appex"
+        widget.mkdir(parents=True)
+        (app / "Info.plist").write_bytes(plistlib.dumps({"HukamnamaEnabled": enabled, "HukamnamaAPIBase": api}))
+        (widget / "Info.plist").write_bytes(plistlib.dumps({"CFBundleExecutable": "SGGSWidgets",
+                                                            "HukamnamaAPIBase": widget_api}))
+        (widget / "SGGSWidgets").write_bytes(b"\x00HukamnamaProvider\x00" if widget_compiled else b"\x00DailyHukam\x00")
+        return app
+
+    def _release_flag(self):
+        return re.search(r"Release:\n(?:\s{10}.*\n)*?\s{10}HUKAMNAMA_ENABLED: \"(YES|NO)\"", self.project).group(1)
+
+    def test_testflight_build_must_show_the_hukamnama(self):
+        good = self._app("YES", self.STAGING, self.STAGING, True)
+        self.assertEqual([], self.mod.check(good, "testflight", self.project))
+        for bad in (self._app("NO", self.STAGING, self.STAGING, True),
+                    self._app("YES", self.PROD, self.STAGING, True),
+                    self._app("YES", self.STAGING, self.PROD, True),
+                    self._app("YES", self.STAGING, self.STAGING, False)):
+            with self.subTest(app=bad):
+                self.assertEqual(1, len(self.mod.check(bad, "testflight", self.project)))
+
+    def test_appstore_build_follows_project_release(self):
+        dark = self._app("NO", self.PROD, self.PROD, False)
+        lit = self._app("YES", self.STAGING, self.STAGING, True)
+        if self._release_flag() == "NO":          # today: G3/G4 unsigned, every surface dark
+            self.assertEqual([], self.mod.check(dark, "appstore", self.project))
+            self.assertEqual(4, len(self.mod.check(lit, "appstore", self.project)))
+        else:                                     # after G3/G4: on, but always against production
+            self.assertEqual(2, len(self.mod.check(lit, "appstore", self.project)))
+
+    def test_appstore_expectation_follows_a_flipped_release(self):
+        # once G3/G4 are signed and Release is flipped, the checker follows project.yml unedited
+        flipped = self.project.replace('          HUKAMNAMA_ENABLED: "NO"', '          HUKAMNAMA_ENABLED: "YES"', 1)
+        flipped = re.sub(r'(?m)^(          SWIFT_ACTIVE_COMPILATION_CONDITIONS: )"\$\(inherited\)"$',
+                         r'\1"$(inherited) HUKAMNAMA_WIDGET"', flipped, count=1)
+        self.assertNotEqual(flipped, self.project)
+        on = self._app("YES", self.PROD, self.PROD, True)
+        self.assertEqual([], self.mod.check(on, "appstore", flipped))
+        if self._release_flag() == "NO":          # against today's dark Release, the same build is refused
+            self.assertEqual(2, len(self.mod.check(on, "appstore", self.project)))
+
+    def test_release_settings_read_the_right_target(self):
+        app = self.mod.release_settings(self.project, "SGGS")
+        widget = self.mod.release_settings(self.project, "SGGSWidgets")
+        self.assertEqual(app["HUKAMNAMA_API_BASE"], self.PROD)
+        self.assertEqual(widget["HUKAMNAMA_API_BASE"], self.PROD)
+        self.assertIn("HUKAMNAMA_ENABLED", app)
+        self.assertNotIn("HUKAMNAMA_ENABLED", widget)
+        self.assertIn("SWIFT_ACTIVE_COMPILATION_CONDITIONS", widget)
+
+    def test_cli_exit_codes(self):
+        good = self._app("YES", self.STAGING, self.STAGING, True)
+        self.assertEqual(0, self.mod.main([str(good), "testflight"]))
+        self.assertEqual(1, self.mod.main([str(good), "testflight", "--testflight-api", self.PROD]))
+
+    def test_archive_checks_before_export_and_upload(self):
+        code = SCRIPT.read_text()
+        call = code.index("python3 ios/tools/check_hukamnama_build.py")
+        self.assertLess(code.index('[ -d "$ARCHIVE" ] || fail "archive was not produced"'), call)
+        self.assertLess(call, code.index('say "5/6 export'), "the check must run before anything is uploaded")
+        self.assertIn('"$CHANNEL" \\\n  --testflight-api "$HUKAMNAMA_TF_API" \\\n  || fail', code)
+        self.assertIn('HUKAMNAMA_API_BASE="$HUKAMNAMA_TF_API"', code)
+
+
 if __name__ == "__main__":
     unittest.main()
