@@ -151,7 +151,8 @@ jobs:
           SGGS_ASC_KEY_PATH: ${{ runner.temp }}/asc/AuthKey.p8
         run: |
           if [ -f "$RUNNER_TEMP/dev-certs-before.json" ]; then
-            python3 ios/tools/asc_dev_certs.py revoke-new "$RUNNER_TEMP/dev-certs-before.json"
+            python3 ios/tools/asc_dev_certs.py revoke-new "$RUNNER_TEMP/dev-certs-before.json" \
+              || echo "::warning::could not revoke this run's development certificate; run the 'iOS development certificates' workflow"
           else
             echo "::warning::no certificate snapshot; run the 'iOS development certificates' workflow to clear stale ones"
           fi

@@ -148,8 +148,12 @@ def main(argv=None) -> int:
             with open(a.before) as f:
                 before = set(json.load(f))
             mine = to_revoke_new(before, certs, keychain_serials())
+            unmatched = [c for c in certs if c["id"] not in before and c not in mine]
+            if unmatched:  # new since the snapshot but not in this keychain: report, never revoke
+                print(f"::warning::{len(unmatched)} development certificate(s) appeared during this run but are not in "
+                      f"this machine's keychain, so they were left alone: {', '.join(c['id'] for c in unmatched)}")
             if not mine:
-                print("  no development certificate was created by this run")
+                print("  no development certificate of this run to revoke")
             for c in mine:
                 asc.revoke(c["id"])
                 print(f"  ✓ revoked this run's development certificate {describe(c)}")
