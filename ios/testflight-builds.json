@@ -512,6 +512,20 @@
       "sdk": "iphoneos26.2",
       "uploaded_at": "2026-11-23T02:18:13Z",
       "note": "Archived and uploaded by ios-testflight.yml (run 45098657833) at tag v1.7.5: the Mac had under the script's 8 GB floor. Same dataset as 1.7.4; db_sha256 differs because the runner's SQLite writes different file bytes. Scripture byte-identical and scripture_sha256 matched the certified corpus (step 1-2 gates)."
+    },
+    {
+      "version": "1.7.5",
+      "build": 2,
+      "source_commit": "c8de58fa90285f04a8e11c4e54b79b6a6f6b7b82",
+      "platform_commit": "e1c59cd89befa6283a1c567da89fef924e4c3879",
+      "dataset_commit": "ff6f63397ba98f617e04ca0d0a63c7076fa3a866",
+      "profile": "public",
+      "channel": "testflight",
+      "db_sha256": "d56c18d2d3bc6664fc7e3472bc5850533bf003a29a0ea1946717bfaecdc09fa6",
+      "xcode": "27.0",
+      "sdk": "iphoneos27.0",
+      "uploaded_at": "2026-11-24T01:22:06Z",
+      "note": "TestFlight-channel soak build, not for App Review: archived locally at tag v1.7.5 with CHANNEL=testflight, so HukamnamaEnabled=YES, HUKAMNAMA_WIDGET compiled in, Hukamnama API = api-staging.gurbanisoul.com (checked in the archived Info.plist and widget). Made because every appstore-channel build since 1.7.0 hides the Hukamnama card. The CI run could not sign (team at Apple's 10 development-certificate limit). db_sha256 d56c18d2 is the local-build hash; same dataset and scripture as 1.7.5 (1)."
     }
   ]
 }
