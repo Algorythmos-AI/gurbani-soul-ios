@@ -14,7 +14,8 @@ name: iOS TestFlight upload
 # The key needs the App Manager role. Automatic signing with an API key uses cloud-managed
 # certificates (`-allowProvisioningUpdates`); the first run may need the distribution
 # certificate created once in Xcode on a maintainer's Mac if cloud signing is not enabled
-# for the team. Until this workflow has produced one processed TestFlight build, the local
+# for the team. The development certificate each runner creates is revoked at the end of the run
+# (ios/tools/asc_dev_certs.py). Until this workflow has produced one processed TestFlight build, the local
 # script is the primary path and this job is the backup.
 #
 # The build number is an explicit input: App Store Connect rejects a reused CFBundleVersion for
@@ -89,6 +90,13 @@ jobs:
           mkdir -p "$RUNNER_TEMP/asc"
           printf '%s' "$ASC_KEY_P8_BASE64" | base64 --decode > "$RUNNER_TEMP/asc/AuthKey.p8"
           chmod 600 "$RUNNER_TEMP/asc/AuthKey.p8"
+      - name: Note the team's development certificates (this run's new one is revoked at the end)
+        continue-on-error: true   # an App Store Connect hiccup here must not block an upload
+        env:
+          SGGS_ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          SGGS_ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          SGGS_ASC_KEY_PATH: ${{ runner.temp }}/asc/AuthKey.p8
+        run: python3 ios/tools/asc_dev_certs.py snapshot "$RUNNER_TEMP/dev-certs-before.json"
       - name: Archive, gate, and export / upload
         env:
           SGGS_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
@@ -131,6 +139,22 @@ jobs:
           path: ios/App/build/export-*/*.ipa
           if-no-files-found: error
           retention-days: 14
+      - name: Revoke the development certificate this run created
+        # Each fresh runner makes a new "Apple Development: Created via API" certificate and is then
+        # thrown away with its key; without this, ten runs fill the team's slots and the next one fails
+        # ("maximum number of certificates", run 45300354850). Only a certificate that is new since the
+        # snapshot AND is in this runner's keychain is revoked. Export already re-signed for distribution.
+        if: always()
+        env:
+          SGGS_ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          SGGS_ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          SGGS_ASC_KEY_PATH: ${{ runner.temp }}/asc/AuthKey.p8
+        run: |
+          if [ -f "$RUNNER_TEMP/dev-certs-before.json" ]; then
+            python3 ios/tools/asc_dev_certs.py revoke-new "$RUNNER_TEMP/dev-certs-before.json"
+          else
+            echo "::warning::no certificate snapshot; run the 'iOS development certificates' workflow to clear stale ones"
+          fi
       - name: Remove the API key
         if: always()
         run: rm -rf "$RUNNER_TEMP/asc"

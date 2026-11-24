@@ -1,0 +1,67 @@
+name: iOS development certificates
+
+# MANUAL ONLY. Clears "Apple Development" certificate slots left by CI runners (ios/tools/asc_dev_certs.py).
+# Apple allows ten per team; each ios-testflight runner used to leave one behind. Since the upload
+# workflow revokes its own certificate this is only for clean-up.
+#
+# Dry run by default: the log lists what would be revoked. `keep` must name every certificate that a
+# real Mac signs with (find its serial with `security find-certificate -a -c "Apple Development" -p |
+# openssl x509 -noout -serial` on that Mac, and match it to an id in the dry-run list). A revoked
+# development certificate cannot be restored; the Mac that held it would make a new one on its next
+# signed build. Uploaded and App Store builds are never affected (they are signed for distribution).
+
+on:
+  workflow_dispatch:
+    inputs:
+      keep:
+        description: "Certificate ids to keep, space-separated (every Mac that signs locally)"
+        required: true
+        type: string
+      apply:
+        description: "Revoke for real (false = dry run, list only)"
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-testflight   # never while an upload run is signing
+  cancel-in-progress: false
+
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    environment: testflight
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Write the App Store Connect API key
+        env:
+          ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
+        run: |
+          test -n "$ASC_KEY_P8_BASE64" || { echo "::error::ASC_KEY_P8_BASE64 secret is not set"; exit 1; }
+          mkdir -p "$RUNNER_TEMP/asc"
+          printf '%s' "$ASC_KEY_P8_BASE64" | base64 --decode > "$RUNNER_TEMP/asc/AuthKey.p8"
+          chmod 600 "$RUNNER_TEMP/asc/AuthKey.p8"
+      - name: List or revoke
+        env:
+          SGGS_ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          SGGS_ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          SGGS_ASC_KEY_PATH: ${{ runner.temp }}/asc/AuthKey.p8
+          KEEP: ${{ inputs.keep }}
+          APPLY: ${{ inputs.apply }}
+        run: |
+          args=()
+          for id in $KEEP; do
+            [[ "$id" =~ ^[A-Z0-9]{10}$ ]] || { echo "::error::'$id' is not a certificate id"; exit 1; }
+            args+=(--keep "$id")
+          done
+          [ ${#args[@]} -gt 0 ] || { echo "::error::keep at least one certificate"; exit 1; }
+          if [ "$APPLY" = true ]; then args+=(--apply); fi
+          set -o pipefail
+          python3 ios/tools/asc_dev_certs.py prune "${args[@]}" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Remove the API key
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/asc"
