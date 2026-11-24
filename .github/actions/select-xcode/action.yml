@@ -1,26 +1,20 @@
 name: select-xcode
 description: >
-  Select the newest installed Xcode at or above the App Store floor, and fail if the runner image
-  has none. App Store Connect has required Xcode 26 / the iOS 26 SDK for uploads since 2026-04-28;
-  CI must build and test with the SDK that ships, not whatever the image defaults to.
+  Select the newest released (non-beta) Xcode at or above the App Store SDK floor, prove the
+  selected Xcode really reports that version and ships that iOS SDK, and fail if the runner image
+  has none. The floor is ios/tools/min-sdk-major, shared with testflight_archive.sh,
+  appstore_preflight.py and check_bundle_sdk.py (ITMS-90725: from April 2027 App Store Connect
+  requires the iOS 27 SDK). CI must build and test with the SDK that ships, not the image default.
+  Exports SGGS_XCODE_MAJOR, SGGS_SDK_MAJOR and SGGS_SIM_SDK for later steps (e.g. picking a matching simulator).
 inputs:
   min-major:
-    description: Lowest acceptable Xcode major version
-    default: "26"
+    description: Lowest acceptable Xcode / iOS SDK major. Empty = read ios/tools/min-sdk-major.
+    default: ""
 runs:
   using: composite
   steps:
     - shell: bash
       env:
         MIN_MAJOR: ${{ inputs.min-major }}
-      run: |
-        XCODE=""
-        for app in /Applications/Xcode_*.app; do
-          major="${app##*/Xcode_}"; major="${major%%.*}"
-          case "$major" in *[!0-9]*|"") continue ;; esac
-          if [ "$major" -ge "$MIN_MAJOR" ]; then XCODE="$app"; fi   # the glob sorts ascending: last match = newest
-        done
-        test -n "$XCODE" || { echo "::error::no Xcode $MIN_MAJOR+ on this runner image — move runs-on to an image that has it"; exit 1; }
-        sudo xcode-select -s "$XCODE"
-        xcodebuild -version
-        xcodebuild -showsdks | grep -i 'iphonesimulator' || true
+        APPS_DIR: /Applications
+      run: bash "$GITHUB_ACTION_PATH/select.sh"

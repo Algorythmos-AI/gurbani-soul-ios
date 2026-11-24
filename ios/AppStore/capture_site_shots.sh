@@ -17,7 +17,7 @@
 # SiteShotTests is the driver: each surface group launches the app afresh, and a shot is written only
 # while the element that proves its screen is up. The workflow drops the driver into older tags.
 #
-# Needs: db/sggs.sqlite (`make dataset`), the personal pair in ios/Resources, xcodegen, Xcode 26+.
+# Needs: db/sggs.sqlite (`make dataset`), the personal pair in ios/Resources, xcodegen, Xcode 27+ (ios/tools/min-sdk-major).
 # The public DB is copied into the BUILT .app only (never ios/Resources); the simulators are deleted.
 # A failing capture test is reported and the run goes on, so the shots that did land are kept; the
 # script then fails if any test failed or the self-check (check_site_shots.py) finds an expected
@@ -39,8 +39,11 @@ FAILURES="$RESULTS/failures.tsv"                       # set <TAB> test <TAB> as
 : > "$FAILURES"
 
 RUNTIME=$(xcrun simctl list runtimes -j | python3 -c "
-import json,sys
+import json,os,sys
 rs=[r for r in json.load(sys.stdin)['runtimes'] if r['platform']=='iOS' and r['isAvailable']]
+want=os.environ.get('SGGS_SDK_MAJOR')   # set by CI's select-xcode: use the runtime of the SDK that ships
+if want: rs=[r for r in rs if r['version'].split('.')[0]==want]
+if not rs: sys.exit('no available iOS'+(' '+want if want else '')+' simulator runtime')
 print(sorted(rs, key=lambda r: [int(x) for x in r['version'].split('.')])[-1]['identifier'])")
 IPHONE=com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro
 IPAD=com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-12GB

@@ -30,7 +30,8 @@ defaults:
 
 jobs:
   parity:
-    runs-on: macos-15
+    runs-on: xcode-27   # GitHub's Xcode 27 image (macOS 27, arm64): the App Store SDK floor, ios/tools/min-sdk-major
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/fetch-dataset
@@ -66,7 +67,8 @@ jobs:
   # The app target: unit tests (integration + launch-cache) and XCUITests on a simulator.
   # The xcodeproj is generated (not committed); the DB is rebuilt deterministically per job.
   app:
-    runs-on: macos-15
+    runs-on: xcode-27   # GitHub's Xcode 27 image (macOS 27, arm64): the App Store SDK floor, ios/tools/min-sdk-major
+    timeout-minutes: 150   # recent green runs took 74-96 min
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/fetch-dataset
@@ -83,15 +85,37 @@ jobs:
           git diff --exit-code -- ios/App/Tests/UI/Info.plist ios/App/Widgets/Info.plist \
             || { echo "::error::a committed Info.plist differs from what XcodeGen generates — commit the regenerated file"; exit 1; }
       - name: Resolve an available iPhone simulator
+        # An ordinary iPhone (never the foldable iPhone Duo, whose lit screen depends on its hinge) on
+        # the runtime that matches the selected simulator SDK (SGGS_SIM_SDK, from select-xcode); else
+        # the newest runtime of the same major. Versions compare as tuples, never strings. Fails here,
+        # with the list, rather than testing on a runtime that is not the one that ships.
         run: |
           UDID=$(xcrun simctl list devices available -j | python3 -c "
-          import json,sys
-          d=json.load(sys.stdin)['devices']
-          devs=[dev for k in sorted(d, reverse=True) for dev in d[k]
-                if dev.get('isAvailable') and dev['name'].startswith('iPhone')]
-          print(devs[0]['udid'])")
+          import json, os, re, sys
+          sdk = tuple(int(x) for x in os.environ['SGGS_SIM_SDK'].split('.'))
+          prefer = ['iPhone 17 Pro', 'iPhone 17', 'iPhone 18 Pro', 'iPhone Air']
+          cands = []
+          for runtime, devs in json.load(sys.stdin)['devices'].items():
+              m = re.search(r'SimRuntime\.iOS-([0-9]+(?:-[0-9]+)*)$', runtime)
+              if not m:
+                  continue
+              ver = tuple(int(x) for x in m.group(1).split('-'))
+              if ver[0] != sdk[0]:
+                  continue
+              for d in devs:
+                  name = d['name']
+                  if d.get('isAvailable') and name.startswith('iPhone') and 'Duo' not in name:
+                      rank = prefer.index(name) if name in prefer else len(prefer)
+                      cands.append((ver == sdk[:len(ver)] or ver[:len(sdk)] == sdk, ver, -rank, name, d['udid']))
+          if not cands:
+              sys.exit('no available iPhone simulator on an iOS %d runtime' % sdk[0])
+          best = max(cands)
+          print(best[4]); print('simulator:', best[3], 'iOS', '.'.join(map(str, best[1])), file=sys.stderr)")
           echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
           xcrun simctl boot "$UDID" || true
+      - name: Simulator inventory (only when resolving failed)
+        if: failure()
+        run: xcrun simctl list runtimes; xcrun simctl list devices available
       - name: Build for testing
         id: build
         run: |

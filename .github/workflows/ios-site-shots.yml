@@ -33,7 +33,7 @@ defaults:
 
 jobs:
   capture:
-    runs-on: macos-15
+    runs-on: xcode-27   # GitHub's Xcode 27 image (macOS 27, arm64): the App Store SDK floor, ios/tools/min-sdk-major
     timeout-minutes: 150
     steps:
       - uses: actions/checkout@v7
