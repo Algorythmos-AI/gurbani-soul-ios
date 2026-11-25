@@ -15,7 +15,7 @@ struct SGGSWidgetsBundle: WidgetBundle {
         RaagNowWidget()
         HukamWidget()
         #if HUKAMNAMA_WIDGET
-        HukamnamaWidget()      // dark in Release until G3/G4 are signed (ios/tests HukamnamaGates)
+        HukamnamaWidget()      // in Release since 1.7.7, when G3/G4 were signed (ios/tests HukamnamaGates)
         #endif
         NitnemWidget()
         #if canImport(ActivityKit)

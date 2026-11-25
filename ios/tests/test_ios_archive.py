@@ -386,7 +386,10 @@ class HukamnamaMatchesChannel(unittest.TestCase):
         flipped = self.project.replace('          HUKAMNAMA_ENABLED: "NO"', '          HUKAMNAMA_ENABLED: "YES"', 1)
         flipped = re.sub(r'(?m)^(          SWIFT_ACTIVE_COMPILATION_CONDITIONS: )"\$\(inherited\)"$',
                          r'\1"$(inherited) HUKAMNAMA_WIDGET"', flipped, count=1)
-        self.assertNotEqual(flipped, self.project)
+        if self._release_flag() == "NO":
+            self.assertNotEqual(flipped, self.project)
+        else:                                      # since 1.7.7 Release is already flipped
+            self.assertEqual(flipped, self.project)
         on = self._app("YES", self.PROD, self.PROD, True)
         self.assertEqual([], self.mod.check(on, "appstore", flipped))
         if self._release_flag() == "NO":          # against today's dark Release, the same build is refused

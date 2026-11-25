@@ -2,9 +2,8 @@
 import WidgetKit
 import SwiftUI
 
-// The "Hukamnama · Sri Harmandir Sahib" widget. Compiled only where HUKAMNAMA_WIDGET is set
-// (Debug), so a Release binary carries neither the widget nor its network read until the G3/G4
-// gates are signed (ios/tests HukamnamaGates). Separate from the Hukam of the day (G3 R6).
+// The "Hukamnama · Sri Harmandir Sahib" widget. Compiled only where HUKAMNAMA_WIDGET is set: Debug
+// always, and Release since 1.7.7, when the G3/G4 gates were signed (ios/tests HukamnamaGates). Separate from the Hukam of the day (G3 R6).
 //
 // How fresh data arrives, most reliable first:
 //   1. the Notification Service Extension writes the push into hukamnama-snapshot.json and

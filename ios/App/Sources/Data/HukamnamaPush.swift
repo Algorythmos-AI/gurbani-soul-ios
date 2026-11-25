@@ -20,7 +20,7 @@ enum HukamnamaConfig {
     private static func plist(_ key: String) -> String? {
         (Bundle.main.object(forInfoDictionaryKey: key) as? String).flatMap { $0.isEmpty || $0.hasPrefix("$(") ? nil : $0 }
     }
-    /// The feature ships dark in Release until its review gates are signed (G3, G4, H-src).
+    /// Read from Info.plist: YES in every configuration since 1.7.7 (G3, G4 and H-src signed).
     static var enabled: Bool { plist("HukamnamaEnabled") == "YES" }
     static var apiBase: URL? {
         plist("HukamnamaAPIBase").flatMap(URL.init(string:)).flatMap { $0.scheme == "https" ? $0 : nil }

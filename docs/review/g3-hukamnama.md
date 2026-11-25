@@ -1,6 +1,6 @@
 # G3 sensitivity review: the Hukamnama from Sri Harmandir Sahib (new English copy)
 
-Status: **unreviewed**. This pack was prepared by an engineer so a reviewer can see every new
+Status: **signed 2026-11-25 by the owner as reviewer of record** (§4). This pack was prepared by an engineer so a reviewer can see every new
 reader-facing English string of the Hukamnama push in one place. It is not a review. Nothing in it
 is "reviewed" until a Granthi or Gurbani scholar signs the block at the end. The flag at the end
 stays `REVIEWED: false` until then, and while it does, `ios/tests/test_ios_gates.py`
@@ -137,8 +137,8 @@ closing ॥ to the word before it for display only (`VerseTypography`, as the re
 
 ## 4. Sign-off
 
-Reviewer name: ______________________ Role: ______________________ Date: ____________
+Reviewer name: Sameer Kalaliya   Role: owner, Algorythmos Pty Ltd (reviewer of record by the owner's decision; not a Granthi or scholar review)   Date: 2026-11-25
 
-Decisions recorded above, and any changes applied in commit: ____________
+Decisions recorded above: every item (N1–N4, P1–P3, C1–C4, S1–S13, R-1–R-16, W1–W11) **OK as written**, relayed by the owner in the session of 2026-11-25. No wording changed, so no change commit. G4 (privacy) and H-src (SGPC, cleared 2026-11-11) were confirmed by the owner the same day.
 
-REVIEWED: false
+REVIEWED: true

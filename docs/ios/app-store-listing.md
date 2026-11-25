@@ -48,7 +48,7 @@ are banis it does contain. `ios/tests/test_ios_gates.py` lints this section.)
 
 ## Promotional text (170) — trust first (editable any time; NOT indexed for search)
 
-> Every verse verbatim from Sri Guru Granth Sahib Ji, cited by Ang — never AI-generated. Search by word, sound or first letters. Hukam, Nitnem, Raag Clock. Fully offline.
+> Every verse verbatim from Sri Guru Granth Sahib Ji, cited by Ang — never AI-generated. Now with the daily Hukamnama from Sri Harmandir Sahib. Nitnem, Raag Clock.
 
 ## Description (4,000)
 
@@ -76,8 +76,12 @@ are banis it does contain. `ios/tests/test_ios_gates.py` lints this section.)
 > • The Hukam of the day: one Hukam unit for the whole day, in the app, by Siri ("Today's Hukam") and on a widget that turns at midnight.
 > • Draw a complete Hukam unit any time.
 >
+> HUKAMNAMA FROM SRI HARMANDIR SAHIB
+> • The Hukamnama taken each morning at Sri Harmandir Sahib, Amritsar, on the Nitnem page and cited by Ang. It is located by Ang from SGPC; every line you read comes from the verified text of Sri Guru Granth Sahib Ji in the app.
+> • An optional daily notification, as soon as it is published or at a time you choose, and a Hukamnama widget for your Home Screen.
+>
 > WIDGETS
-> • Hukam, the current raag watch, and today's Nitnem on your Home Screen.
+> • The Hukam of the day, the Hukamnama from Sri Harmandir Sahib, the current raag watch, and today's Nitnem on your Home Screen.
 >
 > RAAG CLOCK
 > • See which raags belong to the current watch of the day, with an optional solar mode that uses sunrise and sunset for your location, computed on the device.
@@ -86,7 +90,8 @@ are banis it does contain. `ios/tests/test_ios_gates.py` lints this section.)
 > • The contributors and their centuries, the 22 Vaars and their structure, and themes and their relationships across the text.
 >
 > PRIVATE BY DESIGN
-> • No account. No network connection is ever made. No analytics, no tracking.
+> • No account. No analytics, no tracking. Nothing you read, search for or save leaves your device.
+> • The only online feature is the daily Hukamnama. Its notification is optional and off by default: turning it on sends a device token to deliver it, and turning it off deletes it.
 > • Your saved verses stay on your device (and in Spotlight, if you choose to save them).
 > • Location, if you allow it, is rounded to about 1 km and never leaves the device.
 >
@@ -108,9 +113,13 @@ are banis it does contain. `ios/tests/test_ios_gates.py` lints this section.)
 
 ## What's New
 
-For version 1.7.6 (covers everything since 1.7.1, the version on the App Store; 1.7.2 to 1.7.6 are upload-only). Rewritten for every version; limit 4000 characters. Every version's text is kept in [`whats-new/`](whats-new/README.md).
+For version 1.7.7 (covers everything since 1.7.1, the version on the App Store; 1.7.2 to 1.7.6 were upload-only). Approved by the owner 2026-11-25. Rewritten for every version; limit 4000 characters. Every version's text is kept in [`whats-new/`](whats-new/README.md).
 
-> Reliability improvements, in step with gurbanisoul.com — where the daily Hukamnama from Sri Harmandir Sahib is now published.
+> The daily Hukamnama from Sri Harmandir Sahib, Amritsar, is now in Gurbani Soul.
+>
+> • Read it each morning from the Nitnem page, cited by Ang, with every line from the verified text of Sri Guru Granth Sahib Ji in the app.
+> • Turn on a daily notification in More → Reminders, as soon as it is published or at a time you choose.
+> • Add the new Hukamnama widget to your Home Screen.
 >
 > The text of Sri Guru Granth Sahib Ji is unchanged.
 
@@ -133,15 +142,18 @@ permanent redirect, which `sggs-verify-prod` proves.
 | Marketing URL | `https://gurbanisoul.com` | live — the Gurbani Soul landing page |
 | Privacy Policy URL | `https://gurbanisoul.com/en/privacy` | live |
 
-The privacy page must stay true to the binary: no data collected, no network requests, location
+The privacy page must stay true to the binary: one data type collected (Device ID, only when the
+reader turns the Hukamnama notification on), no network requests except the Hukamnama service, location
 on-device only, saved verses / settings / Nitnem progress stored locally, reminders as local
 notifications (no push), an on-device Live Activity, no third-party SDKs.
 
 ## App Privacy (questionnaire)
 
-- Do you or your third-party partners collect data from this app? **No.**
-- Result: "Data Not Collected". This matches `PrivacyInfo.xcprivacy` (no tracking, no collected
-  data types, accessed-API reasons `CA92.1` + `1C8F.1` (UserDefaults, including the App Group suite shared with the widgets) and `C617.1` (file timestamps) only).
+- Do you or your third-party partners collect data from this app? **Yes** (since 1.7.7; before it, No).
+- Data type: **Identifiers → Device ID** only — the APNs token of the optional Hukamnama
+  notification. Purpose: **App Functionality**. Linked to the user: **No**. Used for tracking: **No**.
+- Result: one item, Device ID. This matches `PrivacyInfo.xcprivacy` (no tracking, one collected
+  data type — `NSPrivacyCollectedDataTypeDeviceID`, not linked, not tracking, App Functionality — accessed-API reasons `CA92.1` + `1C8F.1` (UserDefaults, including the App Group suite shared with the widgets) and `C617.1` (file timestamps) only).
 - Location is used but not collected: it never leaves the device and is not stored beyond the
   rounded value used for the clock. Say exactly this in the review notes.
 
@@ -198,10 +210,7 @@ Store the source PNGs under `ios/AppStore/screenshots/<device>/` (add the direct
 
 ### Review notes
 
-> This app is a fully offline reader and search tool for Sri Guru Granth Sahib Ji, the Sikh
-> scripture. It bundles a roughly 100 MB SQLite database of the text and makes no network requests at all;
-> no account or sign-in exists, so no demo credentials are needed.
-> Airplane Mode is a valid way to test it.
+> This app is an offline reader and search tool for Sri Guru Granth Sahib Ji, the Sikh scripture. It bundles a roughly 100 MB SQLite database of the text; no account or sign-in exists, so no demo credentials are needed. Everything except the daily Hukamnama (below) works in Airplane Mode.
 >
 > The Gurmukhi text is reproduced verbatim from the source edition. Its SHA-256 is verified in full on
 > first launch after an install or update; later launches confirm the file is unchanged (size + modification
@@ -213,8 +222,7 @@ Store the source PNGs under `ios/AppStore/screenshots/<device>/` (add the direct
 > a separate layer, labelled as such in the app and sourced from the ShabadOS open database; they
 > are never presented as part of Sri Guru Granth Sahib Ji.
 >
-> Optional Nitnem reminders are local notifications only (scheduled on-device, no push, no server);
-> they do not change the fully-offline promise. The standard notification permission prompt appears
+> Optional Nitnem reminders are local notifications only (scheduled on-device, no push, no server). The standard notification permission prompt appears
 > only when the user switches a reminder on (More → Reminders, under the Nitnem section); nothing is requested at launch.
 >
 > The optional reading Live Activity (default off) is driven entirely on-device with ActivityKit —
@@ -228,11 +236,21 @@ Store the source PNGs under `ios/AppStore/screenshots/<device>/` (add the direct
 > Explore → Raag Clock. Solar is the default; with no stored location it shows the fixed clock and offers
 > a "Use my location" button — the permission prompt appears only when that button is tapped.
 >
-> Widgets: three Home Screen widgets (Hukam of the day, Raag now, Nitnem) read a small snapshot the app
-> writes to its App Group (`group.org.sggs`); the Nitnem widget also reads the app's Nitnem progress
+> Widgets: four Home Screen widgets (Hukam of the day, Hukamnama · Sri Harmandir Sahib, Raag now,
+> Nitnem). The Hukamnama widget reads the day's public Hukamnama record from our server, with no
+> identifier. The other three read a small snapshot the app writes to its App Group (`group.org.sggs`); the Nitnem widget also reads the app's Nitnem progress
 > file there (which banis were read today). Both stay on the device and are never transmitted; the only
 > personal values are that progress and, if the reader enabled solar mode, their location rounded to
 > about 1 km. Open the app once before adding them.
+>
+> Hukamnama from Sri Harmandir Sahib (new in 1.7.7): each morning our server (api.gurbanisoul.com)
+> locates by its Ang the Hukamnama SGPC publishes from Sri Harmandir Sahib. The app reads that one
+> public record, with no identifier, to show the card at the top of the Nitnem tab and its page;
+> every line shown comes from the app's bundled text. The daily notification is opt-in: More →
+> Reminders → "Daily Hukamnama"; the permission prompt appears only then. When on, the APNs token and
+> chosen time are sent to our server to deliver one notification a day; turning it off deletes them.
+> It is the one data type on the App Privacy label (Device ID, App Functionality, not linked, not
+> tracking). The widget reads the same record.
 >
 > URL scheme `sggs://` and App Intents ("Today's Hukam", "What raag is it now", "Read a bani",
 > "Search Gurbani" as Siri phrases; "Open Ang" as a Shortcuts action) open screens inside the app only.

@@ -43,7 +43,7 @@ EDITABLE = ("PREPARE_FOR_SUBMISSION", "DEVELOPER_REJECTED", "REJECTED", "METADAT
 # What only a person can do in App Store Connect (not exposed by the public API) — printed as a
 # checklist, never claimed as checked.
 OWNER_ONLY = [
-    "App Privacy → Data Not Collected → Publish",
+    "App Privacy → Identifiers → Device ID (App Functionality, not linked, not tracking) only → Publish",
     "Pricing and Availability → Mac and Apple Vision Pro availability unticked",
     "Business → EU Digital Services Act trader status declared and verified",
     "Business → Agreements: nothing pending",

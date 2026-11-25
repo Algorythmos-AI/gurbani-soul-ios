@@ -57,7 +57,7 @@ TestFlight command) reads the console — GET only, it never writes — and must
 answers; tick those by hand.
 - [ ] Name available; subtitle, promo text, keywords, description pasted from the listing doc.
 - [ ] Support / Marketing / Privacy URLs = the **"Submit this"** column (they must resolve today).
-- [ ] App Privacy: **Data Not Collected**.
+- [ ] App Privacy: **Identifiers → Device ID** only (App Functionality, not linked, not tracking) — the Hukamnama notification's token, since 1.7.7. It must match `PrivacyInfo.xcprivacy`.
 - [ ] Age rating questionnaire → 4+. Read the live form; answer what it asks.
 - [ ] **New app record / version**: create the App Store version with the string **exactly matching
       the binary's `MARKETING_VERSION`** (a new app record defaults to 1.0; the build is not
