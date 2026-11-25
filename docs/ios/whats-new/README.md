@@ -17,7 +17,8 @@ against App Store Connect.
 
 | Version | Status |
 |---|---|
-| [1.7.6](1.7.6.md) | uploading for App Store, not to be submitted (no in-app change for App Store readers) |
+| [1.7.7](1.7.7.md) | for App Review: the Hukamnama from Sri Harmandir Sahib for every reader |
+| [1.7.6](1.7.6.md) | uploaded, never submitted; superseded by 1.7.7 |
 | [1.7.5](1.7.5.md) | uploaded, never submitted; superseded by 1.7.6 |
 | [1.7.4](1.7.4.md) | uploaded, never submitted; superseded by 1.7.5 |
 | [1.7.3](1.7.3.md) | uploaded, never submitted; superseded by 1.7.4 |

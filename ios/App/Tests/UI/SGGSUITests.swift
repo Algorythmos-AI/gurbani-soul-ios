@@ -417,7 +417,7 @@ final class SGGSUITests: XCTestCase {
     }
 
     /// Privacy Policy is reachable inside the app (Guideline 5.1.1(i)): a row in More opens a
-    /// static, offline policy screen that states the "Data Not Collected" stance.
+    /// static, offline policy screen that states the privacy label (Device ID, since 1.7.7).
     func testPrivacyPolicyReachableFromMore() {
         let app = launchApp(selectSearch: false)
         openTab(app, "More", expectingNavBar: "More")
@@ -432,12 +432,12 @@ final class SGGSUITests: XCTestCase {
                       "Support link missing in More")
         link.tap()
         XCTAssertTrue(app.navigationBars["Privacy Policy"].waitForExistence(timeout: 8), "Privacy Policy screen did not open")
-        // the policy is a lazy List too: its "Data Not Collected" paragraph is below the fold
+        // the policy is a lazy List too: its privacy-label paragraph is below the fold
         let stance = app.descendants(matching: .any)
-            .matching(NSPredicate(format: "label CONTAINS[c] %@", "Data Not Collected")).firstMatch
+            .matching(NSPredicate(format: "label CONTAINS[c] %@", "privacy label lists one item, Device ID")).firstMatch
         var down = 0
         while !stance.waitForExistence(timeout: 2) && down < 8 { app.swipeUp(); down += 1 }
-        XCTAssertTrue(stance.exists, "Privacy Policy screen does not state the Data Not Collected stance")
+        XCTAssertTrue(stance.exists, "Privacy Policy screen does not state its privacy label (Device ID)")
         // a SwiftUI Link's element type varies by iOS version: match the identifier on any type
         let web = app.descendants(matching: .any).matching(identifier: "privacyWebLink").firstMatch
         var more = 0

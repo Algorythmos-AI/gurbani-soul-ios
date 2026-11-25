@@ -2,8 +2,8 @@ import SwiftUI
 
 /// The links the app exposes to the outside world. The two web URLs are the SAME ones entered in
 /// App Store Connect as the Privacy Policy and Support URLs (docs/ios/app-store-listing.md), so a
-/// repo gate asserts they never drift. Opening one hands the URL to Safari — the app itself still
-/// makes no network request, so the "works fully offline" promise is intact.
+/// repo gate asserts they never drift. Opening one hands the URL to Safari; the app's only network
+/// use is the Hukamnama service (HukamnamaAPI.swift), which the policy screen describes.
 enum AppLinks {
     static let privacy = URL(string: "https://gurbanisoul.com/en/privacy")!
     static let support = URL(string: "https://gurbanisoul.com/en/support")!
@@ -22,7 +22,7 @@ struct PrivacyPolicyScreen: View {
     var body: some View {
         List {
             Section {
-                Text("We collect nothing. Here is exactly what that means.")
+                Text("We collect one thing, and only if you turn on the Hukamnama notification. Here is exactly what that means.")
                     .font(Brand.heading(.title3))
                 Text("This applies to the Gurbani Soul app for iPhone and iPad, including its widgets and Live Activity.")
                     .font(.subheadline).foregroundStyle(.secondary)
@@ -31,7 +31,7 @@ struct PrivacyPolicyScreen: View {
 
             policy("The short version", [
                 "No accounts. Nothing to sign up for, nothing to log in to.",
-                "The app makes no network connections. It works fully in Airplane Mode.",
+                "The app makes no network connections and works fully in Airplane Mode, with one exception: the daily Hukamnama from Sri Harmandir Sahib, described below.",
                 "No analytics, no advertising, no tracking, no third-party SDKs.",
                 "Everything you do — saved verses, settings, reading position, Nitnem progress and reminders — stays on your device.",
                 "Location is optional, used only on your device, and never transmitted.",
@@ -43,9 +43,14 @@ struct PrivacyPolicyScreen: View {
                 "\u{201C}Your themes\u{201D} on the Themes page is worked out on your device from your saved verses; it is never sent anywhere, and can be turned off in Settings.",
                 "Settings (accent, transliteration, traditional rendering, last Ang read) are stored in the app's local preferences.",
                 "Nitnem progress, your own sets and your reading journey are stored in the app's App Group container so the Nitnem widget can show them.",
-                "Reminders are optional local notifications, scheduled on your device at times you choose. No push service is used and no device token is created.",
+                "Reminders are optional local notifications, scheduled on your device at times you choose. No reminder comes from a server.",
                 "The reading Live Activity is optional and off by default. It runs on your device with no push updates and never shows a verse.",
-                "Widgets read a small snapshot the app writes into its App Group container: the raag watch, the Hukam of the day for the next two weeks with their Angs, today's Nitnem progress, and — if you use solar mode — your clock-mode choice and your location rounded to about 1 km. Nothing leaves the device.",
+                "Widgets read a small snapshot the app writes into its App Group container: the raag watch, the Hukam of the day for the next two weeks with their Angs, today's Nitnem progress, and — if you use solar mode — your clock-mode choice and your location rounded to about 1 km. Nothing about you leaves the device; the Hukamnama widget, if you add it, reads the day's Hukamnama the same way the app does.",
+            ])
+
+            policy("The Hukamnama from Sri Harmandir Sahib", [
+                "To show the Hukamnama card, page and widget, the app asks our Hukamnama service which shabad is the day's Hukamnama. That request carries no token, no identifier and nothing about you, and the text itself always comes from the copy of Sri Guru Granth Sahib Ji inside the app.",
+                "The Hukamnama notification is optional and off by default. If you turn it on, the app asks for notification permission and registers with Apple's push notification service. It then sends our Hukamnama service three things: the device token Apple issues, when you asked to be notified, and which edition of the text the app holds. Nothing else is sent: no account, no name, no location and nothing about what you read. The service stores no IP address and keeps no access log. The token is used only to send that one daily notification. Turning the notification off deletes the token from our service, and a token that has not been used for 180 days is deleted as well. The service runs on Render, and Apple delivers the notification under its own privacy policy.",
             ])
 
             policy("Location", [
@@ -60,14 +65,14 @@ struct PrivacyPolicyScreen: View {
             ])
 
             Section {
-                Text("Because the app collects no data, its App Store privacy label is “Data Not Collected.”")
+                Text("The app's App Store privacy label lists one item, Device ID: the notification token, collected only if you turn the Hukamnama notification on, used only to deliver it, not linked to you and never used for tracking.")
                     .font(.footnote).foregroundStyle(.secondary)
                 Link("Read the full policy online", destination: AppLinks.privacy)
                     .accessibilityIdentifier("privacyWebLink")
                 Link("Support", destination: AppLinks.support)
                     .accessibilityIdentifier("supportWebLink")
             } footer: {
-                Text("Opening a link hands it to Safari; the app itself makes no network requests.")
+                Text("Opening a link hands it to Safari.")
             }
             .inkRow()
         }

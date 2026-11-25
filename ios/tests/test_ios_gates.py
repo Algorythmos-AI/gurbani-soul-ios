@@ -117,8 +117,8 @@ class CrashAndDebugHygiene(unittest.TestCase):
 
     def test_no_network_code(self):
         # "No accounts. No network. No tracking." is a store-listing and privacy-label claim. The
-        # single exception is the opt-in Hukamnama from Sri Harmandir Sahib (HukamnamaAPI.swift),
-        # which ships dark in Release until G4 updates those claims (see HukamnamaShipsDark).
+        # single exception is the opt-in Hukamnama from Sri Harmandir Sahib (HukamnamaAPI.swift and
+        # the Hukamnama widget's one GET), which the listing and privacy policy describe since 1.7.7.
         self.assertEqual(
             violations(r"\bURLSession\b|\bURLRequest\b|\bWKWebView\b|\bNWConnection\b|^\s*import Network\b",
                        allow_files=NETWORK_FILES), [])
@@ -137,7 +137,7 @@ class CrashAndDebugHygiene(unittest.TestCase):
 
 
 class HukamnamaGates(unittest.TestCase):
-    """The Hukamnama push: a pass-through NSE, and dark in Release until its copy is reviewed."""
+    """The Hukamnama push: a pass-through NSE, shown in Release only once its copy review is signed."""
 
     def test_notification_service_never_edits_the_notification(self):
         # the NSE is a data writer only: the lock screen shows exactly what the server sent
@@ -393,11 +393,18 @@ class PrivacyManifestGate(unittest.TestCase):
         for entry in self.manifest["NSPrivacyAccessedAPITypes"]:
             self.assertTrue(entry.get("NSPrivacyAccessedAPITypeReasons"), entry)
 
-    def test_no_tracking_and_nothing_collected(self):
-        # Must stay in step with the "Data Not Collected" App Privacy answer in the listing.
+    def test_no_tracking_and_only_the_hukamnama_token_collected(self):
+        # Must stay in step with the App Privacy answer in the listing: one data type, Device ID
+        # (the optional Hukamnama notification's APNs token), not linked, not tracking, App
+        # Functionality only. Anything more needs a new label and a new policy first.
         self.assertIs(self.manifest.get("NSPrivacyTracking"), False)
         self.assertEqual(self.manifest.get("NSPrivacyTrackingDomains", []), [])
-        self.assertEqual(self.manifest.get("NSPrivacyCollectedDataTypes", []), [])
+        self.assertEqual(self.manifest.get("NSPrivacyCollectedDataTypes", []), [{
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeDeviceID",
+            "NSPrivacyCollectedDataTypeLinked": False,
+            "NSPrivacyCollectedDataTypeTracking": False,
+            "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"],
+        }])
 
     def test_app_group_userdefaults_reason_declared(self):
         # The app + widget share UserDefaults(suiteName: "group.org.sggs"); that cross-process use

@@ -61,8 +61,8 @@ targets:
         # testflight channel. Read from Info.plist (HukamnamaAPIBase) — never typed in code.
         HUKAMNAMA_API_BASE: https://api-staging.gurbanisoul.com
         HUKAMNAMA_APS_ENV: development
-        # The feature ships dark until G3 (copy), G4 (privacy) and H-src (SGPC) are signed:
-        # Debug builds (tests, CI, development) show it; Release builds hide every surface.
+        # On in every configuration since 1.7.7: G3 (copy), G4 (privacy) and H-src (SGPC) are signed
+        # (docs/review/g3-hukamnama.md). Release points at production; testflight archives at staging.
         HUKAMNAMA_ENABLED: "YES"
       configs:
         # Release = the archive/TestFlight configuration. DEVELOPMENT_TEAM stays "" here BY DESIGN:
@@ -76,7 +76,7 @@ targets:
           DEVELOPMENT_TEAM: ""
           HUKAMNAMA_API_BASE: https://api.gurbanisoul.com
           HUKAMNAMA_APS_ENV: production
-          HUKAMNAMA_ENABLED: "NO"
+          HUKAMNAMA_ENABLED: "YES"
   # WidgetKit extension: links ONLY the dependency-free GurbaniPahar product + the shared
   # snapshot store — never CSQLite or the 100 MB corpus DB. Entitlements are inert on the
   # simulator (CI stays green with CODE_SIGNING_ALLOWED NO); device installs need signing.
@@ -128,8 +128,8 @@ targets:
           CODE_SIGN_STYLE: Automatic
           DEVELOPMENT_TEAM: ""
           HUKAMNAMA_API_BASE: https://api.gurbanisoul.com
-          # Dark in Release until G3 (copy) and G4 (privacy) are signed, like HUKAMNAMA_ENABLED.
-          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited)"
+          # The Hukamnama widget ships in Release since 1.7.7 (G3/G4 signed), like HUKAMNAMA_ENABLED.
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) HUKAMNAMA_WIDGET"
   # Notification Service Extension for the Hukamnama push: a PASS-THROUGH data writer. It never
   # edits the notification; it merges the payload's fields into hukamnama-snapshot.json (App
   # Group) and reloads the "Hukamnama" widget kind. Links no package (no CSQLite, no corpus DB):
