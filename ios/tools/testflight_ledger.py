@@ -22,6 +22,10 @@ Commands
       Append a row from the archive script's candidate-<v>-<b>.json. Refuses a
       duplicate (version, build). Refuses a candidate whose "uploaded" is false
       unless --force (the Transporter path, where the upload happens later).
+  followup
+      Exit 1 when the newest build (highest version, then build) is App Store-channel
+      while project.yml's Release hides the Hukamnama: TestFlight auto-update would take
+      the Hukamnama off testers' phones. Prints the testflight N+1 command to run.
 
 Exit codes: 0 ok · 1 gate/refusal · 2 usage/IO error.
 """
@@ -53,6 +57,33 @@ def load():
 
 def builds(doc):
     return doc["builds"]
+
+
+def newest_row(rows):
+    """The build TestFlight auto-update installs: the highest (version, build), not the last upload."""
+    return max(rows, key=lambda r: (_semver(r["version"]), r["build"])) if rows else None
+
+
+def followup_problem(rows, hukamnama_in_release):
+    """Why testers would lose the Hukamnama, or None.
+
+    While the Release configuration hides the Hukamnama (G3/G4 not yet signed), only
+    testflight-channel builds show it. TestFlight installs the newest build on every tester's
+    phone, so when that build is an App Store-channel one the card vanishes, and a tap on the
+    Hukamnama push (still delivered: the device stays registered) opens the app with nothing.
+    That happened with 1.7.0-1.7.5 and again with 1.7.6 (1). So every App Store upload is
+    followed by a testflight build N+1, and the newest row must be that follow-up.
+    """
+    if hukamnama_in_release:
+        return None
+    top = newest_row(rows)
+    if top is None or top.get("channel", "testflight") == "testflight":
+        return None
+    v, b = top["version"], top["build"]
+    return (f"the newest uploaded build {v} ({b}) is channel={top.get('channel')!r}, which hides the Hukamnama, "
+            f"and TestFlight auto-update puts it on every tester's phone (the card vanishes; a push tap opens "
+            f"nothing). Upload the follow-up from the same tag and record it: "
+            f"make testflight TEAM_ID=... BUILD={b + 1} UPLOAD=1 CHANNEL=testflight")
 
 
 def max_build_for(rows, version):
@@ -150,6 +181,24 @@ def cmd_record(args):
     return 0
 
 
+def hukamnama_in_release():
+    """Whether project.yml's Release configuration shows the Hukamnama (G3/G4 signed)."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("check_hukamnama_build", Path(__file__).with_name("check_hukamnama_build.py"))
+    flags = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(flags)
+    return flags.release_settings(flags.PROJECT_YML.read_text(encoding="utf-8"), "SGGS").get("HUKAMNAMA_ENABLED") == "YES"
+
+
+def cmd_followup(args):
+    problem = followup_problem(builds(load()), hukamnama_in_release())
+    if problem:
+        print(f"FOLLOW-UP DUE: {problem}", file=sys.stderr)
+        return 1
+    print("ok: the newest build keeps the Hukamnama on testers' phones")
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -168,6 +217,9 @@ def main(argv=None):
     r.add_argument("candidate")
     r.add_argument("--force", action="store_true")
     r.set_defaults(fn=cmd_record)
+
+    f = sub.add_parser("followup")
+    f.set_defaults(fn=cmd_followup)
 
     args = ap.parse_args(argv)
     return args.fn(args)

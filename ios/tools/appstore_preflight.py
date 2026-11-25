@@ -4,8 +4,11 @@
 A TestFlight binary and an App Store binary are the same upload, so "which build do I submit?" is
 answered by the tracked ledger, not by memory. Exit 0 only when ALL of these hold:
 
-  1. the newest recorded build for VERSION has channel == "appstore" (it was archived with
-     CHANNEL=appstore, i.e. it passed the scholar-review gate on the Nitnem non-SGGS text);
+  1. an App Store-channel build is recorded for VERSION (archived with CHANNEL=appstore, i.e. it
+     passed the scholar-review gate on the Nitnem non-SGGS text); the newest such build is the
+     one to submit. A later testflight-channel build of the same version (the follow-up that
+     keeps the Hukamnama on testers' phones) is never submitted: the OK line names the build to
+     select, and `make asc-diff` reports DRIFT if any other build is attached;
   2. ios/Resources/NITNEM-REVIEW.md reads `REVIEWED: true`;
   3. the in-app label is off (NitnemReview.extraTextReviewed = true);
   4. that build was made with an SDK at or above the App Store floor;
@@ -34,6 +37,18 @@ def newest_build(version, builds):
     return max(rows, key=lambda b: b["build"]) if rows else None
 
 
+def submit_build(version, builds):
+    """The build to submit: the newest App Store-channel build of VERSION (rows without a channel
+    are TestFlight builds), or None."""
+    return newest_build(version, [b for b in builds if b.get("channel") == "appstore"])
+
+
+def later_testflight(version, builds, build):
+    """Testflight-channel builds of VERSION uploaded after `build`: never to be selected."""
+    return sorted(b["build"] for b in builds
+                  if b.get("version") == version and b.get("channel") != "appstore" and b["build"] > build["build"])
+
+
 def device_problems(version, build, runs, tree_of):
     """Condition 7: a PASS device run of the archived tree. `runs` are index.json's rows;
     `tree_of(commit)` gives a commit's tree, or None when it is not here."""
@@ -57,15 +72,17 @@ def evaluate(version, builds, review_text, schedule_text, device_runs=None, tree
     attestation file, the Swift source that carries the in-app label and, when given, the
     device-run index and a commit → tree lookup."""
     problems = []
-    build = newest_build(version, builds)
-    if build is None:
+    build = submit_build(version, builds)
+    newest = newest_build(version, builds)
+    if newest is None:
         problems.append(f"no uploaded build is recorded for {version} in ios/testflight-builds.json")
-    else:
+    elif build is None:
+        problems.append(f"no App Store-channel build of {version}: the newest, {version} ({newest['build']}), "
+                        f"has channel={newest.get('channel', 'testflight')!r} — "
+                        "rebuild with `make testflight … CHANNEL=appstore`; a TestFlight-channel build "
+                        "has not passed the scholar-review gate and must not be submitted")
+    if build is not None:
         label = f"{version} ({build['build']})"
-        if build.get("channel") != "appstore":
-            problems.append(f"newest build {label} has channel={build.get('channel', 'testflight')!r} — "
-                            "rebuild with `make testflight … CHANNEL=appstore`; a TestFlight-channel build "
-                            "has not passed the scholar-review gate and must not be submitted")
         sdk = str(build.get("sdk") or "")
         m = re.match(r"[a-z]+(\d+)", sdk)
         if not m or int(m.group(1)) < MIN_SDK_MAJOR:
@@ -122,6 +139,11 @@ def main(argv=None):
         return 1
     print(f"OK  {version} ({build['build']}) may be submitted: channel=appstore, review signed, "
           f"sdk {build.get('sdk')}, versions and listing clean, a PASS device run of its tree.")
+    later = later_testflight(version, doc.get("builds", []), build)
+    if later:
+        print(f"    In App Store Connect select build {build['build']}, NOT "
+              + ", ".join(str(b) for b in later)
+              + " (testflight channel: the Hukamnama follow-up for testers). `make asc-diff` checks it.")
     return 0
 
 

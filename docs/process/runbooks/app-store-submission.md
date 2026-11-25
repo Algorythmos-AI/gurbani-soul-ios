@@ -65,8 +65,11 @@ answers; tick those by hand.
       site** (`/api/meta.version` on `gurbanisoul.com`) — one number everywhere. Confirm with
       `python3 scripts/release/check_release_complete.py X.Y.Z` in the **sggs-platform** repository
       (the script lives there) before selecting. Any earlier
-      superseded upload (e.g. a prior patch) is left unsubmitted; Apple expires it. Select the
-      processed build once it leaves "Processing".
+      superseded upload (e.g. a prior patch) is left unsubmitted; Apple expires it. Select **the
+      build number `make appstore-preflight` names** (the newest App Store-channel build) once it
+      leaves "Processing" — never a later testflight-channel follow-up of the same version (it is
+      newer and listed first, but it shows the unreviewed Hukamnama). After selecting, `make asc-diff`
+      must show the `Version · Build` row OK.
 - [ ] **App Information**: Primary category Reference, Secondary Education; Content Rights.
 - [ ] Content rights: **Yes, contains third-party content, and I have the rights** (list from the doc).
 - [ ] Export compliance: answered by `ITSAppUsesNonExemptEncryption = false`.
