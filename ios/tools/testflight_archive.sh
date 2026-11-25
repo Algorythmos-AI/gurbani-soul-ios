@@ -341,6 +341,9 @@ if [ "$UPLOAD" = 1 ]; then
   python3 ios/tools/testflight_ledger.py record "$BUILD_DIR/candidate-$VERSION-$BUILD.json" \
     || fail "uploaded to App Store Connect but could NOT record the build in ios/testflight-builds.json — add it by hand before the next upload"
   echo "    ledger: recorded in ios/testflight-builds.json — commit it with the release."
+  # An App Store upload hides the Hukamnama from testers (auto-update) until G3/G4 flip Release:
+  # say now that the testflight follow-up is due (CI's ledger gate refuses the records PR without it).
+  python3 ios/tools/testflight_ledger.py followup || true
 else
   echo "    ledger: NOT recorded (no upload). After a Transporter upload, run:"
   echo "            python3 ios/tools/testflight_ledger.py record $BUILD_DIR/candidate-$VERSION-$BUILD.json --force"

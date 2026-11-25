@@ -112,15 +112,30 @@ class AppStorePreflight(unittest.TestCase):
         build, problems = preflight.evaluate("1.3.1", self.rows(), SIGNED, LABEL_OFF)
         self.assertEqual((build["build"], problems), (2, []))
 
-    def test_only_the_newest_build_counts(self):
-        _, problems = preflight.evaluate("1.3.1", self.rows(channel="testflight"), SIGNED, LABEL_OFF)
+    def test_a_later_testflight_follow_up_does_not_block_the_appstore_build(self):
+        # 1.7.6: appstore (1), then the testflight (2) that keeps the Hukamnama on testers' phones
+        rows = self.rows(channel="testflight")
+        build, problems = preflight.evaluate("1.3.1", rows, SIGNED, LABEL_OFF)
+        self.assertEqual((build["build"], problems), (1, []))
+        self.assertEqual(preflight.later_testflight("1.3.1", rows, build), [2])
+
+    def test_only_testflight_builds_is_refused(self):
+        rows = [dict(r, channel="testflight") for r in self.rows()]
+        build, problems = preflight.evaluate("1.3.1", rows, SIGNED, LABEL_OFF)
+        self.assertIsNone(build)
         self.assertEqual(len(problems), 1)
         self.assertIn("channel='testflight'", problems[0])
 
+    def test_the_newest_appstore_build_is_the_one_to_submit(self):
+        build, _ = preflight.evaluate("1.3.1", self.rows(), SIGNED, LABEL_OFF)
+        self.assertEqual(build["build"], 2)
+        self.assertEqual(preflight.later_testflight("1.3.1", self.rows(), build), [])
+
     def test_rows_without_a_channel_are_testflight_builds(self):
         _, problems = preflight.evaluate("1.3.0", [{"version": "1.3.0", "build": 7, "profile": "public"}], SIGNED, LABEL_OFF)
-        self.assertTrue(any("channel='testflight'" in p for p in problems))
-        self.assertTrue(any("sdk=unknown" in p for p in problems))
+        # no App Store-channel build, so nothing to submit (and no SDK to judge)
+        self.assertEqual(len(problems), 1)
+        self.assertIn("channel='testflight'", problems[0])
 
     def test_old_sdk_is_refused(self):
         _, problems = preflight.evaluate("1.3.1", self.rows(sdk="iphoneos18.5"), SIGNED, LABEL_OFF)
@@ -141,6 +156,35 @@ class AppStorePreflight(unittest.TestCase):
         build, problems = preflight.evaluate("9.9.9", self.rows(), SIGNED, LABEL_OFF)
         self.assertIsNone(build)
         self.assertEqual(len(problems), 1)
+
+
+class HukamnamaFollowUp(unittest.TestCase):
+    """testflight_ledger.followup_problem: the newest build must keep the Hukamnama on testers' phones."""
+
+    ROWS = [{"version": "1.7.5", "build": 1, "channel": "appstore"},
+            {"version": "1.7.5", "build": 2, "channel": "testflight"},
+            {"version": "1.7.6", "build": 1, "channel": "appstore"}]
+
+    def test_appstore_newest_while_release_hides_it_fails(self):   # the 1.7.6 (1) bug
+        p = ledger.followup_problem(self.ROWS, hukamnama_in_release=False)
+        self.assertIsNotNone(p)
+        self.assertIn("1.7.6 (1)", p)
+        self.assertIn("BUILD=2 UPLOAD=1 CHANNEL=testflight", p)
+
+    def test_testflight_follow_up_passes(self):
+        rows = self.ROWS + [{"version": "1.7.6", "build": 2, "channel": "testflight"}]
+        self.assertIsNone(ledger.followup_problem(rows, hukamnama_in_release=False))
+
+    def test_newest_is_by_version_then_build_not_by_row_order(self):
+        rows = [{"version": "1.7.6", "build": 2, "channel": "testflight"},
+                {"version": "1.7.10", "build": 1, "channel": "appstore"}]   # 1.7.10 > 1.7.6
+        self.assertIn("1.7.10 (1)", ledger.followup_problem(rows, hukamnama_in_release=False))
+
+    def test_rows_without_a_channel_are_testflight(self):
+        self.assertIsNone(ledger.followup_problem([{"version": "1.1.3", "build": 2}], hukamnama_in_release=False))
+
+    def test_retires_once_release_shows_the_hukamnama(self):
+        self.assertIsNone(ledger.followup_problem(self.ROWS, hukamnama_in_release=True))
 
 
 class DeviceRunGate(unittest.TestCase):

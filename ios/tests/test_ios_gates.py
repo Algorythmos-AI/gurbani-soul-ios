@@ -209,6 +209,23 @@ class HukamnamaGates(unittest.TestCase):
         self.assertIn("HUKAMNAMA_APS_ENV: development", project)
         self.assertIn("HUKAMNAMA_APS_ENV: production", project)
 
+    def test_testers_keep_the_hukamnama_after_an_app_store_upload(self):
+        # While Release hides the Hukamnama, TestFlight auto-update must land testers on a
+        # testflight-channel build: the newest ledger row is the follow-up of every App Store
+        # upload. 1.7.6 (1) broke this (card gone, push taps opened nothing).
+        import importlib.util
+        def load(name):
+            spec = importlib.util.spec_from_file_location(name, IOS / "tools" / f"{name}.py")
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
+            return mod
+        ledger, flags = load("testflight_ledger"), load("check_hukamnama_build")
+        project = (APP / "project.yml").read_text(encoding="utf-8")
+        in_release = flags.release_settings(project, "SGGS").get("HUKAMNAMA_ENABLED") == "YES"
+        rows = json.loads((IOS / "testflight-builds.json").read_text(encoding="utf-8"))["builds"]
+        problem = ledger.followup_problem(rows, hukamnama_in_release=in_release)
+        self.assertIsNone(problem, problem)
+
 
 class DesignSystemGates(unittest.TestCase):
     """The CHANGELOG's "grep gates", made executable."""

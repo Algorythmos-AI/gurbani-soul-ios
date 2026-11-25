@@ -25,7 +25,10 @@ iOS has no rollback. The levers, mildest first:
    `make testflight TEAM_ID=… BUILD=N CHANNEL=appstore UPLOAD=1`
    The script refuses a dirty tree, an off-trunk or untagged commit and red CI, exactly as for a
    normal release.
-6. Commit the ledger row via PR. `make appstore-preflight` must pass. Re-sign Charter S on the new
+6. While Release hides the Hukamnama, follow it with the testflight build N+1 from the same tag
+   (`… BUILD=N+1 CHANNEL=testflight UPLOAD=1`), or TestFlight auto-update takes the Hukamnama off
+   testers' phones; `testflight_ledger.py followup` and CI's ledger gate check it.
+   Commit both ledger rows via PR. `make appstore-preflight` must pass. Re-sign Charter S on the new
    build number; re-run only the hardware checks the fix could affect, and say which.
 7. Submit. After approval, release and resume (or restart) the phased rollout.
 8. Write the incident note: what users saw, how it got past the gates, which gate now catches it.
