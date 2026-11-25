@@ -13,6 +13,29 @@ SPEC.loader.exec_module(ui_retry)
 NO_PID = "Application 'org.sggs.app' does not have a process ID"
 NOT_RUNNING = "Failed to application org.sggs.app is not running"
 RUNNER = "Crash: SGGSUITests-Runner at _XCTRunnerRunTests"
+AX = "Application 'org.sggs.app' has not loaded accessibility"
+
+# The shape of XCTest's spindump of the app (1.7.7 attempt 3), trimmed to what the guard reads.
+IDLE_MAIN = """\
+Process:          SGGS (Gurbani Soul) [28652]
+Identifier:       org.sggs.app
+
+  Thread 0x149d8    DispatchQueue "com.apple.main-thread"(1)    271 samples (1-271)
+  271  start + 6688 (dyld + 204416) [0x101201e80] 1-271
+    271  __debug_main_executable_dylib_entry_point + 12 (SGGSApp.swift in SGGS.debug.dylib + 7410236) [0x1] 1-271
+      271  static SGGSApp.$main() + 40 (<compiler-generated> in SGGS.debug.dylib + 7410172) [0x1] 1-271
+{extra}        271  mach_msg + 20 (libsystem_kernel.dylib + 3804) [0x101140edc] 1-271
+
+  Thread 0x14c33    DispatchQueue "AXBinaryMonitorQueue"(117)    271 samples (1-271)
+  271  start_wqthread + 8 (libsystem_pthread.dylib + 6780) [0x1] 1-271
+    271  Helper.run() + 8 (Helper.swift in SGGS.debug.dylib + 99) [0x1] 1-271
+
+  Binary Images:
+           0x103a98000 -        0x1046c3fff  SGGS.debug.dylib (0)
+
+Process:          SpringBoard [1838]
+"""
+STUCK = "        271  ReaderModel.load() + 40 (ReaderModel.swift in SGGS.debug.dylib + 1234) [0x1] 1-271\n"
 
 
 def summary(*fails, passed=85):
@@ -82,6 +105,43 @@ class PlanTests(unittest.TestCase):
     def test_more_than_three_failures_is_never_retried(self):
         fails = [(f"A/test{i}()", NO_PID) for i in range(4)]
         self.assertEqual(ui_retry.plan(summary(*fails), self.diag)[0], [])
+
+    def spindump(self, ident: str, text: str) -> Path:
+        out = self.diag / "spindumps"
+        out.mkdir(exist_ok=True)
+        (out / "A1.txt").write_text(text)
+        (out / "manifest.json").write_text(json.dumps([{"testIdentifier": ident, "attachments": [
+            {"exportedFileName": "A1.txt", "suggestedHumanReadableName": "Spindump_0_X.txt"}]}]))
+        return out
+
+    def test_accessibility_not_loaded_with_an_idle_main_thread_is_retried(self):
+        # 1.7.7 attempt 3: the main thread sat in its run loop; AXBinaryMonitorQueue was starved.
+        # An app frame on another thread does not matter; only the main thread is judged.
+        sp = self.spindump("SGGSUITests/testX()", IDLE_MAIN.format(extra=""))
+        ids, _ = ui_retry.plan(summary(("SGGSUITests/testX()", AX)), self.diag, sp)
+        self.assertEqual(ids, ["SGGSUITests/SGGSUITests/testX"])
+
+    def test_accessibility_not_loaded_with_app_code_on_the_main_thread_is_never_retried(self):
+        sp = self.spindump("SGGSUITests/testX()", IDLE_MAIN.format(extra=STUCK))
+        ids, reason = ui_retry.plan(summary(("SGGSUITests/testX()", AX)), self.diag, sp)
+        self.assertEqual(ids, [])
+        self.assertIn("main thread", reason)
+
+    def test_accessibility_not_loaded_without_a_spindump_is_never_retried(self):
+        for sp in (None, self.diag / "missing"):
+            with self.subTest(spindumps=sp):
+                self.assertEqual(ui_retry.plan(summary(("SGGSUITests/testX()", AX)), self.diag, sp)[0], [])
+
+    def test_a_spindump_of_another_test_does_not_count(self):
+        sp = self.spindump("SGGSUITests/testOther()", IDLE_MAIN.format(extra=""))
+        self.assertEqual(ui_retry.plan(summary(("SGGSUITests/testX()", AX)), self.diag, sp)[0], [])
+
+    def test_an_unrecognisable_spindump_is_never_retried(self):
+        for text in ("garbage", IDLE_MAIN.replace("com.apple.main-thread", "other"),
+                     IDLE_MAIN.replace("SGGS (Gurbani Soul)", "Other (x)")):
+            with self.subTest(text=text[:20]):
+                sp = self.spindump("SGGSUITests/testX()", text.replace("{extra}", ""))
+                self.assertEqual(ui_retry.plan(summary(("SGGSUITests/testX()", AX)), self.diag, sp)[0], [])
 
     def test_no_failures_means_no_retry(self):
         self.assertEqual(ui_retry.plan(summary(), self.diag)[0], [])

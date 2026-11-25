@@ -155,7 +155,11 @@ jobs:
           [ -d "$f" ] || { echo "no UI result bundle: nothing to retry"; exit 0; }
           xcrun xcresulttool get test-results summary --path "$f" --compact > "$RUNNER_TEMP/uitests.json" || exit 0
           xcrun xcresulttool export diagnostics --path "$f" --output-path "$RUNNER_TEMP/ui-diagnostics" >/dev/null || true
-          python3 ios/tools/ui_retry.py plan "$RUNNER_TEMP/uitests.json" "$RUNNER_TEMP/ui-diagnostics" > "$RUNNER_TEMP/ui-retry.txt"
+          # XCTest's spindump of the app when accessibility never loaded (proves the main thread was idle)
+          xcrun xcresulttool export attachments --path "$f" --output-path "$RUNNER_TEMP/ui-spindumps" \
+            --filter 'Spindump*' >/dev/null || true
+          python3 ios/tools/ui_retry.py plan "$RUNNER_TEMP/uitests.json" "$RUNNER_TEMP/ui-diagnostics" \
+            "$RUNNER_TEMP/ui-spindumps" > "$RUNNER_TEMP/ui-retry.txt"
           [ -s "$RUNNER_TEMP/ui-retry.txt" ] || exit 0
           args=(); while read -r t; do args+=("-only-testing:$t"); done < "$RUNNER_TEMP/ui-retry.txt"
           xcodebuild test-without-building -project ios/App/SGGS.xcodeproj -scheme SGGS \
