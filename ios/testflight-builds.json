@@ -554,6 +554,20 @@
       "sdk": "iphoneos27.0",
       "uploaded_at": "2026-11-25T00:56:49Z",
       "note": "Testflight-channel follow-up of 1.7.6 (1), archived locally at tag v1.7.6: Hukamnama on (staging API, widget compiled; check_hukamnama_build OK). 1.7.6 (1) (appstore channel) had auto-updated testers, so the Hukamnama card vanished and a push tap opened only the app. Not for App Review: submit 1.7.6 (1). db_sha256 d56c18d2 is this Mac's SQLite bytes, same as 1.7.5 (2); same dataset, scripture byte-identical."
+    },
+    {
+      "version": "1.7.7",
+      "build": 1,
+      "source_commit": "84bf4d5009c7532ca8149164637328139f1f6370",
+      "platform_commit": "7783889d41c001ef884342b6352c6cf9adb07760",
+      "dataset_commit": "ff6f63397ba98f617e04ca0d0a63c7076fa3a866",
+      "profile": "public",
+      "channel": "appstore",
+      "db_sha256": "d56c18d2d3bc6664fc7e3472bc5850533bf003a29a0ea1946717bfaecdc09fa6",
+      "xcode": "27.0",
+      "sdk": "iphoneos27.0",
+      "uploaded_at": "2026-11-26T04:27:11Z",
+      "note": "App Store build for App Review, archived locally at tag v1.7.7: the first App Store build with the Hukamnama from Sri Harmandir Sahib on (production API https://api.gurbanisoul.com, widget compiled; check_hukamnama_build OK). Release shows the Hukamnama, so no testflight follow-up is needed (ledger followup: ok). db_sha256 d56c18d2 is this Mac's SQLite bytes, same as 1.7.6; same dataset, scripture byte-identical."
     }
   ]
 }
