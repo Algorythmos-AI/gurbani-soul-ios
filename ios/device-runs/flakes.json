@@ -3,7 +3,7 @@
   "_comment": "Derived by `device_run.py rebuild`. A flake event is an unexplained (cause unknown) failure that passed on a rerun; a test with 3 or more is chronic.",
   "tests": {
     "DeviceChecklistTests/testD10ColdAndWarmLaunchTimes()": {
-      "runs": 9,
+      "runs": 12,
       "fails": 3,
       "env_fails": 2,
       "fail_then_pass": 1,
@@ -21,7 +21,7 @@
       "chronic": false
     },
     "DeviceChecklistTests/testD11ResumeAndAnInterruptedVerify()": {
-      "runs": 8,
+      "runs": 11,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 1,
@@ -38,7 +38,7 @@
       "chronic": false
     },
     "DeviceChecklistTests/testD2CopyIsVerbatimWithSaroopOnAndOff()": {
-      "runs": 8,
+      "runs": 11,
       "fails": 2,
       "env_fails": 1,
       "fail_then_pass": 2,
@@ -56,7 +56,7 @@
       "chronic": false
     },
     "DeviceChecklistTests/testD6ClearHistoryCancelThenConfirmKeepsEverythingElse()": {
-      "runs": 8,
+      "runs": 11,
       "fails": 2,
       "env_fails": 1,
       "fail_then_pass": 2,
@@ -73,8 +73,25 @@
       ],
       "chronic": false
     },
+    "HukamnamaUITests/testNotificationTapFromBackgroundOpensTheSheet()": {
+      "runs": 4,
+      "fails": 1,
+      "env_fails": 0,
+      "fail_then_pass": 0,
+      "flake_events": 0,
+      "last_failure": {
+        "run": "20261126T1112Z-56bc308",
+        "version": "1.7.7",
+        "cause": "unknown",
+        "text": "XCTAssertTrue failed - the Hukamnama notification never appeared"
+      },
+      "sources": [
+        "device"
+      ],
+      "chronic": false
+    },
     "SGGSUITests/testBaniContentsJumpsToPauri()": {
-      "runs": 5,
+      "runs": 8,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 1,
@@ -91,7 +108,7 @@
       "chronic": false
     },
     "SGGSUITests/testCaptureJaapPauri79()": {
-      "runs": 5,
+      "runs": 8,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 1,
@@ -108,7 +125,7 @@
       "chronic": false
     },
     "SGGSUITests/testCaptureScreens()": {
-      "runs": 5,
+      "runs": 8,
       "fails": 1,
       "env_fails": 1,
       "fail_then_pass": 1,
@@ -124,8 +141,25 @@
       ],
       "chronic": false
     },
+    "SGGSUITests/testExploreFeatures()": {
+      "runs": 7,
+      "fails": 1,
+      "env_fails": 0,
+      "fail_then_pass": 1,
+      "flake_events": 1,
+      "last_failure": {
+        "run": "20261126T0900Z-56bc308",
+        "version": "1.7.7",
+        "cause": "unknown",
+        "text": "failed - tab Explore did not open Explore"
+      },
+      "sources": [
+        "device"
+      ],
+      "chronic": false
+    },
     "SGGSUITests/testForgetLocationReturnsToTheLocationCard()": {
-      "runs": 6,
+      "runs": 9,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 0,
@@ -142,7 +176,7 @@
       "chronic": false
     },
     "SGGSUITests/testGutkaSwitchTogglesTheLayout()": {
-      "runs": 5,
+      "runs": 8,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 1,
@@ -159,7 +193,7 @@
       "chronic": false
     },
     "SGGSUITests/testIndexContinueCardResumes()": {
-      "runs": 5,
+      "runs": 8,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 1,
@@ -176,7 +210,7 @@
       "chronic": false
     },
     "SGGSUITests/testInsights()": {
-      "runs": 5,
+      "runs": 8,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 1,
@@ -192,25 +226,77 @@
       ],
       "chronic": false
     },
-    "SGGSUITests/testLineageAndVaars()": {
-      "runs": 6,
-      "fails": 2,
-      "env_fails": 1,
+    "SGGSUITests/testInsightsVisualizations()": {
+      "runs": 7,
+      "fails": 1,
+      "env_fails": 0,
       "fail_then_pass": 1,
-      "flake_events": 0,
+      "flake_events": 1,
       "last_failure": {
-        "run": "20261025T0822Z-844e172",
-        "version": "1.4.9",
-        "cause": "env:landscape",
-        "text": "failed with the phone in landscape (app window 956×440)"
+        "run": "20261126T0900Z-56bc308",
+        "version": "1.7.7",
+        "cause": "unknown",
+        "text": "XCTAssertTrue failed - progression picker missing"
       },
       "sources": [
-        "backfill"
+        "device"
+      ],
+      "chronic": false
+    },
+    "SGGSUITests/testLineageAndVaars()": {
+      "runs": 9,
+      "fails": 3,
+      "env_fails": 2,
+      "fail_then_pass": 2,
+      "flake_events": 0,
+      "last_failure": {
+        "run": "20261126T0900Z-56bc308",
+        "version": "1.7.7",
+        "cause": "env:tunnel",
+        "text": "Failed to terminate org.sggs.app:1367: Failed to terminate org.sggs.app:0"
+      },
+      "sources": [
+        "backfill",
+        "device"
+      ],
+      "chronic": false
+    },
+    "SGGSUITests/testLiveActivityToggleDefaultsOff()": {
+      "runs": 8,
+      "fails": 1,
+      "env_fails": 0,
+      "fail_then_pass": 1,
+      "flake_events": 1,
+      "last_failure": {
+        "run": "20261126T0900Z-56bc308",
+        "version": "1.7.7",
+        "cause": "unknown",
+        "text": "Failed to launch <XCUIApplicationImpl: 0x14029c180 org.sggs.app at <host-path> via Xcode: Timed out while launching application via Xcode."
+      },
+      "sources": [
+        "device"
+      ],
+      "chronic": false
+    },
+    "SGGSUITests/testMyNitnemEditorOpens()": {
+      "runs": 7,
+      "fails": 1,
+      "env_fails": 0,
+      "fail_then_pass": 1,
+      "flake_events": 1,
+      "last_failure": {
+        "run": "20261126T0900Z-56bc308",
+        "version": "1.7.7",
+        "cause": "unknown",
+        "text": "Failed to launch <XCUIApplicationImpl: 0x14029c180 org.sggs.app at <host-path> via Xcode: Timed out while launching application via Xcode."
+      },
+      "sources": [
+        "device"
       ],
       "chronic": false
     },
     "SGGSUITests/testNitnemOpensJapjiAndCompletes()": {
-      "runs": 5,
+      "runs": 8,
       "fails": 1,
       "env_fails": 1,
       "fail_then_pass": 1,
@@ -227,7 +313,7 @@
       "chronic": false
     },
     "SGGSUITests/testNitnemRemindersScreenOpens()": {
-      "runs": 5,
+      "runs": 8,
       "fails": 1,
       "env_fails": 1,
       "fail_then_pass": 1,
@@ -244,7 +330,7 @@
       "chronic": false
     },
     "SGGSUITests/testPrivacyPolicyReachableFromMore()": {
-      "runs": 5,
+      "runs": 8,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 0,
@@ -261,7 +347,7 @@
       "chronic": false
     },
     "SGGSUITests/testRaagPageFromTheIndex()": {
-      "runs": 5,
+      "runs": 8,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 1,
@@ -278,7 +364,7 @@
       "chronic": false
     },
     "SGGSUITests/testReaderChromeReturnsOnScrollUp()": {
-      "runs": 5,
+      "runs": 8,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 1,
@@ -295,7 +381,7 @@
       "chronic": false
     },
     "SGGSUITests/testReaderJumpAndSwipe()": {
-      "runs": 5,
+      "runs": 8,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 1,
@@ -312,7 +398,7 @@
       "chronic": false
     },
     "SGGSUITests/testSavedVerseRoundTrip()": {
-      "runs": 6,
+      "runs": 9,
       "fails": 2,
       "env_fails": 0,
       "fail_then_pass": 1,
@@ -330,7 +416,7 @@
       "chronic": false
     },
     "SGGSUITests/testSearchOpensShabad()": {
-      "runs": 5,
+      "runs": 8,
       "fails": 1,
       "env_fails": 1,
       "fail_then_pass": 1,
@@ -347,7 +433,7 @@
       "chronic": false
     },
     "SGGSUITests/testSearchResultOpensShabadAtLine()": {
-      "runs": 4,
+      "runs": 7,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 1,
@@ -364,7 +450,7 @@
       "chronic": false
     },
     "SGGSUITests/testSehajFocusHidesChromeAndExits()": {
-      "runs": 5,
+      "runs": 8,
       "fails": 1,
       "env_fails": 0,
       "fail_then_pass": 1,
@@ -381,7 +467,7 @@
       "chronic": false
     },
     "SGGSUITests/testThemeListStatesItsTrueTotal()": {
-      "runs": 5,
+      "runs": 8,
       "fails": 1,
       "env_fails": 1,
       "fail_then_pass": 1,
@@ -398,24 +484,25 @@
       "chronic": false
     },
     "SGGSUITests/testThemesIndexSearchFindsByMeaningAndGurmukhi()": {
-      "runs": 6,
-      "fails": 2,
+      "runs": 9,
+      "fails": 3,
       "env_fails": 1,
-      "fail_then_pass": 2,
-      "flake_events": 1,
+      "fail_then_pass": 3,
+      "flake_events": 2,
       "last_failure": {
-        "run": "20261025T0822Z-844e172",
-        "version": "1.4.9",
-        "cause": "env:landscape",
-        "text": "failed with the phone in landscape (app window 956×440)"
+        "run": "20261126T0900Z-56bc308",
+        "version": "1.7.7",
+        "cause": "unknown",
+        "text": "Failed to synthesize event: Neither element nor any descendant has keyboard focus. Event dispatch snapshot: SearchField, {{20.0, 116.0}, {400.0, 44.0}}, label: 'Name, meaning or Gurmukhi word', placeh"
       },
       "sources": [
-        "backfill"
+        "backfill",
+        "device"
       ],
       "chronic": false
     },
     "SGGSUITests/testVerifyShowsVerdict()": {
-      "runs": 6,
+      "runs": 9,
       "fails": 2,
       "env_fails": 1,
       "fail_then_pass": 1,
